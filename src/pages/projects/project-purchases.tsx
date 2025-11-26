@@ -133,4 +133,3 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
     </div>
   );
 }
-

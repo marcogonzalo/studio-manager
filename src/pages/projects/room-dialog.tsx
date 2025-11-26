@@ -95,4 +95,3 @@ export function RoomDialog({ open, onOpenChange, projectId, onSuccess }: RoomDia
     </Dialog>
   );
 }
-

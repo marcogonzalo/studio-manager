@@ -89,4 +89,3 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
     </div>
   );
 }
-
