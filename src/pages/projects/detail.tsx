@@ -7,6 +7,9 @@ import type { Project } from '@/types';
 import { ProjectNotes } from './project-notes';
 import { ProjectPurchases } from './project-purchases';
 import { ProjectRooms } from './project-rooms';
+import { ProjectBudget } from './project-budget';
+import { ProjectDocuments } from './project-documents';
+import { toast } from 'sonner';
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
