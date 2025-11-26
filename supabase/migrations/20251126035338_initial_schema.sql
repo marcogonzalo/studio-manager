@@ -1,5 +1,5 @@
--- Enable extensions
-create extension if not exists "uuid-ossp";
+-- Note: Using gen_random_uuid() instead of uuid_generate_v4() for Supabase Cloud compatibility
+-- gen_random_uuid() is a native PostgreSQL function (13+) and doesn't require extensions
 
 -- Create profiles table
 create table profiles (
@@ -16,7 +16,7 @@ create policy "Users can insert their own profile" on profiles for insert with c
 
 -- Create clients table
 create table clients (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   full_name text not null,
   email text,
@@ -32,7 +32,7 @@ create policy "Users can delete their clients" on clients for delete using (auth
 
 -- Create projects table
 create table projects (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   name text not null,
   description text,
@@ -50,7 +50,7 @@ create policy "Users can delete their projects" on projects for delete using (au
 
 -- Create project_documents table
 create table project_documents (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   project_id uuid references projects(id) on delete cascade not null,
   name text not null,
@@ -67,7 +67,7 @@ create policy "Users can create project documents" on project_documents for inse
 
 -- Create project_notes table
 create table project_notes (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   project_id uuid references projects(id) on delete cascade not null,
   content text not null,
@@ -77,47 +77,47 @@ alter table project_notes enable row level security;
 create policy "Users can view project notes" on project_notes for select using (auth.uid() = user_id);
 create policy "Users can create project notes" on project_notes for insert with check (auth.uid() = user_id);
 
--- Create rooms table
-create table rooms (
-  id uuid default uuid_generate_v4() primary key,
+-- Create spaces table
+create table spaces (
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   project_id uuid references projects(id) on delete cascade not null,
   name text not null,
   description text
 );
-alter table rooms enable row level security;
-create policy "Users can view rooms" on rooms for select using (
-  exists (select 1 from projects where projects.id = rooms.project_id and projects.user_id = auth.uid())
+alter table spaces enable row level security;
+create policy "Users can view spaces" on spaces for select using (
+  exists (select 1 from projects where projects.id = spaces.project_id and projects.user_id = auth.uid())
 );
-create policy "Users can create rooms" on rooms for insert with check (
-  exists (select 1 from projects where projects.id = rooms.project_id and projects.user_id = auth.uid())
+create policy "Users can create spaces" on spaces for insert with check (
+  exists (select 1 from projects where projects.id = spaces.project_id and projects.user_id = auth.uid())
 );
-create policy "Users can update rooms" on rooms for update using (
-  exists (select 1 from projects where projects.id = rooms.project_id and projects.user_id = auth.uid())
+create policy "Users can update spaces" on spaces for update using (
+  exists (select 1 from projects where projects.id = spaces.project_id and projects.user_id = auth.uid())
 );
-create policy "Users can delete rooms" on rooms for delete using (
-  exists (select 1 from projects where projects.id = rooms.project_id and projects.user_id = auth.uid())
+create policy "Users can delete spaces" on spaces for delete using (
+  exists (select 1 from projects where projects.id = spaces.project_id and projects.user_id = auth.uid())
 );
 
--- Create room_images table
-create table room_images (
-  id uuid default uuid_generate_v4() primary key,
+-- Create space_images table
+create table space_images (
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  room_id uuid references rooms(id) on delete cascade not null,
+  space_id uuid references spaces(id) on delete cascade not null,
   url text not null,
   description text
 );
-alter table room_images enable row level security;
-create policy "Users can view room images" on room_images for select using (
-  exists (select 1 from rooms join projects on rooms.project_id = projects.id where rooms.id = room_images.room_id and projects.user_id = auth.uid())
+alter table space_images enable row level security;
+create policy "Users can view space images" on space_images for select using (
+  exists (select 1 from spaces join projects on spaces.project_id = projects.id where spaces.id = space_images.space_id and projects.user_id = auth.uid())
 );
-create policy "Users can create room images" on room_images for insert with check (
-  exists (select 1 from rooms join projects on rooms.project_id = projects.id where rooms.id = room_images.room_id and projects.user_id = auth.uid())
+create policy "Users can create space images" on space_images for insert with check (
+  exists (select 1 from spaces join projects on spaces.project_id = projects.id where spaces.id = space_images.space_id and projects.user_id = auth.uid())
 );
 
 -- Create suppliers table
 create table suppliers (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   name text not null,
   contact_name text,
@@ -133,7 +133,7 @@ create policy "Users can update their suppliers" on suppliers for update using (
 
 -- Create products table
 create table products (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   name text not null,
   description text,
@@ -151,7 +151,7 @@ create policy "Users can update their products" on products for update using (au
 
 -- Create purchase_orders table
 create table purchase_orders (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   project_id uuid references projects(id),
   supplier_id uuid references suppliers(id),
@@ -168,10 +168,10 @@ create policy "Users can update their purchase orders" on purchase_orders for up
 
 -- Create project_items table
 create table project_items (
-  id uuid default uuid_generate_v4() primary key,
+  id uuid default gen_random_uuid() primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   project_id uuid references projects(id) on delete cascade,
-  room_id uuid references rooms(id),
+  space_id uuid references spaces(id),
   product_id uuid references products(id),
   name text not null,
   description text,
