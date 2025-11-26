@@ -14,14 +14,14 @@ const formSchema = z.object({
   description: z.string().optional(),
 });
 
-interface RoomDialogProps {
+interface SpaceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   projectId: string;
   onSuccess: () => void;
 }
 
-export function RoomDialog({ open, onOpenChange, projectId, onSuccess }: RoomDialogProps) {
+export function SpaceDialog({ open, onOpenChange, projectId, onSuccess }: SpaceDialogProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -33,7 +33,7 @@ export function RoomDialog({ open, onOpenChange, projectId, onSuccess }: RoomDia
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const { error } = await supabase
-        .from('rooms')
+        .from('spaces')
         .insert([{
           ...values,
           project_id: projectId
@@ -55,7 +55,7 @@ export function RoomDialog({ open, onOpenChange, projectId, onSuccess }: RoomDia
         <DialogHeader>
           <DialogTitle>Nuevo Espacio</DialogTitle>
           <DialogDescription>
-            Añade una habitación o zona al proyecto.
+            Añade un espacio o zona al proyecto.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -67,7 +67,7 @@ export function RoomDialog({ open, onOpenChange, projectId, onSuccess }: RoomDia
                 <FormItem>
                   <FormLabel>Nombre</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Sala de Estar" {...field} />
+                    <Input placeholder="Ej: Sala de Estar, Terraza, Oficina..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import type { Project } from '@/types';
 import { ProjectNotes } from './project-notes';
 import { ProjectPurchases } from './project-purchases';
-import { ProjectRooms } from './project-rooms';
+import { ProjectSpaces } from './project-spaces';
 import { ProjectBudget } from './project-budget';
 import { ProjectDocuments } from './project-documents';
 import { toast } from 'sonner';
@@ -49,7 +49,7 @@ export default function ProjectDetailPage() {
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList className="print:hidden">
           <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="rooms">Habitaciones</TabsTrigger>
+          <TabsTrigger value="spaces">Espacios</TabsTrigger>
           <TabsTrigger value="budget">Presupuesto</TabsTrigger>
           <TabsTrigger value="purchases">Compras</TabsTrigger>
           <TabsTrigger value="notes">Notas</TabsTrigger>
@@ -81,8 +81,8 @@ export default function ProjectDetailPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="rooms">
-          <ProjectRooms projectId={project.id} />
+        <TabsContent value="spaces">
+          <ProjectSpaces projectId={project.id} />
         </TabsContent>
         
         <TabsContent value="budget">

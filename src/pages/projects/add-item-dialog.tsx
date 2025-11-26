@@ -9,11 +9,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
-import type { Product, Room } from '@/types';
+import type { Product, Space } from '@/types';
 
 const formSchema = z.object({
   product_id: z.string().optional(),
-  room_id: z.string().optional(),
+  space_id: z.string().optional(),
   name: z.string().min(2, "Nombre requerido"),
   quantity: z.string().transform(v => parseFloat(v) || 1),
   unit_cost: z.string().transform(v => parseFloat(v) || 0),
@@ -30,7 +30,7 @@ interface AddItemDialogProps {
 }
 
 export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddItemDialogProps) {
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -38,7 +38,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddI
     resolver: zodResolver(formSchema),
     defaultValues: {
       product_id: "custom",
-      room_id: "",
+      space_id: "",
       name: "",
       quantity: "1" as any,
       unit_cost: "0" as any,
@@ -66,8 +66,8 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddI
 
   useEffect(() => {
     async function loadData() {
-      const { data: rData } = await supabase.from('rooms').select('*').eq('project_id', projectId);
-      setRooms(rData || []);
+      const { data: rData } = await supabase.from('spaces').select('*').eq('project_id', projectId);
+      setSpaces(rData || []);
       const { data: pData } = await supabase.from('products').select('*').order('name');
       setProducts(pData || []);
     }
@@ -96,7 +96,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddI
     try {
       const data = {
         project_id: projectId,
-        room_id: values.room_id === 'none' ? null : values.room_id,
+        space_id: values.space_id === 'none' ? null : values.space_id,
         product_id: values.product_id === 'custom' ? null : values.product_id,
         name: values.name,
         quantity: values.quantity,
@@ -125,14 +125,14 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddI
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="room_id" render={({ field }) => (
+              <FormField control={form.control} name="space_id" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ubicación</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Seleccionar espacio" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="none">General / Ninguno</SelectItem>
-                      {rooms.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                      {spaces.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </FormItem>

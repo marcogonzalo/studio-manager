@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import type { Room } from '@/types';
+import type { Space } from '@/types';
 import { Trash2 } from 'lucide-react';
 
 interface Image {
@@ -13,26 +13,25 @@ interface Image {
   description: string;
 }
 
-export function RoomImagesDialog({ open, onOpenChange, room }: { open: boolean, onOpenChange: (o: boolean) => void, room: Room }) {
+export function SpaceImagesDialog({ open, onOpenChange, space }: { open: boolean, onOpenChange: (o: boolean) => void, space: Space }) {
   const [images, setImages] = useState<Image[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [loading, setLoading] = useState(false);
 
   const fetchImages = async () => {
-    const { data } = await supabase.from('room_images').select('*').eq('room_id', room.id);
+    const { data } = await supabase.from('space_images').select('*').eq('space_id', space.id);
     setImages(data || []);
   };
 
   useEffect(() => {
     if (open) fetchImages();
-  }, [open, room.id]);
+  }, [open, space.id]);
 
   const handleAddImage = async () => {
     if (!newImageUrl) return;
     setLoading(true);
-    // Mock upload by just using the URL provided
-    const { error } = await supabase.from('room_images').insert([{
-      room_id: room.id,
+    const { error } = await supabase.from('space_images').insert([{
+      space_id: space.id,
       url: newImageUrl,
       description: 'Render'
     }]);
@@ -48,7 +47,7 @@ export function RoomImagesDialog({ open, onOpenChange, room }: { open: boolean, 
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('room_images').delete().eq('id', id);
+    const { error } = await supabase.from('space_images').delete().eq('id', id);
     if (!error) {
       toast.success('Imagen eliminada');
       fetchImages();
@@ -59,7 +58,7 @@ export function RoomImagesDialog({ open, onOpenChange, room }: { open: boolean, 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Renders - {room.name}</DialogTitle>
+          <DialogTitle>Renders - {space.name}</DialogTitle>
           <DialogDescription>
             Visualizaciones del espacio.
           </DialogDescription>
@@ -93,4 +92,3 @@ export function RoomImagesDialog({ open, onOpenChange, room }: { open: boolean, 
     </Dialog>
   );
 }
-

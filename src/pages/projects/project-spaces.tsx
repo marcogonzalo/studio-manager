@@ -3,33 +3,33 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Plus, Image as ImageIcon } from 'lucide-react';
-import { RoomDialog } from './room-dialog';
-import { RoomImagesDialog } from './room-images-dialog';
+import { SpaceDialog } from './space-dialog';
+import { SpaceImagesDialog } from './space-images-dialog';
 
-import type { Room } from '@/types';
+import type { Space } from '@/types';
 
-export function ProjectRooms({ projectId }: { projectId: string }) {
-  const [rooms, setRooms] = useState<Room[]>([]);
+export function ProjectSpaces({ projectId }: { projectId: string }) {
+  const [spaces, setSpaces] = useState<Space[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
   const [isImagesOpen, setIsImagesOpen] = useState(false);
 
-  const fetchRooms = async () => {
+  const fetchSpaces = async () => {
     const { data, error } = await supabase
-      .from('rooms')
+      .from('spaces')
       .select('*')
       .eq('project_id', projectId)
       .order('created_at');
     
-    if (!error) setRooms(data || []);
+    if (!error) setSpaces(data || []);
   };
 
   useEffect(() => {
-    fetchRooms();
+    fetchSpaces();
   }, [projectId]);
 
-  const openImages = (room: Room) => {
-    setSelectedRoom(room);
+  const openImages = (space: Space) => {
+    setSelectedSpace(space);
     setIsImagesOpen(true);
   };
 
@@ -43,46 +43,45 @@ export function ProjectRooms({ projectId }: { projectId: string }) {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {rooms.map((room) => (
-          <Card key={room.id}>
+        {spaces.map((space) => (
+          <Card key={space.id}>
             <CardHeader>
-              <CardTitle>{room.name}</CardTitle>
+              <CardTitle>{space.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-500">{room.description || "Sin descripción"}</p>
+              <p className="text-sm text-gray-500">{space.description || "Sin descripción"}</p>
             </CardContent>
             <CardFooter>
-              <Button variant="outline" size="sm" className="w-full" onClick={() => openImages(room)}>
+              <Button variant="outline" size="sm" className="w-full" onClick={() => openImages(space)}>
                 <ImageIcon className="mr-2 h-4 w-4" /> Ver Renders
               </Button>
             </CardFooter>
           </Card>
         ))}
-        {rooms.length === 0 && (
+        {spaces.length === 0 && (
           <div className="col-span-full text-center py-8 text-gray-500 border rounded-md border-dashed">
             No hay espacios registrados.
           </div>
         )}
       </div>
 
-      <RoomDialog 
+      <SpaceDialog 
         open={isDialogOpen} 
         onOpenChange={setIsDialogOpen} 
         projectId={projectId}
         onSuccess={() => {
           setIsDialogOpen(false);
-          fetchRooms();
+          fetchSpaces();
         }}
       />
 
-      {selectedRoom && (
-        <RoomImagesDialog
+      {selectedSpace && (
+        <SpaceImagesDialog
           open={isImagesOpen}
           onOpenChange={setIsImagesOpen}
-          room={selectedRoom}
+          space={selectedSpace}
         />
       )}
     </div>
   );
 }
-

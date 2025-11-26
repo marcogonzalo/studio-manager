@@ -6,14 +6,14 @@ import { Plus, Trash2, ShoppingCart, Printer } from 'lucide-react';
 import { AddItemDialog } from './add-item-dialog';
 import { toast } from 'sonner';
 
-import type { Product, Room } from '@/types';
+import type { Product, Space } from '@/types';
 
 export interface ProjectItem {
   id: string;
   name: string;
   description: string;
-  room_id: string;
-  room?: { name: string };
+  space_id: string;
+  space?: { name: string };
   quantity: number;
   unit_cost: number;
   markup: number;
@@ -33,7 +33,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     setLoading(true);
     const { data, error } = await supabase
       .from('project_items')
-      .select('*, room:rooms(name), product:products(supplier:suppliers(name))')
+      .select('*, space:spaces(name), product:products(supplier:suppliers(name))')
       .eq('project_id', projectId)
       .order('created_at');
     
@@ -97,7 +97,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                   <div className="font-medium">{item.name}</div>
                   <div className="text-xs text-gray-500">{item.product?.supplier?.name || '-'}</div>
                 </TableCell>
-                <TableCell>{item.room?.name || 'General'}</TableCell>
+                <TableCell>{item.space?.name || 'General'}</TableCell>
                 <TableCell className="text-right">{item.quantity}</TableCell>
                 <TableCell className="text-right text-gray-500">${item.unit_cost.toFixed(2)}</TableCell>
                 <TableCell className="text-right font-medium">${item.unit_price.toFixed(2)}</TableCell>

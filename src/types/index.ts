@@ -38,7 +38,7 @@ export interface Product {
   supplier?: { name: string };
 }
 
-export interface Room {
+export interface Space {
   id: string;
   name: string;
   description: string;
