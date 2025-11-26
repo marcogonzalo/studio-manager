@@ -1,0 +1,44 @@
+---
+description: Frontend Coding Standards (React, Tailwind, Shadcn)
+globs: src/**/*.tsx, src/**/*.ts
+---
+
+# Frontend Standards
+
+## React Components
+
+- **Function Components:** Use `export function ComponentName() {}` or `const ComponentName = () => {}`.
+- **Hooks:** Always follow Rules of Hooks. Custom hooks should start with `use`.
+- **Props:** Define strict interfaces for props. Avoid `any`.
+- **Performance:** Use `useMemo` and `useCallback` mainly for referential equality in dependencies, not premature optimization.
+
+## Tailwind CSS
+
+- **Utility First:** Use standard Tailwind classes.
+- **Theme:** Use CSS variables defined in `index.css` (e.g., `bg-background`, `text-primary`).
+- **Responsive:** Mobile-first approach. `w-full md:w-1/2`.
+- **Classes:** Use `clsx` or `cn` helper for conditional classes.
+
+## Supabase Client
+
+- **Singleton:** Use the singleton instance from `@/lib/supabase`.
+- **Types:** Import database types from `@/types` or generated Supabase types.
+- **Error Handling:** Always check `error` returned by Supabase calls.
+
+  ```ts
+  const { data, error } = await supabase.from('table').select();
+  if (error) toast.error(error.message);
+  ```
+
+## State Management
+
+- **Server State:** Prefer fetching data inside components with `useEffect` or using a library like TanStack Query (if added later).
+- **UI State:** `useState` for local, `useContext` for global (Auth, Theme).
+
+## Directory Structure
+
+- `src/pages`: Routes/Views.
+- `src/components/ui`: Shadcn primitives.
+- `src/components`: Domain components.
+- `src/lib`: Utilities and configs.
+- `src/types`: Shared TypeScript definitions.

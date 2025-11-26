@@ -1,0 +1,63 @@
+---
+description: Security Guidelines and OWASP Top 10 Compliance
+globs: **/*.ts, **/*.tsx, **/*.sql
+---
+
+# Security & OWASP Top 10 Guidelines
+
+## 1. Broken Access Control
+
+- **Rule:** Every table in Supabase MUST have RLS (Row Level Security) enabled.
+- **Implementation:**
+
+  ```sql
+  alter table projects enable row level security;
+  create policy "User can see own projects" on projects for select using (auth.uid() = user_id);
+  ```
+
+- **Verify:** Ensure policies exist for SELECT, INSERT, UPDATE, and DELETE.
+
+## 2. Cryptographic Failures
+
+- **Rule:** Never store passwords in plain text (Supabase Auth handles this).
+- **Rule:** Use HTTPS for all connections (automatic with Supabase/Vercel).
+- **Rule:** Do not expose sensitive keys (Service Role Key) in frontend bundles.
+
+## 3. Injection
+
+- **Rule:** Use parameterized queries or ORMs/Client Libraries (Supabase JS client does this automatically).
+- **Rule:** Avoid raw SQL unless absolutely necessary and strictly controlled.
+- **Rule:** Validate all incoming data against Zod schemas to prevent malformed data injection.
+
+## 4. Insecure Design
+
+- **Rule:** "Secure by Default". Assume all inputs are malicious.
+- **Rule:** Implement rate limiting (Supabase has built-in limits) for sensitive actions.
+
+## 5. Security Misconfiguration
+
+- **Rule:** Keep dependencies updated (`npm audit`).
+- **Rule:** Ensure storage buckets are private by default unless intended to be public.
+
+## 6. Vulnerable and Outdated Components
+
+- **Action:** Regularly run dependency checks. Remove unused packages.
+
+## 7. Identification and Authentication Failures
+
+- **Rule:** Enforce strong password policies (Supabase default).
+- **Rule:** Protect session tokens. Use secure cookies where applicable.
+
+## 8. Software and Data Integrity Failures
+
+- **Rule:** Verify CI/CD pipelines.
+- **Rule:** Use `npm ci` for reproducible builds.
+
+## 9. Security Logging and Monitoring
+
+- **Rule:** Log critical errors to a monitoring service (e.g., Sentry, or Supabase Logs).
+- **Rule:** Do not log sensitive user data (PII).
+
+## 10. Server-Side Request Forgery (SSRF)
+
+- **Rule:** Validate URLs provided by users (e.g., for profile images or documents) before fetching them.

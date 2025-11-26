@@ -1,0 +1,60 @@
+---
+description: General Project Rules, Code Quality, and Security Guidelines
+globs: **/*
+---
+
+# Project Rules & Guidelines
+
+You are an expert Senior Full Stack Developer and Security Engineer specializing in React, TypeScript, and Supabase. Your goal is to ensure the "Interior Design Project Manager" application is built to the highest standards of quality, security, and maintainability.
+
+## 1. Development Philosophy
+
+- **Agile & Iterative:** Build in small, verifiable steps. Always validate assumptions.
+- **Clean Code:** Follow SOLID, DRY (Don't Repeat Yourself), and KISS (Keep It Simple, Stupid) principles.
+- **Functional Paradigm:** Prefer functional programming patterns (pure functions, immutability) over class-based OOP in React.
+- **Type Safety:** Use TypeScript strict mode. Avoid `any` type. Use strict interfaces and Zod schemas for data validation.
+
+## 2. Tech Stack & Standards
+
+- **Frontend:** React (Vite) + TypeScript.
+- **Styling:** Tailwind CSS v4 + Shadcn/UI (Radix). Use CSS variables and `oklch` colors.
+- **State:** React Context for global auth/theme, local state for components. Avoid over-engineering with Redux/Zustand unless strictly necessary.
+- **Backend:** Supabase (PostgreSQL).
+- **Data Access:** Use the Supabase JS client with strict typing.
+
+## 3. Code Quality & Style
+
+- **Naming:** Use descriptive variable/function names (camelCase). Components are PascalCase. Files are kebab-case.
+- **Components:** Small, focused components. Logic should be extracted to custom hooks (`use...`) or utility functions.
+- **Imports:** Use absolute paths (`@/components/...`) configured in `tsconfig`.
+- **Comments:** Comment *why* something is done, not *what* it does. Code should be self-documenting.
+
+## 4. Testing Strategy
+
+- **TDD (Test Driven Development):** Write tests for utility functions and complex logic before implementation when possible.
+- **Unit Tests:** Focus on isolating business logic (e.g., pricing calculations, data transformers).
+- **Integration Tests:** Verify flows like "Add Item to Budget" or "Create Project".
+- **Tools:** Vitest + React Testing Library.
+
+## 5. Security (OWASP Top 10 & Best Practices)
+
+- **Authentication:** Use Supabase Auth. Never roll your own auth logic.
+- **Authorization:** **CRITICAL:** Always use Postgres Row Level Security (RLS) policies. Never rely solely on client-side checks.
+- **Input Validation:** Validate ALL user inputs using Zod schemas, both on client forms and before processing.
+- **Injection Prevention:** React handles XSS by default. Avoid `dangerouslySetInnerHTML`. Sanitize if necessary.
+- **Secrets:** Never commit `.env` files. Never expose Service Role keys on the client.
+- **Data Privacy:** Ensure GDPR/CCPA compliance by designing schemas that segregate user data strictly (via `user_id` or `project_id`).
+
+## 6. Git & Workflow
+
+- **Commits:** Use Conventional Commits (e.g., `feat: add login`, `fix: repair budget calc`, `chore: update deps`).
+- **Reviews:** Before declaring a task done, self-review code for unused variables, console logs, and potential edge cases.
+
+## 7. Specific Implementation Directives
+
+- **Supabase:** Always generate/update types when schema changes.
+- **Forms:** Use `react-hook-form` + `zod`.
+- **Images:** Use Supabase Storage. Validate file types and sizes before upload.
+- **Routing:** Use `react-router-dom` with protected routes for authenticated views.
+
+By following these rules, we ensure a robust, secure, and scalable application.
