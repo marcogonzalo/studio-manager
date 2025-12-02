@@ -13,7 +13,7 @@
 - [x] Projects Module (List, Create).
 - [x] Project Details:
   - [x] General Info.
-  - [x] Rooms & Renders.
+  - [x] Spaces & Renders.
   - [x] Budgeting & Items.
   - [x] Purchase Orders.
   - [x] Notes.

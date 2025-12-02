@@ -21,8 +21,8 @@ Interior Design Project Manager is a web application designed to streamline the 
 - **Project Management:** Track status, dates, and phases.
 - **Client Management:** CRM-like features for client details.
 - **Catalog & Suppliers:** Global database of products and suppliers.
-- **Room-by-Room Planning:** Organize items by specific spaces (e.g., Living Room, Master Bedroom).
-- **Visual Budgeting:** Add items to rooms, set markups, and view visual summaries.
+- **Space-by-Space Planning:** Organize items by specific spaces (e.g., Living Room, Master Bedroom, Terrace, Office).
+- **Visual Budgeting:** Add items to spaces, set markups, and view visual summaries.
 - **Purchasing & Logistics:** Generate Purchase Orders (POs) and track delivery status.
 - **Documentation:** Attach plans, contracts, and renders to projects.
 

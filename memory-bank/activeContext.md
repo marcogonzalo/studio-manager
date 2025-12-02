@@ -14,8 +14,8 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
     - Catalog (Products) CRUD.
     - Projects CRUD.
 4. **Project Detail Features:**
-    - Room management.
-    - Render/Image gallery per room.
+    - Space management.
+    - Render/Image gallery per space.
     - **Budgeting:** Adding items, calculating markups/totals.
     - **Purchasing:** Generating POs from pending items.
     - **Documents:** Uploading/linking files.

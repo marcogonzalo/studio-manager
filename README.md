@@ -13,7 +13,7 @@ A modern, full-stack web application designed to streamline the workflow of inte
 
 - **Client Management:** Complete CRM functionality for tracking client information
 - **Project Lifecycle:** Track projects from initial consultation to completion
-- **Room Planning:** Organize design elements by specific spaces (living room, bedroom, etc.)
+- **Space Planning:** Organize design elements by specific spaces (living room, bedroom, terrace, office, etc.)
 - **Visual Documentation:** Attach renders, plans, and reference images to projects
 
 ### 💰 Budgeting & Financials

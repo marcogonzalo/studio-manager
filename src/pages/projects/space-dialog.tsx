@@ -55,7 +55,7 @@ export function SpaceDialog({ open, onOpenChange, projectId, onSuccess }: SpaceD
         <DialogHeader>
           <DialogTitle>Nuevo Espacio</DialogTitle>
           <DialogDescription>
-            Añade un espacio o zona al proyecto.
+            Añade una habitación o zona al proyecto.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -67,7 +67,7 @@ export function SpaceDialog({ open, onOpenChange, projectId, onSuccess }: SpaceD
                 <FormItem>
                   <FormLabel>Nombre</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Sala de Estar, Terraza, Oficina..." {...field} />
+                    <Input placeholder="Ej: Sala de Estar" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

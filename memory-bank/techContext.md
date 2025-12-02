@@ -27,7 +27,7 @@
 - `profiles`: Extends auth.users.
 - `projects`: Main project entity.
 - `clients`: Client CRM data.
-- `rooms`: Spaces within a project.
+- `spaces`: Spaces within a project.
 - `products`: Global item catalog.
 - `project_items`: Join table (Project <-> Product) with custom pricing/status.
 - `suppliers`: Vendor directory.
