@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { useAuth } from '@/components/auth-provider';
 
 interface PurchaseOrder {
   id: string;
@@ -16,6 +17,7 @@ interface PurchaseOrder {
 }
 
 export function ProjectPurchases({ projectId }: { projectId: string }) {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -65,6 +67,11 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
     }
 
     // 3. Create POs
+    if (!user?.id) {
+      toast.error('No se pudo identificar el usuario. Por favor, inicia sesión nuevamente.');
+      return;
+    }
+
     let createdCount = 0;
     for (const [suppId, groupItems] of Object.entries(bySupplier)) {
       const { data: po, error: poError } = await supabase
@@ -74,7 +81,8 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
           supplier_id: suppId,
           status: 'draft',
           order_date: new Date().toISOString(),
-          order_number: `PO-${Date.now()}-${suppId.slice(0,4)}`
+          order_number: `PO-${Date.now()}-${suppId.slice(0,4)}`,
+          user_id: user.id
         }])
         .select()
         .single();
