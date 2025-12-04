@@ -8,24 +8,21 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
   fullName: z.string().optional(),
 });
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const [emailSent, setEmailSent] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
       fullName: "",
     },
   });
@@ -34,25 +31,30 @@ export default function AuthPage() {
     setLoading(true);
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        // Enviar magic link para login
+        const { error } = await supabase.auth.signInWithOtp({
           email: values.email,
-          password: values.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+          },
         });
         if (error) throw error;
-        navigate('/');
+        setEmailSent(true);
+        toast.success("Revisa tu correo electrónico. Te hemos enviado un enlace para iniciar sesión.");
       } else {
-        const { error } = await supabase.auth.signUp({
+        // Enviar magic link para registro
+        const { error } = await supabase.auth.signInWithOtp({
           email: values.email,
-          password: values.password,
           options: {
+            emailRedirectTo: `${window.location.origin}/`,
             data: {
               full_name: values.fullName,
             },
           },
         });
         if (error) throw error;
-        toast.success("Cuenta creada. Por favor inicia sesión.");
-        setIsLogin(true);
+        setEmailSent(true);
+        toast.success("Revisa tu correo electrónico. Te hemos enviado un enlace para completar tu registro.");
       }
     } catch (error: any) {
       toast.error(error.message || "Ocurrió un error");
@@ -61,13 +63,84 @@ export default function AuthPage() {
     }
   }
 
+  const handleBack = () => {
+    setEmailSent(false);
+    form.reset();
+  };
+
+  if (emailSent) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Revisa tu correo</CardTitle>
+            <CardDescription>
+              Te hemos enviado un enlace mágico a <strong>{form.getValues('email')}</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Haz clic en el enlace del correo para {isLogin ? 'iniciar sesión' : 'completar tu registro'}.
+                El enlace expirará en unos minutos.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Si no recibes el correo, revisa tu carpeta de spam o intenta nuevamente.
+              </p>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-2">
+            <Button variant="outline" className="w-full" onClick={handleBack}>
+              Volver
+            </Button>
+            <Button
+              variant="link"
+              className="w-full"
+              onClick={async () => {
+                const email = form.getValues('email');
+                const fullName = form.getValues('fullName');
+                if (email) {
+                  setLoading(true);
+                  try {
+                    const { error } = await supabase.auth.signInWithOtp({
+                      email: email,
+                      options: {
+                        emailRedirectTo: `${window.location.origin}/`,
+                        ...(fullName && {
+                          data: {
+                            full_name: fullName,
+                          },
+                        }),
+                      },
+                    });
+                    if (error) throw error;
+                    toast.success("Enlace reenviado. Revisa tu correo nuevamente.");
+                  } catch (error: any) {
+                    toast.error(error.message || "Error al reenviar el enlace");
+                  } finally {
+                    setLoading(false);
+                  }
+                }
+              }}
+              disabled={loading}
+            >
+              {loading ? "Reenviando..." : "Reenviar enlace"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>{isLogin ? "Iniciar Sesión" : "Registrarse"}</CardTitle>
           <CardDescription>
-            {isLogin ? "Bienvenido de nuevo" : "Crea una cuenta para gestionar tus proyectos"}
+            {isLogin 
+              ? "Ingresa tu correo y te enviaremos un enlace mágico para iniciar sesión" 
+              : "Ingresa tu correo y te enviaremos un enlace mágico para crear tu cuenta"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -95,27 +168,14 @@ export default function AuthPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="tu@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
+                      <Input type="email" placeholder="tu@email.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Cargando..." : (isLogin ? "Entrar" : "Crear Cuenta")}
+                {loading ? "Enviando..." : (isLogin ? "Enviar enlace mágico" : "Enviar enlace de registro")}
               </Button>
             </form>
           </Form>
