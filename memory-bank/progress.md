@@ -39,9 +39,9 @@
 
 - [x] **Edit Budget Items:** Una vez incorporado un item al presupuesto, no se puede editar, solo borrar. Debe permitirse editar items del presupuesto. **RESUELTO:** Se añadió funcionalidad de edición en `AddItemDialog` y botón de editar en la tabla de `project-budget.tsx`.
 
-- [ ] **Add Products to Spaces:** Debe poderse agregar productos directamente en cada espacio y que luego aparezcan automáticamente en el presupuesto. Los productos deben poder agregarse desde ambos lugares: espacio y presupuesto.
+- [x] **Add Products to Spaces:** Debe poderse agregar productos directamente en cada espacio y que luego aparezcan automáticamente en el presupuesto. Los productos deben poder agregarse desde ambos lugares: espacio y presupuesto. **RESUELTO:** Se creó `SpaceProductsDialog` que permite añadir productos directamente desde un espacio. Los productos se vinculan automáticamente al espacio y aparecen en el presupuesto.
 
-- [ ] **Space Products View:** Los espacios deben poder abrirse y ver todos los productos que tienen asociados en una grilla muy visual.
+- [x] **Space Products View:** Los espacios deben poder abrirse y ver todos los productos que tienen asociados en una grilla muy visual. **RESUELTO:** Se implementó una grilla visual de productos con imágenes en `SpaceProductsDialog`, accesible desde el botón "Productos" en cada tarjeta de espacio.
 
 - [ ] **Additional Project Costs:** Un producto puede tener costes adicionales dentro del proyecto (por ejemplo, fletes, entre otros).
 
