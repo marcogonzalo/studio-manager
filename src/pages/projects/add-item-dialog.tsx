@@ -41,7 +41,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item }
     resolver: zodResolver(formSchema),
     defaultValues: {
       product_id: "custom",
-      space_id: "",
+      space_id: "none",
       name: "",
       quantity: "1" as any,
       unit_cost: "0" as any,
@@ -93,7 +93,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item }
       } else if (open && !item) {
         form.reset({
           product_id: "custom",
-          space_id: "",
+          space_id: "none",
           name: "",
           quantity: "1" as any,
           unit_cost: "0" as any,
@@ -129,7 +129,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item }
     try {
       const data = {
         project_id: projectId,
-        space_id: values.space_id === 'none' ? null : values.space_id,
+        space_id: (values.space_id === 'none' || !values.space_id) ? null : values.space_id,
         product_id: values.product_id === 'custom' ? null : values.product_id,
         name: values.name,
         quantity: values.quantity,
