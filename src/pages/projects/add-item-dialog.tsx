@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import type { Product, Space } from '@/types';
+import type { ProjectItem } from './project-budget';
 
 const formSchema = z.object({
   product_id: z.string().optional(),
@@ -27,12 +28,14 @@ interface AddItemDialogProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   onSuccess: () => void;
+  item?: ProjectItem | null;
 }
 
-export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddItemDialogProps) {
+export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item }: AddItemDialogProps) {
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const isEditing = !!item;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -70,9 +73,39 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddI
       setSpaces(rData || []);
       const { data: pData } = await supabase.from('products').select('*').order('name');
       setProducts(pData || []);
+      
+      // Load item data if editing (after products are loaded)
+      if (item && open) {
+        form.reset({
+          product_id: item.product_id || "custom",
+          space_id: item.space_id || "none",
+          name: item.name || "",
+          quantity: item.quantity?.toString() || "1",
+          unit_cost: item.unit_cost?.toString() || "0",
+          markup: item.markup?.toString() || "20",
+          unit_price: item.unit_price?.toString() || "0",
+          image_url: item.image_url || "",
+        });
+        if (item.product_id && pData) {
+          const prod = pData.find(p => p.id === item.product_id);
+          if (prod) setSelectedProduct(prod);
+        }
+      } else if (open && !item) {
+        form.reset({
+          product_id: "custom",
+          space_id: "",
+          name: "",
+          quantity: "1" as any,
+          unit_cost: "0" as any,
+          markup: "20" as any,
+          unit_price: "0" as any,
+          image_url: "",
+        });
+        setSelectedProduct(null);
+      }
     }
     if (open) loadData();
-  }, [open, projectId]);
+  }, [open, projectId, item, form]);
 
   const handleProductChange = (productId: string) => {
     form.setValue('product_id', productId);
@@ -104,13 +137,22 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddI
         markup: values.markup,
         unit_price: values.unit_price,
         image_url: values.image_url,
-        status: 'pending'
+        ...(isEditing ? {} : { status: 'pending' })
       };
       
-      const { error } = await supabase.from('project_items').insert([data]);
-      if (error) throw error;
+      if (isEditing && item?.id) {
+        const { error } = await supabase
+          .from('project_items')
+          .update(data)
+          .eq('id', item.id);
+        if (error) throw error;
+        toast.success('Ítem actualizado');
+      } else {
+        const { error } = await supabase.from('project_items').insert([data]);
+        if (error) throw error;
+        toast.success('Ítem añadido');
+      }
 
-      toast.success('Ítem añadido');
       form.reset();
       onSuccess();
     } catch (error) {
@@ -121,7 +163,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddI
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader><DialogTitle>Añadir Ítem al Presupuesto</DialogTitle></DialogHeader>
+        <DialogHeader><DialogTitle>{isEditing ? 'Editar Ítem del Presupuesto' : 'Añadir Ítem al Presupuesto'}</DialogTitle></DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -174,7 +216,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess }: AddI
               <FormItem><FormLabel>Imagen URL</FormLabel><FormControl><Input placeholder="http://..." {...field} /></FormControl></FormItem>
             )} />
 
-            <DialogFooter><Button type="submit">Añadir al Presupuesto</Button></DialogFooter>
+            <DialogFooter><Button type="submit">{isEditing ? 'Guardar Cambios' : 'Añadir al Presupuesto'}</Button></DialogFooter>
           </form>
         </Form>
       </DialogContent>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, ShoppingCart, Printer } from 'lucide-react';
+import { Plus, Trash2, ShoppingCart, Printer, Pencil } from 'lucide-react';
 import { AddItemDialog } from './add-item-dialog';
 import { toast } from 'sonner';
 
@@ -12,7 +12,8 @@ export interface ProjectItem {
   id: string;
   name: string;
   description: string;
-  space_id: string;
+  space_id: string | null;
+  product_id: string | null;
   space?: { name: string };
   quantity: number;
   unit_cost: number;
@@ -27,6 +28,7 @@ export interface ProjectItem {
 export function ProjectBudget({ projectId }: { projectId: string }) {
   const [items, setItems] = useState<ProjectItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchItems = async () => {
@@ -50,6 +52,23 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     fetchItems();
   };
 
+  const handleEdit = (item: ProjectItem) => {
+    setEditingItem(item);
+    setIsDialogOpen(true);
+  };
+
+  const handleAddNew = () => {
+    setEditingItem(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      setEditingItem(null);
+    }
+  };
+
   const totalCost = items.reduce((sum, item) => sum + (item.unit_cost * item.quantity), 0);
   const totalPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
 
@@ -66,7 +85,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
           <Button variant="outline" onClick={() => window.print()} className="print:hidden">
             <Printer className="mr-2 h-4 w-4" /> Exportar PDF
           </Button>
-          <Button onClick={() => setIsDialogOpen(true)} className="print:hidden">
+          <Button onClick={handleAddNew} className="print:hidden">
             <Plus className="mr-2 h-4 w-4" /> Añadir Ítem
           </Button>
         </div>
@@ -104,9 +123,14 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                 <TableCell className="capitalize text-xs">{item.status}</TableCell>
                 <TableCell className="text-right font-bold">${(item.unit_price * item.quantity).toFixed(2)}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" className="text-red-500" onClick={() => handleDelete(item.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex justify-end gap-1">
+                    <Button variant="ghost" size="icon" className="text-blue-500 hover:text-blue-600" onClick={() => handleEdit(item)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDelete(item.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
@@ -117,9 +141,10 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
 
       <AddItemDialog 
         open={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
+        onOpenChange={handleDialogClose} 
         projectId={projectId}
-        onSuccess={() => { setIsDialogOpen(false); fetchItems(); }}
+        item={editingItem}
+        onSuccess={() => { setIsDialogOpen(false); setEditingItem(null); fetchItems(); }}
       />
     </div>
   );

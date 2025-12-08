@@ -37,7 +37,7 @@
 
 ### Functionality Improvements
 
-- [ ] **Edit Budget Items:** Una vez incorporado un item al presupuesto, no se puede editar, solo borrar. Debe permitirse editar items del presupuesto.
+- [x] **Edit Budget Items:** Una vez incorporado un item al presupuesto, no se puede editar, solo borrar. Debe permitirse editar items del presupuesto. **RESUELTO:** Se añadió funcionalidad de edición en `AddItemDialog` y botón de editar en la tabla de `project-budget.tsx`.
 
 - [ ] **Add Products to Spaces:** Debe poderse agregar productos directamente en cada espacio y que luego aparezcan automáticamente en el presupuesto. Los productos deben poder agregarse desde ambos lugares: espacio y presupuesto.
 
