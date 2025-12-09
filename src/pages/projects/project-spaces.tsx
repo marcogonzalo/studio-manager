@@ -87,11 +87,11 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
 
       {selectedSpace && (
         <>
-          <SpaceImagesDialog
-            open={isImagesOpen}
-            onOpenChange={setIsImagesOpen}
-            space={selectedSpace}
-          />
+        <SpaceImagesDialog
+          open={isImagesOpen}
+          onOpenChange={setIsImagesOpen}
+          space={selectedSpace}
+        />
           <SpaceProductsDialog
             open={isProductsOpen}
             onOpenChange={setIsProductsOpen}

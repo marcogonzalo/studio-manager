@@ -236,9 +236,9 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
         if (error) throw error;
         toast.success('Ítem actualizado');
       } else {
-        const { error } = await supabase.from('project_items').insert([data]);
-        if (error) throw error;
-        toast.success('Ítem añadido');
+      const { error } = await supabase.from('project_items').insert([data]);
+      if (error) throw error;
+      toast.success('Ítem añadido');
       }
 
       form.reset();

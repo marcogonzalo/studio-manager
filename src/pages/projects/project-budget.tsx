@@ -128,8 +128,8 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600" onClick={() => handleDelete(item.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                   </div>
                 </TableCell>
               </TableRow>
