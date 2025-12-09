@@ -49,14 +49,14 @@
 
 - [ ] **Product Image Modal:** En los elementos que muestren un producto en los listados, con imagen, la imagen debe poder abrirse en una modal para verla ampliada. Puede ser una modal que directamente muestre todo el detalle del producto, como una ficha.
 
-- [ ] **Delete Notes:** Las notas deben poder eliminarse.
+- [x] **Delete Notes:** Las notas deben poder eliminarse. **RESUELTO:** Se añadió botón de eliminar en cada nota con confirmación y política RLS para delete.
 
-- [ ] **Archive Notes:** Las notas tendrán todas un check para marcar si ya se pueden archivar. Mostrando siempre primero las no archivadas. Las archivadas estarán en un tono más claro, para que no destaquen tanto.
+- [x] **Archive Notes:** Las notas tendrán todas un check para marcar si ya se pueden archivar. Mostrando siempre primero las no archivadas. Las archivadas estarán en un tono más claro, para que no destaquen tanto. **RESUELTO:** Se añadió campo `archived` a la tabla, checkbox para archivar/desarchivar, ordenamiento (no archivadas primero), estilo con opacidad reducida para archivadas, y atajo de teclado Ctrl/Cmd + Enter para guardar notas.
 
 - [ ] **Product Reference URL:** Un producto debe tener una URL de referencia de donde se ha cogido la información.
 
 - [ ] **Add Supplier from Product Form:** Se debe poder añadir un nuevo proveedor desde el formulario de nuevo producto, para facilitar la usabilidad. Que sea una opción de seleccionar o agregar nuevo y que al agregarlo quede seleccionado como el proveedor de ese producto.
 
-- [ ] **Add Product from Space/Budget:** Se debe poder añadir un nuevo producto directamente desde el espacio o el presupuesto. Que no sea necesario ir a Catálogo para agregar el producto para luego volver al espacio o al presupuesto a agregarlo.
+- [x] **Add Product from Space/Budget:** Se debe poder añadir un nuevo producto directamente desde el espacio o el presupuesto. Que no sea necesario ir a Catálogo para agregar el producto para luego volver al espacio o al presupuesto a agregarlo. **RESUELTO:** El `AddItemDialog` permite crear productos personalizados que se añaden automáticamente al catálogo. Funciona tanto desde `SpaceProductsDialog` como desde `project-budget.tsx`.
 
 - [ ] **Manageable Purchase Orders:** La orden de compra debe ser gestionable. Al crearla, se debe poder especificar los productos asociados a esa orden de compra, no se debe asumir que son todos los productos registrados hasta el momento. Por lo general estarán, al menos, generadas por proveedor.
