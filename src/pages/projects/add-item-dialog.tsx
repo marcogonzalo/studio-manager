@@ -8,8 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { Plus, Search } from 'lucide-react';
 import type { Product, Space, Supplier } from '@/types';
 import type { ProjectItem } from './project-budget';
 import { useAuth } from '@/components/auth-provider';
@@ -44,12 +46,14 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
   const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('catalog');
   const isEditing = !!item;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      product_id: "custom",
+      product_id: "",
       space_id: "none",
       supplier_id: "none",
       name: "",
@@ -63,6 +67,17 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       image_url: "",
     },
   });
+
+  // Filter products based on search query
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products;
+    const query = searchQuery.toLowerCase();
+    return products.filter(p => 
+      p.name.toLowerCase().includes(query) ||
+      p.description?.toLowerCase().includes(query) ||
+      p.reference_code?.toLowerCase().includes(query)
+    );
+  }, [products, searchQuery]);
 
   // Auto-calculate price when cost or markup changes
   const unitCost = form.watch('unit_cost');
@@ -84,7 +99,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
     async function loadData() {
       const { data: rData } = await supabase.from('spaces').select('*').eq('project_id', projectId);
       setSpaces(rData || []);
-      const { data: pData } = await supabase.from('products').select('*').order('name');
+      const { data: pData } = await supabase.from('products').select('*, supplier:suppliers(name)').order('name');
       setProducts(pData || []);
       const { data: sData } = await supabase.from('suppliers').select('*').order('name');
       setSuppliers(sData || []);
@@ -120,11 +135,18 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
         });
         if (item.product_id && pData) {
           const prod = pData.find(p => p.id === item.product_id);
-          if (prod) setSelectedProduct(prod);
+          if (prod) {
+            setSelectedProduct(prod);
+            setActiveTab('catalog');
+          } else {
+            setActiveTab('new');
+          }
+        } else {
+          setActiveTab('new');
         }
       } else if (open && !item) {
         form.reset({
-          product_id: "custom",
+          product_id: "",
           space_id: spaceId || "none",
           supplier_id: "none",
           name: "",
@@ -138,43 +160,58 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
           image_url: "",
         });
         setSelectedProduct(null);
+        setActiveTab('catalog');
+        setSearchQuery('');
       }
     }
     if (open) loadData();
   }, [open, projectId, item, spaceId, form]);
 
-  const handleProductChange = (productId: string) => {
-    form.setValue('product_id', productId);
-    if (productId === 'custom') {
+  const handleProductSelect = (productId: string) => {
+    const prod = products.find(p => p.id === productId);
+    if (prod) {
+      form.setValue('product_id', productId);
+      setSelectedProduct(prod);
+      form.setValue('name', prod.name);
+      form.setValue('description', prod.description || '');
+      form.setValue('reference_code', prod.reference_code || '');
+      form.setValue('category', prod.category || '');
+      form.setValue('unit_cost', prod.cost_price.toString() as any);
+      form.setValue('image_url', prod.image_url || "");
+      form.setValue('supplier_id', prod.supplier_id || 'none');
+    }
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchQuery('');
+    if (value === 'new') {
+      form.setValue('product_id', 'custom');
       setSelectedProduct(null);
-      form.setValue('name', '');
+      // Limpiar solo campos de producto, mantener campos de project_item si ya tienen valores
       form.setValue('description', '');
       form.setValue('reference_code', '');
       form.setValue('category', '');
-      form.setValue('unit_cost', '0' as any);
       form.setValue('image_url', '');
       form.setValue('supplier_id', 'none');
     } else {
-      const prod = products.find(p => p.id === productId);
-      if (prod) {
-        setSelectedProduct(prod);
-        form.setValue('name', prod.name);
-        form.setValue('description', prod.description || '');
-        form.setValue('reference_code', prod.reference_code || '');
-        form.setValue('category', prod.category || '');
-        form.setValue('unit_cost', prod.cost_price.toString() as any);
-        form.setValue('image_url', prod.image_url || "");
-        form.setValue('supplier_id', prod.supplier_id || 'none');
-      }
+      form.setValue('product_id', '');
+      setSelectedProduct(null);
+      // Limpiar campos de producto cuando vuelve a catálogo
+      form.setValue('description', '');
+      form.setValue('reference_code', '');
+      form.setValue('category', '');
+      form.setValue('image_url', '');
+      form.setValue('supplier_id', 'none');
     }
   };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      let finalProductId = values.product_id === 'custom' ? null : values.product_id;
+      let finalProductId = values.product_id === 'custom' || activeTab === 'new' ? null : values.product_id;
 
       // Si es un producto personalizado (no del catálogo), primero créalo en products
-      if (values.product_id === 'custom' && !isEditing) {
+      if ((values.product_id === 'custom' || activeTab === 'new') && !isEditing) {
         if (!user?.id) {
           toast.error('No se pudo identificar el usuario');
           return;
@@ -214,7 +251,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       
       if (isEditing && item?.id) {
         // Si estamos editando y el producto era custom, actualizar el producto también
-        if (values.product_id === 'custom' && item.product_id) {
+        if ((values.product_id === 'custom' || activeTab === 'new') && item.product_id) {
           await supabase
             .from('products')
             .update({
@@ -248,18 +285,141 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
     }
   }
 
+  const selectedProductId = form.watch('product_id');
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{isEditing ? 'Editar Ítem del Presupuesto' : 'Añadir Ítem al Presupuesto'}</DialogTitle></DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            {/* Tabs para seleccionar producto */}
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 rounded-b-none">
+                <TabsTrigger value="catalog">Seleccionar del Catálogo</TabsTrigger>
+                <TabsTrigger value="new">Nuevo Producto</TabsTrigger>
+              </TabsList>
+
+              {/* Pestaña: Seleccionar del catálogo */}
+              <TabsContent value="catalog" className="mt-0">
+                <div className="bg-muted rounded-b-lg rounded-t-none p-1 space-y-4">
+                  <FormField 
+                    control={form.control} 
+                    name="product_id" 
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="space-y-3">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Input
+                              placeholder="Buscar por nombre, descripción o referencia..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              className="pl-9 bg-background"
+                            />
+                          </div>
+                          
+                          {filteredProducts.length > 0 ? (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[300px] overflow-y-auto p-2 border rounded-md bg-background">
+                            {filteredProducts.map((product) => (
+                              <button
+                                key={product.id}
+                                type="button"
+                                onClick={() => {
+                                  field.onChange(product.id);
+                                  handleProductSelect(product.id);
+                                }}
+                                className={`border-2 rounded-lg overflow-hidden hover:shadow-md transition-all ${
+                                  field.value === product.id 
+                                    ? 'border-primary bg-primary/10' 
+                                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                                }`}
+                              >
+                                <div className="aspect-square bg-gray-100 dark:bg-gray-700 relative">
+                                  {product.image_url ? (
+                                    <img 
+                                      src={product.image_url} 
+                                      alt={product.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                                      Sin imagen
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="p-2">
+                                  <div className="font-medium text-sm mb-1 line-clamp-2">{product.name}</div>
+                                  <div className="text-xs text-gray-500">{product.supplier?.name || 'Sin proveedor'}</div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 border border-dashed rounded-md bg-background">
+                            <p className="text-sm text-gray-500">
+                              {searchQuery ? 'No se encontraron productos con esa búsqueda' : 'No hay productos en el catálogo'}
+                            </p>
+                          </div>
+                        )}
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </TabsContent>
+
+              {/* Pestaña: Nuevo Producto */}
+              <TabsContent value="new" className="mt-0">
+                <div className="bg-muted rounded-b-lg rounded-t-none p-4 space-y-4">
+                  <FormField control={form.control} name="name" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre del Producto</FormLabel>
+                      <FormControl><Input {...field} className="bg-background" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField control={form.control} name="supplier_id" render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Proveedor</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar proveedor (opcional)" /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">-- Sin proveedor --</SelectItem>
+                            {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )} />
+                    <FormField control={form.control} name="reference_code" render={({ field }) => (
+                      <FormItem><FormLabel>Referencia</FormLabel><FormControl><Input placeholder="Código o referencia" {...field} className="bg-background" /></FormControl></FormItem>
+                    )} />
+                  </div>
+
+                  <FormField control={form.control} name="description" render={({ field }) => (
+                    <FormItem><FormLabel>Descripción</FormLabel><FormControl><Textarea placeholder="Descripción del producto..." {...field} className="bg-background" /></FormControl></FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="category" render={({ field }) => (
+                    <FormItem><FormLabel>Categoría</FormLabel><FormControl><Input placeholder="Ej: Muebles, Iluminación, Textiles..." {...field} className="bg-background" /></FormControl></FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="image_url" render={({ field }) => (
+                    <FormItem><FormLabel>Imagen URL</FormLabel><FormControl><Input placeholder="http://..." {...field} className="bg-background" /></FormControl></FormItem>
+                  )} />
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            {/* Campos de project_item - siempre visibles */}
+            <div className="border-t pt-4 space-y-4">
               <FormField control={form.control} name="space_id" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ubicación</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Seleccionar espacio" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar espacio" /></SelectTrigger></FormControl>
                     <SelectContent>
                       <SelectItem value="none">General / Ninguno</SelectItem>
                       {spaces.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
@@ -267,68 +427,22 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                   </Select>
                 </FormItem>
               )} />
-              <FormField control={form.control} name="product_id" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Producto (Catálogo)</FormLabel>
-                  <Select onValueChange={handleProductChange} value={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Seleccionar o Personalizado" /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      <SelectItem value="custom">-- Personalizado --</SelectItem>
-                      {products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )} />
+
+              <div className="grid grid-cols-4 gap-4">
+                <FormField control={form.control} name="quantity" render={({ field }) => (
+                  <FormItem><FormLabel>Cantidad</FormLabel><FormControl><Input type="number" {...field} className="bg-background" /></FormControl></FormItem>
+                )} />
+                <FormField control={form.control} name="unit_cost" render={({ field }) => (
+                  <FormItem><FormLabel>Costo Unit.</FormLabel><FormControl><Input type="number" step="0.01" {...field} className="bg-background" /></FormControl></FormItem>
+                )} />
+                <FormField control={form.control} name="markup" render={({ field }) => (
+                  <FormItem><FormLabel>Margen %</FormLabel><FormControl><Input type="number" step="0.1" {...field} className="bg-background" /></FormControl></FormItem>
+                )} />
+                <FormField control={form.control} name="unit_price" render={({ field }) => (
+                  <FormItem><FormLabel>Precio Venta</FormLabel><FormControl><Input type="number" step="0.01" {...field} className="bg-background" /></FormControl></FormItem>
+                )} />
+              </div>
             </div>
-
-            <FormField control={form.control} name="name" render={({ field }) => (
-              <FormItem><FormLabel>Nombre del Ítem</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField control={form.control} name="supplier_id" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Proveedor</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Seleccionar proveedor (opcional)" /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">-- Sin proveedor --</SelectItem>
-                      {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )} />
-              <FormField control={form.control} name="reference_code" render={({ field }) => (
-                <FormItem><FormLabel>Referencia</FormLabel><FormControl><Input placeholder="Código o referencia" {...field} /></FormControl></FormItem>
-              )} />
-            </div>
-
-            <FormField control={form.control} name="description" render={({ field }) => (
-              <FormItem><FormLabel>Descripción</FormLabel><FormControl><Textarea placeholder="Descripción del producto..." {...field} /></FormControl></FormItem>
-            )} />
-
-            <FormField control={form.control} name="category" render={({ field }) => (
-              <FormItem><FormLabel>Categoría</FormLabel><FormControl><Input placeholder="Ej: Muebles, Iluminación, Textiles..." {...field} /></FormControl></FormItem>
-            )} />
-
-            <div className="grid grid-cols-4 gap-4">
-              <FormField control={form.control} name="quantity" render={({ field }) => (
-                <FormItem><FormLabel>Cant.</FormLabel><FormControl><Input type="number" {...field} /></FormControl></FormItem>
-              )} />
-              <FormField control={form.control} name="unit_cost" render={({ field }) => (
-                <FormItem><FormLabel>Costo</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl></FormItem>
-              )} />
-              <FormField control={form.control} name="markup" render={({ field }) => (
-                <FormItem><FormLabel>Margen %</FormLabel><FormControl><Input type="number" step="0.1" {...field} /></FormControl></FormItem>
-              )} />
-              <FormField control={form.control} name="unit_price" render={({ field }) => (
-                <FormItem><FormLabel>Precio</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl></FormItem>
-              )} />
-            </div>
-
-            <FormField control={form.control} name="image_url" render={({ field }) => (
-              <FormItem><FormLabel>Imagen URL</FormLabel><FormControl><Input placeholder="http://..." {...field} /></FormControl></FormItem>
-            )} />
 
             <DialogFooter><Button type="submit">{isEditing ? 'Guardar Cambios' : 'Añadir al Presupuesto'}</Button></DialogFooter>
           </form>

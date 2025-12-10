@@ -45,7 +45,7 @@
 
 - [ ] **Additional Project Costs:** Un producto puede tener costes adicionales dentro del proyecto (por ejemplo, fletes, entre otros).
 
-- [ ] **Visual Product Selection:** Para agregar productos a un espacio o presupuesto, debe proveerse un listado más visual (una lista por tarjetas con imagen, nombre del producto y proveedor).
+- [x] **Visual Product Selection:** Para agregar productos a un espacio o presupuesto, debe proveerse un listado más visual (una lista por tarjetas con imagen, nombre del producto y proveedor). **RESUELTO:** Se implementó un sistema de pestañas con búsqueda en tiempo real y grid visual de productos en tarjetas. Incluye búsqueda por nombre, descripción o referencia, y separación clara entre seleccionar del catálogo y crear nuevo producto.
 
 - [ ] **Product Image Modal:** En los elementos que muestren un producto en los listados, con imagen, la imagen debe poder abrirse en una modal para verla ampliada. Puede ser una modal que directamente muestre todo el detalle del producto, como una ficha.
 
