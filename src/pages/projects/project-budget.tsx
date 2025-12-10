@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Trash2, ShoppingCart, Printer, Pencil } from 'lucide-react';
 import { AddItemDialog } from './add-item-dialog';
+import { ProductDetailModal } from '@/components/product-detail-modal';
 import { toast } from 'sonner';
 
 import type { Product, Space } from '@/types';
@@ -30,12 +31,14 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
   const fetchItems = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('project_items')
-      .select('*, space:spaces(name), product:products(supplier:suppliers(name))')
+      .select('*, space:spaces(name), product:products(supplier:suppliers(name), description, reference_code, category)')
       .eq('project_id', projectId)
       .order('created_at');
     
@@ -110,7 +113,17 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
             {items.map((item) => (
               <TableRow key={item.id}>
                 <TableCell>
-                  {item.image_url && <img src={item.image_url} className="w-8 h-8 object-cover rounded" />}
+                  {item.image_url && (
+                    <img 
+                      src={item.image_url} 
+                      className="w-8 h-8 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setIsProductModalOpen(true);
+                      }}
+                      alt={item.name}
+                    />
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="font-medium">{item.name}</div>
@@ -145,6 +158,12 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         projectId={projectId}
         item={editingItem}
         onSuccess={() => { setIsDialogOpen(false); setEditingItem(null); fetchItems(); }}
+      />
+
+      <ProductDetailModal
+        open={isProductModalOpen}
+        onOpenChange={setIsProductModalOpen}
+        projectItem={selectedItem}
       />
     </div>
   );

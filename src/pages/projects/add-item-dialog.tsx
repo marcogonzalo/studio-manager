@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { useEffect, useState, useMemo } from 'react';
 import { Plus, Search } from 'lucide-react';
+import { ProductDetailModal } from '@/components/product-detail-modal';
 import type { Product, Space, Supplier } from '@/types';
 import type { ProjectItem } from './project-budget';
 import { useAuth } from '@/components/auth-provider';
@@ -48,6 +49,8 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('catalog');
+  const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const isEditing = !!item;
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -337,11 +340,25 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                               >
                                 <div className="aspect-square bg-gray-100 dark:bg-gray-700 relative">
                                   {product.image_url ? (
-                                    <img 
-                                      src={product.image_url} 
-                                      alt={product.name}
-                                      className="w-full h-full object-cover"
-                                    />
+                                    <div className="relative w-full h-full group">
+                                      <img 
+                                        src={product.image_url} 
+                                        alt={product.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setPreviewProduct(product);
+                                          setIsProductModalOpen(true);
+                                        }}
+                                        className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
+                                        title="Ver detalles"
+                                      >
+                                        <Search className="h-6 w-6 text-white drop-shadow-lg" />
+                                      </button>
+                                    </div>
                                   ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
                                       Sin imagen
@@ -448,6 +465,12 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
           </form>
         </Form>
       </DialogContent>
+
+      <ProductDetailModal
+        open={isProductModalOpen}
+        onOpenChange={setIsProductModalOpen}
+        product={previewProduct}
+      />
     </Dialog>
   );
 }

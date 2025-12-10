@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Plus, Pencil, Trash2, Search, Image as ImageIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ProductDialog } from './product-dialog';
+import { ProductDetailModal } from '@/components/product-detail-modal';
 import { toast } from 'sonner';
 
 import type { Product } from '@/types';
@@ -15,6 +16,8 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -77,7 +80,15 @@ export default function CatalogPage() {
               <TableRow key={p.id}>
                 <TableCell>
                   {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="w-10 h-10 object-cover rounded" />
+                    <img 
+                      src={p.image_url} 
+                      alt={p.name} 
+                      className="w-10 h-10 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => {
+                        setSelectedProduct(p);
+                        setIsProductModalOpen(true);
+                      }}
+                    />
                   ) : (
                     <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">
                       <ImageIcon className="h-5 w-5 text-gray-400" />
@@ -116,6 +127,12 @@ export default function CatalogPage() {
         onOpenChange={setIsDialogOpen} 
         product={editingProduct}
         onSuccess={() => { setIsDialogOpen(false); fetchProducts(); }}
+      />
+
+      <ProductDetailModal
+        open={isProductModalOpen}
+        onOpenChange={setIsProductModalOpen}
+        product={selectedProduct}
       />
     </div>
   );

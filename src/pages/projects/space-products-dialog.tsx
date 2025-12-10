@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AddItemDialog } from './add-item-dialog';
+import { ProductDetailModal } from '@/components/product-detail-modal';
 import type { Space } from '@/types';
 import type { ProjectItem } from './project-budget';
 
@@ -20,12 +21,14 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
 
   const fetchItems = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('project_items')
-      .select('*, product:products(supplier:suppliers(name))')
+      .select('*, product:products(supplier:suppliers(name), description, reference_code, category)')
       .eq('space_id', space.id)
       .order('created_at');
     
@@ -84,12 +87,18 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {items.map((item) => (
                   <div key={item.id} className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
-                    <div className="aspect-square bg-gray-100 dark:bg-gray-700 relative">
+                    <div 
+                      className="aspect-square bg-gray-100 dark:bg-gray-700 relative cursor-pointer"
+                      onClick={() => {
+                        setSelectedItem(item);
+                        setIsProductModalOpen(true);
+                      }}
+                    >
                       {item.image_url ? (
                         <img 
                           src={item.image_url} 
                           alt={item.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -151,6 +160,12 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
           setEditingItem(null); 
           fetchItems(); 
         }}
+      />
+
+      <ProductDetailModal
+        open={isProductModalOpen}
+        onOpenChange={setIsProductModalOpen}
+        projectItem={selectedItem}
       />
     </>
   );
