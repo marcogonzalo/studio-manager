@@ -7,3 +7,4 @@ CREATE POLICY "Users can delete their project notes" ON project_notes FOR DELETE
 -- Add update policy for project_notes (to allow archiving)
 CREATE POLICY "Users can update their project notes" ON project_notes FOR UPDATE USING (auth.uid() = user_id);
 
+
