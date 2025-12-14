@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Plus, Calendar, User as UserIcon } from 'lucide-react';
-import { ProjectDialog } from './project-dialog';
+import { ProjectDialog } from '@/components/project-dialog';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';

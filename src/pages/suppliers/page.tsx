@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Pencil, Trash2, Search, ExternalLink } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { SupplierDialog } from './supplier-dialog';
+import { SupplierDialog } from '@/components/dialogs/supplier-dialog';
 import { toast } from 'sonner';
 
 import type { Supplier } from '@/types';

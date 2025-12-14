@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Pencil, Trash2, Search, Image as ImageIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { ProductDialog } from './product-dialog';
+import { ProductDialog } from '@/components/dialogs/product-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
 import { toast } from 'sonner';
 

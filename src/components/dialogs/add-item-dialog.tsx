@@ -14,7 +14,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { ProductDetailModal } from '@/components/product-detail-modal';
 import type { Product, Space, Supplier } from '@/types';
-import type { ProjectItem } from './project-budget';
+import type { ProjectItem } from '@/pages/projects/project-budget';
 import { useAuth } from '@/components/auth-provider';
 
 const formSchema = z.object({

@@ -3,9 +3,9 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Plus, Image as ImageIcon, Package } from 'lucide-react';
-import { SpaceDialog } from './space-dialog';
-import { SpaceImagesDialog } from './space-images-dialog';
-import { SpaceProductsDialog } from './space-products-dialog';
+import { SpaceDialog } from '@/components/dialogs/space-dialog';
+import { SpaceImagesDialog } from '@/components/dialogs/space-images-dialog';
+import { SpaceProductsDialog } from '@/components/dialogs/space-products-dialog';
 
 import type { Space } from '@/types';
 

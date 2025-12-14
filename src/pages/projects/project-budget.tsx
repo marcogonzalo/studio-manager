@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Trash2, ShoppingCart, Printer, Pencil } from 'lucide-react';
-import { AddItemDialog } from './add-item-dialog';
+import { AddItemDialog } from '@/components/dialogs/add-item-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
 import { toast } from 'sonner';
 

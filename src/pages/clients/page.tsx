@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { ClientDialog } from './client-dialog';
+import { ClientDialog } from '@/components/dialogs/client-dialog';
 import { toast } from 'sonner';
 
 import type { Client } from '@/types';

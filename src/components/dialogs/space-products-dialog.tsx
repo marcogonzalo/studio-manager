@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AddItemDialog } from './add-item-dialog';
+import { AddItemDialog } from '@/components/dialogs/add-item-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
 import type { Space } from '@/types';
-import type { ProjectItem } from './project-budget';
+import type { ProjectItem } from '@/pages/projects/project-budget';
 
 interface SpaceProductsDialogProps {
   open: boolean;
