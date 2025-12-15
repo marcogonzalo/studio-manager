@@ -19,6 +19,7 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
   const name = projectItem?.name || product?.name;
   const description = projectItem?.description || product?.description || '';
   const referenceCode = projectItem?.product?.reference_code || product?.reference_code || '';
+  const referenceUrl = projectItem?.product?.reference_url || product?.reference_url || '';
   const category = projectItem?.product?.category || product?.category || '';
   const supplierName = projectItem?.product?.supplier?.name || product?.supplier?.name || 'Sin proveedor';
   const costPrice = projectItem ? projectItem.unit_cost : (product?.cost_price || 0);
@@ -74,6 +75,20 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
                 </div>
               )}
             </div>
+
+            {referenceUrl && (
+              <div>
+                <h3 className="text-sm font-medium text-gray-500 mb-1">URL de Referencia</h3>
+                <a 
+                  href={referenceUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline break-all"
+                >
+                  {referenceUrl}
+                </a>
+              </div>
+            )}
 
             <div>
               <h3 className="text-sm font-medium text-gray-500 mb-1">Proveedor</h3>

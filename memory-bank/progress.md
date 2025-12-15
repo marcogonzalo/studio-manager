@@ -53,7 +53,7 @@
 
 - [x] **Archive Notes:** Las notas tendrán todas un check para marcar si ya se pueden archivar. Mostrando siempre primero las no archivadas. Las archivadas estarán en un tono más claro, para que no destaquen tanto. **RESUELTO:** Se añadió campo `archived` a la tabla, checkbox para archivar/desarchivar, ordenamiento (no archivadas primero), estilo con opacidad reducida para archivadas, y atajo de teclado Ctrl/Cmd + Enter para guardar notas.
 
-- [ ] **Product Reference URL:** Un producto debe tener una URL de referencia de donde se ha cogido la información.
+- [x] **Product Reference URL:** Un producto debe tener una URL de referencia de donde se ha cogido la información. **RESUELTO:** Se añadió campo `reference_url` a la tabla `products` mediante migración. El campo está disponible en `product-dialog` y `add-item-dialog` (pestaña nuevo producto). Se muestra como enlace clickeable en `ProductDetailModal` cuando existe.
 
 - [ ] **Add Supplier from Product Form:** Se debe poder añadir un nuevo proveedor desde el formulario de nuevo producto, para facilitar la usabilidad. Que sea una opción de seleccionar o agregar nuevo y que al agregarlo quede seleccionado como el proveedor de ese producto.
 

@@ -16,6 +16,7 @@ import { useAuth } from '@/components/auth-provider';
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   reference_code: z.string().optional(),
+  reference_url: z.string().optional(),
   description: z.string().optional(),
   cost_price: z.string().transform((val) => parseFloat(val) || 0),
   category: z.string().optional(),
@@ -39,6 +40,7 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
     defaultValues: {
       name: "",
       reference_code: "",
+      reference_url: "",
       description: "",
       cost_price: 0 as any, // Form input uses string usually, handled by transform
       category: "",
@@ -60,6 +62,7 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
       form.reset({
         name: product.name,
         reference_code: product.reference_code || "",
+        reference_url: product.reference_url || "",
         description: product.description || "",
         cost_price: product.cost_price?.toString() as any,
         category: product.category || "",
@@ -70,6 +73,7 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
       form.reset({
         name: "",
         reference_code: "",
+        reference_url: "",
         description: "",
         cost_price: "0" as any,
         category: "",
@@ -112,6 +116,10 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
 
             <FormField control={form.control} name="description" render={({ field }) => (
               <FormItem><FormLabel>Descripción</FormLabel><FormControl><Textarea {...field} rows={2} /></FormControl><FormMessage /></FormItem>
+            )} />
+
+            <FormField control={form.control} name="reference_url" render={({ field }) => (
+              <FormItem><FormLabel>URL de Referencia</FormLabel><FormControl><Input type="url" placeholder="https://..." {...field} /></FormControl><FormMessage /></FormItem>
             )} />
 
             <div className="grid grid-cols-2 gap-4">

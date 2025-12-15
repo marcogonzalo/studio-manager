@@ -31,6 +31,7 @@ export interface Product {
   name: string;
   description: string;
   reference_code: string;
+  reference_url?: string;
   cost_price: number;
   image_url: string;
   category: string;

@@ -24,6 +24,7 @@ const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   description: z.string().optional(),
   reference_code: z.string().optional(),
+  reference_url: z.string().optional(),
   category: z.string().optional(),
   quantity: z.string().transform(v => parseFloat(v) || 1),
   unit_cost: z.string().transform(v => parseFloat(v) || 0),
@@ -62,6 +63,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       name: "",
       description: "",
       reference_code: "",
+      reference_url: "",
       category: "",
       quantity: "1" as any,
       unit_cost: "0" as any,
@@ -111,16 +113,17 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       if (item && open) {
         // Si tiene producto asociado, cargar sus datos
         let productData = { description: "", reference_code: "", category: "" };
-        if (item.product_id && pData) {
-          const prod = pData.find(p => p.id === item.product_id);
-          if (prod) {
-            productData = {
-              description: prod.description || "",
-              reference_code: prod.reference_code || "",
-              category: prod.category || ""
-            };
+          if (item.product_id && pData) {
+            const prod = pData.find(p => p.id === item.product_id);
+            if (prod) {
+              productData = {
+                description: prod.description || "",
+                reference_code: prod.reference_code || "",
+                reference_url: prod.reference_url || "",
+                category: prod.category || ""
+              };
+            }
           }
-        }
         
         form.reset({
           product_id: item.product_id || "custom",
@@ -129,6 +132,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
           name: item.name || "",
           description: productData.description,
           reference_code: productData.reference_code,
+          reference_url: productData.reference_url,
           category: productData.category,
           quantity: item.quantity?.toString() || "1",
           unit_cost: item.unit_cost?.toString() || "0",
@@ -155,6 +159,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
           name: "",
           description: "",
           reference_code: "",
+          reference_url: "",
           category: "",
           quantity: "1" as any,
           unit_cost: "0" as any,
@@ -178,6 +183,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       form.setValue('name', prod.name);
       form.setValue('description', prod.description || '');
       form.setValue('reference_code', prod.reference_code || '');
+      form.setValue('reference_url', prod.reference_url || '');
       form.setValue('category', prod.category || '');
       form.setValue('unit_cost', prod.cost_price.toString() as any);
       form.setValue('image_url', prod.image_url || "");
@@ -194,6 +200,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       // Limpiar solo campos de producto, mantener campos de project_item si ya tienen valores
       form.setValue('description', '');
       form.setValue('reference_code', '');
+      form.setValue('reference_url', '');
       form.setValue('category', '');
       form.setValue('image_url', '');
       form.setValue('supplier_id', 'none');
@@ -203,6 +210,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       // Limpiar campos de producto cuando vuelve a catálogo
       form.setValue('description', '');
       form.setValue('reference_code', '');
+      form.setValue('reference_url', '');
       form.setValue('category', '');
       form.setValue('image_url', '');
       form.setValue('supplier_id', 'none');
@@ -226,6 +234,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
             name: values.name,
             description: values.description || '',
             reference_code: values.reference_code || '',
+            reference_url: values.reference_url || null,
             category: values.category || '',
             cost_price: values.unit_cost,
             image_url: values.image_url || null,
@@ -261,6 +270,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
               name: values.name,
               description: values.description || '',
               reference_code: values.reference_code || '',
+              reference_url: values.reference_url || null,
               category: values.category || '',
               cost_price: values.unit_cost,
               image_url: values.image_url || null,
@@ -417,6 +427,10 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
 
                   <FormField control={form.control} name="description" render={({ field }) => (
                     <FormItem><FormLabel>Descripción</FormLabel><FormControl><Textarea placeholder="Descripción del producto..." {...field} className="bg-background" /></FormControl></FormItem>
+                  )} />
+
+                  <FormField control={form.control} name="reference_url" render={({ field }) => (
+                    <FormItem><FormLabel>URL de Referencia</FormLabel><FormControl><Input type="url" placeholder="https://..." {...field} className="bg-background" /></FormControl></FormItem>
                   )} />
 
                   <FormField control={form.control} name="category" render={({ field }) => (
