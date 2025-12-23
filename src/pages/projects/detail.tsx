@@ -9,6 +9,7 @@ import { ProjectPurchases } from './project-purchases';
 import { ProjectSpaces } from './project-spaces';
 import { ProjectBudget } from './project-budget';
 import { ProjectDocuments } from './project-documents';
+import { ProjectAdditionalCosts } from './project-additional-costs';
 import { toast } from 'sonner';
 
 export default function ProjectDetailPage() {
@@ -52,6 +53,7 @@ export default function ProjectDetailPage() {
           <TabsTrigger value="spaces">Espacios</TabsTrigger>
           <TabsTrigger value="budget">Presupuesto</TabsTrigger>
           <TabsTrigger value="purchases">Compras</TabsTrigger>
+          <TabsTrigger value="additional-costs">Costes Adicionales</TabsTrigger>
           <TabsTrigger value="notes">Notas</TabsTrigger>
           <TabsTrigger value="documents">Documentos</TabsTrigger>
         </TabsList>
@@ -91,6 +93,10 @@ export default function ProjectDetailPage() {
 
         <TabsContent value="purchases">
           <ProjectPurchases projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="additional-costs">
+          <ProjectAdditionalCosts projectId={project.id} />
         </TabsContent>
 
         <TabsContent value="notes">

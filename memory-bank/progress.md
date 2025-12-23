@@ -43,7 +43,7 @@
 
 - [x] **Space Products View:** Los espacios deben poder abrirse y ver todos los productos que tienen asociados en una grilla muy visual. **RESUELTO:** Se implementó una grilla visual de productos con imágenes en `SpaceProductsDialog`, accesible desde el botón "Productos" en cada tarjeta de espacio.
 
-- [ ] **Additional Project Costs:** Un producto puede tener costes adicionales dentro del proyecto (por ejemplo, fletes, entre otros).
+- [x] **Additional Project Costs:** Un proyecto puede tener costes adicionales dentro del proyecto (por ejemplo, envío, embalaje, instalación, entre otros costes). **RESUELTO:** Se creó la tabla `additional_project_costs` con migración, se implementó `AdditionalCostDialog` para añadir/editar costes, se creó `ProjectAdditionalCosts` component que agrupa costes por tipo, y se añadió la pestaña en el detalle del proyecto.
 
 - [x] **Visual Product Selection:** Para agregar productos a un espacio o presupuesto, debe proveerse un listado más visual (una lista por tarjetas con imagen, nombre del producto y proveedor). **RESUELTO:** Se implementó un sistema de pestañas con búsqueda en tiempo real y grid visual de productos en tarjetas. Incluye búsqueda por nombre, descripción o referencia, y separación clara entre seleccionar del catálogo y crear nuevo producto.
 

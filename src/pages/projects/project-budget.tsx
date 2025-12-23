@@ -7,7 +7,20 @@ import { AddItemDialog } from '@/components/dialogs/add-item-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
 import { toast } from 'sonner';
 
-import type { Product, Space } from '@/types';
+import type { Product, Space, AdditionalCost } from '@/types';
+
+const COST_TYPE_LABELS: Record<string, string> = {
+  shipping: 'Envío',
+  packaging: 'Embalaje',
+  installation: 'Instalación',
+  assembly: 'Montaje',
+  transport: 'Transporte',
+  insurance: 'Seguro',
+  customs: 'Aduanas',
+  storage: 'Almacenamiento',
+  handling: 'Manejo',
+  other: 'Otro',
+};
 
 export interface ProjectItem {
   id: string;
@@ -28,6 +41,7 @@ export interface ProjectItem {
 
 export function ProjectBudget({ projectId }: { projectId: string }) {
   const [items, setItems] = useState<ProjectItem[]>([]);
+  const [additionalCosts, setAdditionalCosts] = useState<AdditionalCost[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +57,16 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       .order('created_at');
     
     if (!error) setItems(data || []);
+    
+    // Fetch additional costs
+    const { data: costsData, error: costsError } = await supabase
+      .from('additional_project_costs')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at');
+    
+    if (!costsError) setAdditionalCosts(costsData || []);
+    
     setLoading(false);
   };
 
@@ -74,6 +98,17 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
 
   const totalCost = items.reduce((sum, item) => sum + (item.unit_cost * item.quantity), 0);
   const totalPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  const totalAdditionalCosts = additionalCosts.reduce((sum, cost) => sum + Number(cost.amount), 0);
+  const grandTotal = totalPrice + totalAdditionalCosts;
+
+  // Group additional costs by type
+  const costsByType = additionalCosts.reduce((acc, cost) => {
+    if (!acc[cost.cost_type]) {
+      acc[cost.cost_type] = [];
+    }
+    acc[cost.cost_type].push(cost);
+    return acc;
+  }, {} as Record<string, AdditionalCost[]>);
 
   return (
     <div className="space-y-6">
@@ -82,6 +117,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
           <h3 className="text-lg font-medium">Presupuesto y Compras</h3>
           <div className="text-sm text-gray-500">
             Total Costo: ${totalCost.toFixed(2)} | Total Venta: ${totalPrice.toFixed(2)} | Margen: ${ (totalPrice - totalCost).toFixed(2) }
+            {additionalCosts.length > 0 && ` | Costes Adicionales: ${totalAdditionalCosts.toFixed(2)} | Total General: ${grandTotal.toFixed(2)}`}
           </div>
         </div>
         <div className="space-x-2 flex">
@@ -151,6 +187,59 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Additional Costs Section - Visible in print and screen */}
+      {additionalCosts.length > 0 && (
+        <div className="mt-8 space-y-4">
+          <h4 className="text-lg font-semibold">Costes Adicionales</h4>
+          {Object.entries(costsByType).map(([type, typeCosts]) => {
+            const typeTotal = typeCosts.reduce((sum, cost) => sum + Number(cost.amount), 0);
+            return (
+              <div key={type} className="border rounded-md bg-white dark:bg-gray-800">
+                <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">{COST_TYPE_LABELS[type] || type}</span>
+                    <span className="font-semibold">Total: ${typeTotal.toFixed(2)}</span>
+                  </div>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Descripción</TableHead>
+                      <TableHead className="text-right">Importe</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {typeCosts.map((cost) => (
+                      <TableRow key={cost.id}>
+                        <TableCell>
+                          {cost.description || <span className="text-gray-400 italic">Sin descripción</span>}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          ${Number(cost.amount).toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            );
+          })}
+          <div className="flex justify-end pt-4 border-t">
+            <div className="text-right space-y-1">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Subtotal Ítems: ${totalPrice.toFixed(2)}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Costes Adicionales: ${totalAdditionalCosts.toFixed(2)}
+              </div>
+              <div className="text-lg font-bold pt-2 border-t">
+                Total General: ${grandTotal.toFixed(2)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <AddItemDialog 
         open={isDialogOpen} 

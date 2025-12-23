@@ -44,3 +44,13 @@ export interface Space {
   name: string;
   description: string;
 }
+
+export interface AdditionalCost {
+  id: string;
+  project_id: string;
+  cost_type: string;
+  description?: string;
+  amount: number;
+  created_at: string;
+  user_id: string;
+}
