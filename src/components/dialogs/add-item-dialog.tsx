@@ -16,6 +16,7 @@ import { ProductDetailModal } from '@/components/product-detail-modal';
 import type { Product, Space, Supplier } from '@/types';
 import type { ProjectItem } from '@/pages/projects/project-budget';
 import { useAuth } from '@/components/auth-provider';
+import { SupplierDialog } from './supplier-dialog';
 
 const formSchema = z.object({
   product_id: z.string().optional(),
@@ -52,6 +53,8 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
   const [activeTab, setActiveTab] = useState('catalog');
   const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
+  const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(null);
   const isEditing = !!item;
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -300,6 +303,28 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
 
   const selectedProductId = form.watch('product_id');
 
+  // Sincronizar el valor del proveedor cuando la lista se actualiza y hay un proveedor pendiente
+  useEffect(() => {
+    if (pendingSupplierId && suppliers.length > 0) {
+      const supplierExists = suppliers.some(s => s.id === pendingSupplierId);
+      if (supplierExists) {
+        form.setValue('supplier_id', pendingSupplierId, { shouldValidate: true, shouldDirty: true });
+        setPendingSupplierId(null);
+      }
+    }
+  }, [suppliers, pendingSupplierId, form]);
+
+  const handleSupplierCreated = async (newSupplierId: string) => {
+    // Recargar la lista de proveedores
+    const { data } = await supabase.from('suppliers').select('*').order('name');
+    if (data) {
+      setSuppliers(data);
+      // Establecer el proveedor pendiente para que se seleccione cuando la lista se actualice
+      setPendingSupplierId(newSupplierId);
+    }
+    setIsSupplierDialogOpen(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -411,13 +436,24 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                     <FormField control={form.control} name="supplier_id" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Proveedor</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar proveedor (opcional)" /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            <SelectItem value="none">-- Sin proveedor --</SelectItem>
-                            {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex gap-2">
+                          <Select onValueChange={field.onChange} value={field.value} className="flex-1">
+                            <FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar proveedor (opcional)" /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">-- Sin proveedor --</SelectItem>
+                              {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setIsSupplierDialogOpen(true)}
+                            title="Agregar nuevo proveedor"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="reference_code" render={({ field }) => (
@@ -484,6 +520,18 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
         open={isProductModalOpen}
         onOpenChange={setIsProductModalOpen}
         product={previewProduct}
+      />
+
+      <SupplierDialog
+        open={isSupplierDialogOpen}
+        onOpenChange={setIsSupplierDialogOpen}
+        supplier={null}
+        onSuccess={async (supplierId) => {
+          if (supplierId) {
+            await handleSupplierCreated(supplierId);
+            toast.success('Proveedor creado y seleccionado');
+          }
+        }}
       />
     </Dialog>
   );

@@ -23,7 +23,7 @@ interface SupplierDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   supplier: Supplier | null;
-  onSuccess: () => void;
+  onSuccess: (supplierId?: string) => void;
 }
 
 export function SupplierDialog({ open, onOpenChange, supplier, onSuccess }: SupplierDialogProps) {
@@ -44,11 +44,18 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSuccess }: Supp
       if (supplier) {
         await supabase.from('suppliers').update(data).eq('id', supplier.id);
         toast.success('Proveedor actualizado');
+        onSuccess();
       } else {
-        await supabase.from('suppliers').insert([data]);
+        const { data: newSupplier, error } = await supabase
+          .from('suppliers')
+          .insert([data])
+          .select()
+          .single();
+        
+        if (error) throw error;
         toast.success('Proveedor creado');
+        onSuccess(newSupplier.id);
       }
-      onSuccess();
     } catch (error) {
       toast.error('Error al guardar');
     }

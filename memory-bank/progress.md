@@ -55,7 +55,7 @@
 
 - [x] **Product Reference URL:** Un producto debe tener una URL de referencia de donde se ha cogido la información. **RESUELTO:** Se añadió campo `reference_url` a la tabla `products` mediante migración. El campo está disponible en `product-dialog` y `add-item-dialog` (pestaña nuevo producto). Se muestra como enlace clickeable en `ProductDetailModal` cuando existe.
 
-- [ ] **Add Supplier from Product Form:** Se debe poder añadir un nuevo proveedor desde el formulario de nuevo producto, para facilitar la usabilidad. Que sea una opción de seleccionar o agregar nuevo y que al agregarlo quede seleccionado como el proveedor de ese producto.
+- [x] **Add Supplier from Product Form:** Se debe poder añadir un nuevo proveedor desde el formulario de nuevo producto, para facilitar la usabilidad. Que sea una opción de seleccionar o agregar nuevo y que al agregarlo quede seleccionado como el proveedor de ese producto. **RESUELTO:** Se añadió botón con icono de Plus junto al selector de proveedor en `product-dialog.tsx` y `add-item-dialog.tsx` (pestaña nuevo producto). Al crear un nuevo proveedor, se actualiza la lista y se selecciona automáticamente. Se modificó `SupplierDialog` para retornar el ID del proveedor creado en el callback `onSuccess`.
 
 - [x] **Add Product from Space/Budget:** Se debe poder añadir un nuevo producto directamente desde el espacio o el presupuesto. Que no sea necesario ir a Catálogo para agregar el producto para luego volver al espacio o al presupuesto a agregarlo. **RESUELTO:** El `AddItemDialog` permite crear productos personalizados que se añaden automáticamente al catálogo. Funciona tanto desde `SpaceProductsDialog` como desde `project-budget.tsx`.
 
