@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, ShoppingCart, Printer, Pencil } from 'lucide-react';
+import { Plus, Trash2, Printer, Pencil } from 'lucide-react';
 import { AddItemDialog } from '@/components/dialogs/add-item-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
 import { toast } from 'sonner';
+import { useAuth } from '@/components/auth-provider';
 
-import type { Product, Space, AdditionalCost } from '@/types';
+import type { AdditionalCost, Project } from '@/types';
 
 const COST_TYPE_LABELS: Record<string, string> = {
   shipping: 'Envío',
@@ -40,16 +41,31 @@ export interface ProjectItem {
 }
 
 export function ProjectBudget({ projectId }: { projectId: string }) {
+  const { user } = useAuth();
   const [items, setItems] = useState<ProjectItem[]>([]);
   const [additionalCosts, setAdditionalCosts] = useState<AdditionalCost[]>([]);
+  const [project, setProject] = useState<Project & { client?: { full_name: string; email?: string; phone?: string; address?: string } } | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const fetchItems = async () => {
     setLoading(true);
+    
+    // Fetch project with client info
+    const { data: projectData, error: projectError } = await supabase
+      .from('projects')
+      .select('*, client:clients(full_name, email, phone, address)')
+      .eq('id', projectId)
+      .single();
+    
+    if (!projectError && projectData) {
+      setProject(projectData);
+    }
+    
     const { data, error } = await supabase
       .from('project_items')
       .select('*, space:spaces(name), product:products(supplier:suppliers(name), description, reference_code, category)')
@@ -96,6 +112,40 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     }
   };
 
+  const handleGeneratePDF = async () => {
+    if (!project) {
+      toast.error('No se pudo cargar la información del proyecto');
+      return;
+    }
+
+    setIsGeneratingPDF(true);
+    try {
+      // Dynamic import to avoid issues with Vite
+      const { generateProjectPDF } = await import('@/lib/pdf-generator');
+      
+      // Get architect name from user metadata or profile
+      const architectName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Arquitecto/a';
+      
+      const asPdf = await generateProjectPDF(project, items, additionalCosts, 21, architectName);
+      const blob = await asPdf.toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Presupuesto_${project.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast.success('PDF generado correctamente');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Error al generar el PDF');
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   const totalCost = items.reduce((sum, item) => sum + (item.unit_cost * item.quantity), 0);
   const totalPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
   const totalAdditionalCosts = additionalCosts.reduce((sum, cost) => sum + Number(cost.amount), 0);
@@ -121,8 +171,14 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
           </div>
         </div>
         <div className="space-x-2 flex">
-          <Button variant="outline" onClick={() => window.print()} className="print:hidden">
-            <Printer className="mr-2 h-4 w-4" /> Exportar PDF
+          <Button 
+            variant="outline" 
+            onClick={handleGeneratePDF} 
+            className="print:hidden"
+            disabled={isGeneratingPDF || !project}
+          >
+            <Printer className="mr-2 h-4 w-4" /> 
+            {isGeneratingPDF ? 'Generando PDF...' : 'Exportar PDF'}
           </Button>
           <Button onClick={handleAddNew} className="print:hidden">
             <Plus className="mr-2 h-4 w-4" /> Añadir Ítem

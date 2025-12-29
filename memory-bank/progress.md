@@ -24,7 +24,6 @@
 ## Pending Features
 
 - [ ] **Real File Uploads:** Replace URL inputs with file pickers uploading to Supabase Storage.
-- [ ] **Advanced PDF Generation:** Server-side or client-side PDF generation for professional quotes.
 - [ ] **Email Notifications:** Notify clients/suppliers (via Edge Functions).
 - [ ] **Testing:** Unit and E2E tests.
 - [ ] **Production Deployment.**
@@ -60,3 +59,5 @@
 - [x] **Add Product from Space/Budget:** Se debe poder añadir un nuevo producto directamente desde el espacio o el presupuesto. Que no sea necesario ir a Catálogo para agregar el producto para luego volver al espacio o al presupuesto a agregarlo. **RESUELTO:** El `AddItemDialog` permite crear productos personalizados que se añaden automáticamente al catálogo. Funciona tanto desde `SpaceProductsDialog` como desde `project-budget.tsx`.
 
 - [x] **Manageable Purchase Orders:** La orden de compra debe ser gestionable. Al crearla, se debe poder especificar los productos asociados a esa orden de compra, no se debe asumir que son todos los productos registrados hasta el momento. Por lo general estarán, al menos, generadas por proveedor. **RESUELTO:** Se creó `PurchaseOrderDialog` que permite crear y editar órdenes de compra con selección manual de ítems. Los ítems se filtran por proveedor y se pueden seleccionar mediante checkboxes. Se añadió funcionalidad de edición y eliminación de órdenes. La visualización muestra los ítems en una tabla con totales calculados. Se creó componente `Checkbox` para la UI.
+
+- [x] **Advanced PDF Generation:** Generación avanzada de PDFs estéticos y organizados para presupuestos. **RESUELTO:** Se implementó generación de PDFs usando `@react-pdf/renderer` con diseño profesional que incluye: elementos agrupados por ubicación (espacios) con subtotales, costes adicionales agrupados por tipo, formato de moneda español (1.234,56 €), información completa del proyecto y cliente, nombre del arquitecto, y diseño visual usando los colores de la aplicación. El PDF se genera dinámicamente desde la página de presupuesto con importación dinámica para evitar problemas con Vite.
