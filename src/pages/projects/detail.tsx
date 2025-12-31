@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import type { Project } from '@/types';
 import { ProjectNotes } from './project-notes';
 import { ProjectPurchases } from './project-purchases';
@@ -10,30 +11,34 @@ import { ProjectSpaces } from './project-spaces';
 import { ProjectBudget } from './project-budget';
 import { ProjectDocuments } from './project-documents';
 import { ProjectAdditionalCosts } from './project-additional-costs';
+import { ProjectDialog } from '@/components/project-dialog';
 import { toast } from 'sonner';
+import { Pencil } from 'lucide-react';
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  async function fetchProject() {
+    if (!id) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*, client:clients(full_name)')
+      .eq('id', id)
+      .single();
+    
+    if (error) {
+      toast.error('Error al cargar proyecto');
+    } else {
+      setProject(data);
+    }
+    setLoading(false);
+  }
 
   useEffect(() => {
-    async function fetchProject() {
-      if (!id) return;
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*, client:clients(full_name)')
-        .eq('id', id)
-        .single();
-      
-      if (error) {
-        toast.error('Error al cargar proyecto');
-      } else {
-        setProject(data);
-      }
-      setLoading(false);
-    }
     fetchProject();
   }, [id]);
 
@@ -61,8 +66,20 @@ export default function ProjectDetailPage() {
         <TabsContent value="general">
           <Card>
             <CardHeader>
-              <CardTitle>Información General</CardTitle>
-              <CardDescription>Detalles del proyecto.</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Información General</CardTitle>
+                  <CardDescription>Detalles del proyecto.</CardDescription>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditDialogOpen(true)}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -107,6 +124,16 @@ export default function ProjectDetailPage() {
           <ProjectDocuments projectId={project.id} />
         </TabsContent>
       </Tabs>
+
+      <ProjectDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        project={project}
+        onSuccess={() => {
+          fetchProject();
+          setIsEditDialogOpen(false);
+        }}
+      />
     </div>
   );
 }
