@@ -59,9 +59,9 @@ A modern, full-stack web application designed to streamline the workflow of inte
 
 ### Prerequisites
 
-- Node.js 20+ and npm
 - Docker and Docker Compose
 - Supabase account (or local Supabase CLI)
+- (Optional) Node.js 20+ and npm for local development without Docker
 
 ### Installation
 
@@ -72,13 +72,7 @@ A modern, full-stack web application designed to streamline the workflow of inte
    cd interior-design-project
    ```
 
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Set up Supabase**
+2. **Set up Supabase**
 
    **Option A: Local Development (Recommended)**
 
@@ -92,7 +86,7 @@ A modern, full-stack web application designed to streamline the workflow of inte
    - Create a project at [supabase.com](https://supabase.com)
    - Copy your project URL and anon key
 
-4. **Configure environment variables**
+3. **Configure environment variables**
 
    Create a `.env` file in the root directory:
 
@@ -101,7 +95,7 @@ A modern, full-stack web application designed to streamline the workflow of inte
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
 
-5. **Run database migrations**
+4. **Run database migrations**
 
    If using local Supabase:
 
@@ -111,21 +105,65 @@ A modern, full-stack web application designed to streamline the workflow of inte
 
    If using remote Supabase, run the SQL from `supabase/migrations/20251126035338_initial_schema.sql` in your Supabase SQL Editor.
 
-6. **Start the development server**
+### Running the Application
 
-   **Using Docker (Recommended):**
+#### Using Docker (Recommended)
+
+The project is configured to run in a Docker container for consistent development environments.
+
+**Start the development server:**
+
+```bash
+docker compose up
+```
+
+This will:
+- Build the Docker image if it doesn't exist
+- Start the container with the application
+- Mount your code for hot-reload
+- Expose the app on `http://localhost:5173`
+
+**Run in detached mode (background):**
+
+```bash
+docker compose up -d
+```
+
+**View logs:**
+
+```bash
+docker compose logs -f
+```
+
+**Stop the container:**
+
+```bash
+docker compose down
+```
+
+**Rebuild the container (after dependency changes):**
+
+```bash
+docker compose up --build
+```
+
+#### Using npm directly (Local Development)
+
+If you prefer to run the application locally without Docker:
+
+1. **Install dependencies:**
 
    ```bash
-   docker compose up
+   npm install
    ```
 
-   **Or using npm directly:**
+2. **Start the development server:**
 
    ```bash
    npm run dev
    ```
 
-7. **Open your browser**
+3. **Open your browser**
    Navigate to `http://localhost:5173`
 
 ## 📁 Project Structure
@@ -177,15 +215,87 @@ All colors are defined using the OKLCH color space for perceptual uniformity.
 
 ## 🧪 Testing
 
+The project uses Vitest and React Testing Library for testing. Tests can be run both inside Docker containers and locally.
+
+### Running Tests with Docker
+
+**Run all tests:**
+
 ```bash
-# Run tests (when implemented)
+docker compose exec app npm test
+```
+
+Or if the container is not running:
+
+```bash
+docker compose run --rm app npm test
+```
+
+**Run tests in watch mode:**
+
+```bash
+docker compose exec app npm run test:watch
+```
+
+**Run tests with UI (interactive mode):**
+
+```bash
+docker compose exec app npm run test:ui
+```
+
+**Generate coverage report:**
+
+```bash
+docker compose exec app npm run test:coverage
+```
+
+The coverage report will be generated in the `coverage/` directory.
+
+### Running Tests Locally
+
+If you have Node.js installed locally, you can run tests directly:
+
+```bash
+# Run all tests
 npm test
 
 # Run tests in watch mode
-npm test:watch
+npm run test:watch
+
+# Run tests with UI (interactive mode)
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
 ```
 
+### Test Structure
+
+Tests are located alongside their source files with the `.test.ts` or `.test.tsx` extension:
+- `src/lib/utils.test.ts` - Utility function tests
+- `src/components/*.test.tsx` - Component tests
+- `src/pages/*.test.tsx` - Page component tests
+
+Test utilities and mocks are located in `src/test/`:
+- `src/test/setup.ts` - Test configuration and global setup
+- `src/test/utils.tsx` - Testing utilities and custom render functions
+- `src/test/mocks/` - Mock implementations for external dependencies
+
 ## 📦 Building for Production
+
+### Using Docker
+
+**Build the production image:**
+
+```bash
+docker compose build
+```
+
+**Build and run production build:**
+
+You can create a production Dockerfile or use docker compose with a production configuration.
+
+### Using npm directly
 
 ```bash
 # Build the application
@@ -193,6 +303,49 @@ npm run build
 
 # Preview the production build
 npm run preview
+```
+
+The production build will be available in the `dist/` directory.
+
+## 🐳 Docker Commands Reference
+
+**Start services:**
+```bash
+docker compose up
+```
+
+**Start in background:**
+```bash
+docker compose up -d
+```
+
+**Stop services:**
+```bash
+docker compose down
+```
+
+**Rebuild containers:**
+```bash
+docker compose up --build
+```
+
+**View logs:**
+```bash
+docker compose logs -f app
+```
+
+**Execute commands in container:**
+```bash
+# Run npm commands
+docker compose exec app npm <command>
+
+# Access shell
+docker compose exec app sh
+```
+
+**Clean up (remove containers, volumes, networks):**
+```bash
+docker compose down -v
 ```
 
 ## 🤝 Contributing
