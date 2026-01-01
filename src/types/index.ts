@@ -12,7 +12,8 @@ export interface Project {
   description: string;
   status: string;
   start_date: string;
-  end_date: string;
+  end_date: string | null;
+  completed_date: string | null;
   client_id: string;
   client?: { full_name: string };
 }

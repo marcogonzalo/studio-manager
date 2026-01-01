@@ -153,4 +153,15 @@
       color: black !important;
     }
   }
+  
+  /* Estilos para el ícono del calendario en inputs de tipo date */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 1;
+    filter: brightness(0) saturate(100%);
+  }
+  
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: brightness(0) saturate(100%) invert(1);
+  }
 }

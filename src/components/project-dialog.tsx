@@ -17,8 +17,9 @@ const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   description: z.string().optional(),
   client_id: z.string().min(1, "Cliente requerido"),
-  status: z.string().default('draft'),
+  status: z.string().default('draft').optional(),
   start_date: z.string().optional(),
+  end_date: z.string().optional(),
 });
 
 interface ProjectDialogProps {
@@ -40,6 +41,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
       client_id: "",
       status: "draft",
       start_date: new Date().toISOString().split('T')[0],
+      end_date: "",
     },
   });
 
@@ -57,12 +59,17 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         ? (project.start_date.includes('T') ? project.start_date.split('T')[0] : project.start_date)
         : new Date().toISOString().split('T')[0];
       
+      const endDate = project.end_date 
+        ? (project.end_date.includes('T') ? project.end_date.split('T')[0] : project.end_date)
+        : "";
+      
       form.reset({
         name: project.name || "",
         description: project.description || "",
         client_id: project.client_id || "",
         status: project.status || "draft",
         start_date: startDate,
+        end_date: endDate,
       });
     } else if (!project && open) {
       form.reset({
@@ -71,16 +78,38 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         client_id: "",
         status: "draft",
         start_date: new Date().toISOString().split('T')[0],
+        end_date: "",
       });
     }
   }, [project, open, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const updateData: Record<string, unknown> = {
+        ...values,
+        end_date: values.end_date || null,
+        status: values.status || 'draft',
+      };
+
+      // Si el estado cambia a "completed", establecer la fecha efectiva de finalización
+      if (values.status === 'completed') {
+        // Solo establecer completed_date si el proyecto no estaba completado antes
+        // Si ya estaba completado, mantener la fecha existente
+        if (!project || project.status !== 'completed') {
+          updateData.completed_date = new Date().toISOString().split('T')[0];
+        }
+        // Si ya estaba completado, no incluir completed_date en el update para mantener el valor existente
+      } else {
+        // Si el estado cambia de "completed" a otro, limpiar la fecha efectiva
+        if (project && project.status === 'completed') {
+          updateData.completed_date = null;
+        }
+      }
+
       if (project) {
         const { error } = await supabase
           .from('projects')
-          .update(values)
+          .update(updateData)
           .eq('id', project.id);
         
         if (error) throw error;
@@ -90,7 +119,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         const { error } = await supabase
           .from('projects')
           .insert([{
-            ...values,
+            ...updateData,
             user_id: user?.id,
           }]);
         
@@ -100,8 +129,9 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         form.reset();
       }
       onSuccess();
-    } catch (error: any) {
-      toast.error(error.message || (project ? "Error al actualizar proyecto" : "Error al crear proyecto"));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : (project ? "Error al actualizar proyecto" : "Error al crear proyecto");
+      toast.error(errorMessage);
     }
   }
 
@@ -169,30 +199,8 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
               )}
             />
 
+
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estado</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Estado" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="draft">Borrador</SelectItem>
-                        <SelectItem value="active">Activo</SelectItem>
-                        <SelectItem value="completed">Completado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
               <FormField
                 control={form.control}
                 name="start_date"
@@ -200,13 +208,50 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
                   <FormItem>
                     <FormLabel>Fecha Inicio</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input type="date" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="end_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fecha Estimada de Entrega</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estado</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Estado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="draft">Borrador</SelectItem>
+                      <SelectItem value="active">Activo</SelectItem>
+                      <SelectItem value="completed">Completado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button type="submit">{project ? 'Guardar Cambios' : 'Crear Proyecto'}</Button>
