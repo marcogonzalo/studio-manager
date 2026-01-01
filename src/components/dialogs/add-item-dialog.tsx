@@ -27,8 +27,12 @@ const formSchema = z.object({
   reference_code: z.string().optional(),
   reference_url: z.string().optional(),
   category: z.string().optional(),
-  quantity: z.string().transform(v => parseFloat(v) || 1),
-  unit_cost: z.string().transform(v => parseFloat(v) || 0),
+  quantity: z.string()
+    .transform(v => parseFloat(v) || 1)
+    .refine(val => val > 0, "La cantidad debe ser mayor a 0"),
+  unit_cost: z.string()
+    .transform(v => parseFloat(v) || 0)
+    .refine(val => val >= 0, "El costo unitario debe ser mayor o igual a 0"),
   markup: z.string().transform(v => parseFloat(v) || 0),
   unit_price: z.string().transform(v => parseFloat(v) || 0),
   image_url: z.string().optional(),
@@ -222,6 +226,13 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      // Validar que el proveedor sea obligatorio cuando se crea un nuevo producto
+      if (activeTab === 'new' && (!values.supplier_id || values.supplier_id === 'none')) {
+        form.setError('supplier_id', { message: 'Proveedor requerido' });
+        toast.error('El proveedor es obligatorio para nuevos productos');
+        return;
+      }
+
       let finalProductId = values.product_id === 'custom' || activeTab === 'new' ? null : values.product_id;
 
       // Si es un producto personalizado (no del catálogo), primero créalo en products
@@ -426,7 +437,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                 <div className="bg-muted rounded-b-lg rounded-t-none p-4 space-y-4">
                   <FormField control={form.control} name="name" render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre del Producto</FormLabel>
+                      <FormLabel required>Nombre del Producto</FormLabel>
                       <FormControl><Input {...field} className="bg-background" /></FormControl>
                       <FormMessage />
                     </FormItem>
@@ -435,12 +446,11 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField control={form.control} name="supplier_id" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Proveedor</FormLabel>
+                        <FormLabel required>Proveedor</FormLabel>
                         <div className="flex gap-2">
                           <Select onValueChange={field.onChange} value={field.value} className="flex-1">
-                            <FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar proveedor (opcional)" /></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar proveedor" /></SelectTrigger></FormControl>
                             <SelectContent>
-                              <SelectItem value="none">-- Sin proveedor --</SelectItem>
                               {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                             </SelectContent>
                           </Select>
@@ -454,6 +464,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                             <Plus className="h-4 w-4" />
                           </Button>
                         </div>
+                        <FormMessage />
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="reference_code" render={({ field }) => (
@@ -497,10 +508,10 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
 
               <div className="grid grid-cols-4 gap-4">
                 <FormField control={form.control} name="quantity" render={({ field }) => (
-                  <FormItem><FormLabel>Cantidad</FormLabel><FormControl><Input type="number" {...field} className="bg-background" /></FormControl></FormItem>
+                  <FormItem><FormLabel>Cantidad</FormLabel><FormControl><Input type="number" min="0.01" step="0.01" {...field} className="bg-background" /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="unit_cost" render={({ field }) => (
-                  <FormItem><FormLabel>Costo Unit.</FormLabel><FormControl><Input type="number" step="0.01" {...field} className="bg-background" /></FormControl></FormItem>
+                  <FormItem><FormLabel>Costo Unit.</FormLabel><FormControl><Input type="number" min="0" step="0.01" {...field} className="bg-background" /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="markup" render={({ field }) => (
                   <FormItem><FormLabel>Margen %</FormLabel><FormControl><Input type="number" step="0.1" {...field} className="bg-background" /></FormControl></FormItem>
