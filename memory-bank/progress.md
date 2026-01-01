@@ -25,7 +25,8 @@
 
 - [ ] **Real File Uploads:** Replace URL inputs with file pickers uploading to Supabase Storage.
 - [ ] **Email Notifications:** Notify clients/suppliers (via Edge Functions).
-- [ ] **Testing:** Unit and E2E tests.
+- [ ] **Payment Control System:** Sistema de control de pagos recibidos de clientes. Debe permitir registrar pagos asociados a proyectos, con fechas, montos y métodos de pago. El total de ingresos del mes en el Dashboard se calculará a partir de estos pagos registrados. Actualmente el Dashboard muestra un placeholder para esta funcionalidad.
+- [x] **Testing:** Unit and E2E tests.
 - [ ] **Production Deployment.**
 
 ## Issues & Improvements from First Review
@@ -61,3 +62,5 @@
 - [x] **Manageable Purchase Orders:** La orden de compra debe ser gestionable. Al crearla, se debe poder especificar los productos asociados a esa orden de compra, no se debe asumir que son todos los productos registrados hasta el momento. Por lo general estarán, al menos, generadas por proveedor. **RESUELTO:** Se creó `PurchaseOrderDialog` que permite crear y editar órdenes de compra con selección manual de ítems. Los ítems se filtran por proveedor y se pueden seleccionar mediante checkboxes. Se añadió funcionalidad de edición y eliminación de órdenes. La visualización muestra los ítems en una tabla con totales calculados. Se creó componente `Checkbox` para la UI.
 
 - [x] **Advanced PDF Generation:** Generación avanzada de PDFs estéticos y organizados para presupuestos. **RESUELTO:** Se implementó generación de PDFs usando `@react-pdf/renderer` con diseño profesional que incluye: elementos agrupados por ubicación (espacios) con subtotales, costes adicionales agrupados por tipo, formato de moneda español (1.234,56 €), información completa del proyecto y cliente, nombre del arquitecto, y diseño visual usando los colores de la aplicación. El PDF se genera dinámicamente desde la página de presupuesto con importación dinámica para evitar problemas con Vite.
+
+- [x] **Dashboard Statistics:** Dashboard conectado con estadísticas reales de la cuenta. **RESUELTO:** Se implementaron métricas en tiempo real: proyectos activos con cambio porcentual mes a mes, clientes totales con nuevos clientes del mes, total de gastos este mes (suma de gastos adicionales y órdenes de compra confirmadas), y total de ingresos este mes (placeholder para futuro sistema de control de pagos). Se eliminó la métrica de productos en catálogo. El Dashboard muestra proyectos recientes con información relevante y enlaces directos.
