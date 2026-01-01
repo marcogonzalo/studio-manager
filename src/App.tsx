@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider } from '@/components/auth-provider';
 import { Toaster } from '@/components/ui/sonner';
 import AuthPage from '@/pages/auth';
@@ -33,6 +34,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Toaster />
+      <SpeedInsights />
     </AuthProvider>
   );
 }
