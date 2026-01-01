@@ -15,6 +15,7 @@ export interface Project {
   end_date: string | null;
   completed_date: string | null;
   client_id: string;
+  address?: string;
   client?: { full_name: string };
 }
 

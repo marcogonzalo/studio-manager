@@ -96,18 +96,20 @@ export default function ProjectDetailPage() {
                   <p className="capitalize text-gray-500">{project.status}</p>
                 </div>
               </div>
-              {project.end_date && (
-                <div>
-                  <p className="font-medium">Fecha Estimada de Entrega</p>
-                  <p className="text-gray-500">{project.end_date}</p>
-                </div>
-              )}
-              {project.status === 'completed' && project.completed_date && (
-                <div>
-                  <p className="font-medium">Fecha Efectiva de Finalización</p>
-                  <p className="text-gray-500">{project.completed_date}</p>
-                </div>
-              )}
+              <div className="grid grid-cols-2 gap-4">
+                {project.end_date && (
+                  <div>
+                    <p className="font-medium">Fecha Estimada de Entrega</p>
+                    <p className="text-gray-500">{project.end_date}</p>
+                  </div>
+                )}
+                {project.status === 'completed' && project.completed_date && (
+                  <div>
+                    <p className="font-medium">Fecha Efectiva de Finalización</p>
+                    <p className="text-gray-500">{project.completed_date}</p>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

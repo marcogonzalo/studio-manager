@@ -22,6 +22,7 @@ const formSchema = z.object({
   status: z.string().default('draft').optional(),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
+  address: z.string().optional(),
 });
 
 interface ProjectDialogProps {
@@ -46,6 +47,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
       status: "draft",
       start_date: new Date().toISOString().split('T')[0],
       end_date: "",
+      address: "",
     },
   });
 
@@ -68,6 +70,21 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
     }
   }, [clients, pendingClientId, form]);
 
+  // Sugerir la dirección del cliente cuando se selecciona un cliente y el campo está vacío
+  const clientId = form.watch('client_id');
+  useEffect(() => {
+    if (clientId && clients.length > 0) {
+      const currentAddress = form.getValues('address');
+      // Solo sugerir si el campo de dirección está vacío
+      if (!currentAddress || currentAddress.trim() === '') {
+        const selectedClient = clients.find(c => c.id === clientId);
+        if (selectedClient && selectedClient.address) {
+          form.setValue('address', selectedClient.address, { shouldDirty: false });
+        }
+      }
+    }
+  }, [clientId, clients, form]);
+
 
   useEffect(() => {
     if (project && open) {
@@ -86,6 +103,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         status: project.status || "draft",
         start_date: startDate,
         end_date: endDate,
+        address: project.address || "",
       });
     } else if (!project && open) {
       form.reset({
@@ -95,6 +113,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         status: "draft",
         start_date: new Date().toISOString().split('T')[0],
         end_date: "",
+        address: "",
       });
     }
   }, [project, open, form]);
@@ -226,6 +245,19 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
               )}
             />
 
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Dirección</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Dirección del proyecto" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
