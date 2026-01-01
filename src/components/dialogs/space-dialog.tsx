@@ -65,7 +65,7 @@ export function SpaceDialog({ open, onOpenChange, projectId, onSuccess }: SpaceD
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre</FormLabel>
+                  <FormLabel required>Nombre</FormLabel>
                   <FormControl>
                     <Input placeholder="Ej: Sala de Estar" {...field} />
                   </FormControl>

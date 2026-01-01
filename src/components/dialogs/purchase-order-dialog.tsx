@@ -537,7 +537,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                 name="order_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Número de Orden *</FormLabel>
+                    <FormLabel required>Número de Orden</FormLabel>
                     <FormControl>
                       <Input {...field} placeholder="PO-001" />
                     </FormControl>
@@ -551,7 +551,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                 name="order_date"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fecha *</FormLabel>
+                    <FormLabel required>Fecha</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
                     </FormControl>
@@ -567,7 +567,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                 name="supplier_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Proveedor *</FormLabel>
+                    <FormLabel required>Proveedor</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -592,7 +592,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estado *</FormLabel>
+                    <FormLabel required>Estado</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -635,7 +635,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">
-                    Ítems a Incluir *
+                    Ítems a Incluir <span className="text-destructive ml-1">*</span>
                   </label>
                   <div className="relative w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />

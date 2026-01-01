@@ -131,7 +131,7 @@ export function AdditionalCostDialog({ open, onOpenChange, projectId, onSuccess,
               name="cost_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Coste *</FormLabel>
+                  <FormLabel required>Tipo de Coste</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -173,7 +173,7 @@ export function AdditionalCostDialog({ open, onOpenChange, projectId, onSuccess,
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Importe *</FormLabel>
+                  <FormLabel required>Importe</FormLabel>
                   <FormControl>
                     <Input
                       type="number"

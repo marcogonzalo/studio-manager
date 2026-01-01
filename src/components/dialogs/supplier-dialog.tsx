@@ -68,7 +68,7 @@ export function SupplierDialog({ open, onOpenChange, supplier, onSuccess }: Supp
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField control={form.control} name="name" render={({ field }) => (
-              <FormItem><FormLabel>Empresa</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+              <FormItem><FormLabel required>Empresa</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
             )} />
             <FormField control={form.control} name="contact_name" render={({ field }) => (
               <FormItem><FormLabel>Nombre Contacto</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
