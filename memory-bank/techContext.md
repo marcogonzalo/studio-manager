@@ -14,6 +14,7 @@
 - **Styling:** `tailwindcss`, `tailwindcss-animate`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` (icons).
 - **Forms:** `react-hook-form`, `zod`, `@hookform/resolvers`.
 - **Utilities:** `date-fns`, `sonner` (toasts).
+- **PDF Generation:** `@react-pdf/renderer` (for budget PDF generation).
 
 ## Configuration
 
@@ -25,13 +26,17 @@
 ## Database Schema (Key Tables)
 
 - `profiles`: Extends auth.users.
-- `projects`: Main project entity.
+- `projects`: Main project entity (with address, completed_date fields).
 - `clients`: Client CRM data.
 - `spaces`: Spaces within a project.
-- `products`: Global item catalog.
-- `project_items`: Join table (Project <-> Product) with custom pricing/status.
+- `space_images`: Images associated with spaces.
+- `products`: Global item catalog (with reference_url field).
+- `project_items`: Join table (Project <-> Product) with custom pricing/status and purchase_order_id.
 - `suppliers`: Vendor directory.
-- `purchase_orders`: Grouped orders by supplier.
+- `purchase_orders`: Grouped orders by supplier with status tracking.
+- `additional_project_costs`: Additional costs per project (shipping, installation, etc.).
+- `project_notes`: Project diary/notes (with archived field).
+- `project_documents`: Documents linked to projects.
 
 ## Known Constraints/Notes
 
