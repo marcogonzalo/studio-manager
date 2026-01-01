@@ -22,7 +22,7 @@ interface ClientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   client: Client | null;
-  onSuccess: () => void;
+  onSuccess: (clientId?: string) => void;
 }
 
 export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDialogProps) {
@@ -70,14 +70,17 @@ export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDi
           .eq('id', client.id);
         if (error) throw error;
         toast.success('Cliente actualizado');
+        onSuccess();
       } else {
-        const { error } = await supabase
+        const { data: newClient, error } = await supabase
           .from('clients')
-          .insert([clientData]);
+          .insert([clientData])
+          .select()
+          .single();
         if (error) throw error;
         toast.success('Cliente creado');
+        onSuccess(newClient.id);
       }
-      onSuccess();
     } catch (error: any) {
       toast.error(error.message || "Error al guardar cliente");
     }
@@ -99,7 +102,7 @@ export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDi
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre Completo</FormLabel>
+                  <FormLabel required>Nombre Completo</FormLabel>
                   <FormControl>
                     <Input placeholder="Nombre del cliente" {...field} />
                   </FormControl>

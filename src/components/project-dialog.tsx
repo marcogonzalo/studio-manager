@@ -11,7 +11,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
+import { Plus } from 'lucide-react';
 import type { Client, Project } from '@/types';
+import { ClientDialog } from '@/components/dialogs/client-dialog';
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
@@ -32,6 +34,8 @@ interface ProjectDialogProps {
 export function ProjectDialog({ open, onOpenChange, onSuccess, project }: ProjectDialogProps) {
   const { user } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
+  const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
+  const [pendingClientId, setPendingClientId] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,6 +56,18 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
     }
     if (open) loadClients();
   }, [open]);
+
+  // Sincronizar el valor del cliente cuando la lista se actualiza y hay un cliente pendiente
+  useEffect(() => {
+    if (pendingClientId && clients.length > 0) {
+      const clientExists = clients.some(c => c.id === pendingClientId);
+      if (clientExists) {
+        form.setValue('client_id', pendingClientId, { shouldValidate: true, shouldDirty: true });
+        setPendingClientId(null);
+      }
+    }
+  }, [clients, pendingClientId, form]);
+
 
   useEffect(() => {
     if (project && open) {
@@ -151,7 +167,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre del Proyecto</FormLabel>
+                  <FormLabel required>Nombre del Proyecto</FormLabel>
                   <FormControl>
                     <Input placeholder="Reforma Sala Principal" {...field} />
                   </FormControl>
@@ -165,21 +181,32 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
               name="client_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Cliente</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un cliente" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {clients.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>
-                          {client.full_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel required>Cliente</FormLabel>
+                  <div className="flex gap-2">
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Selecciona un cliente" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {clients.map((client) => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.full_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setIsClientDialogOpen(true)}
+                      title="Agregar nuevo cliente"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -259,6 +286,25 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
           </form>
         </Form>
       </DialogContent>
+
+      <ClientDialog
+        open={isClientDialogOpen}
+        onOpenChange={setIsClientDialogOpen}
+        client={null}
+        onSuccess={async (clientId) => {
+          if (clientId) {
+            // Recargar la lista de clientes
+            const { data } = await supabase.from('clients').select('*').order('full_name');
+            if (data) {
+              setClients(data);
+              // Establecer el cliente pendiente para que se seleccione cuando la lista se actualice
+              setPendingClientId(clientId);
+            }
+            setIsClientDialogOpen(false);
+            toast.success('Cliente creado y seleccionado');
+          }
+        }}
+      />
     </Dialog>
   );
 }
