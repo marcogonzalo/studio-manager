@@ -37,7 +37,13 @@ export interface ProjectItem {
   status: string;
   image_url: string;
   supplier_id?: string; // from product or adhoc
-  product?: { supplier?: { name: string } };
+  product?: {
+    supplier?: { name: string };
+    description?: string;
+    reference_code?: string;
+    reference_url?: string;
+    category?: string;
+  };
 }
 
 export function ProjectBudget({ projectId }: { projectId: string }) {
@@ -47,7 +53,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
   const [project, setProject] = useState<Project & { client?: { full_name: string; email?: string; phone?: string; address?: string } } | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);

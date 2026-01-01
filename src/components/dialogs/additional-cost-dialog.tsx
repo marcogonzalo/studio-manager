@@ -44,8 +44,13 @@ export function AdditionalCostDialog({ open, onOpenChange, projectId, onSuccess,
   const { user } = useAuth();
   const isEditing = !!cost;
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  type FormValues = {
+    cost_type: string;
+    description?: string;
+    amount: string;
+  };
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       cost_type: "",
       description: "",
@@ -72,7 +77,7 @@ export function AdditionalCostDialog({ open, onOpenChange, projectId, onSuccess,
     }
   }, [open, cost, form]);
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema> | FormValues) => {
     if (!user?.id) {
       toast.error('No se pudo identificar el usuario');
       return;

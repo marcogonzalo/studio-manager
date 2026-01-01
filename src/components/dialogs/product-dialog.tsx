@@ -39,8 +39,18 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
   const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  type FormValues = {
+    name: string;
+    reference_code?: string;
+    reference_url?: string;
+    description?: string;
+    cost_price: string;
+    category?: string;
+    supplier_id?: string;
+    image_url?: string;
+  };
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: "",
       reference_code: "",
@@ -109,7 +119,7 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
     }
   }, [product, open, form]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
       const data = { ...values, user_id: user?.id };
       if (product) {
@@ -162,7 +172,7 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
                 <FormItem>
                   <FormLabel>Proveedor</FormLabel>
                   <div className="flex gap-2">
-                    <Select onValueChange={field.onChange} value={field.value} className="flex-1">
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger></FormControl>
                       <SelectContent>
                         {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}

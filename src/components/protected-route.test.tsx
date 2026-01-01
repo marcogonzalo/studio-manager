@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from './protected-route';
 import { AuthProvider } from './auth-provider';
 import { createMockUser, createMockSession } from '@/test/mocks/supabase';
@@ -44,9 +44,11 @@ describe('ProtectedRoute', () => {
     render(
       <MemoryRouter>
         <AuthProvider>
-          <ProtectedRoute>
-            <TestProtectedComponent />
-          </ProtectedRoute>
+          <Routes>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<TestProtectedComponent />} />
+            </Route>
+          </Routes>
         </AuthProvider>
       </MemoryRouter>
     );
@@ -63,9 +65,11 @@ describe('ProtectedRoute', () => {
     const TestApp = () => (
       <MemoryRouter initialEntries={['/protected']}>
         <AuthProvider>
-          <ProtectedRoute>
-            <TestProtectedComponent />
-          </ProtectedRoute>
+          <Routes>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/protected" element={<TestProtectedComponent />} />
+            </Route>
+          </Routes>
         </AuthProvider>
       </MemoryRouter>
     );
@@ -101,9 +105,11 @@ describe('ProtectedRoute', () => {
     render(
       <MemoryRouter>
         <AuthProvider>
-          <ProtectedRoute>
-            <TestProtectedComponent />
-          </ProtectedRoute>
+          <Routes>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<TestProtectedComponent />} />
+            </Route>
+          </Routes>
         </AuthProvider>
       </MemoryRouter>
     );

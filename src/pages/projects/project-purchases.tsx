@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ShoppingBag, Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { useAuth } from '@/components/auth-provider';
+// import { useAuth } from '@/components/auth-provider'; // No usado actualmente
 import { PurchaseOrderDialog } from '@/components/dialogs/purchase-order-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -45,7 +45,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function ProjectPurchases({ projectId }: { projectId: string }) {
-  const { user } = useAuth();
+  // const { user } = useAuth(); // No usado actualmente
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

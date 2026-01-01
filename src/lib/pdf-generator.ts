@@ -22,7 +22,9 @@ export async function generateProjectPDF(
     architectName,
   });
   
-  const asPdf = pdf(doc);
+  // Type assertion to satisfy react-pdf's type requirements
+  // ProjectPDF returns a Document component, which is what pdf() expects
+  const asPdf = pdf(doc as any);
   return asPdf;
 }
 

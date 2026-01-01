@@ -52,7 +52,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [, setSelectedProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('catalog');
   const [previewProduct, setPreviewProduct] = useState<Product | null>(null);
@@ -61,8 +61,23 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(null);
   const isEditing = !!item;
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  type FormValues = {
+    product_id?: string;
+    space_id?: string;
+    supplier_id?: string;
+    name: string;
+    description?: string;
+    reference_code?: string;
+    reference_url?: string;
+    category?: string;
+    quantity: string;
+    unit_cost: string;
+    markup: string;
+    unit_price: string;
+    image_url?: string;
+  };
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       product_id: "",
       space_id: "none",
@@ -119,7 +134,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       // Load item data if editing (after products are loaded)
       if (item && open) {
         // Si tiene producto asociado, cargar sus datos
-        let productData = { description: "", reference_code: "", category: "" };
+        let productData = { description: "", reference_code: "", reference_url: "", category: "" };
           if (item.product_id && pData) {
             const prod = pData.find(p => p.id === item.product_id);
             if (prod) {
@@ -224,7 +239,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
     }
   };
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
       // Validar que el proveedor sea obligatorio cuando se crea un nuevo producto
       if (activeTab === 'new' && (!values.supplier_id || values.supplier_id === 'none')) {
@@ -312,7 +327,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
     }
   }
 
-  const selectedProductId = form.watch('product_id');
+  // const selectedProductId = form.watch('product_id'); // No usado actualmente
 
   // Sincronizar el valor del proveedor cuando la lista se actualiza y hay un proveedor pendiente
   useEffect(() => {
@@ -448,7 +463,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                       <FormItem>
                         <FormLabel required>Proveedor</FormLabel>
                         <div className="flex gap-2">
-                          <Select onValueChange={field.onChange} value={field.value} className="flex-1">
+                          <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl><SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar proveedor" /></SelectTrigger></FormControl>
                             <SelectContent>
                               {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
