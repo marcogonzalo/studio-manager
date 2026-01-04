@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider } from '@/components/auth-provider';
 import { Toaster } from '@/components/ui/sonner';
@@ -6,6 +6,7 @@ import AuthPage from '@/pages/auth';
 import ProtectedRoute from '@/components/protected-route';
 import AppLayout from '@/layouts/app-layout';
 import ClientsPage from '@/pages/clients/page';
+import NotFound from '@/pages/not-found';
 
 // Placeholder pages
 import Dashboard from '@/pages/dashboard';
@@ -31,7 +32,7 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
       <SpeedInsights />
