@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import * as z from 'zod';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
+import { useAuth } from '@/components/auth-provider';
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -18,6 +20,18 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const redirectTo = searchParams.get('redirect');
+
+  // Redirigir si el usuario ya está autenticado o después de iniciar sesión
+  useEffect(() => {
+    if (user) {
+      const destination = redirectTo ? decodeURIComponent(redirectTo) : '/';
+      navigate(destination, { replace: true });
+    }
+  }, [user, navigate, redirectTo]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -138,9 +152,11 @@ export default function AuthPage() {
         <CardHeader>
           <CardTitle>{isLogin ? "Iniciar Sesión" : "Registrarse"}</CardTitle>
           <CardDescription>
-            {isLogin 
-              ? "Ingresa tu correo y te enviaremos un enlace mágico para iniciar sesión" 
-              : "Ingresa tu correo y te enviaremos un enlace mágico para crear tu cuenta"}
+            {redirectTo 
+              ? "Tu sesión ha caducado. Por favor, inicia sesión para continuar."
+              : isLogin 
+                ? "Ingresa tu correo para enviarte el enlace de inicio de sesión"
+                : "Ingresa tu correo y te enviaremos un enlace para crear tu cuenta"}
           </CardDescription>
         </CardHeader>
         <CardContent>
