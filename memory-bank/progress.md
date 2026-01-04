@@ -20,6 +20,8 @@
   - [x] Documents.
 - [x] UI Theming (Natural/Pastel).
 - [x] Dashboard Implementation.
+- [x] Session Expiration Handling: Redirige al login guardando la ruta de destino cuando la sesión caduca, y redirige automáticamente después del login exitoso.
+- [x] Custom 404 Page: Página de error 404 personalizada con temática de arquitectura, diseño moderno y navegación contextual.
 
 ## Pending Features
 
@@ -27,7 +29,7 @@
 - [ ] **Email Notifications:** Notify clients/suppliers (via Edge Functions).
 - [ ] **Payment Control System:** Sistema de control de pagos recibidos de clientes. Debe permitir registrar pagos asociados a proyectos, con fechas, montos y métodos de pago. El total de ingresos del mes en el Dashboard se calculará a partir de estos pagos registrados. Actualmente el Dashboard muestra un placeholder para esta funcionalidad.
 - [x] **Testing:** Unit and E2E tests.
-- [ ] **Production Deployment.**
+- [x] **Production Deployment.**
 
 ## Issues & Improvements from First Review
 
