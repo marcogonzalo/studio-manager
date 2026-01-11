@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { Plus } from 'lucide-react';
-import type { Client, Project } from '@/types';
+import type { Client, Project, ProjectPhase } from '@/types';
 import { ClientDialog } from '@/components/dialogs/client-dialog';
 
 const formSchema = z.object({
@@ -23,6 +23,7 @@ const formSchema = z.object({
   start_date: z.string().optional(),
   end_date: z.string().optional(),
   address: z.string().optional(),
+  phase: z.enum(['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery']).optional(),
 });
 
 interface ProjectDialogProps {
@@ -104,6 +105,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         start_date: startDate,
         end_date: endDate,
         address: project.address || "",
+        phase: project.phase || undefined,
       });
     } else if (!project && open) {
       form.reset({
@@ -114,6 +116,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         start_date: new Date().toISOString().split('T')[0],
         end_date: "",
         address: "",
+        phase: undefined,
       });
     }
   }, [project, open, form]);
@@ -305,6 +308,32 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
                       <SelectItem value="draft">Borrador</SelectItem>
                       <SelectItem value="active">Activo</SelectItem>
                       <SelectItem value="completed">Completado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phase"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fase del Proyecto</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona una fase" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="diagnosis">1. Diagnóstico</SelectItem>
+                      <SelectItem value="design">2. Diseño</SelectItem>
+                      <SelectItem value="executive">3. Proyecto Ejecutivo</SelectItem>
+                      <SelectItem value="budget">4. Presupuestos</SelectItem>
+                      <SelectItem value="construction">5. Obra</SelectItem>
+                      <SelectItem value="delivery">6. Entrega</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

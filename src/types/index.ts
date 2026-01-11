@@ -6,6 +6,14 @@ export interface Client {
   address: string;
 }
 
+export type ProjectPhase = 
+  | 'diagnosis'      // Diagnóstico
+  | 'design'         // Diseño
+  | 'executive'      // Proyecto Ejecutivo
+  | 'budget'         // Presupuestos
+  | 'construction'   // Obra
+  | 'delivery';      // Entrega
+
 export interface Project {
   id: string;
   name: string;
@@ -16,6 +24,7 @@ export interface Project {
   completed_date: string | null;
   client_id: string;
   address?: string;
+  phase?: ProjectPhase;
   client?: { full_name: string };
 }
 
@@ -55,4 +64,37 @@ export interface AdditionalCost {
   amount: number;
   created_at: string;
   user_id: string;
+}
+
+export type PaymentType = 
+  | 'fees'              // Honorarios
+  | 'purchase_provision' // Provisión de compras
+  | 'additional_cost'   // Coste adicional
+  | 'other';            // Otro
+
+export interface Payment {
+  id: string;
+  project_id: string;
+  user_id: string;
+  amount: number;
+  payment_date: string;
+  reference_number?: string;
+  description?: string;
+  payment_type: PaymentType;
+  purchase_order_id?: string;
+  additional_cost_id?: string;
+  phase?: ProjectPhase;
+  created_at: string;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  project_id?: string;
+  supplier_id?: string;
+  order_number?: string;
+  order_date?: string;
+  status?: string;
+  notes?: string;
+  user_id?: string;
+  created_at: string;
 }
