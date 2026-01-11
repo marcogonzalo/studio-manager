@@ -1,0 +1,46 @@
+# Dependencies Management
+
+## Adding New Dependencies
+
+When adding new dependencies (especially when using Shadcn components), follow this process:
+
+1. **Add the dependency:**
+
+   ```bash
+   # For Shadcn components:
+   npx shadcn@latest add <component-name>
+   
+   # For regular npm packages:
+   npm install <package-name>
+   ```
+
+2. **If using Docker:**
+
+   **Option A: Rebuild the container (recommended)**
+
+   ```bash
+   docker compose down
+   docker compose build --no-cache
+   docker compose up
+   ```
+
+   **Option B: Install inside running container**
+
+   ```bash
+   docker compose exec app npm install
+   ```
+
+3. **Verify the installation:**
+   - Check that the package appears in `package.json`
+   - Restart the dev server if needed
+   - Test that imports work correctly
+
+## Why This Happens
+
+Docker Compose uses a volume mount for `node_modules` (`/app/node_modules`) to isolate dependencies inside the container. When `package.json` changes, the container's `node_modules` doesn't automatically update. You must either rebuild the image or run `npm install` inside the container.
+
+## Best Practice
+
+- After adding components via Shadcn CLI, always rebuild the Docker container or install dependencies inside it
+- Commit `package.json` and `package-lock.json` together after adding dependencies
+- Document dependency additions in commit messages

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { LayoutDashboard, FolderKanban, ShoppingBag, Truck, Settings, LogOut, Menu, Users, Leaf } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -92,6 +92,10 @@ export default function AppLayout() {
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-64 border-r border-border">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Menú de Navegación</SheetTitle>
+            <SheetDescription>Navegación principal de la aplicación</SheetDescription>
+          </SheetHeader>
           <SidebarContent />
         </SheetContent>
       </Sheet>
