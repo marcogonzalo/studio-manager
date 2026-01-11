@@ -29,3 +29,6 @@ dist-ssr
 # Supabase local dev
 supabase/tmp
 supabase/.temp
+
+# Process ids
+*.pid
