@@ -181,69 +181,6 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
         </Button>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Presupuesto Cliente
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(totalClientBudget)}</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Costes Totales
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{formatCurrency(totalCosts)}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Partidas: {formatCurrency(totalActual)} + Productos: {formatCurrency(totalProductsCost)}
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Margen Bruto
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className={`text-2xl font-bold ${margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatCurrency(margin)}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {marginPercentage.toFixed(1)}% del presupuesto
-            </p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Desviación Global
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {(() => {
-              const { icon: Icon, color, text } = getDeviationIndicator(totalEstimated, totalActual);
-              return (
-                <div className="flex items-center gap-2">
-                  <Icon className={`h-6 w-6 ${color}`} />
-                  <span className={`text-2xl font-bold ${color}`}>{text}</span>
-                </div>
-              );
-            })()}
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Budget Lines by Category */}
       {categoryOrder.map((category) => {
         const lines = budgetLinesByCategory[category] || [];

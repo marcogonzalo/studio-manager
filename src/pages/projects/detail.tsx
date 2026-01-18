@@ -128,7 +128,7 @@ export default function ProjectDetailPage() {
           <TabsTrigger value="resumen">Resumen</TabsTrigger>
           <TabsTrigger value="spaces">Espacios</TabsTrigger>
           <TabsTrigger value="budget">Presupuesto</TabsTrigger>
-          <TabsTrigger value="cost-control">Control Costes</TabsTrigger>
+          <TabsTrigger value="cost-control">Control de costes</TabsTrigger>
           <TabsTrigger value="purchases">Compras</TabsTrigger>
           <TabsTrigger value="payments">Pagos</TabsTrigger>
           <TabsTrigger value="documents">Documentos</TabsTrigger>
