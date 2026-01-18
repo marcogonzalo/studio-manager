@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -294,7 +294,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
     }
   }, [open, selectedSupplierId, fetchAvailableItems, order?.supplier_id, order?.id]);
 
-  const toggleItemSelection = (itemId: string) => {
+  const toggleItemSelection = React.useCallback((itemId: string) => {
     setSelectedItemIds(prev => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
@@ -304,7 +304,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
       }
       return newSet;
     });
-  };
+  }, []);
 
   const filteredItems = availableItems.filter(item =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -660,12 +660,35 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                   <div className="border rounded-md max-h-96 overflow-y-auto">
                     <div className="p-4 space-y-2">
                       {filteredItems.map((item) => (
-                        <Card key={item.id} className="p-3">
+                        <Card 
+                          key={item.id} 
+                          className="p-3 cursor-pointer hover:bg-accent/50 transition-colors"
+                          onClick={(e) => {
+                            // Don't handle click if it originated from the checkbox area
+                            const target = e.target as HTMLElement;
+                            if (target.closest('button[role="checkbox"]') || target.closest('[data-checkbox-wrapper]')) {
+                              return;
+                            }
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleItemSelection(item.id);
+                          }}
+                        >
                           <div className="flex items-center space-x-3">
-                            <Checkbox
-                              checked={selectedItemIds.has(item.id)}
-                              onCheckedChange={() => toggleItemSelection(item.id)}
-                            />
+                            <div 
+                              data-checkbox-wrapper
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                            >
+                              <Checkbox
+                                checked={selectedItemIds.has(item.id)}
+                                onCheckedChange={() => {
+                                  toggleItemSelection(item.id);
+                                }}
+                              />
+                            </div>
                             <div className="flex-1">
                               <div className="font-medium">{item.name}</div>
                               <div className="text-sm text-gray-500">
