@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet, TrendingUp, FolderKanban, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, FolderKanban, AlertTriangle, CheckCircle2, ArrowUp, ArrowDown, FileText, Receipt } from 'lucide-react';
 import { getPhaseLabel, getBudgetCategoryLabel } from '@/lib/utils';
 import type { Project, Payment, ProjectBudgetLine, ProjectPhase, BudgetCategory } from '@/types';
 
@@ -195,21 +195,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
   return (
     <div className="space-y-6">
       {/* KPIs */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <KPICard
-          title="Cobertura de Pagos"
-          value={`${kpis.coverage.toFixed(1)}%`}
-          subtitle={`${formatCurrency(totalPaid)} de ${formatCurrency(clientBudget)}`}
-          icon={Wallet}
-          color="chart-1"
-        />
-        <KPICard
-          title="Margen Bruto"
-          value={formatCurrency(margin)}
-          subtitle={`${marginPercentage.toFixed(1)}% del presupuesto`}
-          icon={TrendingUp}
-          color={margin >= 0 ? 'chart-2' : 'destructive'}
-        />
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <KPICard
           title="Avance"
           value={`${kpis.progress.toFixed(0)}%`}
@@ -218,66 +204,43 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
           color="primary"
         />
         <KPICard
+          title="Cobertura de Pagos"
+          value={`${kpis.coverage.toFixed(1)}%`}
+          subtitle={`${formatCurrency(totalPaid)} de ${formatCurrency(clientBudget)}`}
+          icon={Wallet}
+          color="chart-1"
+        />
+        <KPICard
           title="Desviación Costes"
           value={`${kpis.deviation >= 0 ? '+' : ''}${kpis.deviation.toFixed(1)}%`}
           subtitle={kpis.deviation > 5 ? 'Sobrecoste' : kpis.deviation < -5 ? 'Ahorro' : 'En línea'}
           icon={AlertTriangle}
-          color={kpis.deviation > 5 ? 'destructive' : 'chart-1'}
+          color="text-muted-foreground"
+          valueIcon={kpis.deviation < 0 ? ArrowDown : ArrowUp}
+          valueColor={kpis.deviation < 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}
+        />
+        <KPICard
+          title="Presupuestado"
+          value={formatCurrency(clientBudget)}
+          subtitle={`Productos: ${formatCurrency(totalProductsPrice)} + Partidas: ${formatCurrency(totalBudgetLinesEstimated)}`}
+          icon={FileText}
+          color="chart-2"
+        />
+        <KPICard
+          title="Coste total"
+          value={formatCurrency(totalCosts)}
+          subtitle={`Productos: ${formatCurrency(totalProductsCost)} + Partidas: ${formatCurrency(totalBudgetLinesActual)}`}
+          icon={Receipt}
+          color="chart-3"
+        />
+        <KPICard
+          title="Margen Bruto"
+          value={formatCurrency(margin)}
+          subtitle={`${marginPercentage.toFixed(1)}% del presupuesto`}
+          icon={TrendingUp}
+          color={margin >= 0 ? 'chart-4' : 'destructive'}
         />
       </div>
-
-      {/* Financial Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Resumen Financiero</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Presupuesto Cliente</p>
-              <p className="text-2xl font-bold">{formatCurrency(clientBudget)}</p>
-              <p className="text-xs text-muted-foreground">
-                Productos: {formatCurrency(totalProductsPrice)} + Partidas: {formatCurrency(totalBudgetLinesEstimated)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Costes Totales</p>
-              <p className="text-2xl font-bold">{formatCurrency(totalCosts)}</p>
-              <p className="text-xs text-muted-foreground">
-                Productos: {formatCurrency(totalProductsCost)} + Partidas: {formatCurrency(totalBudgetLinesActual)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Margen Bruto</p>
-              <p className={`text-2xl font-bold ${margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(margin)}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {marginPercentage.toFixed(1)}%
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Pagos Recibidos</p>
-              <p className="text-2xl font-bold">{formatCurrency(totalPaid)}</p>
-              <p className="text-xs text-muted-foreground">
-                Pendiente: {formatCurrency(Math.max(0, clientBudget - totalPaid))}
-              </p>
-            </div>
-          </div>
-          <div className="pt-4">
-            <div className="flex justify-between text-sm mb-1">
-              <span>Cobertura de Pagos</span>
-              <span>{kpis.coverage.toFixed(1)}%</span>
-            </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${Math.min(100, kpis.coverage)}%` }}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Budget by Category & Project Progress */}
       <div className="grid gap-4 md:grid-cols-2">
@@ -447,17 +410,22 @@ interface KPICardProps {
   subtitle: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
+  valueColor?: string;
+  valueIcon?: React.ComponentType<{ className?: string }>;
 }
 
-function KPICard({ title, value, subtitle, icon: Icon, color }: KPICardProps) {
+function KPICard({ title, value, subtitle, icon: Icon, color, valueColor, valueIcon: ValueIcon }: KPICardProps) {
   return (
     <Card className="border-none shadow-md bg-gradient-to-br from-white to-secondary/20 dark:from-gray-900 dark:to-gray-800">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <Icon className={`h-4 w-4 text-${color}`} />
+        <Icon className={color} />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className={`text-2xl font-bold flex items-center gap-2 ${valueColor || ''}`}>
+          {ValueIcon && valueColor && <ValueIcon className={`h-5 w-5 ${valueColor}`} />}
+          <span>{value}</span>
+        </div>
         <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
       </CardContent>
     </Card>

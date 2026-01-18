@@ -124,15 +124,15 @@ export default function ProjectDetailPage() {
       </Collapsible>
 
       <Tabs defaultValue="resumen" className="space-y-4">
-        <TabsList className="print:hidden">
-          <TabsTrigger value="resumen">Resumen</TabsTrigger>
-          <TabsTrigger value="spaces">Espacios</TabsTrigger>
-          <TabsTrigger value="budget">Presupuesto</TabsTrigger>
-          <TabsTrigger value="cost-control">Control de costes</TabsTrigger>
-          <TabsTrigger value="purchases">Compras</TabsTrigger>
-          <TabsTrigger value="payments">Pagos</TabsTrigger>
-          <TabsTrigger value="documents">Documentos</TabsTrigger>
-          <TabsTrigger value="notes">Notas</TabsTrigger>
+        <TabsList className="print:hidden w-full flex">
+          <TabsTrigger value="resumen" className="flex-1">Resumen</TabsTrigger>
+          <TabsTrigger value="spaces" className="flex-1">Espacios</TabsTrigger>
+          <TabsTrigger value="budget" className="flex-1">Presupuesto</TabsTrigger>
+          <TabsTrigger value="cost-control" className="flex-1">Control de costes</TabsTrigger>
+          <TabsTrigger value="purchases" className="flex-1">Compras</TabsTrigger>
+          <TabsTrigger value="payments" className="flex-1">Pagos</TabsTrigger>
+          <TabsTrigger value="documents" className="flex-1">Documentos</TabsTrigger>
+          <TabsTrigger value="notes" className="flex-1">Notas</TabsTrigger>
         </TabsList>
         
         <TabsContent value="resumen">
