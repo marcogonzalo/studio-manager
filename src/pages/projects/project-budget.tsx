@@ -18,10 +18,11 @@ import { toast } from 'sonner';
 import { useAuth } from '@/components/auth-provider';
 import { 
   getBudgetCategoryLabel, 
-  getBudgetSubcategoryLabel
+  getBudgetSubcategoryLabel,
+  getPhaseLabel
 } from '@/lib/utils';
 
-import type { Project, ProjectBudgetLine, BudgetCategory } from '@/types';
+import type { Project, ProjectBudgetLine, BudgetCategory, ProjectPhase } from '@/types';
 
 export interface ProjectItem {
   id: string;
@@ -38,6 +39,7 @@ export interface ProjectItem {
   image_url: string;
   supplier_id?: string;
   product?: {
+    name?: string;
     supplier?: { name: string };
     description?: string;
     reference_code?: string;
@@ -61,10 +63,6 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    own_fees: true,
-    external_services: true,
-    construction: true,
-    operations: true,
     products: true,
   });
 
@@ -90,7 +88,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       // Fetch project items (products)
       const { data: itemsData, error: itemsError } = await supabase
         .from('project_items')
-        .select('*, space:spaces(name), product:products(supplier:suppliers(name), description, reference_code, category)')
+        .select('*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category)')
         .eq('project_id', projectId)
         .order('created_at');
       
@@ -210,14 +208,18 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Group budget lines by category
-  const budgetLinesByCategory = budgetLines.reduce((acc, line) => {
-    if (!acc[line.category]) {
-      acc[line.category] = [];
+  // Group budget lines by phase first, then by category
+  const budgetLinesByPhaseAndCategory = budgetLines.reduce((acc, line) => {
+    const phaseKey = line.phase || 'no_phase';
+    if (!acc[phaseKey]) {
+      acc[phaseKey] = {} as Record<BudgetCategory, ProjectBudgetLine[]>;
     }
-    acc[line.category].push(line);
+    if (!acc[phaseKey][line.category]) {
+      acc[phaseKey][line.category] = [];
+    }
+    acc[phaseKey][line.category].push(line);
     return acc;
-  }, {} as Record<BudgetCategory, ProjectBudgetLine[]>);
+  }, {} as Record<string, Record<BudgetCategory, ProjectBudgetLine[]>>);
 
   // Calculate totals
   const totalItemsPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
@@ -230,7 +232,10 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
   };
 
-  // Order of categories to display
+  // Order of phases to display
+  const phaseOrder: (ProjectPhase | 'no_phase')[] = ['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery', 'no_phase'];
+  
+  // Order of categories to display within each phase
   const categoryOrder: BudgetCategory[] = ['own_fees', 'external_services', 'construction', 'operations'];
 
   if (loading) {
@@ -286,88 +291,132 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         </div>
       </div>
 
-      {/* Budget Lines by Category */}
-      {categoryOrder.map((category) => {
-        const lines = budgetLinesByCategory[category] || [];
-        if (lines.length === 0) return null;
+      {/* Budget Lines by Phase and Category */}
+      {phaseOrder.map((phase) => {
+        const phaseData = budgetLinesByPhaseAndCategory[phase];
+        if (!phaseData) return null;
         
-        const categoryTotal = lines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+        // Check if this phase has any lines
+        const hasLines = Object.values(phaseData).some(lines => lines.length > 0);
+        if (!hasLines) return null;
+        
+        const phaseTotal = Object.values(phaseData).reduce((sum, lines) => 
+          sum + lines.reduce((lineSum, line) => lineSum + Number(line.estimated_amount), 0), 0
+        );
+        
+        const phaseSectionKey = `phase_${phase}`;
         
         return (
-          <Collapsible 
-            key={category} 
-            open={openSections[category]} 
-            onOpenChange={() => toggleSection(category)}
-          >
-            <Card>
-              <CollapsibleTrigger asChild>
-                <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                      <ChevronDown className={`h-4 w-4 transition-transform ${openSections[category] ? '' : '-rotate-90'}`} />
-                      {getBudgetCategoryLabel(category)}
-                    </CardTitle>
-                    <span className="font-semibold text-primary">
-                      {formatCurrency(categoryTotal)}
-                    </span>
-                  </div>
-                </CardHeader>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <CardContent className="pt-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Concepto</TableHead>
-                        <TableHead>Descripción</TableHead>
-                        <TableHead className="text-right">Importe</TableHead>
-                        <TableHead className="w-[80px]"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {lines.map((line) => (
-                        <TableRow key={line.id}>
-                          <TableCell className="font-medium">
-                            {getBudgetSubcategoryLabel(category, line.subcategory)}
-                          </TableCell>
-                          <TableCell className="text-gray-500">
-                            {line.description || '-'}
-                          </TableCell>
-                          <TableCell className="text-right font-semibold">
-                            {formatCurrency(Number(line.estimated_amount))}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex justify-end">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon">
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleEditBudgetLine(line)}>
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={() => handleDeleteBudgetLine(line.id)}
-                                    className="text-red-600 dark:text-red-400"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Eliminar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </CollapsibleContent>
-            </Card>
-          </Collapsible>
+          <div key={phase} className="space-y-3">
+            <Collapsible 
+              open={openSections[phaseSectionKey] !== false} 
+              onOpenChange={() => toggleSection(phaseSectionKey)}
+            >
+              <Card className="border-l-4 border-l-primary">
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="flex items-center gap-2 text-base">
+                        <ChevronDown className={`h-4 w-4 transition-transform ${openSections[phaseSectionKey] !== false ? '' : '-rotate-90'}`} />
+                        {phase === 'no_phase' ? 'Sin Fase' : getPhaseLabel(phase as ProjectPhase)}
+                      </CardTitle>
+                      <span className="font-semibold text-primary">
+                        {formatCurrency(phaseTotal)}
+                      </span>
+                    </div>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="pt-0 space-y-3">
+                    {categoryOrder.map((category) => {
+                      const lines = phaseData[category] || [];
+                      if (lines.length === 0) return null;
+                      
+                      const categoryTotal = lines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+                      const categorySectionKey = `${phaseSectionKey}_${category}`;
+                      
+                      return (
+                        <Collapsible 
+                          key={category} 
+                          open={openSections[categorySectionKey] !== false} 
+                          onOpenChange={() => toggleSection(categorySectionKey)}
+                        >
+                          <Card className="ml-4">
+                            <CollapsibleTrigger asChild>
+                              <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 py-3">
+                                <div className="flex justify-between items-center">
+                                  <CardTitle className="flex items-center gap-2 text-sm">
+                                    <ChevronDown className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? '' : '-rotate-90'}`} />
+                                    {getBudgetCategoryLabel(category)}
+                                  </CardTitle>
+                                  <span className="font-semibold text-sm text-primary">
+                                    {formatCurrency(categoryTotal)}
+                                  </span>
+                                </div>
+                              </CardHeader>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <CardContent className="pt-0">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead>Concepto</TableHead>
+                                      <TableHead>Descripción</TableHead>
+                                      <TableHead className="text-right">Importe</TableHead>
+                                      <TableHead className="w-[80px]"></TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {lines.map((line) => (
+                                      <TableRow key={line.id}>
+                                        <TableCell className="font-medium">
+                                          {getBudgetSubcategoryLabel(category, line.subcategory)}
+                                        </TableCell>
+                                        <TableCell className="text-gray-500">
+                                          {line.description || '-'}
+                                        </TableCell>
+                                        <TableCell className="text-right font-semibold">
+                                          {formatCurrency(Number(line.estimated_amount))}
+                                        </TableCell>
+                                        <TableCell>
+                                          <div className="flex justify-end">
+                                            <DropdownMenu>
+                                              <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon">
+                                                  <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => handleEditBudgetLine(line)}>
+                                                  <Pencil className="mr-2 h-4 w-4" />
+                                                  Editar
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem 
+                                                  onClick={() => handleDeleteBudgetLine(line.id)}
+                                                  className="text-red-600 dark:text-red-400"
+                                                >
+                                                  <Trash2 className="mr-2 h-4 w-4" />
+                                                  Eliminar
+                                                </DropdownMenuItem>
+                                              </DropdownMenuContent>
+                                            </DropdownMenu>
+                                          </div>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </CardContent>
+                            </CollapsibleContent>
+                          </Card>
+                        </Collapsible>
+                      );
+                    })}
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
+          </div>
         );
       })}
 
@@ -418,12 +467,12 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                               setSelectedItem(item);
                               setIsProductModalOpen(true);
                             }}
-                            alt={item.name}
+                            alt={item.product?.name || item.name}
                           />
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">{item.name}</div>
+                        <div className="font-medium">{item.product?.name || item.name}</div>
                         <div className="text-xs text-gray-500">{item.product?.supplier?.name || '-'}</div>
                       </TableCell>
                       <TableCell>{item.space?.name || 'General'}</TableCell>

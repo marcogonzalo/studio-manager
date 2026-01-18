@@ -1,7 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
-import type { Project, ProjectBudgetLine, BudgetCategory } from '@/types';
+import type { Project, ProjectBudgetLine, BudgetCategory, ProjectPhase } from '@/types';
 import type { ProjectItem } from '@/pages/projects/project-budget';
-import { BUDGET_CATEGORIES, BUDGET_SUBCATEGORIES } from '@/lib/utils';
+import { BUDGET_CATEGORIES, BUDGET_SUBCATEGORIES, getPhaseLabel } from '@/lib/utils';
 
 // Color palette matching the application (from index.css)
 const colors = {
@@ -283,14 +283,18 @@ export function ProjectPDF({ project, items, budgetLines, taxRate = 21, architec
     return acc;
   }, {} as Record<string, ProjectItem[]>);
 
-  // Group budget lines by category (only non-internal)
-  const budgetLinesByCategory = budgetLines.reduce((acc, line) => {
-    if (!acc[line.category]) {
-      acc[line.category] = [];
+  // Group budget lines by phase first, then by category
+  const budgetLinesByPhaseAndCategory = budgetLines.reduce((acc, line) => {
+    const phaseKey = line.phase || 'no_phase';
+    if (!acc[phaseKey]) {
+      acc[phaseKey] = {} as Record<BudgetCategory, ProjectBudgetLine[]>;
     }
-    acc[line.category].push(line);
+    if (!acc[phaseKey][line.category]) {
+      acc[phaseKey][line.category] = [];
+    }
+    acc[phaseKey][line.category].push(line);
     return acc;
-  }, {} as Record<BudgetCategory, ProjectBudgetLine[]>);
+  }, {} as Record<string, Record<BudgetCategory, ProjectBudgetLine[]>>);
 
   // Calculate totals
   const totalItemsPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
@@ -306,7 +310,10 @@ export function ProjectPDF({ project, items, budgetLines, taxRate = 21, architec
     })} €`;
   };
 
-  // Order of categories to display in PDF
+  // Order of phases to display in PDF
+  const phaseOrder: (ProjectPhase | 'no_phase')[] = ['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery', 'no_phase'];
+  
+  // Order of categories to display within each phase
   const categoryOrder: BudgetCategory[] = ['own_fees', 'external_services', 'construction', 'operations'];
 
   return (
@@ -345,41 +352,67 @@ export function ProjectPDF({ project, items, budgetLines, taxRate = 21, architec
           )}
         </View>
 
-        {/* Budget Lines by Category */}
+        {/* Budget Lines by Phase and Category */}
         {budgetLines.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Servicios y Partidas</Text>
             
-            {categoryOrder.map((category) => {
-              const lines = budgetLinesByCategory[category];
-              if (!lines || lines.length === 0) return null;
+            {phaseOrder.map((phase) => {
+              const phaseData = budgetLinesByPhaseAndCategory[phase];
+              if (!phaseData) return null;
               
-              const categoryTotal = lines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+              // Check if this phase has any lines
+              const hasLines = Object.values(phaseData).some(lines => lines.length > 0);
+              if (!hasLines) return null;
+              
+              const phaseTotal = Object.values(phaseData).reduce((sum, lines) => 
+                sum + lines.reduce((lineSum, line) => lineSum + Number(line.estimated_amount), 0), 0
+              );
 
               return (
-                <View key={category} style={styles.budgetLineGroup}>
-                  <View style={styles.budgetLineHeader}>
-                    <Text style={styles.budgetLineName}>
-                      {getCategoryLabel(category)}
+                <View key={phase} style={[styles.budgetLineGroup, { marginBottom: 20 }]}>
+                  <View style={[styles.budgetLineHeader, { backgroundColor: colors.primary, marginBottom: 10 }]}>
+                    <Text style={[styles.budgetLineName, { color: '#FFFFFF', fontSize: 13 }]}>
+                      {phase === 'no_phase' ? 'Sin Fase' : getPhaseLabel(phase as ProjectPhase)}
                     </Text>
-                    <Text style={styles.budgetLineSubtotal}>
-                      Subtotal: {formatCurrency(categoryTotal)}
+                    <Text style={[styles.budgetLineSubtotal, { color: '#FFFFFF', fontSize: 12 }]}>
+                      Subtotal: {formatCurrency(phaseTotal)}
                     </Text>
                   </View>
 
-                  {lines.map((line) => (
-                    <View key={line.id} style={styles.budgetLineItem}>
-                      <Text style={styles.budgetLineItemName}>
-                        {getSubcategoryLabel(category, line.subcategory)}
-                      </Text>
-                      <Text style={styles.budgetLineItemDescription}>
-                        {line.description || ''}
-                      </Text>
-                      <Text style={styles.budgetLineItemAmount}>
-                        {formatCurrency(Number(line.estimated_amount))}
-                      </Text>
-                    </View>
-                  ))}
+                  {categoryOrder.map((category) => {
+                    const lines = phaseData[category];
+                    if (!lines || lines.length === 0) return null;
+                    
+                    const categoryTotal = lines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+
+                    return (
+                      <View key={category} style={[styles.budgetLineGroup, { marginLeft: 10, marginBottom: 12 }]}>
+                        <View style={styles.budgetLineHeader}>
+                          <Text style={styles.budgetLineName}>
+                            {getCategoryLabel(category)}
+                          </Text>
+                          <Text style={styles.budgetLineSubtotal}>
+                            Subtotal: {formatCurrency(categoryTotal)}
+                          </Text>
+                        </View>
+
+                        {lines.map((line) => (
+                          <View key={line.id} style={styles.budgetLineItem}>
+                            <Text style={styles.budgetLineItemName}>
+                              {getSubcategoryLabel(category, line.subcategory)}
+                            </Text>
+                            <Text style={styles.budgetLineItemDescription}>
+                              {line.description || ''}
+                            </Text>
+                            <Text style={styles.budgetLineItemAmount}>
+                              {formatCurrency(Number(line.estimated_amount))}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    );
+                  })}
                 </View>
               );
             })}
@@ -445,7 +478,7 @@ export function ProjectPDF({ project, items, budgetLines, taxRate = 21, architec
                           )}
                         </View>
                         <View style={styles.colName}>
-                          <Text style={styles.tableCellBold}>{item.name}</Text>
+                          <Text style={styles.tableCellBold}>{(item as any).product?.name || item.name}</Text>
                           {item.description && (
                             <Text style={[styles.tableCell, { fontSize: 7, marginTop: 2, color: colors.textLight }]}>
                               {item.description}
