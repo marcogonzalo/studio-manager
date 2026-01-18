@@ -164,4 +164,14 @@
   .dark input[type="date"]::-webkit-calendar-picker-indicator {
     filter: brightness(0) saturate(100%) invert(1);
   }
+  
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
 }

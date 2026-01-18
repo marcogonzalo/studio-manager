@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,6 +24,8 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('resumen');
+  const tabsListRef = useRef<HTMLDivElement>(null);
 
   async function fetchProject() {
     if (!id) return;
@@ -45,6 +47,41 @@ export default function ProjectDetailPage() {
   useEffect(() => {
     fetchProject();
   }, [id]);
+
+  // Scroll to active tab when it changes
+  useEffect(() => {
+    // Wait for DOM to update
+    const timeoutId = setTimeout(() => {
+      if (!tabsListRef.current) return;
+      
+      const container = tabsListRef.current.parentElement;
+      if (!container) return;
+      
+      const activeTrigger = tabsListRef.current.querySelector(`[data-state="active"]`) as HTMLElement;
+      if (!activeTrigger) return;
+      
+      const triggerLeft = activeTrigger.offsetLeft;
+      const triggerWidth = activeTrigger.offsetWidth;
+      const containerWidth = container.clientWidth;
+      const scrollLeft = container.scrollLeft;
+      
+      // Check if the active tab is fully visible
+      const isFullyVisible = 
+        triggerLeft >= scrollLeft && 
+        triggerLeft + triggerWidth <= scrollLeft + containerWidth;
+      
+      if (!isFullyVisible) {
+        // Scroll to center the active tab
+        const targetScroll = triggerLeft - (containerWidth / 2) + (triggerWidth / 2);
+        container.scrollTo({
+          left: Math.max(0, targetScroll),
+          behavior: 'smooth'
+        });
+      }
+    }, 50);
+    
+    return () => clearTimeout(timeoutId);
+  }, [activeTab]);
 
   if (loading) return <div>Cargando...</div>;
   if (!project) return <div>Proyecto no encontrado</div>;
@@ -123,17 +160,19 @@ export default function ProjectDetailPage() {
         </CollapsibleContent>
       </Collapsible>
 
-      <Tabs defaultValue="resumen" className="space-y-4">
-        <TabsList className="print:hidden w-full flex">
-          <TabsTrigger value="resumen" className="flex-1">Resumen</TabsTrigger>
-          <TabsTrigger value="spaces" className="flex-1">Espacios</TabsTrigger>
-          <TabsTrigger value="budget" className="flex-1">Presupuesto</TabsTrigger>
-          <TabsTrigger value="cost-control" className="flex-1">Control de costes</TabsTrigger>
-          <TabsTrigger value="purchases" className="flex-1">Compras</TabsTrigger>
-          <TabsTrigger value="payments" className="flex-1">Pagos</TabsTrigger>
-          <TabsTrigger value="documents" className="flex-1">Documentos</TabsTrigger>
-          <TabsTrigger value="notes" className="flex-1">Notas</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <div className="print:hidden w-full overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <TabsList ref={tabsListRef} className="inline-flex min-w-full w-max">
+            <TabsTrigger value="resumen" className="flex-shrink-0 whitespace-nowrap">Resumen</TabsTrigger>
+            <TabsTrigger value="spaces" className="flex-shrink-0 whitespace-nowrap">Espacios</TabsTrigger>
+            <TabsTrigger value="budget" className="flex-shrink-0 whitespace-nowrap">Presupuesto</TabsTrigger>
+            <TabsTrigger value="cost-control" className="flex-shrink-0 whitespace-nowrap">Control de costes</TabsTrigger>
+            <TabsTrigger value="purchases" className="flex-shrink-0 whitespace-nowrap">Compras</TabsTrigger>
+            <TabsTrigger value="payments" className="flex-shrink-0 whitespace-nowrap">Pagos</TabsTrigger>
+            <TabsTrigger value="documents" className="flex-shrink-0 whitespace-nowrap">Documentos</TabsTrigger>
+            <TabsTrigger value="notes" className="flex-shrink-0 whitespace-nowrap">Notas</TabsTrigger>
+          </TabsList>
+        </div>
         
         <TabsContent value="resumen">
           <ProjectDashboard projectId={project.id} />
