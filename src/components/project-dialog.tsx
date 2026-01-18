@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { Plus } from 'lucide-react';
-import type { Client, Project, ProjectPhase } from '@/types';
+import type { Client, Project } from '@/types';
 import { ClientDialog } from '@/components/dialogs/client-dialog';
 
 const formSchema = z.object({

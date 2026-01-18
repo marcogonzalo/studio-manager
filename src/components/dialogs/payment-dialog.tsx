@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/components/auth-provider';
-import type { Payment, PaymentType, ProjectPhase, PurchaseOrder, AdditionalCost } from '@/types';
+import type { Payment, PurchaseOrder, AdditionalCost } from '@/types';
 
 const formSchema = z.object({
   amount: z.number().min(0.01, "El monto debe ser mayor a 0"),
@@ -23,9 +23,9 @@ const formSchema = z.object({
   additional_cost_id: z.string().optional(),
   phase: z.enum(['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery']).optional(),
 }).refine(
-  (data) => {
-    // Al menos una asociación opcional o el tipo es suficiente
-    return true; // Flexible: permite pagos sin asociación
+  () => {
+    // Flexible: permite pagos sin asociación
+    return true;
   },
   {
     message: "Especifica al menos una asociación o tipo de pago",
