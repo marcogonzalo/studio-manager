@@ -1,6 +1,103 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { ProjectPhase, BudgetCategory } from "@/types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+export function getPhaseLabel(phase?: ProjectPhase): string {
+  if (!phase) return 'No asignada';
+  
+  const labels: Record<ProjectPhase, string> = {
+    diagnosis: 'Diagnóstico',
+    design: 'Diseño',
+    executive: 'Proyecto Ejecutivo',
+    budget: 'Presupuestos',
+    construction: 'Obra',
+    delivery: 'Entrega',
+  };
+  
+  return labels[phase];
+}
+
+// Budget Categories (value in DB → label in UI)
+export const BUDGET_CATEGORIES: Record<BudgetCategory, string> = {
+  construction: 'Obra',
+  own_fees: 'Honorarios Propios',
+  external_services: 'Servicios Externos',
+  operations: 'Gastos Operativos',
+} as const;
+
+// Subcategories by Category (value in DB → label in UI)
+export const BUDGET_SUBCATEGORIES: Record<BudgetCategory, Record<string, string>> = {
+  construction: {
+    demolition: 'Demolición',
+    masonry: 'Albañilería',
+    electricity: 'Electricidad',
+    plumbing: 'Fontanería',
+    interior_painting: 'Pintura Interior',
+    exterior_painting: 'Pintura Exterior',
+    domotics: 'Domótica',
+    carpentry: 'Carpintería',
+    locksmithing: 'Cerrajería',
+    hvac: 'Climatización',
+    flooring: 'Suelos y Pavimentos',
+    tiling: 'Alicatados',
+    other: 'Otros',
+  },
+  own_fees: {
+    design: 'Diseño',
+    executive_project: 'Proyecto Ejecutivo',
+    site_supervision: 'Supervisión de Obra',
+    management: 'Gestión y Coordinación',
+    other: 'Otros',
+  },
+  external_services: {
+    technical_architect: 'Arquitecto Técnico',
+    engineering: 'Ingenierías',
+    logistics: 'Logística',
+    permits: 'Gestión de Permisos',
+    consulting: 'Consultoría',
+    other: 'Otros',
+  },
+  operations: {
+    shipping: 'Envío',
+    packaging: 'Embalaje',
+    transport: 'Transporte',
+    storage: 'Almacenamiento',
+    insurance: 'Seguros',
+    customs: 'Aduanas',
+    handling: 'Manipulación',
+    other: 'Otros',
+  },
+} as const;
+
+// Helper to get category label
+export function getBudgetCategoryLabel(category: BudgetCategory): string {
+  return BUDGET_CATEGORIES[category] || category;
+}
+
+// Helper to get subcategory label
+export function getBudgetSubcategoryLabel(category: BudgetCategory, subcategory: string): string {
+  return BUDGET_SUBCATEGORIES[category]?.[subcategory] || subcategory;
+}
+
+// Get all subcategories for a category as options array
+export function getSubcategoryOptions(category: BudgetCategory): { value: string; label: string }[] {
+  const subcategories = BUDGET_SUBCATEGORIES[category];
+  if (!subcategories) return [];
+  
+  return Object.entries(subcategories).map(([value, label]) => ({
+    value,
+    label,
+  }));
+}
+
+// Get all categories as options array
+export function getCategoryOptions(): { value: BudgetCategory; label: string }[] {
+  return Object.entries(BUDGET_CATEGORIES).map(([value, label]) => ({
+    value: value as BudgetCategory,
+    label,
+  }));
 }

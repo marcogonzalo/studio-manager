@@ -7,7 +7,13 @@ import { KeyboardHint } from '@/components/ui/keyboard-hint';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useAuth } from '@/components/auth-provider';
-import { Trash2 } from 'lucide-react';
+import { Trash2, MoreVertical } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface Note {
   id: string;
@@ -140,14 +146,22 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
                     {note.archived ? "Archivada" : "Archivar"}
                   </label>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-red-500 hover:text-red-600"
-                  onClick={() => handleDeleteNote(note.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem 
+                      onClick={() => handleDeleteNote(note.id)}
+                      className="text-red-600 dark:text-red-400"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <p className="whitespace-pre-wrap mb-4">{note.content}</p>
               <div className="text-xs text-gray-500 flex justify-between">

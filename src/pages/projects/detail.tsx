@@ -2,18 +2,22 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { Project } from '@/types';
+import { getPhaseLabel } from '@/lib/utils';
 import { ProjectNotes } from './project-notes';
 import { ProjectPurchases } from './project-purchases';
 import { ProjectSpaces } from './project-spaces';
 import { ProjectBudget } from './project-budget';
+import { ProjectCostControl } from './project-cost-control';
 import { ProjectDocuments } from './project-documents';
-import { ProjectAdditionalCosts } from './project-additional-costs';
+import { ProjectPayments } from './project-payments';
+import { ProjectDashboard } from './project-dashboard';
 import { ProjectDialog } from '@/components/project-dialog';
 import { toast } from 'sonner';
-import { Pencil } from 'lucide-react';
+import { Pencil, ChevronDown } from 'lucide-react';
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -47,30 +51,24 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">{project.name}</h2>
-        <p className="text-gray-500">{project.client?.full_name}</p>
-      </div>
-
-      <Tabs defaultValue="general" className="space-y-4">
-        <TabsList className="print:hidden">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="spaces">Espacios</TabsTrigger>
-          <TabsTrigger value="budget">Presupuesto</TabsTrigger>
-          <TabsTrigger value="purchases">Compras</TabsTrigger>
-          <TabsTrigger value="additional-costs">Costes Adicionales</TabsTrigger>
-          <TabsTrigger value="notes">Notas</TabsTrigger>
-          <TabsTrigger value="documents">Documentos</TabsTrigger>
-        </TabsList>
+      <Collapsible>
+        <div className="flex items-center justify-between">
+          <CollapsibleTrigger className="flex-1 text-left group">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                {project.name}
+                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </h2>
+              <p className="text-gray-500">{project.client?.full_name}</p>
+            </div>
+          </CollapsibleTrigger>
+        </div>
         
-        <TabsContent value="general">
-          <Card>
+        <CollapsibleContent>
+          <Card className="mt-4">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Información General</CardTitle>
-                  <CardDescription>Detalles del proyecto.</CardDescription>
-                </div>
+                <CardTitle>Información del Proyecto</CardTitle>
                 <Button
                   variant="outline"
                   size="sm"
@@ -109,9 +107,36 @@ export default function ProjectDetailPage() {
                     <p className="text-gray-500">{project.completed_date}</p>
                   </div>
                 )}
+                <div>
+                  <p className="font-medium">Fase</p>
+                  <p className="text-gray-500">{getPhaseLabel(project.phase)}</p>
+                </div>
               </div>
+              {project.address && (
+                <div>
+                  <p className="font-medium">Dirección</p>
+                  <p className="text-gray-500">{project.address}</p>
+                </div>
+              )}
             </CardContent>
           </Card>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <Tabs defaultValue="resumen" className="space-y-4">
+        <TabsList className="print:hidden w-full flex">
+          <TabsTrigger value="resumen" className="flex-1">Resumen</TabsTrigger>
+          <TabsTrigger value="spaces" className="flex-1">Espacios</TabsTrigger>
+          <TabsTrigger value="budget" className="flex-1">Presupuesto</TabsTrigger>
+          <TabsTrigger value="cost-control" className="flex-1">Control de costes</TabsTrigger>
+          <TabsTrigger value="purchases" className="flex-1">Compras</TabsTrigger>
+          <TabsTrigger value="payments" className="flex-1">Pagos</TabsTrigger>
+          <TabsTrigger value="documents" className="flex-1">Documentos</TabsTrigger>
+          <TabsTrigger value="notes" className="flex-1">Notas</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="resumen">
+          <ProjectDashboard projectId={project.id} />
         </TabsContent>
 
         <TabsContent value="spaces">
@@ -122,20 +147,24 @@ export default function ProjectDetailPage() {
           <ProjectBudget projectId={project.id} />
         </TabsContent>
 
+        <TabsContent value="cost-control">
+          <ProjectCostControl projectId={project.id} />
+        </TabsContent>
+
         <TabsContent value="purchases">
           <ProjectPurchases projectId={project.id} />
         </TabsContent>
 
-        <TabsContent value="additional-costs">
-          <ProjectAdditionalCosts projectId={project.id} />
-        </TabsContent>
-
-        <TabsContent value="notes">
-          <ProjectNotes projectId={project.id} />
+        <TabsContent value="payments">
+          <ProjectPayments projectId={project.id} />
         </TabsContent>
 
         <TabsContent value="documents">
           <ProjectDocuments projectId={project.id} />
+        </TabsContent>
+
+        <TabsContent value="notes">
+          <ProjectNotes projectId={project.id} />
         </TabsContent>
       </Tabs>
 

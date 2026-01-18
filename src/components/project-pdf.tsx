@@ -1,32 +1,19 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
-import type { Project, AdditionalCost } from '@/types';
+import type { Project, ProjectBudgetLine, BudgetCategory, ProjectPhase } from '@/types';
 import type { ProjectItem } from '@/pages/projects/project-budget';
-
-const COST_TYPE_LABELS: Record<string, string> = {
-  shipping: 'Envío',
-  packaging: 'Embalaje',
-  installation: 'Instalación',
-  assembly: 'Montaje',
-  transport: 'Transporte',
-  insurance: 'Seguro',
-  customs: 'Aduanas',
-  storage: 'Almacenamiento',
-  handling: 'Manejo',
-  other: 'Otro',
-};
+import { BUDGET_CATEGORIES, BUDGET_SUBCATEGORIES, getPhaseLabel } from '@/lib/utils';
 
 // Color palette matching the application (from index.css)
-// Converting oklch to hex approximations for PDF
 const colors = {
-  primary: '#8B9A7A', // Sage green - oklch(0.65 0.08 140) approximation
-  primaryLight: '#B8C5A8', // Lighter sage
-  background: '#FAF9F6', // Warm cream - oklch(0.98 0.01 100) approximation
-  text: '#3F3F3F', // Dark earthy grey - oklch(0.25 0.02 100) approximation
-  textLight: '#6B6B6B', // Medium grey
-  border: '#E5E5E0', // Light border - oklch(0.90 0.02 100) approximation
-  accent: '#E8E8E0', // Beige - oklch(0.94 0.03 95) approximation
-  card: '#FFFFFF', // White
-  sectionBg: '#F5F5F0', // Light section background
+  primary: '#8B9A7A',
+  primaryLight: '#B8C5A8',
+  background: '#FAF9F6',
+  text: '#3F3F3F',
+  textLight: '#6B6B6B',
+  border: '#E5E5E0',
+  accent: '#E8E8E0',
+  card: '#FFFFFF',
+  sectionBg: '#F5F5F0',
 };
 
 const styles = StyleSheet.create({
@@ -154,12 +141,7 @@ const styles = StyleSheet.create({
     width: '20%',
     textAlign: 'right',
   },
-  colDescription: {
-    width: '10%',
-    fontSize: 8,
-    color: colors.textLight,
-  },
-  costTypeGroup: {
+  budgetLineGroup: {
     marginBottom: 15,
     backgroundColor: colors.card,
     padding: 12,
@@ -168,7 +150,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderStyle: 'solid',
   },
-  costTypeHeader: {
+  budgetLineHeader: {
     backgroundColor: colors.sectionBg,
     padding: 8,
     marginBottom: 8,
@@ -177,17 +159,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  costTypeName: {
+  budgetLineName: {
     fontSize: 12,
     fontWeight: 'bold',
     color: colors.primary,
   },
-  costTypeSubtotal: {
+  budgetLineSubtotal: {
     fontSize: 11,
     fontWeight: 'bold',
     color: colors.text,
   },
-  costItem: {
+  budgetLineItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 4,
@@ -196,12 +178,19 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     borderBottomStyle: 'dashed',
   },
-  costItemDescription: {
+  budgetLineItemName: {
     fontSize: 9,
+    fontWeight: 'bold',
     color: colors.text,
-    flex: 1,
+    width: '30%',
   },
-  costItemAmount: {
+  budgetLineItemDescription: {
+    fontSize: 9,
+    color: colors.textLight,
+    flex: 1,
+    paddingHorizontal: 8,
+  },
+  budgetLineItemAmount: {
     fontSize: 9,
     fontWeight: 'bold',
     color: colors.text,
@@ -268,12 +257,22 @@ const styles = StyleSheet.create({
 interface ProjectPDFProps {
   project: Project & { client?: { full_name: string; email?: string; phone?: string; address?: string } };
   items: ProjectItem[];
-  additionalCosts: AdditionalCost[];
-  taxRate?: number; // Tax rate as percentage (e.g., 21 for 21%)
-  architectName?: string; // Name of the architect/user
+  budgetLines: ProjectBudgetLine[];
+  taxRate?: number;
+  architectName?: string;
 }
 
-export function ProjectPDF({ project, items, additionalCosts, taxRate = 21, architectName }: ProjectPDFProps) {
+// Helper function to get category label
+function getCategoryLabel(category: BudgetCategory): string {
+  return BUDGET_CATEGORIES[category] || category;
+}
+
+// Helper function to get subcategory label
+function getSubcategoryLabel(category: BudgetCategory, subcategory: string): string {
+  return BUDGET_SUBCATEGORIES[category]?.[subcategory] || subcategory;
+}
+
+export function ProjectPDF({ project, items, budgetLines, taxRate = 21, architectName }: ProjectPDFProps) {
   // Group items by space (location)
   const itemsBySpace = items.reduce((acc, item) => {
     const spaceName = item.space?.name || 'General';
@@ -284,29 +283,38 @@ export function ProjectPDF({ project, items, additionalCosts, taxRate = 21, arch
     return acc;
   }, {} as Record<string, ProjectItem[]>);
 
-  // Group additional costs by type
-  const costsByType = additionalCosts.reduce((acc, cost) => {
-    if (!acc[cost.cost_type]) {
-      acc[cost.cost_type] = [];
+  // Group budget lines by phase first, then by category
+  const budgetLinesByPhaseAndCategory = budgetLines.reduce((acc, line) => {
+    const phaseKey = line.phase || 'no_phase';
+    if (!acc[phaseKey]) {
+      acc[phaseKey] = {} as Record<BudgetCategory, ProjectBudgetLine[]>;
     }
-    acc[cost.cost_type].push(cost);
+    if (!acc[phaseKey][line.category]) {
+      acc[phaseKey][line.category] = [];
+    }
+    acc[phaseKey][line.category].push(line);
     return acc;
-  }, {} as Record<string, AdditionalCost[]>);
+  }, {} as Record<string, Record<BudgetCategory, ProjectBudgetLine[]>>);
 
   // Calculate totals
   const totalItemsPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
-  const totalAdditionalCosts = additionalCosts.reduce((sum, cost) => sum + Number(cost.amount), 0);
-  const subtotal = totalItemsPrice + totalAdditionalCosts;
+  const totalBudgetLines = budgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+  const subtotal = totalItemsPrice + totalBudgetLines;
   const tax = subtotal * (taxRate / 100);
   const grandTotal = subtotal + tax;
 
   const formatCurrency = (amount: number) => {
-    // Format: 1.234,56 € (Spanish format with dot as thousands separator, comma as decimal separator and space before €)
     return `${amount.toLocaleString('es-ES', { 
       minimumFractionDigits: 2, 
       maximumFractionDigits: 2 
     })} €`;
   };
+
+  // Order of phases to display in PDF
+  const phaseOrder: (ProjectPhase | 'no_phase')[] = ['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery', 'no_phase'];
+  
+  // Order of categories to display within each phase
+  const categoryOrder: BudgetCategory[] = ['own_fees', 'external_services', 'construction', 'operations'];
 
   return (
     <Document>
@@ -344,13 +352,80 @@ export function ProjectPDF({ project, items, additionalCosts, taxRate = 21, arch
           )}
         </View>
 
+        {/* Budget Lines by Phase and Category */}
+        {budgetLines.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Servicios y Partidas</Text>
+            
+            {phaseOrder.map((phase) => {
+              const phaseData = budgetLinesByPhaseAndCategory[phase];
+              if (!phaseData) return null;
+              
+              // Check if this phase has any lines
+              const hasLines = Object.values(phaseData).some(lines => lines.length > 0);
+              if (!hasLines) return null;
+              
+              const phaseTotal = Object.values(phaseData).reduce((sum, lines) => 
+                sum + lines.reduce((lineSum, line) => lineSum + Number(line.estimated_amount), 0), 0
+              );
+
+              return (
+                <View key={phase} style={[styles.budgetLineGroup, { marginBottom: 20 }]}>
+                  <View style={[styles.budgetLineHeader, { backgroundColor: colors.primary, marginBottom: 10 }]}>
+                    <Text style={[styles.budgetLineName, { color: '#FFFFFF', fontSize: 13 }]}>
+                      {phase === 'no_phase' ? 'Sin Fase' : getPhaseLabel(phase as ProjectPhase)}
+                    </Text>
+                    <Text style={[styles.budgetLineSubtotal, { color: '#FFFFFF', fontSize: 12 }]}>
+                      Subtotal: {formatCurrency(phaseTotal)}
+                    </Text>
+                  </View>
+
+                  {categoryOrder.map((category) => {
+                    const lines = phaseData[category];
+                    if (!lines || lines.length === 0) return null;
+                    
+                    const categoryTotal = lines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+
+                    return (
+                      <View key={category} style={[styles.budgetLineGroup, { marginLeft: 10, marginBottom: 12 }]}>
+                        <View style={styles.budgetLineHeader}>
+                          <Text style={styles.budgetLineName}>
+                            {getCategoryLabel(category)}
+                          </Text>
+                          <Text style={styles.budgetLineSubtotal}>
+                            Subtotal: {formatCurrency(categoryTotal)}
+                          </Text>
+                        </View>
+
+                        {lines.map((line) => (
+                          <View key={line.id} style={styles.budgetLineItem}>
+                            <Text style={styles.budgetLineItemName}>
+                              {getSubcategoryLabel(category, line.subcategory)}
+                            </Text>
+                            <Text style={styles.budgetLineItemDescription}>
+                              {line.description || ''}
+                            </Text>
+                            <Text style={styles.budgetLineItemAmount}>
+                              {formatCurrency(Number(line.estimated_amount))}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    );
+                  })}
+                </View>
+              );
+            })}
+          </View>
+        )}
+
         {/* Items by Location */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Elementos del Proyecto</Text>
+          <Text style={styles.sectionTitle}>Mobiliario y Productos</Text>
           
           {Object.keys(itemsBySpace).length === 0 ? (
             <View style={styles.emptyState}>
-              <Text>No hay elementos registrados en el proyecto.</Text>
+              <Text>No hay productos registrados en el proyecto.</Text>
             </View>
           ) : (
             Object.entries(itemsBySpace).map(([spaceName, spaceItems]) => {
@@ -403,7 +478,7 @@ export function ProjectPDF({ project, items, additionalCosts, taxRate = 21, arch
                           )}
                         </View>
                         <View style={styles.colName}>
-                          <Text style={styles.tableCellBold}>{item.name}</Text>
+                          <Text style={styles.tableCellBold}>{(item as any).product?.name || item.name}</Text>
                           {item.description && (
                             <Text style={[styles.tableCell, { fontSize: 7, marginTop: 2, color: colors.textLight }]}>
                               {item.description}
@@ -434,54 +509,19 @@ export function ProjectPDF({ project, items, additionalCosts, taxRate = 21, arch
           )}
         </View>
 
-        {/* Additional Costs by Type */}
-        {additionalCosts.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Costes Adicionales</Text>
-            
-            {Object.entries(costsByType).map(([type, typeCosts]) => {
-              const typeTotal = typeCosts.reduce((sum, cost) => sum + Number(cost.amount), 0);
-
-              return (
-                <View key={type} style={styles.costTypeGroup}>
-                  <View style={styles.costTypeHeader}>
-                    <Text style={styles.costTypeName}>
-                      {COST_TYPE_LABELS[type] || type}
-                    </Text>
-                    <Text style={styles.costTypeSubtotal}>
-                      Subtotal: {formatCurrency(typeTotal)}
-                    </Text>
-                  </View>
-
-                  {typeCosts.map((cost) => (
-                    <View key={cost.id} style={styles.costItem}>
-                      <Text style={styles.costItemDescription}>
-                        {cost.description || 'Sin descripción'}
-                      </Text>
-                      <Text style={styles.costItemAmount}>
-                        {formatCurrency(Number(cost.amount))}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-              );
-            })}
-          </View>
-        )}
-
         {/* Summary */}
         <View style={styles.section}>
           <View style={styles.summary}>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal Elementos:</Text>
-              <Text style={styles.summaryValue}>{formatCurrency(totalItemsPrice)}</Text>
-            </View>
-            {additionalCosts.length > 0 && (
+            {budgetLines.length > 0 && (
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Subtotal Costes Adicionales:</Text>
-                <Text style={styles.summaryValue}>{formatCurrency(totalAdditionalCosts)}</Text>
+                <Text style={styles.summaryLabel}>Subtotal Servicios y Partidas:</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(totalBudgetLines)}</Text>
               </View>
             )}
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Subtotal Mobiliario y Productos:</Text>
+              <Text style={styles.summaryValue}>{formatCurrency(totalItemsPrice)}</Text>
+            </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal:</Text>
               <Text style={styles.summaryValue}>{formatCurrency(subtotal)}</Text>
@@ -500,4 +540,3 @@ export function ProjectPDF({ project, items, additionalCosts, taxRate = 21, arch
     </Document>
   );
 }
-

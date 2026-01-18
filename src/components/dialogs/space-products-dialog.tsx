@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, MoreVertical } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { AddItemDialog } from '@/components/dialogs/add-item-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
@@ -107,7 +113,7 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
                       )}
                     </div>
                     <div className="p-3">
-                      <h4 className="font-medium text-sm mb-1 truncate">{item.name}</h4>
+                      <h4 className="font-medium text-sm mb-1 truncate">{item.product?.name || item.name}</h4>
                       <p className="text-xs text-gray-500 mb-2">{item.product?.supplier?.name || '-'}</p>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-xs text-gray-500">Cant: {item.quantity}</span>
@@ -116,23 +122,27 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
                       <div className="text-xs font-bold text-right border-t pt-2">
                         Total: ${(item.unit_price * item.quantity).toFixed(2)}
                       </div>
-                      <div className="flex gap-1 mt-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 text-blue-500 hover:text-blue-600" 
-                          onClick={() => handleEdit(item)}
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 text-red-500 hover:text-red-600" 
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                      <div className="flex justify-end mt-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEdit(item)}>
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleDelete(item.id)}
+                              className="text-red-600 dark:text-red-400"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   </div>

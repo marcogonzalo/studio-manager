@@ -35,6 +35,31 @@ globs: src/**/*.tsx, src/**/*.ts
 - **Server State:** Prefer fetching data inside components with `useEffect` or using a library like TanStack Query (if added later).
 - **UI State:** `useState` for local, `useContext` for global (Auth, Theme).
 
+## Shadcn/UI Components (Radix UI)
+
+- **Select Component:** **CRITICAL:** Never use `value=""` (empty string) in `<SelectItem>`. Radix UI Select does not allow empty string values because it uses empty strings internally to clear selections and show placeholders.
+  - **Wrong:** `<SelectItem value="">Sin opción</SelectItem>`
+  - **Correct:** Remove the SelectItem and use `undefined` for optional values. Handle empty state with placeholder:
+    ```tsx
+    <Select 
+      onValueChange={(value) => field.onChange(value || undefined)} 
+      value={field.value || undefined}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Seleccionar opción" />
+      </SelectTrigger>
+      <SelectContent>
+        {/* Only include SelectItems with non-empty values */}
+        {options.map((option) => (
+          <SelectItem key={option.id} value={option.id}>
+            {option.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+    ```
+  - **Form Defaults:** Use `undefined` instead of empty strings for optional Select fields in form defaultValues.
+
 ## Directory Structure
 
 - `src/pages`: Routes/Views.
