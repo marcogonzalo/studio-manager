@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet, TrendingUp, TrendingDown, FolderKanban, AlertTriangle, CheckCircle2, ArrowUp, ArrowDown, FileText, Receipt } from 'lucide-react';
+import { Wallet, TrendingUp, FolderKanban, AlertTriangle, CheckCircle2, ArrowUp, ArrowDown, FileText, Receipt } from 'lucide-react';
 import { getPhaseLabel, getBudgetCategoryLabel } from '@/lib/utils';
 import type { Project, Payment, ProjectBudgetLine, ProjectPhase, BudgetCategory } from '@/types';
 

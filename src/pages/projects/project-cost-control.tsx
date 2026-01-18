@@ -123,23 +123,6 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
   // Calculate totals
   const totalProductsCost = items.reduce((sum, item) => sum + (item.unit_cost * item.quantity), 0);
   const totalProductsPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
-  
-  const totalEstimated = budgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
-  const totalActual = budgetLines.reduce((sum, line) => sum + Number(line.actual_amount), 0);
-  
-  // Client-facing budget lines only
-  const clientBudgetLines = budgetLines.filter(line => !line.is_internal_cost);
-  const totalClientEstimated = clientBudgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
-  
-  // Total costs (all budget lines actual + products cost)
-  const totalCosts = totalActual + totalProductsCost;
-  
-  // Total client budget (client-facing budget lines + products price)
-  const totalClientBudget = totalClientEstimated + totalProductsPrice;
-  
-  // Margin
-  const margin = totalClientBudget - totalCosts;
-  const marginPercentage = totalClientBudget > 0 ? (margin / totalClientBudget) * 100 : 0;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
