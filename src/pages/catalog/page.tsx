@@ -2,8 +2,14 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Search, Image as ImageIcon } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Image as ImageIcon, MoreVertical } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ProductDialog } from '@/components/dialogs/product-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
 import { toast } from 'sonner';
@@ -105,13 +111,27 @@ export default function CatalogPage() {
                 <TableCell className="text-right font-mono">
                   {p.cost_price ? `$${p.cost_price.toFixed(2)}` : '-'}
                 </TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button variant="ghost" size="icon" onClick={() => { setEditingProduct(p); setIsDialogOpen(true); }}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(p.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => { setEditingProduct(p); setIsDialogOpen(true); }}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDelete(p.id)}
+                        className="text-red-600 dark:text-red-400"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}

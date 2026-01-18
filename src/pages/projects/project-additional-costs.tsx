@@ -3,7 +3,13 @@ import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, Pencil, DollarSign } from 'lucide-react';
+import { Plus, Trash2, Pencil, DollarSign, MoreVertical } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { AdditionalCostDialog } from '@/components/dialogs/additional-cost-dialog';
 import { toast } from 'sonner';
 import type { AdditionalCost } from '@/types';
@@ -155,23 +161,27 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                               ${Number(cost.amount).toFixed(2)}
                             </TableCell>
                             <TableCell className="text-right">
-                              <div className="flex justify-end gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-blue-500 hover:text-blue-600"
-                                  onClick={() => handleEdit(cost)}
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-red-500 hover:text-red-600"
-                                  onClick={() => handleDelete(cost.id)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
+                              <div className="flex justify-end">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEdit(cost)}>
+                                      <Pencil className="mr-2 h-4 w-4" />
+                                      Editar
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                      onClick={() => handleDelete(cost.id)}
+                                      className="text-red-600 dark:text-red-400"
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Eliminar
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </TableCell>
                           </TableRow>
