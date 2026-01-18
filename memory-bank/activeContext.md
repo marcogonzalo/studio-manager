@@ -31,6 +31,12 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
     - Advanced PDF generation using `@react-pdf/renderer`.
     - Professional budget PDFs with grouped items by space, additional costs, and proper formatting.
 
+## Recently Completed (Latest Session)
+
+1. **Budget Organization:** Reorganizado el presupuesto para agrupar primero por fase del proyecto y luego por categoría, con estructura jerárquica colapsable.
+2. **Dashboard Improvements:** Reorganizadas las tarjetas KPI del dashboard de proyecto con mejor orden y distribución. Agregadas tarjetas para "Presupuestado" y "Coste total". Implementado indicador visual de desviación de costes con flechas y colores.
+3. **UI/UX Enhancements:** Mejorada la selección de ítems en órdenes de compra, corregida visualización de productos, mejorado layout de tabs para ocupar ancho completo.
+
 ## Work in Progress / Next Steps
 
 - **Image Uploads:** Currently, the app accepts image URLs. Integrating real file uploads to Supabase Storage bucket is the next logical step.
