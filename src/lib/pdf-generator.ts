@@ -1,10 +1,12 @@
 // Dynamic PDF generator utility
 // This file helps Vite handle @react-pdf/renderer by loading it dynamically
 
+import type { ProjectBudgetLine } from '@/types';
+
 export async function generateProjectPDF(
   project: any,
   items: any[],
-  additionalCosts: any[],
+  budgetLines: ProjectBudgetLine[],
   taxRate: number = 21,
   architectName?: string
 ) {
@@ -17,7 +19,7 @@ export async function generateProjectPDF(
   const doc = React.createElement(ProjectPDF, {
     project,
     items,
-    additionalCosts,
+    budgetLines,
     taxRate,
     architectName,
   });

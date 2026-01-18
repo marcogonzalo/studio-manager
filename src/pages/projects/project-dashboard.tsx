@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Wallet, TrendingUp, FolderKanban, AlertTriangle, CheckCircle2, XCircle, Clock } from 'lucide-react';
-import { getPhaseLabel } from '@/lib/utils';
-import type { Project, Payment, AdditionalCost, ProjectPhase } from '@/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Wallet, TrendingUp, FolderKanban, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { getPhaseLabel, getBudgetCategoryLabel } from '@/lib/utils';
+import type { Project, Payment, ProjectBudgetLine, ProjectPhase, BudgetCategory } from '@/types';
 
 interface PurchaseOrderCoverage {
   id: string;
@@ -14,10 +14,18 @@ interface PurchaseOrderCoverage {
 }
 
 interface DashboardKPIs {
-  coverage: number; // Porcentaje de cobertura
-  utility: number; // Utilidad en €
-  progress: number; // Porcentaje de avance
-  deviation: number; // Porcentaje de desviación
+  coverage: number;
+  margin: number;
+  marginPercentage: number;
+  progress: number;
+  deviation: number;
+}
+
+interface ProjectItem {
+  id: string;
+  quantity: number;
+  unit_cost: number;
+  unit_price: number;
 }
 
 interface ProjectDashboardProps {
@@ -27,9 +35,9 @@ interface ProjectDashboardProps {
 export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
   const [project, setProject] = useState<Project | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [additionalCosts, setAdditionalCosts] = useState<AdditionalCost[]>([]);
+  const [budgetLines, setBudgetLines] = useState<ProjectBudgetLine[]>([]);
   const [poCoverage, setPoCoverage] = useState<PurchaseOrderCoverage[]>([]);
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -54,12 +62,24 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
       .eq('project_id', projectId);
     if (paymentsData) setPayments(paymentsData || []);
 
-    // Fetch additional costs
-    const { data: costsData } = await supabase
-      .from('additional_project_costs')
+    // Fetch budget lines
+    const { data: budgetLinesData, error: budgetLinesError } = await supabase
+      .from('project_budget_lines')
       .select('*')
       .eq('project_id', projectId);
-    if (costsData) setAdditionalCosts(costsData || []);
+    
+    if (budgetLinesError) {
+      // Table might not exist yet - silently handle it
+      if (budgetLinesError.code === '42P01' || budgetLinesError.message?.includes('does not exist')) {
+        console.warn('Table project_budget_lines does not exist yet. Please run migrations.');
+        setBudgetLines([]);
+      } else {
+        console.error('Error fetching budget lines:', budgetLinesError);
+        setBudgetLines([]);
+      }
+    } else {
+      setBudgetLines(budgetLinesData || []);
+    }
 
     // Fetch purchase orders with coverage
     const { data: posData } = await supabase
@@ -68,7 +88,6 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
       .eq('project_id', projectId);
 
     if (posData) {
-      // Calculate coverage for each PO
       const coveragePromises = posData.map(async (po) => {
         const totalAmount = (po.project_items || []).reduce(
           (sum: number, item: any) => sum + (item.unit_cost * item.quantity),
@@ -105,38 +124,44 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     // Fetch items
     const { data: itemsData } = await supabase
       .from('project_items')
-      .select('*')
+      .select('id, quantity, unit_cost, unit_price')
       .eq('project_id', projectId);
     if (itemsData) setItems(itemsData || []);
 
     setLoading(false);
   };
 
+  // Calculate totals
+  const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  
+  // Products
+  const totalProductsCost = items.reduce((sum, item) => sum + (item.unit_cost * item.quantity), 0);
+  const totalProductsPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  
+  // Budget lines
+  const clientBudgetLines = budgetLines.filter(line => !line.is_internal_cost);
+  const totalBudgetLinesEstimated = clientBudgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+  const totalBudgetLinesActual = budgetLines.reduce((sum, line) => sum + Number(line.actual_amount), 0);
+  
+  // Totals
+  const clientBudget = totalProductsPrice + totalBudgetLinesEstimated;
+  const totalCosts = totalProductsCost + totalBudgetLinesActual;
+  const margin = clientBudget - totalCosts;
+  const marginPercentage = clientBudget > 0 ? (margin / clientBudget) * 100 : 0;
+
   // Calculate KPIs
   const calculateKPIs = (): DashboardKPIs => {
-    const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
-    const totalCost = items.reduce((sum, item) => sum + (item.unit_cost * item.quantity), 0);
-    const totalAdditionalCosts = additionalCosts.reduce((sum, cost) => sum + Number(cost.amount), 0);
-    const totalCosts = totalCost + totalAdditionalCosts;
-    
-    // Client budget: Use total price of items + additional costs (if no explicit budget field exists)
-    const totalPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
-    const clientBudget = totalPrice + totalAdditionalCosts;
-    
     const coverage = clientBudget > 0 ? (totalPaid / clientBudget) * 100 : 0;
-    const utility = clientBudget - totalCosts;
     
-    // Progress: Based on phase + items completed
+    // Progress based on phase
     const phaseProgress = getPhaseProgress(project?.phase);
-    const progress = phaseProgress;
     
-    // Deviation: (actual_cost - estimated_cost) / estimated_cost * 100
-    // Estimated cost is the sum of item costs
-    const estimatedCost = items.reduce((sum, item) => sum + (item.unit_cost * item.quantity), 0);
-    const actualCost = totalCosts;
-    const deviation = estimatedCost > 0 ? ((actualCost - estimatedCost) / estimatedCost) * 100 : 0;
+    // Deviation: Compare estimated vs actual for budget lines
+    const totalEstimated = budgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+    const totalActual = budgetLines.reduce((sum, line) => sum + Number(line.actual_amount), 0);
+    const deviation = totalEstimated > 0 ? ((totalActual - totalEstimated) / totalEstimated) * 100 : 0;
     
-    return { coverage, utility, progress, deviation };
+    return { coverage, margin, marginPercentage, progress: phaseProgress, deviation };
   };
 
   const getPhaseProgress = (phase?: ProjectPhase): number => {
@@ -147,12 +172,21 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
   };
 
   const kpis = calculateKPIs();
-  const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
-  const totalCost = items.reduce((sum, item) => sum + (item.unit_cost * item.quantity), 0);
-  const totalAdditionalCosts = additionalCosts.reduce((sum, cost) => sum + Number(cost.amount), 0);
-  const totalCosts = totalCost + totalAdditionalCosts;
-  const totalPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
-  const clientBudget = totalPrice + totalAdditionalCosts;
+
+  // Group budget lines by category for display
+  const budgetLinesByCategory = budgetLines.reduce((acc, line) => {
+    if (!acc[line.category]) {
+      acc[line.category] = { estimated: 0, actual: 0, count: 0 };
+    }
+    acc[line.category].estimated += Number(line.estimated_amount);
+    acc[line.category].actual += Number(line.actual_amount);
+    acc[line.category].count += 1;
+    return acc;
+  }, {} as Record<BudgetCategory, { estimated: number; actual: number; count: number }>);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+  };
 
   if (loading) {
     return <div className="text-center py-12">Cargando...</div>;
@@ -163,18 +197,18 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
       {/* KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KPICard
-          title="Cobertura"
+          title="Cobertura de Pagos"
           value={`${kpis.coverage.toFixed(1)}%`}
-          subtitle={`${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(totalPaid)} de ${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(clientBudget)}`}
+          subtitle={`${formatCurrency(totalPaid)} de ${formatCurrency(clientBudget)}`}
           icon={Wallet}
           color="chart-1"
         />
         <KPICard
-          title="Utilidad"
-          value={new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(kpis.utility)}
-          subtitle={`Margen: ${clientBudget > 0 ? ((kpis.utility / clientBudget) * 100).toFixed(1) : 0}%`}
+          title="Margen Bruto"
+          value={formatCurrency(margin)}
+          subtitle={`${marginPercentage.toFixed(1)}% del presupuesto`}
           icon={TrendingUp}
-          color="chart-2"
+          color={margin >= 0 ? 'chart-2' : 'destructive'}
         />
         <KPICard
           title="Avance"
@@ -184,9 +218,9 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
           color="primary"
         />
         <KPICard
-          title="Desviación"
+          title="Desviación Costes"
           value={`${kpis.deviation >= 0 ? '+' : ''}${kpis.deviation.toFixed(1)}%`}
-          subtitle={kpis.deviation > 5 ? 'Sobrecoste detectado' : kpis.deviation < -5 ? 'Ahorro' : 'En línea'}
+          subtitle={kpis.deviation > 5 ? 'Sobrecoste' : kpis.deviation < -5 ? 'Ahorro' : 'En línea'}
           icon={AlertTriangle}
           color={kpis.deviation > 5 ? 'destructive' : 'chart-1'}
         />
@@ -201,27 +235,32 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-muted-foreground">Presupuesto Cliente</p>
-              <p className="text-2xl font-bold">{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(clientBudget)}</p>
+              <p className="text-2xl font-bold">{formatCurrency(clientBudget)}</p>
+              <p className="text-xs text-muted-foreground">
+                Productos: {formatCurrency(totalProductsPrice)} + Partidas: {formatCurrency(totalBudgetLinesEstimated)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Costes Totales</p>
-              <p className="text-2xl font-bold">{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(totalCosts)}</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalCosts)}</p>
               <p className="text-xs text-muted-foreground">
-                {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(totalCost)} productos + {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(totalAdditionalCosts)} adicionales
+                Productos: {formatCurrency(totalProductsCost)} + Partidas: {formatCurrency(totalBudgetLinesActual)}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Margen Bruto</p>
-              <p className="text-2xl font-bold text-green-600">{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(kpis.utility)}</p>
+              <p className={`text-2xl font-bold ${margin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(margin)}
+              </p>
               <p className="text-xs text-muted-foreground">
-                {clientBudget > 0 ? ((kpis.utility / clientBudget) * 100).toFixed(1) : 0}%
+                {marginPercentage.toFixed(1)}%
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Pagos Recibidos</p>
-              <p className="text-2xl font-bold">{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(totalPaid)}</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalPaid)}</p>
               <p className="text-xs text-muted-foreground">
-                Pendiente: {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(Math.max(0, clientBudget - totalPaid))}
+                Pendiente: {formatCurrency(Math.max(0, clientBudget - totalPaid))}
               </p>
             </div>
           </div>
@@ -240,8 +279,70 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* PO Coverage & Project Progress */}
+      {/* Budget by Category & Project Progress */}
       <div className="grid gap-4 md:grid-cols-2">
+        {/* Budget by Category */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Presupuesto por Categoría</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {Object.keys(budgetLinesByCategory).length === 0 ? (
+              <p className="text-sm text-muted-foreground">No hay partidas de presupuesto</p>
+            ) : (
+              <div className="space-y-3">
+                {(Object.entries(budgetLinesByCategory) as [BudgetCategory, { estimated: number; actual: number; count: number }][]).map(([category, data]) => {
+                  const deviation = data.estimated > 0 
+                    ? ((data.actual - data.estimated) / data.estimated) * 100 
+                    : 0;
+                  return (
+                    <div key={category} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">{getBudgetCategoryLabel(category)}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          deviation > 5 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                          deviation < -5 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                        }`}>
+                          {deviation >= 0 ? '+' : ''}{deviation.toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Est: {formatCurrency(data.estimated)}</span>
+                        <span>Real: {formatCurrency(data.actual)}</span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1">
+                        <div 
+                          className={`h-1 rounded-full ${
+                            deviation > 5 ? 'bg-red-500' :
+                            deviation < -5 ? 'bg-green-500' :
+                            'bg-primary'
+                          }`}
+                          style={{ width: `${data.estimated > 0 ? Math.min(100, (data.actual / data.estimated) * 100) : 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                {/* Products summary */}
+                <div className="pt-2 border-t space-y-1">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Productos</span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                      +{((totalProductsPrice - totalProductsCost) / totalProductsPrice * 100).toFixed(0)}% margen
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Coste: {formatCurrency(totalProductsCost)}</span>
+                    <span>Venta: {formatCurrency(totalProductsPrice)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* PO Coverage */}
         <Card>
           <CardHeader>
             <CardTitle>Cobertura de Órdenes de Compra</CardTitle>
@@ -264,7 +365,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                       </span>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(po.covered_amount)} / {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(po.total_amount)}</span>
+                      <span>{formatCurrency(po.covered_amount)} / {formatCurrency(po.total_amount)}</span>
                       <span>{po.total_amount > 0 ? ((po.covered_amount / po.total_amount) * 100).toFixed(0) : 0}%</span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1">
@@ -279,49 +380,8 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                     </div>
                   </div>
                 ))}
-                <div className="pt-2 border-t">
-                  <div className="flex justify-between font-semibold">
-                    <span>Total</span>
-                    <span>{new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-                      poCoverage.reduce((sum, po) => sum + po.covered_amount, 0)
-                    )} / {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(
-                      poCoverage.reduce((sum, po) => sum + po.total_amount, 0)
-                    )}</span>
-                  </div>
-                </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Avance del Proyecto</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Fase Actual</span>
-                  <span className="text-sm text-muted-foreground">{kpis.progress.toFixed(0)}%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{project?.phase ? getPhaseLabel(project.phase) : 'No asignada'}</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2 mt-2">
-                  <div 
-                    className="bg-primary h-2 rounded-full transition-all"
-                    style={{ width: `${kpis.progress}%` }}
-                  />
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium mb-2">Ítems del Presupuesto</p>
-                <p className="text-sm text-muted-foreground">
-                  {items.length} ítem{items.length !== 1 ? 's' : ''} en el presupuesto
-                </p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -329,7 +389,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
       {/* Alerts */}
       <Card>
         <CardHeader>
-          <CardTitle>Alertas y Desviaciones</CardTitle>
+          <CardTitle>Alertas</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -337,9 +397,9 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
               <div className="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded">
                 <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium">POs sin cobertura de pago</p>
+                  <p className="text-sm font-medium">Órdenes de compra pendientes de pago</p>
                   <p className="text-xs text-muted-foreground">
-                    {poCoverage.filter(po => po.status === 'pending').length} orden(es) pendiente(s) de pago
+                    {poCoverage.filter(po => po.status === 'pending').length} orden(es) sin cobertura
                   </p>
                 </div>
               </div>
@@ -348,17 +408,30 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
               <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded">
                 <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium">Desviación presupuestaria detectada</p>
+                  <p className="text-sm font-medium">Desviación presupuestaria</p>
                   <p className="text-xs text-muted-foreground">
-                    Sobrecoste de {kpis.deviation.toFixed(1)}% sobre el estimado
+                    Los costes reales superan en {kpis.deviation.toFixed(1)}% el estimado
                   </p>
                 </div>
               </div>
             )}
-            {poCoverage.filter(po => po.status === 'pending').length === 0 && kpis.deviation <= 5 && (
+            {margin < 0 && (
+              <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded">
+                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium">Margen negativo</p>
+                  <p className="text-xs text-muted-foreground">
+                    Los costes superan el presupuesto del cliente en {formatCurrency(Math.abs(margin))}
+                  </p>
+                </div>
+              </div>
+            )}
+            {poCoverage.filter(po => po.status === 'pending').length === 0 && 
+             kpis.deviation <= 5 && 
+             margin >= 0 && (
               <div className="flex items-start gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded">
                 <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5" />
-                <p className="text-sm font-medium">No hay alertas. Todo en orden.</p>
+                <p className="text-sm font-medium">Todo en orden. No hay alertas.</p>
               </div>
             )}
           </div>
@@ -378,7 +451,7 @@ interface KPICardProps {
 
 function KPICard({ title, value, subtitle, icon: Icon, color }: KPICardProps) {
   return (
-    <Card className="border-none shadow-md bg-gradient-to-br from-white to-secondary/20">
+    <Card className="border-none shadow-md bg-gradient-to-br from-white to-secondary/20 dark:from-gray-900 dark:to-gray-800">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <Icon className={`h-4 w-4 text-${color}`} />

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { Project } from '@/types';
@@ -11,8 +11,8 @@ import { ProjectNotes } from './project-notes';
 import { ProjectPurchases } from './project-purchases';
 import { ProjectSpaces } from './project-spaces';
 import { ProjectBudget } from './project-budget';
+import { ProjectCostControl } from './project-cost-control';
 import { ProjectDocuments } from './project-documents';
-import { ProjectAdditionalCosts } from './project-additional-costs';
 import { ProjectPayments } from './project-payments';
 import { ProjectDashboard } from './project-dashboard';
 import { ProjectDialog } from '@/components/project-dialog';
@@ -128,8 +128,8 @@ export default function ProjectDetailPage() {
           <TabsTrigger value="resumen">Resumen</TabsTrigger>
           <TabsTrigger value="spaces">Espacios</TabsTrigger>
           <TabsTrigger value="budget">Presupuesto</TabsTrigger>
+          <TabsTrigger value="cost-control">Control Costes</TabsTrigger>
           <TabsTrigger value="purchases">Compras</TabsTrigger>
-          <TabsTrigger value="additional-costs">Costes Adicionales</TabsTrigger>
           <TabsTrigger value="payments">Pagos</TabsTrigger>
           <TabsTrigger value="documents">Documentos</TabsTrigger>
           <TabsTrigger value="notes">Notas</TabsTrigger>
@@ -147,12 +147,12 @@ export default function ProjectDetailPage() {
           <ProjectBudget projectId={project.id} />
         </TabsContent>
 
-        <TabsContent value="purchases">
-          <ProjectPurchases projectId={project.id} />
+        <TabsContent value="cost-control">
+          <ProjectCostControl projectId={project.id} />
         </TabsContent>
 
-        <TabsContent value="additional-costs">
-          <ProjectAdditionalCosts projectId={project.id} />
+        <TabsContent value="purchases">
+          <ProjectPurchases projectId={project.id} />
         </TabsContent>
 
         <TabsContent value="payments">
