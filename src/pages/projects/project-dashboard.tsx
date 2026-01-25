@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wallet, TrendingUp, FolderKanban, AlertTriangle, CheckCircle2, ArrowUp, ArrowDown, FileText, Receipt } from 'lucide-react';
-import { getPhaseLabel, getBudgetCategoryLabel } from '@/lib/utils';
+import { getPhaseLabel, getBudgetCategoryLabel, isCostCategory } from '@/lib/utils';
 import type { Project, Payment, ProjectBudgetLine, ProjectPhase, BudgetCategory } from '@/types';
 
 interface PurchaseOrderCoverage {
@@ -141,7 +141,9 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
   // Budget lines
   const clientBudgetLines = budgetLines.filter(line => !line.is_internal_cost);
   const totalBudgetLinesEstimated = clientBudgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
-  const totalBudgetLinesActual = budgetLines.reduce((sum, line) => sum + Number(line.actual_amount), 0);
+  // Solo contar como coste real las categorías de coste (excluir own_fees que son ingresos)
+  const costBudgetLines = budgetLines.filter(line => isCostCategory(line.category));
+  const totalBudgetLinesActual = costBudgetLines.reduce((sum, line) => sum + Number(line.actual_amount), 0);
   
   // Totals
   const clientBudget = totalProductsPrice + totalBudgetLinesEstimated;
@@ -156,9 +158,9 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     // Progress based on phase
     const phaseProgress = getPhaseProgress(project?.phase);
     
-    // Deviation: Compare estimated vs actual for budget lines
-    const totalEstimated = budgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
-    const totalActual = budgetLines.reduce((sum, line) => sum + Number(line.actual_amount), 0);
+    // Deviation: Compare estimated vs actual for cost budget lines only (excluir own_fees)
+    const totalEstimated = costBudgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+    const totalActual = costBudgetLines.reduce((sum, line) => sum + Number(line.actual_amount), 0);
     const deviation = totalEstimated > 0 ? ((totalActual - totalEstimated) / totalEstimated) * 100 : 0;
     
     return { coverage, margin, marginPercentage, progress: phaseProgress, deviation };
@@ -328,8 +330,8 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                       </span>
                     </div>
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{formatCurrency(po.covered_amount)} / {formatCurrency(po.total_amount)}</span>
-                      <span>{po.total_amount > 0 ? ((po.covered_amount / po.total_amount) * 100).toFixed(0) : 0}%</span>
+                      <span>{formatCurrency(po.total_amount)}</span>
+                      <span>{po.total_amount > 0 ? Math.min(100, (po.covered_amount / po.total_amount) * 100).toFixed(0) : 0}%</span>
                     </div>
                     <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1">
                       <div 
