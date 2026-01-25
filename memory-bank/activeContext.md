@@ -33,9 +33,12 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
 
 ## Recently Completed (Latest Session)
 
-1. **Budget Organization:** Reorganizado el presupuesto para agrupar primero por fase del proyecto y luego por categoría, con estructura jerárquica colapsable.
-2. **Dashboard Improvements:** Reorganizadas las tarjetas KPI del dashboard de proyecto con mejor orden y distribución. Agregadas tarjetas para "Presupuestado" y "Coste total". Implementado indicador visual de desviación de costes con flechas y colores.
-3. **UI/UX Enhancements:** Mejorada la selección de ítems en órdenes de compra, corregida visualización de productos, mejorado layout de tabs para ocupar ancho completo.
+1. **Profit Calculation Fix:** Corregido el cálculo del beneficio del proyecto. Los honorarios propios (`own_fees`) ahora se tratan como ingresos, no como costes. El beneficio se calcula como: Presupuestado al cliente - Costes reales (excluyendo honorarios).
+2. **Cost Control Improvements:** 
+   - Excluidos los honorarios propios del control de costes (solo aparecen en presupuesto).
+   - Añadida tarjeta de totalización de costes con barra de desviación visual (verde < 100%, amarillo 100-101%, rojo > 101%).
+3. **Budget Line Dialog:** El campo "Importe Real" se oculta cuando la categoría es honorarios propios, mostrando un mensaje explicativo.
+4. **Purchase Order Coverage:** Simplificada la visualización de cobertura de órdenes de compra (solo muestra total y porcentaje limitado al 100%).
 
 ## Work in Progress / Next Steps
 
