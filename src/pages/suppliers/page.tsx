@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Search, ExternalLink, MoreVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, ExternalLink, MoreVertical, Truck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
@@ -47,7 +47,10 @@ export default function SuppliersPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold">Proveedores</h2>
+        <div className="flex items-center gap-3">
+          <Truck className="h-8 w-8 text-primary" />
+          <h2 className="text-3xl font-bold">Proveedores</h2>
+        </div>
         <Button onClick={() => { setEditingSupplier(null); setIsDialogOpen(true); }}>
           <Plus className="mr-2 h-4 w-4" /> Nuevo Proveedor
         </Button>
@@ -78,17 +81,26 @@ export default function SuppliersPage() {
           </TableHeader>
           <TableBody>
             {suppliers.map((s) => (
-              <TableRow key={s.id}>
+              <TableRow key={s.id} className="group">
                 <TableCell className="font-medium">{s.name}</TableCell>
                 <TableCell>{s.contact_name}</TableCell>
                 <TableCell>
-                  <div className="text-sm">{s.email}</div>
-                  <div className="text-xs text-gray-500">{s.phone}</div>
+                  <div className="relative overflow-hidden max-w-[200px]">
+                    <div className="text-sm whitespace-nowrap">{s.email}</div>
+                    <div className="text-xs text-gray-500 whitespace-nowrap">{s.phone}</div>
+                    <span className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-gray-800 group-hover:from-muted/50 to-transparent pointer-events-none transition-colors"></span>
+                  </div>
                 </TableCell>
                 <TableCell>
                   {s.website && (
-                    <a href={s.website} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-600 hover:underline">
-                      Web <ExternalLink className="ml-1 h-3 w-3" />
+                    <a href={s.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline max-w-[200px]">
+                      <span className="relative overflow-hidden whitespace-nowrap block flex-1 min-w-0">
+                        <span className="block">
+                          {new URL(s.website).hostname.replace('www.', '')}
+                        </span>
+                        <span className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-gray-800 group-hover:from-muted/50 to-transparent pointer-events-none transition-colors"></span>
+                      </span>
+                      <ExternalLink className="h-3 w-3 flex-shrink-0" />
                     </a>
                   )}
                 </TableCell>

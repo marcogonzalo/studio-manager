@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, ArrowRight, FolderKanban, Users, Calendar, User as UserIcon, TrendingDown, TrendingUp, ShoppingBag } from 'lucide-react';
+import { Plus, ArrowRight, FolderKanban, Users, Calendar, User as UserIcon, TrendingDown, TrendingUp, ShoppingBag, LayoutDashboard } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { format } from 'date-fns';
@@ -142,9 +142,12 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Hola, Bienvenido</h2>
-          <p className="text-muted-foreground mt-1">Aquí tienes un resumen de tu estudio de diseño.</p>
+        <div className="flex items-start gap-3">
+          <LayoutDashboard className="h-8 w-8 text-primary mt-1" />
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">Hola, Bienvenido</h2>
+            <p className="text-muted-foreground mt-1">Aquí tienes un resumen de tu estudio de diseño.</p>
+          </div>
         </div>
         <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105">
           <Link to="/projects">

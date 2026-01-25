@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Search, MoreVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, MoreVertical, Users } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
@@ -68,7 +68,10 @@ export default function ClientsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Clientes</h2>
+        <div className="flex items-center gap-3">
+          <Users className="h-8 w-8 text-primary" />
+          <h2 className="text-3xl font-bold tracking-tight">Clientes</h2>
+        </div>
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" /> Nuevo Cliente
         </Button>

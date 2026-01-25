@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Plus, Calendar, User as UserIcon } from 'lucide-react';
+import { Plus, Calendar, User as UserIcon, FolderKanban } from 'lucide-react';
 import { ProjectDialog } from '@/components/project-dialog';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
@@ -37,7 +37,10 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Proyectos</h2>
+        <div className="flex items-center gap-3">
+          <FolderKanban className="h-8 w-8 text-primary" />
+          <h2 className="text-3xl font-bold tracking-tight">Proyectos</h2>
+        </div>
         <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
         </Button>

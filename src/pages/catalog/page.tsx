@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Search, Image as ImageIcon, MoreVertical } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Image as ImageIcon, MoreVertical, ShoppingBag } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
@@ -50,7 +50,10 @@ export default function CatalogPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold">Catálogo de Productos</h2>
+        <div className="flex items-center gap-3">
+          <ShoppingBag className="h-8 w-8 text-primary" />
+          <h2 className="text-3xl font-bold">Catálogo de Productos</h2>
+        </div>
         <Button onClick={() => { setEditingProduct(null); setIsDialogOpen(true); }}>
           <Plus className="mr-2 h-4 w-4" /> Nuevo Producto
         </Button>
