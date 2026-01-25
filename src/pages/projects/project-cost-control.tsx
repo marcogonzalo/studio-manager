@@ -16,7 +16,9 @@ import { toast } from 'sonner';
 import { 
   getBudgetCategoryLabel, 
   getBudgetSubcategoryLabel,
-  getPhaseLabel 
+  getPhaseLabel,
+  COST_CATEGORIES,
+  isCostCategory
 } from '@/lib/utils';
 
 import type { ProjectBudgetLine, BudgetCategory } from '@/types';
@@ -37,7 +39,6 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
   const [loading, setLoading] = useState(true);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     construction: true,
-    own_fees: true,
     external_services: true,
     operations: true,
     products: true,
@@ -64,7 +65,8 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
         setBudgetLines([]);
       }
     } else {
-      setBudgetLines(budgetLinesData || []);
+      // Solo cargar partidas que son costes (excluir own_fees que son ingresos)
+      setBudgetLines(budgetLinesData?.filter(line => isCostCategory(line.category)) || []);
     }
     
     // Fetch project items for cost summary
@@ -123,6 +125,32 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
   // Calculate totals
   const totalProductsCost = items.reduce((sum, item) => sum + (item.unit_cost * item.quantity), 0);
   const totalProductsPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  
+  // Total budget lines (estimated and actual)
+  const totalBudgetLinesEstimated = budgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
+  const totalBudgetLinesActual = budgetLines.reduce((sum, line) => sum + Number(line.actual_amount), 0);
+  
+  // Grand totals (budget lines + products)
+  const grandTotalEstimated = totalBudgetLinesEstimated + totalProductsCost;
+  const grandTotalActual = totalBudgetLinesActual + totalProductsCost;
+  
+  // Deviation percentage (actual / estimated * 100)
+  const deviationPercentage = grandTotalEstimated > 0 
+    ? (grandTotalActual / grandTotalEstimated) * 100 
+    : 0;
+  
+  // Get bar color based on deviation
+  const getDeviationBarColor = (percentage: number) => {
+    if (percentage < 100) return 'bg-green-500';
+    if (percentage <= 101) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+  
+  const getDeviationTextColor = (percentage: number) => {
+    if (percentage < 100) return 'text-green-600 dark:text-green-400';
+    if (percentage <= 101) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
@@ -142,8 +170,8 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
     return { icon: Minus, color: 'text-gray-500', text: `${deviation >= 0 ? '+' : ''}${deviation.toFixed(1)}%` };
   };
 
-  // Order of categories to display
-  const categoryOrder: BudgetCategory[] = ['construction', 'operations', 'own_fees', 'external_services'];
+  // Order of categories to display (solo categorías de coste, excluye own_fees)
+  const categoryOrder: BudgetCategory[] = COST_CATEGORIES;
 
   if (loading) {
     return <div className="text-center py-12">Cargando...</div>;
@@ -163,6 +191,38 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
           <Plus className="mr-2 h-4 w-4" /> Nueva Partida
         </Button>
       </div>
+
+      {/* Cost Totalization Summary */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-3">
+            {/* Totals row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-xs text-muted-foreground">Total Estimado</p>
+                <p className="text-xl font-bold">{formatCurrency(grandTotalEstimated)}</p>
+              </div>
+              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p className="text-xs text-muted-foreground">Total Real</p>
+                <p className="text-xl font-bold">{formatCurrency(grandTotalActual)}</p>
+              </div>
+            </div>
+            
+            {/* Deviation bar with percentage */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full ${getDeviationBarColor(deviationPercentage)} transition-all duration-300`}
+                  style={{ width: `${Math.min(deviationPercentage, 100)}%` }}
+                />
+              </div>
+              <span className={`text-sm font-semibold min-w-[60px] text-right ${getDeviationTextColor(deviationPercentage)}`}>
+                {deviationPercentage.toFixed(1)}%
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Budget Lines by Category */}
       {categoryOrder.map((category) => {
@@ -255,7 +315,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                                   </span>
                                 ) : (
                                   <span title="Visible para cliente">
-                                    <Eye className="h-4 w-4 text-green-500" />
+                                    <Eye className="h-4 w-4 text-gray-400" />
                                   </span>
                                 )}
                                 <DropdownMenu>
