@@ -15,7 +15,8 @@ import { useAuth } from '@/components/auth-provider';
 import { 
   getCategoryOptions, 
   getSubcategoryOptions, 
-  getPhaseLabel
+  getPhaseLabel,
+  isCostCategory
 } from '@/lib/utils';
 import type { ProjectBudgetLine, BudgetCategory, ProjectPhase, Supplier } from '@/types';
 
@@ -124,9 +125,14 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
   // Update subcategory options when category changes
   const handleCategoryChange = (value: string) => {
     if (value && value !== '') {
-      setSelectedCategory(value as BudgetCategory);
+      const category = value as BudgetCategory;
+      setSelectedCategory(category);
       form.setValue('category', value);
       form.setValue('subcategory', ''); // Reset subcategory when category changes
+      // Reset actual_amount to 0 if the category is not a cost category (e.g., own_fees)
+      if (!isCostCategory(category)) {
+        form.setValue('actual_amount', '0');
+      }
     }
   };
 
@@ -302,7 +308,7 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid gap-4 ${selectedCategory && isCostCategory(selectedCategory) ? 'grid-cols-2' : 'grid-cols-1'}`}>
               <FormField
                 control={form.control}
                 name="estimated_amount"
@@ -322,24 +328,32 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="actual_amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Importe Real</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {selectedCategory && isCostCategory(selectedCategory) ? (
+                <FormField
+                  control={form.control}
+                  name="actual_amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Importe Real</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ) : selectedCategory === 'own_fees' ? (
+                <div className="flex items-center">
+                  <p className="text-sm text-muted-foreground">
+                    Los honorarios son ingresos y no requieren importe real de coste.
+                  </p>
+                </div>
+              ) : null}
             </div>
 
             <FormField

@@ -29,6 +29,14 @@ export const BUDGET_CATEGORIES: Record<BudgetCategory, string> = {
   operations: 'Gastos Operativos',
 } as const;
 
+// Categorías que representan costes reales (no ingresos)
+// Los honorarios propios (own_fees) son ingresos, no costes
+export const COST_CATEGORIES: BudgetCategory[] = ['construction', 'external_services', 'operations'];
+
+// Helper para determinar si una categoría es un coste real
+export const isCostCategory = (category: BudgetCategory): boolean => 
+  COST_CATEGORIES.includes(category);
+
 // Subcategories by Category (value in DB → label in UI)
 export const BUDGET_SUBCATEGORIES: Record<BudgetCategory, Record<string, string>> = {
   construction: {
