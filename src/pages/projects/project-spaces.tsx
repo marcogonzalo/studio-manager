@@ -60,10 +60,12 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
             </CardContent>
             <CardFooter className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1" onClick={() => openProducts(space)}>
-                <Package className="mr-2 h-4 w-4" /> Productos
+                <Package className="h-4 w-4 lg:mr-2" />
+                <span className="hidden lg:inline">Productos</span>
               </Button>
               <Button variant="outline" size="sm" className="flex-1" onClick={() => openImages(space)}>
-                <ImageIcon className="mr-2 h-4 w-4" /> Renders
+                <ImageIcon className="h-4 w-4 lg:mr-2" />
+                <span className="hidden lg:inline">Renders</span>
               </Button>
             </CardFooter>
           </Card>
