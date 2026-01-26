@@ -2,10 +2,19 @@ services:
   app:
     build: .
     ports:
-      - "5173:5173"
+      - "3000:3000"
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/.next
+    extra_hosts:
+      # Make localhost resolve to host machine for Supabase access
+      - "localhost:host-gateway"
     environment:
       - CHOKIDAR_USEPOLLING=true
-
+      - WATCHPACK_POLLING=true
+      # CRITICAL: Both client AND server must use the SAME URL for PKCE cookies to work
+      # The cookie prefix is generated from the URL, so they must match exactly
+      # Use localhost which resolves to 127.0.0.1 and works from both browser and Docker
+      - NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH}

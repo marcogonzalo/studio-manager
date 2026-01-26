@@ -266,7 +266,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
       console.error('Error resetting form:', error);
       toast.error('Error al cargar los datos de la orden');
     }
-    // eslint-disable-next-line react-hook-form/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, order?.id]);
 
   // Fetch available items when supplier changes or when editing

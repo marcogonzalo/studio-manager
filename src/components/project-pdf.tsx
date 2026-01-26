@@ -1,6 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import type { Project, ProjectBudgetLine, BudgetCategory, ProjectPhase } from '@/types';
-import type { ProjectItem } from '@/pages/projects/project-budget';
+import type { ProjectItem } from '@/modules/app/projects/project-budget';
 import { BUDGET_CATEGORIES, BUDGET_SUBCATEGORIES, getPhaseLabel } from '@/lib/utils';
 
 // Color palette matching the application (from index.css)

@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Product } from '@/types';
-import type { ProjectItem } from '@/pages/projects/project-budget';
+import type { ProjectItem } from '@/modules/app/projects/project-budget';
 
 interface ProductDetailModalProps {
   open: boolean;

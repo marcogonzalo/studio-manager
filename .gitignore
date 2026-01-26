@@ -1,3 +1,15 @@
+# Dependencies
+node_modules
+
+# Next.js
+.next/
+out/
+
+# Production
+build
+dist
+dist-ssr
+
 # Logs
 logs
 *.log
@@ -7,9 +19,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Environment
 *.local
 .env
 .env.*
@@ -32,3 +42,13 @@ supabase/.temp
 
 # Process ids
 *.pid
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing
+coverage/
+
+# Vercel
+.vercel

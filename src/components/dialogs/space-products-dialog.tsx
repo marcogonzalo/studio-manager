@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 import { AddItemDialog } from '@/components/dialogs/add-item-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
 import type { Space } from '@/types';
-import type { ProjectItem } from '@/pages/projects/project-budget';
+import type { ProjectItem } from '@/modules/app/projects/project-budget';
 
 interface SpaceProductsDialogProps {
   open: boolean;
