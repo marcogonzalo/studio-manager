@@ -143,15 +143,15 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
   
   // Get bar color based on deviation
   const getDeviationBarColor = (percentage: number) => {
-    if (percentage < 100) return 'bg-green-500';
+    if (percentage < 100) return 'bg-primary';
     if (percentage <= 101) return 'bg-yellow-500';
-    return 'bg-red-500';
+    return 'bg-destructive';
   };
   
   const getDeviationTextColor = (percentage: number) => {
-    if (percentage < 100) return 'text-green-600 dark:text-green-400';
+    if (percentage < 100) return 'text-primary';
     if (percentage <= 101) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
+    return 'text-destructive';
   };
 
   const formatCurrency = (amount: number) => {
@@ -159,17 +159,17 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
   };
 
   const getDeviationIndicator = (estimated: number, actual: number) => {
-    if (estimated === 0 && actual === 0) return { icon: Minus, color: 'text-gray-400', text: '-' };
-    if (actual === 0) return { icon: Minus, color: 'text-gray-400', text: 'Pendiente' };
+    if (estimated === 0 && actual === 0) return { icon: Minus, color: 'text-muted-foreground', text: '-' };
+    if (actual === 0) return { icon: Minus, color: 'text-muted-foreground', text: 'Pendiente' };
     
     const deviation = ((actual - estimated) / estimated) * 100;
     
     if (deviation > 5) {
-      return { icon: TrendingUp, color: 'text-red-500', text: `+${deviation.toFixed(1)}%` };
+      return { icon: TrendingUp, color: 'text-destructive', text: `+${deviation.toFixed(1)}%` };
     } else if (deviation < -5) {
-      return { icon: TrendingDown, color: 'text-green-500', text: `${deviation.toFixed(1)}%` };
+      return { icon: TrendingDown, color: 'text-primary', text: `${deviation.toFixed(1)}%` };
     }
-    return { icon: Minus, color: 'text-gray-500', text: `${deviation >= 0 ? '+' : ''}${deviation.toFixed(1)}%` };
+    return { icon: Minus, color: 'text-muted-foreground', text: `${deviation >= 0 ? '+' : ''}${deviation.toFixed(1)}%` };
   };
 
   // Order of categories to display (solo categorías de coste, excluye own_fees)
@@ -185,7 +185,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
       <div className="flex justify-between items-center">
         <div className="space-y-1">
           <h3 className="text-lg font-medium">Control de Costes</h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Seguimiento interno de estimado vs real
           </p>
         </div>
@@ -200,11 +200,11 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
           <div className="space-y-3">
             {/* Totals row */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="p-3 bg-secondary/30 rounded-lg">
                 <p className="text-xs text-muted-foreground">Total Estimado</p>
                 <p className="text-xl font-bold">{formatCurrency(grandTotalEstimated)}</p>
               </div>
-              <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <div className="p-3 bg-secondary/30 rounded-lg">
                 <p className="text-xs text-muted-foreground">Total Real</p>
                 <p className="text-xl font-bold">{formatCurrency(grandTotalActual)}</p>
               </div>
@@ -212,7 +212,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
             
             {/* Deviation bar with percentage */}
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${getDeviationBarColor(deviationPercentage)} transition-all duration-300`}
                   style={{ width: `${Math.min(deviationPercentage, 100)}%` }}
@@ -243,7 +243,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
           >
             <Card>
               <CollapsibleTrigger asChild>
-                <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <CardHeader className="cursor-pointer hover:bg-accent/30">
                   <div className="flex justify-between items-center">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <ChevronDown className={`h-4 w-4 transition-transform ${openSections[category] ? '' : '-rotate-90'}`} />
@@ -291,10 +291,10 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                             <TableCell className="font-medium">
                               {getBudgetSubcategoryLabel(category, line.subcategory)}
                             </TableCell>
-                            <TableCell className="text-gray-500 max-w-[200px] truncate">
+                            <TableCell className="text-muted-foreground max-w-[200px] truncate">
                               {line.description || '-'}
                             </TableCell>
-                            <TableCell className="text-xs text-gray-500">
+                            <TableCell className="text-xs text-muted-foreground">
                               {line.phase ? getPhaseLabel(line.phase) : '-'}
                             </TableCell>
                             <TableCell className="text-right">
@@ -313,11 +313,11 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                               <div className="flex justify-end items-center gap-2">
                                 {line.is_internal_cost ? (
                                   <span title="Coste interno (no visible para cliente)">
-                                    <EyeOff className="h-4 w-4 text-gray-400" />
+                                    <EyeOff className="h-4 w-4 text-muted-foreground" />
                                   </span>
                                 ) : (
                                   <span title="Visible para cliente">
-                                    <Eye className="h-4 w-4 text-gray-400" />
+                                    <Eye className="h-4 w-4 text-muted-foreground" />
                                   </span>
                                 )}
                                 <DropdownMenu>
@@ -333,7 +333,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem 
                                       onClick={() => handleDeleteBudgetLine(line.id)}
-                                      className="text-red-600 dark:text-red-400"
+                                      className="text-destructive"
                                     >
                                       <Trash2 className="mr-2 h-4 w-4" />
                                       Eliminar
@@ -361,7 +361,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
       >
         <Card>
           <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+            <CardHeader className="cursor-pointer hover:bg-accent/30">
               <div className="flex justify-between items-center">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <ChevronDown className={`h-4 w-4 transition-transform ${openSections.products ? '' : '-rotate-90'}`} />
@@ -376,7 +376,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                       Coste: {formatCurrency(totalProductsCost)}
                     </p>
                   </div>
-                  <div className="text-green-500 flex items-center gap-1">
+                  <div className="text-primary flex items-center gap-1">
                     <TrendingUp className="h-4 w-4" />
                     <span className="text-sm font-medium">
                       Margen: {formatCurrency(totalProductsPrice - totalProductsCost)}
@@ -393,17 +393,17 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                 El detalle de productos se gestiona en la pestaña "Presupuesto".
               </p>
               <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="p-4 bg-secondary/30 rounded-lg">
                   <p className="text-sm text-muted-foreground">Total Coste</p>
                   <p className="text-xl font-bold">{formatCurrency(totalProductsCost)}</p>
                 </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="p-4 bg-secondary/30 rounded-lg">
                   <p className="text-sm text-muted-foreground">Total Venta</p>
                   <p className="text-xl font-bold">{formatCurrency(totalProductsPrice)}</p>
                 </div>
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div className="p-4 bg-primary/10 dark:bg-primary/20 rounded-lg">
                   <p className="text-sm text-muted-foreground">Margen Productos</p>
-                  <p className="text-xl font-bold text-green-600">
+                  <p className="text-xl font-bold text-primary">
                     {formatCurrency(totalProductsPrice - totalProductsCost)}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -423,7 +423,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
       {budgetLines.length === 0 && (
         <Card>
           <CardContent className="text-center py-12">
-            <p className="text-gray-500 mb-4">No hay partidas de presupuesto registradas.</p>
+            <p className="text-muted-foreground mb-4">No hay partidas de presupuesto registradas.</p>
             <Button onClick={handleAddBudgetLine}>
               <Plus className="mr-2 h-4 w-4" /> Añadir Primera Partida
             </Button>

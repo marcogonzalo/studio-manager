@@ -222,7 +222,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
           icon={AlertTriangle}
           color="text-muted-foreground"
           valueIcon={kpis.deviation < 0 ? ArrowDown : ArrowUp}
-          valueColor={kpis.deviation < 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}
+          valueColor={kpis.deviation < 0 ? 'text-primary' : 'text-destructive'}
         />
         <KPICard
           title="Presupuestado"
@@ -268,9 +268,9 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-medium">{getBudgetCategoryLabel(category)}</span>
                         <span className={`text-xs px-2 py-1 rounded-full ${
-                          deviation > 5 ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
-                          deviation < -5 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                          'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                          deviation > 5 ? 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive' :
+                          deviation < -5 ? 'bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary' :
+                          'bg-muted text-foreground'
                         }`}>
                           {deviation >= 0 ? '+' : ''}{deviation.toFixed(0)}%
                         </span>
@@ -279,11 +279,11 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                         <span>Est: {formatCurrency(data.estimated)}</span>
                         <span>Real: {formatCurrency(data.actual)}</span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1">
+                      <div className="w-full bg-muted rounded-full h-1">
                         <div 
                           className={`h-1 rounded-full ${
-                            deviation > 5 ? 'bg-red-500' :
-                            deviation < -5 ? 'bg-green-500' :
+                            deviation > 5 ? 'bg-destructive' :
+                            deviation < -5 ? 'bg-primary' :
                             'bg-primary'
                           }`}
                           style={{ width: `${data.estimated > 0 ? Math.min(100, (data.actual / data.estimated) * 100) : 0}%` }}
@@ -296,7 +296,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                 <div className="pt-2 border-t space-y-1">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Productos</span>
-                    <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    <span className="text-xs px-2 py-1 rounded-full bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary">
                       +{((totalProductsPrice - totalProductsCost) / totalProductsPrice * 100).toFixed(0)}% margen
                     </span>
                   </div>
@@ -325,9 +325,9 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">{po.order_number}</span>
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        po.status === 'covered' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                        po.status === 'partial' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                        'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+                        po.status === 'covered' ? 'bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary' :
+                        po.status === 'partial' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300' :
+                        'bg-muted text-foreground'
                       }`}>
                         {po.status === 'covered' ? '✓ Cubierta' : po.status === 'partial' ? '⚠ Parcial' : '○ Pendiente'}
                       </span>
@@ -336,12 +336,12 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                       <span>{formatCurrency(po.total_amount)}</span>
                       <span>{po.total_amount > 0 ? Math.min(100, (po.covered_amount / po.total_amount) * 100).toFixed(0) : 0}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1">
+                    <div className="w-full bg-muted rounded-full h-1">
                       <div 
                         className={`h-1 rounded-full ${
-                          po.status === 'covered' ? 'bg-green-500' :
+                          po.status === 'covered' ? 'bg-primary' :
                           po.status === 'partial' ? 'bg-yellow-500' :
-                          'bg-gray-400'
+                          'bg-muted-foreground'
                         }`}
                         style={{ width: `${po.total_amount > 0 ? Math.min(100, (po.covered_amount / po.total_amount) * 100) : 0}%` }}
                       />
@@ -362,7 +362,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         <CardContent>
           <div className="space-y-2">
             {poCoverage.filter(po => po.status === 'pending').length > 0 && (
-              <div className="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded">
+              <div className="flex items-start gap-2 p-2 bg-yellow-50 dark:bg-yellow-950/30 rounded">
                 <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">Órdenes de compra pendientes de pago</p>
@@ -373,8 +373,8 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
               </div>
             )}
             {kpis.deviation > 5 && (
-              <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded">
-                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5" />
+              <div className="flex items-start gap-2 p-2 bg-destructive/10 dark:bg-destructive/20 rounded">
+                <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">Desviación presupuestaria</p>
                   <p className="text-xs text-muted-foreground">
@@ -384,8 +384,8 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
               </div>
             )}
             {margin < 0 && (
-              <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded">
-                <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5" />
+              <div className="flex items-start gap-2 p-2 bg-destructive/10 dark:bg-destructive/20 rounded">
+                <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">Margen negativo</p>
                   <p className="text-xs text-muted-foreground">
@@ -397,8 +397,8 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
             {poCoverage.filter(po => po.status === 'pending').length === 0 && 
              kpis.deviation <= 5 && 
              margin >= 0 && (
-              <div className="flex items-start gap-2 p-2 bg-green-50 dark:bg-green-900/20 rounded">
-                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5" />
+              <div className="flex items-start gap-2 p-2 bg-primary/10 dark:bg-primary/20 rounded">
+                <CheckCircle2 className="h-4 w-4 text-primary mt-0.5" />
                 <p className="text-sm font-medium">Todo en orden. No hay alertas.</p>
               </div>
             )}
@@ -421,7 +421,7 @@ interface KPICardProps {
 
 function KPICard({ title, value, subtitle, icon: Icon, color, valueColor, valueIcon: ValueIcon }: KPICardProps) {
   return (
-    <Card className="border-none shadow-md bg-gradient-to-br from-white to-secondary/20 dark:from-gray-900 dark:to-gray-800">
+    <Card className="border-none shadow-md bg-gradient-to-br from-card to-muted/30">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <Icon className={color} />

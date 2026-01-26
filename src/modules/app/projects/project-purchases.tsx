@@ -39,11 +39,11 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
-  sent: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-  confirmed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  received: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-  cancelled: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+  draft: 'bg-muted text-foreground',
+  sent: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+  confirmed: 'bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary',
+  received: 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300',
+  cancelled: 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive',
 };
 
 export function ProjectPurchases({ projectId }: { projectId: string }) {
@@ -168,8 +168,8 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
 
       {orders.length === 0 ? (
         <div className="text-center py-12">
-          <ShoppingBag className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-gray-500 mb-4">No hay órdenes de compra.</p>
+          <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <p className="text-muted-foreground mb-4">No hay órdenes de compra.</p>
           <Button onClick={handleCreateNew} variant="outline">
             <Plus className="mr-2 h-4 w-4" /> Crear Primera Orden
           </Button>
@@ -189,7 +189,7 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
                           {STATUS_LABELS[po.status] || po.status}
                         </span>
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                      <div className="text-sm text-muted-foreground space-y-1">
                         <div>Ref: <span className="font-medium">{po.order_number}</span></div>
                         <div>Fecha: <span className="font-medium">{format(new Date(po.order_date || po.created_at), 'dd/MM/yyyy')}</span></div>
                         {po.notes && (
@@ -213,7 +213,7 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
                         </DropdownMenuItem>
                         <DropdownMenuItem 
                           onClick={() => handleDelete(po.id)}
-                          className="text-red-600 dark:text-red-400"
+                          className="text-destructive"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Eliminar
@@ -245,7 +245,7 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
                               </TableCell>
                             </TableRow>
                           ))}
-                          <TableRow className="font-bold bg-gray-50 dark:bg-gray-900">
+                          <TableRow className="font-bold bg-secondary/30">
                             <TableCell colSpan={3} className="text-right">Total de la Orden:</TableCell>
                             <TableCell className="text-right">${total.toFixed(2)}</TableCell>
                           </TableRow>
@@ -253,7 +253,7 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
                       </Table>
                     </div>
                   ) : (
-                    <div className="text-center py-4 text-gray-500 text-sm">
+                    <div className="text-center py-4 text-muted-foreground text-sm">
                       No hay ítems en esta orden
                     </div>
                   )}

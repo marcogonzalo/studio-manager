@@ -13,14 +13,20 @@
 - **Core:** `react`, `react-dom`, `next`.
 - **Backend Client:** `@supabase/ssr`, `@supabase/supabase-js`.
 - **Styling:** `tailwindcss`, `tailwindcss-animate`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` (icons).
+- **Theming:** `next-themes` for theme management. OKLCH color space for perceptually uniform colors. Dual theme system (light/dark) with CSS custom properties.
 - **Forms:** `react-hook-form`, `zod`, `@hookform/resolvers`.
-- **Utilities:** `date-fns`, `sonner` (toasts), `next-themes` (dark mode).
+- **Utilities:** `date-fns`, `sonner` (toasts).
 - **PDF Generation:** `@react-pdf/renderer` (for budget PDF generation).
 
 ## Configuration
 
 - **Next.js:** `next.config.ts` with Turbopack, path aliases (`@/*`), and module resolution for PDF generation.
 - **Tailwind:** `src/styles/globals.css` using Tailwind v4 syntax (`@theme`, CSS variables).
+- **Theme System:**
+  - **Light Mode:** Natural/pastel palette with warm cream backgrounds and sage green accents.
+  - **Dark Mode:** Soft dark beige palette (oklch) harmonizing with light mode aesthetic.
+  - **Color Space:** OKLCH for precise, perceptually uniform color control.
+  - **Implementation:** CSS custom properties with theme variants (`:root`, `.dark`).
 - **Supabase:** 
   - Local instance via `npx supabase start`.
   - SSR client configuration for browser, server, and middleware.

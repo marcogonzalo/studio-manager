@@ -37,7 +37,7 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
           {/* Imagen */}
           <div className="space-y-4">
             {imageUrl ? (
-              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+              <div className="relative aspect-square rounded-lg overflow-hidden bg-secondary/30 dark:bg-muted">
                 <img
                   src={imageUrl}
                   alt={name}
@@ -45,8 +45,8 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
                 />
               </div>
             ) : (
-              <div className="aspect-square rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                <span className="text-gray-400">Sin imagen</span>
+              <div className="aspect-square rounded-lg bg-secondary/30 dark:bg-muted flex items-center justify-center">
+                <span className="text-muted-foreground">Sin imagen</span>
               </div>
             )}
           </div>
@@ -55,7 +55,7 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
           <div className="space-y-4">
             {description && (
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Descripción</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1">Descripción</h3>
                 <p className="text-sm whitespace-pre-wrap">{description}</p>
               </div>
             )}
@@ -63,14 +63,14 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
             <div className="grid grid-cols-2 gap-4">
               {referenceCode && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Referencia</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Referencia</h3>
                   <p className="text-sm font-mono">{referenceCode}</p>
                 </div>
               )}
 
               {category && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Categoría</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Categoría</h3>
                   <p className="text-sm">{category}</p>
                 </div>
               )}
@@ -78,7 +78,7 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
 
             {referenceUrl && (
               <div>
-                <h3 className="text-sm font-medium text-gray-500 mb-1">URL de Referencia</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1">URL de Referencia</h3>
                 <a 
                   href={referenceUrl} 
                   target="_blank" 
@@ -91,26 +91,26 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
             )}
 
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Proveedor</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">Proveedor</h3>
               <p className="text-sm">{supplierName}</p>
             </div>
 
             <div className="border-t pt-4 space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm font-medium text-gray-500">Costo Unitario</span>
+                <span className="text-sm font-medium text-muted-foreground">Costo Unitario</span>
                 <span className="text-sm font-mono">${costPrice.toFixed(2)}</span>
               </div>
 
               {quantity && (
                 <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-500">Cantidad</span>
+                  <span className="text-sm font-medium text-muted-foreground">Cantidad</span>
                   <span className="text-sm">{quantity}</span>
                 </div>
               )}
 
               {unitPrice && (
                 <div className="flex justify-between">
-                  <span className="text-sm font-medium text-gray-500">Precio de Venta</span>
+                  <span className="text-sm font-medium text-muted-foreground">Precio de Venta</span>
                   <span className="text-sm font-mono">${unitPrice.toFixed(2)}</span>
                 </div>
               )}

@@ -132,7 +132,7 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
         {notes.map((note) => (
           <Card 
             key={note.id} 
-            className={note.archived ? "opacity-60 bg-gray-50 dark:bg-gray-900/50" : ""}
+            className={note.archived ? "opacity-60 bg-secondary/30/50" : ""}
           >
             <CardContent className="pt-6">
               <div className="flex items-start justify-between mb-4">
@@ -141,10 +141,10 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
                     type="checkbox"
                     checked={note.archived}
                     onChange={() => handleToggleArchive(note.id, note.archived)}
-                    className="w-4 h-4 rounded border-gray-300"
+                    className="w-4 h-4 rounded border-border"
                     title={note.archived ? "Desarchivar" : "Archivar"}
                   />
-                  <label className="text-xs text-gray-500 cursor-pointer" onClick={() => handleToggleArchive(note.id, note.archived)}>
+                  <label className="text-xs text-muted-foreground cursor-pointer" onClick={() => handleToggleArchive(note.id, note.archived)}>
                     {note.archived ? "Archivada" : "Archivar"}
                   </label>
                 </div>
@@ -157,7 +157,7 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem 
                       onClick={() => handleDeleteNote(note.id)}
-                      className="text-red-600 dark:text-red-400"
+                      className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Eliminar
@@ -166,14 +166,14 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
                 </DropdownMenu>
               </div>
               <p className="whitespace-pre-wrap mb-4">{note.content}</p>
-              <div className="text-xs text-gray-500 flex justify-between">
+              <div className="text-xs text-muted-foreground flex justify-between">
                 <span>{note.user?.full_name || 'Usuario'}</span>
                 <span>{format(new Date(note.created_at), 'dd/MM/yyyy HH:mm')}</span>
               </div>
             </CardContent>
           </Card>
         ))}
-        {notes.length === 0 && <p className="text-gray-500 text-center">No hay notas.</p>}
+        {notes.length === 0 && <p className="text-muted-foreground text-center">No hay notas.</p>}
       </div>
     </div>
   );

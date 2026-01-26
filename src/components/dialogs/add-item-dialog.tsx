@@ -374,7 +374,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                       <FormItem>
                         <div className="space-y-3">
                           <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                               placeholder="Buscar por nombre, descripción o referencia..."
                               value={searchQuery}
@@ -396,10 +396,10 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                                 className={`border-2 rounded-lg overflow-hidden hover:shadow-md transition-all ${
                                   field.value === product.id 
                                     ? 'border-primary bg-primary/10' 
-                                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                                    : 'border-border bg-card'
                                 }`}
                               >
-                                <div className="aspect-square bg-gray-100 dark:bg-gray-700 relative">
+                                <div className="aspect-square bg-secondary/30 dark:bg-muted relative">
                                   {product.image_url ? (
                                     <div className="relative w-full h-full group">
                                       <img 
@@ -421,21 +421,21 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                                       </button>
                                     </div>
                                   ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
                                       Sin imagen
                                     </div>
                                   )}
                                 </div>
                                 <div className="p-2">
                                   <div className="font-medium text-sm mb-1 line-clamp-2">{product.name}</div>
-                                  <div className="text-xs text-gray-500">{product.supplier?.name || 'Sin proveedor'}</div>
+                                  <div className="text-xs text-muted-foreground">{product.supplier?.name || 'Sin proveedor'}</div>
                                 </div>
                               </button>
                             ))}
                           </div>
                         ) : (
                           <div className="text-center py-8 border border-dashed rounded-md bg-background">
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-muted-foreground">
                               {searchQuery ? 'No se encontraron productos con esa búsqueda' : 'No hay productos en el catálogo'}
                             </p>
                           </div>

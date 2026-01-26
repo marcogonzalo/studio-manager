@@ -20,6 +20,7 @@
   - [x] Notes.
   - [x] Documents.
 - [x] UI Theming (Natural/Pastel).
+- [x] **Unified Dark Mode Theme:** Dark mode mejorado con paleta beige suave (Soft Dark Beige) que armoniza con el modo claro. Uso de OKLCH para colores perceptualmente uniformes. Todos los colores hardcodeados (grises, verdes, rojos) reemplazados con variables CSS del tema para consistencia total. Contraste mejorado en textos secundarios. Theme toggle integrado en sidebar.
 - [x] Dashboard Implementation.
 - [x] Session Expiration Handling: Redirige al login guardando la ruta de destino cuando la sesión caduca, y redirige automáticamente después del login exitoso.
 - [x] Custom 404 Page: Página de error 404 personalizada con temática de arquitectura, diseño moderno y navegación contextual.

@@ -244,7 +244,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <p className="text-gray-500">Cargando presupuesto...</p>
+          <p className="text-muted-foreground">Cargando presupuesto...</p>
         </div>
       </div>
     );
@@ -254,7 +254,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center space-y-4">
-          <p className="text-red-500 font-medium">{error}</p>
+          <p className="text-destructive font-medium">{error}</p>
           <Button onClick={fetchData} variant="outline">
             Reintentar
           </Button>
@@ -269,7 +269,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       <div className="flex justify-between items-center">
         <div className="space-y-1">
           <h3 className="text-lg font-medium">Presupuesto</h3>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-muted-foreground">
             Productos: {formatCurrency(totalItemsPrice)} | Partidas: {formatCurrency(totalBudgetLinesEstimated)} | 
             <span className="font-semibold"> Total: {formatCurrency(grandTotal)}</span>
           </div>
@@ -316,7 +316,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
             >
               <Card className="border-l-4 border-l-primary">
                 <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                  <CardHeader className="cursor-pointer hover:bg-accent/30">
                     <div className="flex justify-between items-center">
                       <CardTitle className="flex items-center gap-2 text-base">
                         <ChevronDown className={`h-4 w-4 transition-transform ${openSections[phaseSectionKey] !== false ? '' : '-rotate-90'}`} />
@@ -345,7 +345,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                         >
                           <Card className="ml-4">
                             <CollapsibleTrigger asChild>
-                              <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 py-3">
+                              <CardHeader className="cursor-pointer hover:bg-accent/30 py-3">
                                 <div className="flex justify-between items-center">
                                   <CardTitle className="flex items-center gap-2 text-sm">
                                     <ChevronDown className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? '' : '-rotate-90'}`} />
@@ -374,7 +374,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                                         <TableCell className="font-medium">
                                           {getBudgetSubcategoryLabel(category, line.subcategory)}
                                         </TableCell>
-                                        <TableCell className="text-gray-500">
+                                        <TableCell className="text-muted-foreground">
                                           {line.description || '-'}
                                         </TableCell>
                                         <TableCell className="text-right font-semibold">
@@ -395,7 +395,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem 
                                                   onClick={() => handleDeleteBudgetLine(line.id)}
-                                                  className="text-red-600 dark:text-red-400"
+                                                  className="text-destructive"
                                                 >
                                                   <Trash2 className="mr-2 h-4 w-4" />
                                                   Eliminar
@@ -429,7 +429,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       >
         <Card>
           <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+            <CardHeader className="cursor-pointer hover:bg-accent/30">
               <div className="flex justify-between items-center">
                 <CardTitle className="flex items-center gap-2 text-base">
                   <ChevronDown className={`h-4 w-4 transition-transform ${openSections.products ? '' : '-rotate-90'}`} />
@@ -475,11 +475,11 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">{item.product?.name || item.name}</div>
-                        <div className="text-xs text-gray-500">{item.product?.supplier?.name || '-'}</div>
+                        <div className="text-xs text-muted-foreground">{item.product?.supplier?.name || '-'}</div>
                       </TableCell>
                       <TableCell>{item.space?.name || 'General'}</TableCell>
                       <TableCell className="text-right">{item.quantity}</TableCell>
-                      <TableCell className="text-right text-gray-500">{formatCurrency(item.unit_cost)}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{formatCurrency(item.unit_cost)}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(item.unit_price)}</TableCell>
                       <TableCell className="capitalize text-xs">{item.status}</TableCell>
                       <TableCell className="text-right font-bold">{formatCurrency(item.unit_price * item.quantity)}</TableCell>
@@ -498,7 +498,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => handleDeleteItem(item.id)}
-                                className="text-red-600 dark:text-red-400"
+                                className="text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Eliminar
@@ -511,7 +511,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                   ))}
                   {items.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                         No hay productos añadidos.
                       </TableCell>
                     </TableRow>

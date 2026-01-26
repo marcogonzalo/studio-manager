@@ -58,7 +58,7 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
               <CardTitle>{space.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-500">{space.description || "Sin descripción"}</p>
+              <p className="text-sm text-muted-foreground">{space.description || "Sin descripción"}</p>
             </CardContent>
             <CardFooter className="flex gap-2">
               <Button variant="outline" size="sm" className="flex-1" onClick={() => openProducts(space)}>
@@ -73,7 +73,7 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
           </Card>
         ))}
         {spaces.length === 0 && (
-          <div className="col-span-full text-center py-8 text-gray-500 border rounded-md border-dashed">
+          <div className="col-span-full text-center py-8 text-muted-foreground border rounded-md border-dashed">
             No hay espacios registrados.
           </div>
         )}

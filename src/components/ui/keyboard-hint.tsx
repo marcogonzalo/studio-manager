@@ -8,7 +8,7 @@ interface KeyboardHintProps {
 
 export function KeyboardHint({ keys, description, className }: KeyboardHintProps) {
   return (
-    <span className={cn('text-xs text-gray-400', className)}>
+    <span className={cn('text-xs text-muted-foreground', className)}>
       {description && '('}
       <span className="bg-muted/60 px-1 rounded font-mono text-[0.9em] border border-muted">
         {keys}

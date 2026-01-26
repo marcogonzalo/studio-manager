@@ -76,15 +76,15 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
         <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-2xl">{space.name}</DialogTitle>
-            <p className="text-sm text-gray-500 mt-1">{space.description || "Sin descripción"}</p>
+            <p className="text-sm text-muted-foreground mt-1">{space.description || "Sin descripción"}</p>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto py-4">
             {loading ? (
-              <div className="text-center py-8 text-gray-500">Cargando...</div>
+              <div className="text-center py-8 text-muted-foreground">Cargando...</div>
             ) : items.length === 0 ? (
               <div className="text-center py-12 border border-dashed rounded-lg">
-                <p className="text-gray-500 mb-4">No hay productos en este espacio</p>
+                <p className="text-muted-foreground mb-4">No hay productos en este espacio</p>
                 <Button onClick={handleAddNew} variant="outline" size="sm">
                   <Plus className="mr-2 h-4 w-4" /> Añadir primer producto
                 </Button>
@@ -92,9 +92,9 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {items.map((item) => (
-                  <div key={item.id} className="border rounded-lg overflow-hidden bg-white dark:bg-gray-800 hover:shadow-md transition-shadow">
+                  <div key={item.id} className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
                     <div 
-                      className="aspect-square bg-gray-100 dark:bg-gray-700 relative cursor-pointer"
+                      className="aspect-square bg-secondary/30 dark:bg-muted relative cursor-pointer"
                       onClick={() => {
                         setSelectedItem(item);
                         setIsProductModalOpen(true);
@@ -107,16 +107,16 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
                           className="w-full h-full object-cover hover:opacity-90 transition-opacity"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                           Sin imagen
                         </div>
                       )}
                     </div>
                     <div className="p-3">
                       <h4 className="font-medium text-sm mb-1 truncate">{item.product?.name || item.name}</h4>
-                      <p className="text-xs text-gray-500 mb-2">{item.product?.supplier?.name || '-'}</p>
+                      <p className="text-xs text-muted-foreground mb-2">{item.product?.supplier?.name || '-'}</p>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs text-gray-500">Cant: {item.quantity}</span>
+                        <span className="text-xs text-muted-foreground">Cant: {item.quantity}</span>
                         <span className="text-sm font-medium">${item.unit_price.toFixed(2)}</span>
                       </div>
                       <div className="text-xs font-bold text-right border-t pt-2">
@@ -136,7 +136,7 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleDelete(item.id)}
-                              className="text-red-600 dark:text-red-400"
+                              className="text-destructive"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
                               Eliminar

@@ -6,10 +6,11 @@ The application follows a **Single Page Application (SPA)** architecture using R
 
 ### Frontend (Client-Side)
 
-- **Framework:** React with Vite.
-- **Routing:** `react-router-dom` for client-side routing.
+- **Framework:** Next.js 16 with App Router and Turbopack.
+- **Routing:** Next.js App Router for file-based routing.
 - **State Management:** React Context (`AuthProvider`) for global auth state; local state for component-level data.
 - **Styling:** Tailwind CSS v4 with CSS variables for theming (OKLCH color space).
+- **Theme Management:** `next-themes` for light/dark mode switching with `ThemeToggleSimple` component.
 - **UI Components:** Shadcn/UI (based on Radix UI) for accessible, composable components.
 
 ### Backend (Supabase)
@@ -22,12 +23,18 @@ The application follows a **Single Page Application (SPA)** architecture using R
 
 ## Code Organization
 
+- `src/app/`: Next.js App Router pages and layouts.
+  - `src/app/(app)/`: Authenticated application routes (dashboard, projects, catalog, etc.).
+  - `src/app/(marketing)/`: Public marketing pages (homepage, about, pricing).
+  - `src/app/auth/`: Authentication flow pages.
 - `src/components/`: Reusable UI components (shadcn) and domain-specific components.
-- `src/layouts/`: Layout wrappers (e.g., `AppLayout`, `AuthLayout`).
+  - `src/components/layouts/`: Layout wrappers (e.g., `AppLayoutClient`).
+  - `src/components/dialogs/`: Feature-specific dialog components.
+  - `src/components/ui/`: Base UI primitives from shadcn/ui.
+- `src/modules/`: Feature-specific modules (e.g., `project-dashboard`, `project-budget`).
 - `src/lib/`: Utility functions and Supabase client configuration.
-- `src/pages/`: Page components corresponding to routes.
-  - `src/pages/[module]/`: Feature-specific pages (e.g., `projects`, `clients`).
 - `src/types/`: Shared TypeScript interfaces/types (Centralized to avoid circular dependencies).
+- `src/styles/`: Global CSS with theme definitions (OKLCH colors).
 - `supabase/migrations/`: SQL migration files for database schema versioning.
 
 ## Key Patterns

@@ -125,8 +125,8 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
       {filteredPayments.length === 0 ? (
         <Card>
           <CardContent className="text-center py-12">
-            <Wallet className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 mb-4">No hay pagos registrados.</p>
+            <Wallet className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground mb-4">No hay pagos registrados.</p>
             <Button onClick={handleCreateNew} variant="outline">
               <Plus className="mr-2 h-4 w-4" /> Registrar Primer Pago
             </Button>
@@ -192,7 +192,7 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 onClick={() => handleDelete(payment.id)}
-                                className="text-red-600 dark:text-red-400"
+                                className="text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Eliminar

@@ -79,7 +79,7 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
                 <FileText className="mr-3 h-8 w-8 text-blue-500" />
                 <div>
                   <div className="font-medium">{doc.name}</div>
-                  <div className="text-xs text-gray-500 truncate max-w-[200px]">{doc.file_url}</div>
+                  <div className="text-xs text-muted-foreground truncate max-w-[200px]">{doc.file_url}</div>
                 </div>
               </div>
               <div className="flex space-x-2">
@@ -95,7 +95,7 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem 
                       onClick={() => handleDelete(doc.id)}
-                      className="text-red-600 dark:text-red-400"
+                      className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Eliminar
@@ -106,7 +106,7 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
             </CardContent>
           </Card>
         ))}
-        {documents.length === 0 && <p className="text-center text-gray-500 col-span-2">No hay documentos.</p>}
+        {documents.length === 0 && <p className="text-center text-muted-foreground col-span-2">No hay documentos.</p>}
       </div>
     </div>
   );

@@ -253,7 +253,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total de Gastos
             </CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-500 group-hover:scale-110 transition-transform" />
+            <TrendingDown className="h-4 w-4 text-destructive group-hover:scale-110 transition-transform" />
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -276,7 +276,7 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Total de Ingresos
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500 group-hover:scale-110 transition-transform" />
+            <TrendingUp className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
           </CardHeader>
           <CardContent>
             {loading ? (

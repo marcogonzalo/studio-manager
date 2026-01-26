@@ -325,7 +325,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             <DialogTitle>Orden Cancelada</DialogTitle>
           </DialogHeader>
           <div className="p-4">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-muted-foreground mb-4">
               Esta orden de compra está cancelada y no puede ser editada.
             </p>
             <Button onClick={() => onOpenChange(false)} className="w-full">
@@ -638,7 +638,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                     Ítems a Incluir <span className="text-destructive ml-1">*</span>
                   </label>
                   <div className="relative w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Buscar ítems..."
                       value={searchQuery}
@@ -649,9 +649,9 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                 </div>
 
                 {loadingItems ? (
-                  <div className="text-center py-8 text-gray-500">Cargando ítems...</div>
+                  <div className="text-center py-8 text-muted-foreground">Cargando ítems...</div>
                 ) : filteredItems.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-muted-foreground">
                     {availableItems.length === 0
                       ? 'No hay ítems disponibles para este proveedor'
                       : 'No se encontraron ítems con la búsqueda'}
@@ -691,7 +691,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                             </div>
                             <div className="flex-1">
                               <div className="font-medium">{item.name}</div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-sm text-muted-foreground">
                                 Cantidad: {item.quantity} | Costo: ${(item.unit_cost || 0).toFixed(2)} | Estado: {item.status}
                               </div>
                             </div>
@@ -703,7 +703,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                 )}
 
                 {selectedItemIds.size > 0 && (
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-sm text-muted-foreground">
                     {selectedItemIds.size} ítem{selectedItemIds.size !== 1 ? 's' : ''} seleccionado{selectedItemIds.size !== 1 ? 's' : ''}
                   </div>
                 )}
@@ -711,7 +711,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             )}
             
             {!selectedSupplierId && !order?.supplier_id && (
-              <div className="text-center py-4 text-gray-500 text-sm">
+              <div className="text-center py-4 text-muted-foreground text-sm">
                 Selecciona un proveedor para ver los ítems disponibles
               </div>
             )}
@@ -738,7 +738,7 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             <DialogTitle>Error</DialogTitle>
           </DialogHeader>
           <div className="p-4">
-            <p className="text-red-500">Error al cargar el diálogo. Por favor, recarga la página.</p>
+            <p className="text-destructive">Error al cargar el diálogo. Por favor, recarga la página.</p>
             <Button onClick={() => onOpenChange(false)} className="mt-4">
               Cerrar
             </Button>

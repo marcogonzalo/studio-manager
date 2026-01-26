@@ -34,6 +34,7 @@ import {
   SheetDescription,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { ThemeToggleSimple } from '@/components/theme-toggle-simple';
 import {
   Tooltip,
   TooltipContent,
@@ -89,7 +90,7 @@ function SidebarContent({
       {/* Toggle button - positioned at the edge */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-5 -right-3 z-10 bg-background border border-border rounded-full p-1 shadow-md hover:bg-secondary transition-colors hidden md:flex"
+        className="absolute top-1/2 -translate-y-1/2 -right-3 z-10 bg-background border border-border rounded-full p-1 shadow-md hover:bg-secondary transition-colors hidden md:flex"
         aria-label={collapsed ? 'Expandir barra lateral' : 'Minimizar barra lateral'}
       >
         {collapsed ? (
@@ -144,15 +145,25 @@ function SidebarContent({
       <div
         className={cn(
           'border-t border-border mt-auto',
-          collapsed ? 'p-2' : 'p-4'
+          collapsed ? 'p-2' : 'p-4 space-y-3'
         )}
       >
+        {collapsed ? (
+          <div className="flex justify-center">
+            <ThemeToggleSimple />
+          </div>
+        ) : (
+          <div className="flex items-center justify-between px-2">
+            <span className="text-sm text-muted-foreground">Apariencia</span>
+            <ThemeToggleSimple />
+          </div>
+        )}
         {collapsed ? (
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="w-full flex justify-center p-2 rounded-xl hover:bg-secondary transition-colors">
+                  <button className="w-full flex justify-center p-2 rounded-xl hover:bg-secondary transition-colors cursor-pointer">
                     <Avatar className="h-9 w-9 border border-border">
                       <AvatarImage src={user?.user_metadata?.avatar_url} />
                       <AvatarFallback className="bg-primary/10 text-primary">
@@ -204,7 +215,7 @@ function SidebarContent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 hover:bg-background text-muted-foreground hover:text-foreground"
+                  className="h-8 w-8 hover:bg-background text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   <Settings className="h-4 w-4" />
                 </Button>

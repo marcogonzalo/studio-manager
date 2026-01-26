@@ -103,7 +103,7 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
       <div className="flex justify-between items-center">
         <div className="space-y-1">
           <h3 className="text-lg font-medium">Costes Adicionales</h3>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-muted-foreground">
             Total: ${totalAmount.toFixed(2)}
           </div>
         </div>
@@ -113,12 +113,12 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
       </div>
 
       {loading ? (
-        <p className="text-center py-8 text-gray-500">Cargando...</p>
+        <p className="text-center py-8 text-muted-foreground">Cargando...</p>
       ) : costs.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <DollarSign className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">No hay costes adicionales registrados.</p>
+            <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">No hay costes adicionales registrados.</p>
             <Button onClick={handleAddNew} className="mt-4">
               <Plus className="mr-2 h-4 w-4" /> Añadir Primer Coste
             </Button>
@@ -157,7 +157,7 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                         {typeCosts.map((cost) => (
                           <TableRow key={cost.id}>
                             <TableCell>
-                              {cost.description || <span className="text-gray-400 italic">Sin descripción</span>}
+                              {cost.description || <span className="text-muted-foreground italic">Sin descripción</span>}
                             </TableCell>
                             <TableCell className="text-right font-medium">
                               ${Number(cost.amount).toFixed(2)}
@@ -177,7 +177,7 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem 
                                       onClick={() => handleDelete(cost.id)}
-                                      className="text-red-600 dark:text-red-400"
+                                      className="text-destructive"
                                     >
                                       <Trash2 className="mr-2 h-4 w-4" />
                                       Eliminar
@@ -197,7 +197,7 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
           })}
 
           {/* Summary card */}
-          <Card className="bg-gray-50 dark:bg-gray-900/50">
+          <Card className="bg-secondary/30/50">
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold">Total General</span>

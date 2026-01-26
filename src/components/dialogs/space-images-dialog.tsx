@@ -85,7 +85,7 @@ export function SpaceImagesDialog({ open, onOpenChange, space }: { open: boolean
             </div>
           ))}
           {images.length === 0 && (
-            <div className="col-span-full text-center py-10 text-gray-400">No hay imágenes.</div>
+            <div className="col-span-full text-center py-10 text-muted-foreground">No hay imágenes.</div>
           )}
         </div>
       </DialogContent>
