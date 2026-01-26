@@ -2,13 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Install dependencies first for better caching
 COPY package*.json ./
-
 RUN npm install
 
+# Copy source code
 COPY . .
 
-EXPOSE 5173
+# Expose Next.js port
+EXPOSE 3000
 
-CMD ["npm", "run", "dev", "--", "--host"]
-
+# Start development server
+CMD ["npm", "run", "dev"]

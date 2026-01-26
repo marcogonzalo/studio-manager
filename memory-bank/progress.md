@@ -2,7 +2,8 @@
 
 ## Completed Features
 
-- [x] Project Initialization (Vite, React, TS).
+- [x] Project Initialization (Next.js 16, React, TS).
+- [x] Migration from Vite/React to Next.js App Router.
 - [x] Docker Environment.
 - [x] Supabase Setup (Schema, RLS, Auth).
 - [x] Authentication UI.

@@ -2,26 +2,32 @@
 
 ## Development Environment
 
+- **Framework:** Next.js 16.1.4 (App Router with Turbopack).
 - **Language:** TypeScript (Strict mode enabled).
-- **Runtime:** Node.js (for tooling), Browser (for execution).
+- **Runtime:** Node.js (SSR/SSG), Browser (Client components).
 - **Package Manager:** npm.
 - **Containerization:** Docker & Docker Compose for consistent dev environment.
 
 ## Dependencies
 
-- **Core:** `react`, `react-dom`, `react-router-dom`.
-- **Backend Client:** `@supabase/supabase-js`.
+- **Core:** `react`, `react-dom`, `next`.
+- **Backend Client:** `@supabase/ssr`, `@supabase/supabase-js`.
 - **Styling:** `tailwindcss`, `tailwindcss-animate`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react` (icons).
 - **Forms:** `react-hook-form`, `zod`, `@hookform/resolvers`.
-- **Utilities:** `date-fns`, `sonner` (toasts).
+- **Utilities:** `date-fns`, `sonner` (toasts), `next-themes` (dark mode).
 - **PDF Generation:** `@react-pdf/renderer` (for budget PDF generation).
 
 ## Configuration
 
-- **Vite:** `vite.config.ts` configured with path aliases (`@/*`).
-- **Tailwind:** `src/index.css` using Tailwind v4 syntax (`@theme`, CSS variables).
-- **Supabase:** Local instance via `npx supabase start`.
-- **Environment Variables:** `.env` (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY).
+- **Next.js:** `next.config.ts` with Turbopack, path aliases (`@/*`), and module resolution for PDF generation.
+- **Tailwind:** `src/styles/globals.css` using Tailwind v4 syntax (`@theme`, CSS variables).
+- **Supabase:** 
+  - Local instance via `npx supabase start`.
+  - SSR client configuration for browser, server, and middleware.
+  - PKCE authentication flow with magic links.
+- **Environment Variables:** 
+  - `.env.local` (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY).
+  - Docker uses `extra_hosts: localhost:host-gateway` for Supabase connectivity.
 
 ## Database Schema (Key Tables)
 

@@ -6,7 +6,7 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
 
 ## Recently Completed
 
-1. **Environment Setup:** Vite + React + TS, Docker, Supabase Local.
+1. **Environment Setup:** Next.js 16 + React + TS, Docker, Supabase Local.
 2. **Authentication:** Login/Signup with Supabase Auth.
 3. **Data Modules:**
     - Clients CRUD.
@@ -33,12 +33,15 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
 
 ## Recently Completed (Latest Session)
 
-1. **Profit Calculation Fix:** Corregido el cálculo del beneficio del proyecto. Los honorarios propios (`own_fees`) ahora se tratan como ingresos, no como costes. El beneficio se calcula como: Presupuestado al cliente - Costes reales (excluyendo honorarios).
-2. **Cost Control Improvements:** 
-   - Excluidos los honorarios propios del control de costes (solo aparecen en presupuesto).
-   - Añadida tarjeta de totalización de costes con barra de desviación visual (verde < 100%, amarillo 100-101%, rojo > 101%).
-3. **Budget Line Dialog:** El campo "Importe Real" se oculta cuando la categoría es honorarios propios, mostrando un mensaje explicativo.
-4. **Purchase Order Coverage:** Simplificada la visualización de cobertura de órdenes de compra (solo muestra total y porcentaje limitado al 100%).
+1. **Next.js Migration Complete:** 
+   - Migrada toda la aplicación de Vite/React a Next.js 16.1.4 con App Router.
+   - Implementación de route groups: `(marketing)` para páginas públicas SEO-optimizadas y `(app)` para aplicación autenticada.
+   - Supabase SSR con `@supabase/ssr` para autenticación PKCE y magic links funcionando correctamente.
+   - Middleware para protección de rutas y gestión de sesiones.
+   - Docker configurado con `extra_hosts: localhost:host-gateway` para conectividad.
+   - Turbopack como bundler con aliases para `@react-pdf/renderer`.
+   - Build de producción exitoso.
+   - Todas las funcionalidades probadas y operativas.
 
 ## Work in Progress / Next Steps
 
@@ -48,5 +51,11 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
 
 ## Active Decisions
 
-- **Database:** We are using a remote Supabase DB (configured in .env) but running the app container locally. *Note: Schema sync to remote DB needs to be managed manually or via CI/CD.*
-- **Types:** All shared interfaces moved to `src/types/index.ts` to solve build issues.
+- **Framework:** Migrated to Next.js 16 for SEO capabilities on public pages while maintaining SPA functionality for authenticated app.
+- **Database:** Using Supabase local instance for development. Production will use Supabase Cloud.
+- **Docker Networking:** Using `localhost:host-gateway` in Docker to enable container-to-host Supabase connectivity.
+- **Types:** All shared interfaces in `src/types/index.ts`.
+- **Route Structure:** 
+  - `(marketing)` route group for public, SEO-optimized pages (home, about, pricing, contact).
+  - `(app)` route group for authenticated application.
+  - Future: `(share)` for non-SEO client project sharing.
