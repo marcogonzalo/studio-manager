@@ -185,8 +185,11 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       const { generateProjectPDF } = await import('@/lib/pdf-generator');
       const architectName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Arquitecto/a';
       
+      // Use project tax_rate or default to 0
+      const taxRate = project.tax_rate !== null && project.tax_rate !== undefined ? project.tax_rate : 0;
+      
       // Pass budget lines to PDF generator
-      const asPdf = await generateProjectPDF(project, items, budgetLines, 21, architectName);
+      const asPdf = await generateProjectPDF(project, items, budgetLines, taxRate, architectName);
       const blob = await asPdf.toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');

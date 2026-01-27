@@ -24,6 +24,14 @@ const formSchema = z.object({
   end_date: z.string().optional(),
   address: z.string().optional(),
   phase: z.enum(['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery']).optional(),
+  tax_rate: z.string()
+    .optional()
+    .transform(v => {
+      if (!v || v.trim() === '') return undefined;
+      const num = parseFloat(v);
+      return isNaN(num) ? undefined : num;
+    })
+    .refine(val => val === undefined || val >= 0, "El impuesto debe ser mayor o igual a 0"),
 });
 
 interface ProjectDialogProps {
@@ -49,6 +57,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
       start_date: new Date().toISOString().split('T')[0],
       end_date: "",
       address: "",
+      tax_rate: "",
     },
   });
 
@@ -106,6 +115,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         end_date: endDate,
         address: project.address || "",
         phase: project.phase || undefined,
+        tax_rate: project.tax_rate !== null && project.tax_rate !== undefined ? project.tax_rate.toString() : "",
       });
     } else if (!project && open) {
       form.reset({
@@ -117,16 +127,32 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         end_date: "",
         address: "",
         phase: undefined,
+        tax_rate: "",
       });
     }
   }, [project, open, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      // Handle tax_rate: if empty, use last value (if editing) or 0 (if new)
+      let taxRateValue: number | null = null;
+      if (values.tax_rate !== undefined && values.tax_rate !== null && values.tax_rate !== '') {
+        taxRateValue = values.tax_rate;
+      } else {
+        // If empty and editing, use last known value
+        if (project && project.tax_rate !== null && project.tax_rate !== undefined) {
+          taxRateValue = project.tax_rate;
+        } else {
+          // If new or no previous value, use 0
+          taxRateValue = 0;
+        }
+      }
+
       const updateData: Record<string, unknown> = {
         ...values,
         end_date: values.end_date || null,
         status: values.status || 'draft',
+        tax_rate: taxRateValue,
       };
 
       // Si el estado cambia a "completed", establecer la fecha efectiva de finalización
@@ -336,6 +362,27 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
                       <SelectItem value="delivery">6. Entrega</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tax_rate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Impuesto (%)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min="0" 
+                      step="0.01" 
+                      placeholder="Ej: 21" 
+                      {...field} 
+                      value={field.value || ""}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
