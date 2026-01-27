@@ -63,6 +63,16 @@ export default function CatalogPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar producto?')) return;
+    
+    // Verificar si puede ser eliminado
+    const { canDeleteProduct } = await import('@/lib/validation');
+    const canDelete = await canDeleteProduct(id);
+    
+    if (!canDelete) {
+      toast.error('No se puede eliminar el producto porque está asociado a un proyecto');
+      return;
+    }
+    
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) toast.error('Error al eliminar');
     else {

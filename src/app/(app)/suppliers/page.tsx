@@ -56,6 +56,16 @@ export default function SuppliersPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar proveedor?')) return;
+    
+    // Verificar si puede ser eliminado
+    const { canDeleteSupplier } = await import('@/lib/validation');
+    const canDelete = await canDeleteSupplier(id);
+    
+    if (!canDelete) {
+      toast.error('No se puede eliminar el proveedor porque está asociado a productos u órdenes de compra en proyectos');
+      return;
+    }
+    
     const { error } = await supabase.from('suppliers').delete().eq('id', id);
     if (error) toast.error('Error al eliminar');
     else {
