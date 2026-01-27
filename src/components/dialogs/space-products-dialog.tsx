@@ -114,6 +114,9 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
                     </div>
                     <div className="p-3">
                       <h4 className="font-medium text-sm mb-1 truncate">{item.product?.name || item.name}</h4>
+                      {item.internal_reference && (
+                        <p className="text-xs text-muted-foreground font-mono mb-1">Ref: {item.internal_reference}</p>
+                      )}
                       <p className="text-xs text-muted-foreground mb-2">{item.product?.supplier?.name || '-'}</p>
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-xs text-muted-foreground">Cant: {item.quantity}</span>

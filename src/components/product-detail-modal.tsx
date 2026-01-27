@@ -20,6 +20,7 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
   const description = projectItem?.description || product?.description || '';
   const referenceCode = projectItem?.product?.reference_code || product?.reference_code || '';
   const referenceUrl = projectItem?.product?.reference_url || product?.reference_url || '';
+  const internalReference = projectItem?.internal_reference || '';
   const category = projectItem?.product?.category || product?.category || '';
   const supplierName = projectItem?.product?.supplier?.name || product?.supplier?.name || 'Sin proveedor';
   const costPrice = projectItem ? projectItem.unit_cost : (product?.cost_price || 0);
@@ -75,6 +76,13 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
                 </div>
               )}
             </div>
+
+            {internalReference && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1">Referencia Interna</h3>
+                <p className="text-sm font-mono">{internalReference}</p>
+              </div>
+            )}
 
             {referenceUrl && (
               <div>

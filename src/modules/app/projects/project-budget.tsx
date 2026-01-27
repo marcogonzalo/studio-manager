@@ -39,6 +39,7 @@ export interface ProjectItem {
   unit_price: number;
   status: string;
   image_url: string;
+  internal_reference?: string;
   supplier_id?: string;
   product?: {
     name?: string;
@@ -478,6 +479,11 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">{item.product?.name || item.name}</div>
+                        {item.internal_reference && (
+                          <div className="text-xs text-muted-foreground font-mono mt-1">
+                            Ref: {item.internal_reference}
+                          </div>
+                        )}
                         <div className="text-xs text-muted-foreground">{item.product?.supplier?.name || '-'}</div>
                       </TableCell>
                       <TableCell>{item.space?.name || 'General'}</TableCell>

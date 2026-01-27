@@ -27,6 +27,7 @@ const formSchema = z.object({
   reference_code: z.string().optional(),
   reference_url: z.string().optional(),
   category: z.string().optional(),
+  internal_reference: z.string().optional(),
   quantity: z.string()
     .transform(v => parseFloat(v) || 1)
     .refine(val => val > 0, "La cantidad debe ser mayor a 0"),
@@ -70,6 +71,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
     reference_code?: string;
     reference_url?: string;
     category?: string;
+    internal_reference?: string;
     quantity: string;
     unit_cost: string;
     markup: string;
@@ -87,6 +89,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       reference_code: "",
       reference_url: "",
       category: "",
+      internal_reference: "",
       quantity: "1" as any,
       unit_cost: "0" as any,
       markup: "20" as any,
@@ -156,6 +159,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
           reference_code: productData.reference_code,
           reference_url: productData.reference_url,
           category: productData.category,
+          internal_reference: item.internal_reference || "",
           quantity: item.quantity?.toString() || "1",
           unit_cost: item.unit_cost?.toString() || "0",
           markup: item.markup?.toString() || "20",
@@ -183,6 +187,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
           reference_code: "",
           reference_url: "",
           category: "",
+          internal_reference: "",
           quantity: "1" as any,
           unit_cost: "0" as any,
           markup: "20" as any,
@@ -287,6 +292,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
         markup: values.markup,
         unit_price: values.unit_price,
         image_url: values.image_url,
+        internal_reference: values.internal_reference || null,
         ...(isEditing ? {} : { status: 'pending' })
       };
       
@@ -518,6 +524,20 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                       {spaces.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="internal_reference" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Referencia Interna</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="Clave para asociar con anotaciones en planos" 
+                      {...field} 
+                      className="bg-background"
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )} />
 
