@@ -1,0 +1,38 @@
+# Database & Migrations Guidelines
+
+## Migration Management
+
+**CRITICAL**: Always use `supabase db push --local` to apply migrations during development. This applies only pending migrations without deleting existing data.
+
+### Commands to Use
+
+- **`supabase db push --local`**: Apply pending migrations without data loss (PREFERRED)
+  - Use this for normal development workflow
+  - Only applies migrations that haven't been executed yet
+  - Preserves all existing data in the database
+
+- **`supabase db reset`**: Full database reset (USE ONLY WHEN EXPLICITLY AUTHORIZED)
+  - Only use when there's a major problem or when explicitly requested by the user
+  - Recreates the entire database from scratch
+  - Deletes all data in the `public` schema (but preserves `auth.users`)
+  - Requires explicit user authorization before use
+
+### Migration Workflow
+
+1. Create new migration: `supabase migration new migration_name`
+2. Write SQL in the migration file
+3. Apply locally: `supabase db push --local` (NOT `db reset`)
+4. Check status: `supabase migration list`
+
+### Rollback Migrations
+
+- Use `supabase migration repair` if needed to fix migration state
+- Individual migration rollback may require manual SQL if needed
+- Always preserve data when possible
+
+### Best Practices
+
+- Never use `db reset` without explicit user authorization
+- Always check migration status before applying
+- Test migrations on local before pushing to remote
+- Document breaking changes in migration files
