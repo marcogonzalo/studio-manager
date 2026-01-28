@@ -529,7 +529,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
 
               <FormField control={form.control} name="internal_reference" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Referencia Interna</FormLabel>
+                  <FormLabel>Código</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="Clave para asociar con anotaciones en planos" 

@@ -79,7 +79,7 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
 
             {internalReference && (
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">Referencia Interna</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1">Código</h3>
                 <p className="text-sm font-mono">{internalReference}</p>
               </div>
             )}
