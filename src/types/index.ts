@@ -25,6 +25,7 @@ export interface Project {
   client_id: string;
   address?: string;
   phase?: ProjectPhase;
+  tax_rate?: number;
   client?: { full_name: string };
 }
 

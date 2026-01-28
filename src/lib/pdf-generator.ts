@@ -7,7 +7,7 @@ export async function generateProjectPDF(
   project: any,
   items: any[],
   budgetLines: ProjectBudgetLine[],
-  taxRate: number = 21,
+  taxRate: number = 0,
   architectName?: string
 ) {
   // Dynamic import to avoid Vite resolution issues

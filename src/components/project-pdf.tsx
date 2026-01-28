@@ -272,7 +272,7 @@ function getSubcategoryLabel(category: BudgetCategory, subcategory: string): str
   return BUDGET_SUBCATEGORIES[category]?.[subcategory] || subcategory;
 }
 
-export function ProjectPDF({ project, items, budgetLines, taxRate = 21, architectName }: ProjectPDFProps) {
+export function ProjectPDF({ project, items, budgetLines, taxRate = 0, architectName }: ProjectPDFProps) {
   // Group items by space (location)
   const itemsBySpace = items.reduce((acc, item) => {
     const spaceName = item.space?.name || 'General';
