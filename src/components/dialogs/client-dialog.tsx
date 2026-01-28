@@ -58,10 +58,30 @@ export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDi
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const clientData = {
-        ...values,
+      // Convert empty strings to null for optional fields to avoid overwriting existing data
+      const clientData: Record<string, unknown> = {
+        full_name: values.full_name,
         user_id: user?.id,
       };
+      
+      // Only include optional fields if they have values
+      if (values.email && values.email.trim()) {
+        clientData.email = values.email;
+      } else {
+        clientData.email = null;
+      }
+      
+      if (values.phone && values.phone.trim()) {
+        clientData.phone = values.phone;
+      } else {
+        clientData.phone = null;
+      }
+      
+      if (values.address && values.address.trim()) {
+        clientData.address = values.address;
+      } else {
+        clientData.address = null;
+      }
 
       if (client) {
         const { error } = await supabase
@@ -82,6 +102,7 @@ export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDi
         onSuccess(newClient.id);
       }
     } catch (error: any) {
+      console.error('Error saving client:', error);
       toast.error(error.message || "Error al guardar cliente");
     }
   }

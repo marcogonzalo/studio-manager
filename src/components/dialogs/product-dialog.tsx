@@ -121,16 +121,62 @@ export function ProductDialog({ open, onOpenChange, product, onSuccess }: Produc
 
   async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
-      const data = { ...values, user_id: user?.id };
+      // Convert empty strings to null for optional fields to avoid overwriting existing data
+      const data: Record<string, unknown> = {
+        name: values.name,
+        cost_price: values.cost_price,
+        user_id: user?.id,
+      };
+      
+      // Only include optional fields if they have values
+      if (values.reference_code && values.reference_code.trim()) {
+        data.reference_code = values.reference_code;
+      } else {
+        data.reference_code = null;
+      }
+      
+      if (values.reference_url && values.reference_url.trim()) {
+        data.reference_url = values.reference_url;
+      } else {
+        data.reference_url = null;
+      }
+      
+      if (values.description && values.description.trim()) {
+        data.description = values.description;
+      } else {
+        data.description = null;
+      }
+      
+      if (values.category && values.category.trim()) {
+        data.category = values.category;
+      } else {
+        data.category = null;
+      }
+      
+      if (values.supplier_id && values.supplier_id.trim()) {
+        data.supplier_id = values.supplier_id;
+      } else {
+        data.supplier_id = null;
+      }
+      
+      if (values.image_url && values.image_url.trim()) {
+        data.image_url = values.image_url;
+      } else {
+        data.image_url = null;
+      }
+      
       if (product) {
-        await supabase.from('products').update(data).eq('id', product.id);
+        const { error } = await supabase.from('products').update(data).eq('id', product.id);
+        if (error) throw error;
         toast.success('Producto actualizado');
       } else {
-        await supabase.from('products').insert([data]);
+        const { error } = await supabase.from('products').insert([data]);
+        if (error) throw error;
         toast.success('Producto creado');
       }
       onSuccess();
     } catch (error) {
+      console.error('Error saving product:', error);
       toast.error('Error al guardar');
     }
   }
