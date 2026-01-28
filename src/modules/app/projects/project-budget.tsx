@@ -12,7 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Plus, Trash2, Printer, Pencil, ChevronDown, MoreVertical } from 'lucide-react';
+import { Plus, Trash2, Printer, Pencil, ChevronDown, MoreVertical, Clock, Truck, PackageCheck, Wrench, Check, XCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AddItemDialog } from '@/components/dialogs/add-item-dialog';
 import { BudgetLineDialog } from '@/components/dialogs/budget-line-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
@@ -39,6 +40,7 @@ export interface ProjectItem {
   unit_price: number;
   status: string;
   image_url: string;
+  internal_reference?: string;
   supplier_id?: string;
   product?: {
     name?: string;
@@ -235,6 +237,28 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+  };
+
+  // Helper function to get status icon and label
+  const getStatusDisplay = (status: string) => {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case 'pending':
+        return { icon: Clock, label: 'Pendiente', className: 'text-muted-foreground' };
+      case 'ordered':
+        return { icon: Truck, label: 'Pedido', className: 'text-blue-600 dark:text-blue-400' };
+      case 'received':
+        return { icon: PackageCheck, label: 'Recibido', className: 'text-cyan-600 dark:text-cyan-400' };
+      case 'installed':
+        return { icon: Wrench, label: 'Instalado', className: 'text-orange-600 dark:text-orange-400' };
+      case 'completed':
+        return { icon: Check, label: 'Completado', className: 'text-green-600 dark:text-green-400' };
+      case 'canceled':
+      case 'cancelled':
+        return { icon: XCircle, label: 'Cancelado', className: 'text-red-600 dark:text-red-400' };
+      default:
+        return { icon: Clock, label: status, className: 'text-muted-foreground' };
+    }
   };
 
   // Order of phases to display
@@ -452,10 +476,10 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                     <TableHead className="w-[50px]">Img</TableHead>
                     <TableHead>Ítem</TableHead>
                     <TableHead>Ubicación</TableHead>
+                    <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Cant.</TableHead>
                     <TableHead className="text-right">Costo Unit.</TableHead>
                     <TableHead className="text-right">Precio Venta</TableHead>
-                    <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Total</TableHead>
                     <TableHead className="w-[80px]"></TableHead>
                   </TableRow>
@@ -478,13 +502,37 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                       </TableCell>
                       <TableCell>
                         <div className="font-medium">{item.product?.name || item.name}</div>
+                        {item.product?.reference_code && (
+                          <div className="text-xs text-muted-foreground font-mono mt-1">
+                            Ref: {item.product.reference_code}
+                          </div>
+                        )}
                         <div className="text-xs text-muted-foreground">{item.product?.supplier?.name || '-'}</div>
                       </TableCell>
                       <TableCell>{item.space?.name || 'General'}</TableCell>
+                      <TableCell>
+                        {(() => {
+                          const statusDisplay = getStatusDisplay(item.status);
+                          const Icon = statusDisplay.icon;
+                          return (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center justify-center">
+                                    <Icon className={`h-4 w-4 ${statusDisplay.className} cursor-help`} />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>{statusDisplay.label}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          );
+                        })()}
+                      </TableCell>
                       <TableCell className="text-right">{item.quantity}</TableCell>
                       <TableCell className="text-right text-muted-foreground">{formatCurrency(item.unit_cost)}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(item.unit_price)}</TableCell>
-                      <TableCell className="capitalize text-xs">{item.status}</TableCell>
                       <TableCell className="text-right font-bold">{formatCurrency(item.unit_price * item.quantity)}</TableCell>
                       <TableCell>
                         <div className="flex justify-end">
