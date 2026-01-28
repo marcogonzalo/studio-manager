@@ -1,4 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 import type { Product } from '@/types';
 import type { ProjectItem } from '@/modules/app/projects/project-budget';
 
@@ -7,9 +9,11 @@ interface ProductDetailModalProps {
   onOpenChange: (open: boolean) => void;
   product?: Product | null;
   projectItem?: ProjectItem | null;
+  onEdit?: () => void;
+  projectId?: string;
 }
 
-export function ProductDetailModal({ open, onOpenChange, product, projectItem }: ProductDetailModalProps) {
+export function ProductDetailModal({ open, onOpenChange, product, projectItem, onEdit, projectId }: ProductDetailModalProps) {
   // Si hay projectItem, usar sus datos; si no, usar product
   const displayProduct = projectItem || product;
   
@@ -103,6 +107,37 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
               <p className="text-sm">{supplierName}</p>
             </div>
 
+            {/* Información de Orden de Compra */}
+            {projectItem?.purchase_order && projectItem.purchase_order.status !== 'cancelled' && (
+              <div className="border-t pt-4 space-y-2">
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Orden de Compra</h3>
+                <div className="space-y-1 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Número: </span>
+                    <span className="font-medium">{projectItem.purchase_order.order_number}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Estado: </span>
+                    <span className="font-medium capitalize">{projectItem.purchase_order.status}</span>
+                  </div>
+                  {projectItem.purchase_order.delivery_deadline && (
+                    <div>
+                      <span className="text-muted-foreground">Plazo de Entrega: </span>
+                      <span className="font-medium">{projectItem.purchase_order.delivery_deadline}</span>
+                    </div>
+                  )}
+                  {projectItem.purchase_order.delivery_date && (
+                    <div>
+                      <span className="text-muted-foreground">Fecha de Entrega: </span>
+                      <span className="font-medium">
+                        {new Date(projectItem.purchase_order.delivery_date).toLocaleDateString('es-ES')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="border-t pt-4 space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-muted-foreground">Costo Unitario</span>
@@ -132,6 +167,18 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
             </div>
           </div>
         </div>
+
+        <DialogFooter>
+          {projectItem && projectId && onEdit && (
+            <Button onClick={onEdit} variant="default">
+              <Pencil className="mr-2 h-4 w-4" />
+              Editar
+            </Button>
+          )}
+          <Button onClick={() => onOpenChange(false)} variant="outline">
+            Cerrar
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

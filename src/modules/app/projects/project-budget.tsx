@@ -42,6 +42,13 @@ export interface ProjectItem {
   image_url: string;
   internal_reference?: string;
   supplier_id?: string;
+  purchase_order_id?: string | null;
+  purchase_order?: {
+    order_number: string;
+    status: string;
+    delivery_deadline?: string | null;
+    delivery_date?: string | null;
+  };
   product?: {
     name?: string;
     supplier?: { name: string };
@@ -92,7 +99,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       // Fetch project items (products)
       const { data: itemsData, error: itemsError } = await supabase
         .from('project_items')
-        .select('*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category)')
+        .select('*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)')
         .eq('project_id', projectId)
         .order('created_at');
       
@@ -624,6 +631,12 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         open={isProductModalOpen}
         onOpenChange={setIsProductModalOpen}
         projectItem={selectedItem}
+        projectId={projectId}
+        onEdit={() => {
+          setIsProductModalOpen(false);
+          setEditingItem(selectedItem);
+          setIsItemDialogOpen(true);
+        }}
       />
     </div>
   );

@@ -34,7 +34,7 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
     setLoading(true);
     const { data, error } = await supabase
       .from('project_items')
-      .select('*, product:products(supplier:suppliers(name), description, reference_code, category)')
+      .select('*, product:products(supplier:suppliers(name), description, reference_code, category), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)')
       .eq('space_id', space.id)
       .order('created_at');
     
@@ -179,6 +179,11 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
         open={isProductModalOpen}
         onOpenChange={setIsProductModalOpen}
         projectItem={selectedItem}
+        projectId={projectId}
+        onEdit={() => {
+          setIsProductModalOpen(false);
+          handleEdit(selectedItem!);
+        }}
       />
     </>
   );
