@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { getSupabaseClient } from '@/lib/supabase/client';
 
 /**
  * Verifica si un proveedor puede ser eliminado.
@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase';
  */
 export async function canDeleteSupplier(supplierId: string): Promise<boolean> {
   try {
+    const supabase = getSupabaseClient();
+    
     // Verificar si hay productos asociados
     const { data: products, error: productsError } = await supabase
       .from('products')
@@ -54,6 +56,8 @@ export async function canDeleteSupplier(supplierId: string): Promise<boolean> {
  */
 export async function canDeleteProduct(productId: string): Promise<boolean> {
   try {
+    const supabase = getSupabaseClient();
+    
     // Verificar si hay project_items asociados
     const { data: projectItems, error: itemsError } = await supabase
       .from('project_items')
@@ -84,6 +88,8 @@ export async function canDeleteProduct(productId: string): Promise<boolean> {
  */
 export async function canDeleteClient(clientId: string): Promise<boolean> {
   try {
+    const supabase = getSupabaseClient();
+    
     // Verificar si hay proyectos asociados
     const { data: projects, error: projectsError } = await supabase
       .from('projects')
