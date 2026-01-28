@@ -64,20 +64,42 @@ export default function CatalogPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar producto?')) return;
     
-    // Verificar si puede ser eliminado
-    const { canDeleteProduct } = await import('@/lib/validation');
-    const canDelete = await canDeleteProduct(id);
-    
-    if (!canDelete) {
-      toast.error('No se puede eliminar el producto porque está asociado a un proyecto');
-      return;
-    }
-    
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) toast.error('Error al eliminar');
-    else {
-      toast.success('Producto eliminado');
+    try {
+      // Verificar si puede ser eliminado
+      const { canDeleteProduct } = await import('@/lib/validation');
+      const canDelete = await canDeleteProduct(id);
+      
+      if (!canDelete) {
+        toast.error('No se puede eliminar el producto porque está asociado a un proyecto');
+        return;
+      }
+      
+      const { error, data } = await supabase.from('products').delete().eq('id', id).select();
+      
+      if (error) {
+        console.error('Error deleting product:', error);
+        // Error específico para permisos RLS
+        if (error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy')) {
+          toast.error('No tienes permisos para eliminar este producto');
+        } else {
+          toast.error(`Error al eliminar: ${error.message || 'Error desconocido'}`);
+        }
+        return;
+      }
+      
+      // Verificar que realmente se eliminó
+      if (!data || data.length === 0) {
+        // Si no hay error pero tampoco datos, puede ser que RLS bloqueó silenciosamente
+        toast.error('No se pudo eliminar el producto. Verifica que tengas permisos y que el producto no esté asociado a un proyecto.');
+        fetchProducts(); // Refrescar para actualizar la lista
+        return;
+      }
+      
+      toast.success('Producto eliminado correctamente');
       fetchProducts();
+    } catch (error) {
+      console.error('Unexpected error in handleDelete:', error);
+      toast.error('Error inesperado al eliminar el producto');
     }
   };
 
