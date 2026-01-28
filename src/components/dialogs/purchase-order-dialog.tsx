@@ -22,6 +22,8 @@ const formSchema = z.object({
   order_date: z.string().min(1, "Fecha requerida"),
   status: z.string().min(1, "Estado requerido"),
   notes: z.string().optional(),
+  delivery_deadline: z.string().optional(),
+  delivery_date: z.string().optional(),
 });
 
 interface ProjectItem {
@@ -41,6 +43,8 @@ interface PurchaseOrder {
   order_date: string;
   status: string;
   notes: string | null;
+  delivery_deadline?: string | null;
+  delivery_date?: string | null;
   project_items?: { id: string }[];
 }
 
@@ -77,6 +81,8 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
       order_date: new Date().toISOString().split('T')[0],
       status: "draft",
       notes: "",
+      delivery_deadline: "",
+      delivery_date: "",
     },
   });
 
@@ -239,6 +245,10 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
           order_date: orderDate,
           status: order.status || "draft",
           notes: order.notes || "",
+          delivery_deadline: order.delivery_deadline || "",
+          delivery_date: order.delivery_date ? (typeof order.delivery_date === 'string' 
+            ? order.delivery_date.split('T')[0] 
+            : new Date(order.delivery_date).toISOString().split('T')[0]) : "",
         };
         
         form.reset(formValues);
@@ -369,6 +379,8 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             order_date: values.order_date,
             status: values.status,
             notes: values.notes || null,
+            delivery_deadline: values.delivery_deadline || null,
+            delivery_date: values.delivery_date || null,
           })
           .eq('id', order.id);
 
@@ -496,6 +508,8 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             order_date: values.order_date,
             status: values.status,
             notes: values.notes || null,
+            delivery_deadline: values.delivery_deadline || null,
+            delivery_date: values.delivery_date || null,
             user_id: user.id,
           }])
           .select()
@@ -607,6 +621,41 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="delivery_deadline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Plazo de Entrega</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Ej: 2 semanas, 30 días..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="delivery_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fecha de Entrega</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

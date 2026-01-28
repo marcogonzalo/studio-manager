@@ -26,6 +26,8 @@ interface PurchaseOrder {
   status: string;
   order_date: string;
   notes: string | null;
+  delivery_deadline?: string | null;
+  delivery_date?: string | null;
   created_at: string;
   project_items: { id: string, name: string, quantity: number, unit_cost: number }[];
 }
@@ -192,6 +194,12 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
                       <div className="text-sm text-muted-foreground space-y-1">
                         <div>Ref: <span className="font-medium">{po.order_number}</span></div>
                         <div>Fecha: <span className="font-medium">{format(new Date(po.order_date || po.created_at), 'dd/MM/yyyy')}</span></div>
+                        {po.delivery_deadline && (
+                          <div>Plazo de Entrega: <span className="font-medium">{po.delivery_deadline}</span></div>
+                        )}
+                        {po.delivery_date && (
+                          <div>Fecha de Entrega: <span className="font-medium">{format(new Date(po.delivery_date), 'dd/MM/yyyy')}</span></div>
+                        )}
                         {po.notes && (
                           <div className="mt-2 italic">"{po.notes}"</div>
                         )}
