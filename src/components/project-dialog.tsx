@@ -26,12 +26,11 @@ const formSchema = z.object({
   phase: z.enum(['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery']).optional(),
   tax_rate: z.string()
     .optional()
-    .transform(v => {
-      if (!v || v.trim() === '') return undefined;
-      const num = parseFloat(v);
-      return isNaN(num) ? undefined : num;
-    })
-    .refine(val => val === undefined || val >= 0, "El impuesto debe ser mayor o igual a 0"),
+    .refine(val => {
+      if (!val || val.trim() === '') return true;
+      const num = parseFloat(val);
+      return !isNaN(num) && num >= 0;
+    }, "El impuesto debe ser mayor o igual a 0"),
 });
 
 interface ProjectDialogProps {
@@ -47,7 +46,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
   const [pendingClientId, setPendingClientId] = useState<string | null>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<z.input<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -132,12 +131,17 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
     }
   }, [project, open, form]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.input<typeof formSchema>) {
     try {
+      // Transform tax_rate from string to number
+      const taxRateTransformed = values.tax_rate 
+        ? (values.tax_rate.trim() === '' ? undefined : parseFloat(values.tax_rate))
+        : undefined;
+      
       // Handle tax_rate: if empty, use last value (if editing) or 0 (if new)
       let taxRateValue: number | null = null;
-      if (values.tax_rate !== undefined && values.tax_rate !== null && values.tax_rate !== '') {
-        taxRateValue = values.tax_rate;
+      if (taxRateTransformed !== undefined && taxRateTransformed !== null && !isNaN(taxRateTransformed)) {
+        taxRateValue = taxRateTransformed;
       } else {
         // If empty and editing, use last known value
         if (project && project.tax_rate !== null && project.tax_rate !== undefined) {
