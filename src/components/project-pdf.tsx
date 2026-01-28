@@ -273,8 +273,11 @@ function getSubcategoryLabel(category: BudgetCategory, subcategory: string): str
 }
 
 export function ProjectPDF({ project, items, budgetLines, taxRate = 0, architectName }: ProjectPDFProps) {
+  // Filter out excluded items
+  const includedItems = items.filter(item => !item.is_excluded);
+  
   // Group items by space (location)
-  const itemsBySpace = items.reduce((acc, item) => {
+  const itemsBySpace = includedItems.reduce((acc, item) => {
     const spaceName = item.space?.name || 'General';
     if (!acc[spaceName]) {
       acc[spaceName] = [];
@@ -296,8 +299,8 @@ export function ProjectPDF({ project, items, budgetLines, taxRate = 0, architect
     return acc;
   }, {} as Record<string, Record<BudgetCategory, ProjectBudgetLine[]>>);
 
-  // Calculate totals
-  const totalItemsPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  // Calculate totals (only included items)
+  const totalItemsPrice = includedItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
   const totalBudgetLines = budgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
   const subtotal = totalItemsPrice + totalBudgetLines;
   const tax = subtotal * (taxRate / 100);

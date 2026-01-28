@@ -17,6 +17,7 @@ import type { Product, Space, Supplier } from '@/types';
 import type { ProjectItem } from '@/modules/app/projects/project-budget';
 import { useAuth } from '@/components/auth-provider';
 import { SupplierDialog } from './supplier-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const formSchema = z.object({
   product_id: z.string().optional(),
@@ -37,6 +38,7 @@ const formSchema = z.object({
   markup: z.string().transform(v => parseFloat(v) || 0),
   unit_price: z.string().transform(v => parseFloat(v) || 0),
   image_url: z.string().optional(),
+  is_excluded: z.boolean().optional(),
 });
 
 interface AddItemDialogProps {
@@ -77,6 +79,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
     markup: string;
     unit_price: string;
     image_url?: string;
+    is_excluded?: boolean;
   };
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as any,
@@ -95,6 +98,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
       markup: "20" as any,
       unit_price: "0" as any,
       image_url: "",
+      is_excluded: false,
     },
   });
 
@@ -165,6 +169,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
           markup: item.markup?.toString() || "20",
           unit_price: item.unit_price?.toString() || "0",
           image_url: item.image_url || "",
+          is_excluded: item.is_excluded || false,
         });
         if (item.product_id && pData) {
           const prod = pData.find(p => p.id === item.product_id);
@@ -253,6 +258,22 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
         return;
       }
 
+      // Validar que no se pueda marcar como excluido si está asociado a PO no cancelada
+      if (values.is_excluded && item?.purchase_order_id) {
+        // Verificar si la PO está cancelada
+        const { data: poData } = await supabase
+          .from('purchase_orders')
+          .select('status')
+          .eq('id', item.purchase_order_id)
+          .single();
+        
+        if (poData && poData.status !== 'cancelled') {
+          toast.error('No se puede excluir un producto asociado a una orden de compra activa. Cancela la orden primero.');
+          form.setValue('is_excluded', false);
+          return;
+        }
+      }
+
       let finalProductId = values.product_id === 'custom' || activeTab === 'new' ? null : values.product_id;
 
       // Si es un producto personalizado (no del catálogo), primero créalo en products
@@ -293,6 +314,7 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
         unit_price: values.unit_price,
         image_url: values.image_url,
         internal_reference: values.internal_reference || null,
+        is_excluded: values.is_excluded || false,
         ...(isEditing ? {} : { status: 'pending' })
       };
       
@@ -540,6 +562,50 @@ export function AddItemDialog({ open, onOpenChange, projectId, onSuccess, item, 
                   <FormMessage />
                 </FormItem>
               )} />
+
+              <FormField
+                control={form.control}
+                name="is_excluded"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          // Validar si está asociado a PO no cancelada
+                          if (checked && item?.purchase_order_id) {
+                            supabase
+                              .from('purchase_orders')
+                              .select('status')
+                              .eq('id', item.purchase_order_id)
+                              .single()
+                              .then(({ data: poData }) => {
+                                if (poData && poData.status !== 'cancelled') {
+                                  toast.error('No se puede excluir un producto asociado a una orden de compra activa. Cancela la orden primero.');
+                                  field.onChange(false);
+                                }
+                              });
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">
+                        Excluir del proyecto
+                      </FormLabel>
+                      <p className="text-xs text-muted-foreground">
+                        Si está marcado, el producto no se incluirá en el presupuesto ni en los cálculos de costos.
+                      </p>
+                      {item?.purchase_order_id && (
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                          ⚠ No se puede excluir si está asociado a una orden de compra activa.
+                        </p>
+                      )}
+                    </div>
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-4 gap-4">
                 <FormField control={form.control} name="quantity" render={({ field }) => (

@@ -112,7 +112,10 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
                         </div>
                       )}
                     </div>
-                    <div className="p-3">
+                    <div className={`p-3 ${item.is_excluded ? 'opacity-50 grayscale' : ''}`}>
+                      {item.is_excluded && (
+                        <div className="text-xs text-muted-foreground mb-1 italic">Excluido del proyecto</div>
+                      )}
                       <h4 className="font-medium text-sm mb-1 truncate">{item.product?.name || item.name}</h4>
                       {item.internal_reference && (
                         <p className="text-xs text-muted-foreground font-mono mb-1">Cód.: {item.internal_reference}</p>

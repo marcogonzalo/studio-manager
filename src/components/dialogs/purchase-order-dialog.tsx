@@ -153,7 +153,13 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
       // - Items in the current order (if editing)
       // - Items from cancelled orders (they should be available again)
       // - Items that match the supplier
+      // - Exclude items marked as excluded (is_excluded === true)
       const filtered = allProjectItems.filter(item => {
+        // Exclude products marked as excluded
+        if (item.is_excluded) {
+          return false;
+        }
+        
         const itemSupplierId = item.product?.supplier_id;
         const isFromCancelledOrder = item.purchase_order_id && cancelledOrderIds.has(item.purchase_order_id);
         const isInCurrentOrder = item.purchase_order_id === orderId;
