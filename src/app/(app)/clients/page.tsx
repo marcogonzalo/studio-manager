@@ -59,6 +59,15 @@ export default function ClientsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('¿Estás seguro de eliminar este cliente?')) return;
 
+    // Verificar si puede ser eliminado
+    const { canDeleteClient } = await import('@/lib/validation');
+    const canDelete = await canDeleteClient(id);
+    
+    if (!canDelete) {
+      toast.error('No se puede eliminar el cliente porque tiene proyectos asociados');
+      return;
+    }
+
     const { error } = await supabase.from('clients').delete().eq('id', id);
     if (error) {
       toast.error('Error al eliminar cliente');

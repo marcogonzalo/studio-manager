@@ -56,6 +56,16 @@ export default function SuppliersPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar proveedor?')) return;
+    
+    // Verificar si puede ser eliminado
+    const { canDeleteSupplier } = await import('@/lib/validation');
+    const canDelete = await canDeleteSupplier(id);
+    
+    if (!canDelete) {
+      toast.error('No se puede eliminar el proveedor porque está asociado a productos u órdenes de compra en proyectos');
+      return;
+    }
+    
     const { error } = await supabase.from('suppliers').delete().eq('id', id);
     if (error) toast.error('Error al eliminar');
     else {
@@ -132,22 +142,38 @@ export default function SuppliersPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    {s.website && (
-                      <a
-                        href={s.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-primary hover:underline max-w-[200px]"
-                      >
-                        <span className="relative overflow-hidden whitespace-nowrap block flex-1 min-w-0">
-                          <span className="block">
-                            {new URL(s.website).hostname.replace('www.', '')}
+                    {s.website && (() => {
+                      // Normalize URL: add protocol if missing
+                      const normalizedUrl = s.website.startsWith('http://') || s.website.startsWith('https://')
+                        ? s.website
+                        : `https://${s.website}`;
+                      
+                      // Extract hostname safely
+                      let hostname = s.website;
+                      try {
+                        hostname = new URL(normalizedUrl).hostname.replace('www.', '');
+                      } catch {
+                        // If URL parsing fails, use the original value
+                        hostname = s.website.replace(/^https?:\/\//, '').replace(/^www\./, '');
+                      }
+                      
+                      return (
+                        <a
+                          href={normalizedUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-primary hover:underline max-w-[200px]"
+                        >
+                          <span className="relative overflow-hidden whitespace-nowrap block flex-1 min-w-0">
+                            <span className="block">
+                              {hostname}
+                            </span>
+                            <span className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none"></span>
                           </span>
-                          <span className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none"></span>
-                        </span>
-                        <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                      </a>
-                    )}
+                          <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                        </a>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
