@@ -99,10 +99,22 @@ export default function ProjectDetailPage() {
         <div className="flex items-center justify-between">
           <CollapsibleTrigger className="flex-1 text-left group">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                {project.name}
-                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
-              </h2>
+              <div className="flex items-center gap-3 flex-wrap">
+                <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+                  {project.name}
+                  <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+                </h2>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground capitalize">
+                    {project.status}
+                  </span>
+                  {project.phase && (
+                    <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
+                      {getPhaseLabel(project.phase)}
+                    </span>
+                  )}
+                </div>
+              </div>
               <p className="text-muted-foreground">{project.client?.full_name}</p>
             </div>
           </CollapsibleTrigger>
@@ -121,15 +133,11 @@ export default function ProjectDetailPage() {
             <CardHeader>
               <CardTitle className="text-lg">Detalles del Proyecto</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <div>
-                <p className="text-sm text-muted-foreground">Estado</p>
-                <p className="font-medium capitalize">{project.status}</p>
-              </div>
-              {project.phase && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Fase</p>
-                  <p className="font-medium">{getPhaseLabel(project.phase)}</p>
+            <CardContent className="grid gap-4 md:grid-cols-4">
+              {project.address && (
+                <div className="md:col-span-2">
+                  <p className="text-sm text-muted-foreground">Dirección</p>
+                  <p className="font-medium">{project.address}</p>
                 </div>
               )}
               <div>
@@ -140,14 +148,16 @@ export default function ProjectDetailPage() {
                     : 'No definida'}
                 </p>
               </div>
-              {project.address && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Dirección</p>
-                  <p className="font-medium">{project.address}</p>
-                </div>
-              )}
+              <div>
+                <p className="text-sm text-muted-foreground">Fecha Estimada de Entrega</p>
+                <p className="font-medium">
+                  {project.end_date
+                    ? new Date(project.end_date).toLocaleDateString('es-ES')
+                    : 'No definida'}
+                </p>
+              </div>
               {project.description && (
-                <div className="md:col-span-2 lg:col-span-3">
+                <div className="md:col-span-4">
                   <p className="text-sm text-muted-foreground">Descripción</p>
                   <p className="font-medium">{project.description}</p>
                 </div>
