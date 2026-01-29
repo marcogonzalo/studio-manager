@@ -96,6 +96,8 @@ export interface PurchaseOrder {
   order_date?: string;
   status?: string;
   notes?: string;
+  delivery_deadline?: string;
+  delivery_date?: string;
   user_id?: string;
   created_at: string;
 }

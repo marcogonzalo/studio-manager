@@ -22,6 +22,8 @@ const formSchema = z.object({
   order_date: z.string().min(1, "Fecha requerida"),
   status: z.string().min(1, "Estado requerido"),
   notes: z.string().optional(),
+  delivery_deadline: z.string().optional(),
+  delivery_date: z.string().optional(),
 });
 
 interface ProjectItem {
@@ -41,6 +43,8 @@ interface PurchaseOrder {
   order_date: string;
   status: string;
   notes: string | null;
+  delivery_deadline?: string | null;
+  delivery_date?: string | null;
   project_items?: { id: string }[];
 }
 
@@ -60,6 +64,25 @@ const STATUS_OPTIONS = [
   { value: 'cancelled', label: 'Cancelada' },
 ];
 
+const DELIVERY_DEADLINE_OPTIONS = [
+  { value: '1w', label: '1 semana' },
+  { value: '2w', label: '2 semanas' },
+  { value: '3w', label: '3 semanas' },
+  { value: '4w', label: '4 semanas' },
+  { value: '6w', label: '6 semanas' },
+  { value: 'tbd', label: 'A convenir' },
+];
+
+const PREDEFINED_DEADLINE_VALUES = new Set(DELIVERY_DEADLINE_OPTIONS.map((o) => o.value));
+
+/** Item status from PO status: draft/sent → pending, confirmed → ordered, received → received. */
+function getItemStatusForPO(poStatus: string): string {
+  const s = poStatus?.toLowerCase();
+  if (s === 'confirmed') return 'ordered';
+  if (s === 'received') return 'received';
+  return 'pending'; // draft, sent
+}
+
 export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, order }: PurchaseOrderDialogProps) {
   const { user } = useAuth();
   const isEditing = !!order;
@@ -77,6 +100,8 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
       order_date: new Date().toISOString().split('T')[0],
       status: "draft",
       notes: "",
+      delivery_deadline: "",
+      delivery_date: "",
     },
   });
 
@@ -239,6 +264,10 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
           order_date: orderDate,
           status: order.status || "draft",
           notes: order.notes || "",
+          delivery_deadline: order.delivery_deadline || "",
+          delivery_date: order.delivery_date ? (typeof order.delivery_date === 'string' 
+            ? order.delivery_date.split('T')[0] 
+            : new Date(order.delivery_date).toISOString().split('T')[0]) : "",
         };
         
         form.reset(formValues);
@@ -369,6 +398,8 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             order_date: values.order_date,
             status: values.status,
             notes: values.notes || null,
+            delivery_deadline: values.delivery_deadline || null,
+            delivery_date: values.delivery_date || null,
           })
           .eq('id', order.id);
 
@@ -421,10 +452,10 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             }
           }
         } else if (!isNowCancelled && wasCancelled) {
-          // Order is being reactivated, set items to ordered
+          // Order is being reactivated, set items to status derived from PO status
           await supabase
             .from('project_items')
-            .update({ status: 'ordered' })
+            .update({ status: getItemStatusForPO(values.status) })
             .in('id', Array.from(currentItemIds));
         }
 
@@ -479,9 +510,17 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             .from('project_items')
             .update({ 
               purchase_order_id: order.id, 
-              status: isNowCancelled ? 'pending' : 'ordered' 
+              status: isNowCancelled ? 'pending' : getItemStatusForPO(values.status),
             })
             .in('id', toAdd);
+        }
+
+        // Sync status of all items in this order to PO status (draft/sent → pending, confirmed → ordered, received → received)
+        if (!isNowCancelled) {
+          await supabase
+            .from('project_items')
+            .update({ status: getItemStatusForPO(values.status) })
+            .eq('purchase_order_id', order.id);
         }
 
         toast.success('Orden de compra actualizada');
@@ -496,6 +535,8 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             order_date: values.order_date,
             status: values.status,
             notes: values.notes || null,
+            delivery_deadline: values.delivery_deadline || null,
+            delivery_date: values.delivery_date || null,
             user_id: user.id,
           }])
           .select()
@@ -503,10 +544,10 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
 
         if (createError) throw createError;
 
-        // Link selected items to the order
+        // Link selected items to the order; item status follows PO status (draft/sent → pending, confirmed → ordered, received → received)
         await supabase
           .from('project_items')
-          .update({ purchase_order_id: newOrder.id, status: 'ordered' })
+          .update({ purchase_order_id: newOrder.id, status: getItemStatusForPO(values.status) })
           .in('id', Array.from(selectedItemIds));
 
         toast.success('Orden de compra creada');
@@ -607,6 +648,52 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                         ))}
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="delivery_deadline"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Plazo de Entrega</FormLabel>
+                    <Select
+                      value={PREDEFINED_DEADLINE_VALUES.has(field.value ?? '') ? (field.value ?? '') : ''}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar plazo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {DELIVERY_DEADLINE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="delivery_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fecha de Entrega</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
