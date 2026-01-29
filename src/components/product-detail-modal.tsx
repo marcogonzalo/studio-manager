@@ -2,6 +2,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import type { Product } from '@/types';
 import type { ProjectItem } from '@/modules/app/projects/project-budget';
 
+const PO_STATUS_LABELS: Record<string, string> = {
+  draft: 'Borrador',
+  sent: 'Enviada',
+  confirmed: 'Confirmada',
+  received: 'Recibida',
+  cancelled: 'Cancelada',
+};
+
 interface ProductDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -62,27 +70,23 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
             )}
 
             <div className="grid grid-cols-2 gap-4">
-              {referenceCode && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Referencia</h3>
-                  <p className="text-sm font-mono">{referenceCode}</p>
-                </div>
-              )}
-
-              {category && (
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Categoría</h3>
-                  <p className="text-sm">{category}</p>
-                </div>
-              )}
-            </div>
-
-            {internalReference && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1">Proveedor</h3>
+                <p className="text-sm">{supplierName}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1">Referencia</h3>
+                <p className="text-sm font-mono">{referenceCode || '-'}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1">Categoría</h3>
+                <p className="text-sm">{category || '-'}</p>
+              </div>
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">Código</h3>
-                <p className="text-sm font-mono">{internalReference}</p>
+                <p className="text-sm font-mono">{internalReference || '-'}</p>
               </div>
-            )}
+            </div>
 
             {referenceUrl && (
               <div>
@@ -97,11 +101,6 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
                 </a>
               </div>
             )}
-
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">Proveedor</h3>
-              <p className="text-sm">{supplierName}</p>
-            </div>
 
             <div className="border-t pt-4 space-y-3">
               <div className="flex justify-between">
@@ -130,6 +129,22 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
                 </div>
               )}
             </div>
+
+            {projectItem?.purchase_order && projectItem.purchase_order.status !== 'cancelled' && (
+              <div className="border rounded-lg p-4 bg-muted/50 dark:bg-muted/20 space-y-2">
+                <h3 className="text-sm font-semibold text-foreground">Orden de compra</h3>
+                <div className="text-sm space-y-1">
+                  <p><span className="text-muted-foreground">Ref:</span> <span className="font-medium">{projectItem.purchase_order.order_number}</span></p>
+                  <p><span className="text-muted-foreground">Estado:</span> <span className="font-medium">{PO_STATUS_LABELS[projectItem.purchase_order.status] ?? projectItem.purchase_order.status}</span></p>
+                  {projectItem.purchase_order.delivery_date && (
+                    <p><span className="text-muted-foreground">Fecha de entrega:</span> <span className="font-medium">{new Date(projectItem.purchase_order.delivery_date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span></p>
+                  )}
+                  {!projectItem.purchase_order.delivery_date && projectItem.purchase_order.delivery_deadline && (
+                    <p><span className="text-muted-foreground">Plazo de entrega:</span> <span className="font-medium">{projectItem.purchase_order.delivery_deadline}</span></p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

@@ -42,6 +42,13 @@ export interface ProjectItem {
   image_url: string;
   internal_reference?: string;
   supplier_id?: string;
+  purchase_order_id?: string | null;
+  purchase_order?: {
+    order_number: string;
+    status: string;
+    delivery_deadline?: string | null;
+    delivery_date?: string | null;
+  };
   product?: {
     name?: string;
     supplier?: { name: string };
@@ -92,7 +99,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       // Fetch project items (products)
       const { data: itemsData, error: itemsError } = await supabase
         .from('project_items')
-        .select('*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category)')
+        .select('*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)')
         .eq('project_id', projectId)
         .order('created_at');
       
@@ -237,6 +244,12 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+  };
+
+  // Map delivery_deadline codes to readable labels (same as purchase-order-dialog options)
+  const deliveryDeadlineLabel: Record<string, string> = {
+    '1w': '1 semana', '2w': '2 semanas', '3w': '3 semanas', '4w': '4 semanas', '6w': '6 semanas',
+    'tbd': 'A convenir',
   };
 
   // Helper function to get status icon and label
@@ -514,6 +527,14 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                         {(() => {
                           const statusDisplay = getStatusDisplay(item.status);
                           const Icon = statusDisplay.icon;
+                          const po = item.purchase_order;
+                          const isOrderedNotReceived = item.status === 'ordered' && po;
+                          const deliveryInfo = isOrderedNotReceived && (po.delivery_date || po.delivery_deadline)
+                            ? po.delivery_date
+                              ? `Entrega: ${new Date(po.delivery_date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}`
+                              : `Entrega: ${deliveryDeadlineLabel[po.delivery_deadline ?? ''] || po.delivery_deadline}`
+                            : null;
+                          const statusLabel = deliveryInfo ?? statusDisplay.label;
                           return (
                             <TooltipProvider>
                               <Tooltip>
@@ -523,7 +544,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>{statusDisplay.label}</p>
+                                  <p>{statusLabel}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>

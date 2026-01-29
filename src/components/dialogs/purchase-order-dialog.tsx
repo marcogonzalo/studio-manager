@@ -64,6 +64,25 @@ const STATUS_OPTIONS = [
   { value: 'cancelled', label: 'Cancelada' },
 ];
 
+const DELIVERY_DEADLINE_OPTIONS = [
+  { value: '1w', label: '1 semana' },
+  { value: '2w', label: '2 semanas' },
+  { value: '3w', label: '3 semanas' },
+  { value: '4w', label: '4 semanas' },
+  { value: '6w', label: '6 semanas' },
+  { value: 'tbd', label: 'A convenir' },
+];
+
+const PREDEFINED_DEADLINE_VALUES = new Set(DELIVERY_DEADLINE_OPTIONS.map((o) => o.value));
+
+/** Item status from PO status: draft/sent → pending, confirmed → ordered, received → received. */
+function getItemStatusForPO(poStatus: string): string {
+  const s = poStatus?.toLowerCase();
+  if (s === 'confirmed') return 'ordered';
+  if (s === 'received') return 'received';
+  return 'pending'; // draft, sent
+}
+
 export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, order }: PurchaseOrderDialogProps) {
   const { user } = useAuth();
   const isEditing = !!order;
@@ -433,10 +452,10 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             }
           }
         } else if (!isNowCancelled && wasCancelled) {
-          // Order is being reactivated, set items to ordered
+          // Order is being reactivated, set items to status derived from PO status
           await supabase
             .from('project_items')
-            .update({ status: 'ordered' })
+            .update({ status: getItemStatusForPO(values.status) })
             .in('id', Array.from(currentItemIds));
         }
 
@@ -491,9 +510,17 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
             .from('project_items')
             .update({ 
               purchase_order_id: order.id, 
-              status: isNowCancelled ? 'pending' : 'ordered' 
+              status: isNowCancelled ? 'pending' : getItemStatusForPO(values.status),
             })
             .in('id', toAdd);
+        }
+
+        // Sync status of all items in this order to PO status (draft/sent → pending, confirmed → ordered, received → received)
+        if (!isNowCancelled) {
+          await supabase
+            .from('project_items')
+            .update({ status: getItemStatusForPO(values.status) })
+            .eq('purchase_order_id', order.id);
         }
 
         toast.success('Orden de compra actualizada');
@@ -517,10 +544,10 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
 
         if (createError) throw createError;
 
-        // Link selected items to the order
+        // Link selected items to the order; item status follows PO status (draft/sent → pending, confirmed → ordered, received → received)
         await supabase
           .from('project_items')
-          .update({ purchase_order_id: newOrder.id, status: 'ordered' })
+          .update({ purchase_order_id: newOrder.id, status: getItemStatusForPO(values.status) })
           .in('id', Array.from(selectedItemIds));
 
         toast.success('Orden de compra creada');
@@ -634,12 +661,23 @@ export function PurchaseOrderDialog({ open, onOpenChange, projectId, onSuccess, 
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Plazo de Entrega</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ej: 2 semanas, 30 días..."
-                        {...field}
-                      />
-                    </FormControl>
+                    <Select
+                      value={PREDEFINED_DEADLINE_VALUES.has(field.value ?? '') ? (field.value ?? '') : ''}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar plazo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {DELIVERY_DEADLINE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
