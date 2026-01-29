@@ -160,22 +160,26 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Órdenes de Compra</h3>
-        <Button onClick={handleCreateNew} disabled={loading}>
-          <Plus className="mr-2 h-4 w-4" /> Nueva Orden
-        </Button>
+        <CardTitle>Órdenes de Compra</CardTitle>
+        <div className="flex gap-2">
+          <Button onClick={handleCreateNew} disabled={loading}>
+            <Plus className="mr-2 h-4 w-4" /> Nueva Orden
+          </Button>
+        </div>
       </div>
 
       {orders.length === 0 ? (
-        <div className="text-center py-12">
-          <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground mb-4">No hay órdenes de compra.</p>
-          <Button onClick={handleCreateNew} variant="outline">
-            <Plus className="mr-2 h-4 w-4" /> Crear Primera Orden
-          </Button>
-        </div>
+        <Card>
+          <CardContent className="text-center py-12">
+            <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground mb-4">No hay órdenes de compra.</p>
+            <Button onClick={handleCreateNew} variant="outline">
+              <Plus className="mr-2 h-4 w-4" /> Crear Primera Orden
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
           {orders.map((po) => {
@@ -191,15 +195,17 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
                           {STATUS_LABELS[po.status] || po.status}
                         </span>
                       </div>
-                      <div className="text-sm text-muted-foreground space-y-1">
-                        <div>Ref: <span className="font-medium">{po.order_number}</span></div>
-                        <div>Fecha: <span className="font-medium">{format(new Date(po.order_date || po.created_at), 'dd/MM/yyyy')}</span></div>
-                        {po.delivery_deadline && (
-                          <div>Plazo de Entrega: <span className="font-medium">{po.delivery_deadline}</span></div>
-                        )}
-                        {po.delivery_date && (
-                          <div>Fecha de Entrega: <span className="font-medium">{format(new Date(po.delivery_date), 'dd/MM/yyyy')}</span></div>
-                        )}
+                      <div className="text-sm text-muted-foreground">
+                        <div className="flex flex-wrap justify-between gap-x-4 gap-y-1">
+                          <span>Ref: <span className="font-medium">{po.order_number}</span></span>
+                          <span>Fecha de solicitud: <span className="font-medium">{format(new Date(po.order_date || po.created_at), 'dd/MM/yyyy')}</span></span>
+                          {po.delivery_deadline && !po.delivery_date && (
+                            <span>Plazo de Entrega: <span className="font-medium">{po.delivery_deadline}</span></span>
+                          )}
+                          {po.delivery_date && (
+                            <span>Fecha de Entrega: <span className="font-medium">{format(new Date(po.delivery_date), 'dd/MM/yyyy')}</span></span>
+                          )}
+                        </div>
                         {po.notes && (
                           <div className="mt-2 italic">"{po.notes}"</div>
                         )}
@@ -283,6 +289,8 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
           order_date: editingOrder.order_date || editingOrder.created_at || new Date().toISOString().split('T')[0],
           status: editingOrder.status || "draft",
           notes: editingOrder.notes || null,
+          delivery_deadline: editingOrder.delivery_deadline ?? null,
+          delivery_date: editingOrder.delivery_date ?? null,
           project_items: editingOrder.project_items ? editingOrder.project_items.map(item => ({ id: item.id })) : [],
         } : null}
         onSuccess={() => {
