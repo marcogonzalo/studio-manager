@@ -92,7 +92,10 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {items.map((item) => (
-                  <div key={item.id} className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
+                  <div 
+                    key={item.id} 
+                    className={`border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow ${item.is_excluded ? 'opacity-50 grayscale' : ''}`}
+                  >
                     <div 
                       className="aspect-square bg-secondary/30 dark:bg-muted relative cursor-pointer"
                       onClick={() => {
@@ -113,6 +116,9 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
                       )}
                     </div>
                     <div className="p-3">
+                      {item.is_excluded && (
+                        <div className="text-xs text-muted-foreground mb-1 italic">Excluido del proyecto</div>
+                      )}
                       <h4 className="font-medium text-sm mb-1 truncate">{item.product?.name || item.name}</h4>
                       {item.internal_reference && (
                         <p className="text-xs text-muted-foreground font-mono mb-1">Cód.: {item.internal_reference}</p>

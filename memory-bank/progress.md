@@ -82,3 +82,5 @@
 - [x] **Budget Line Dialog for Fees:** El campo "Importe Real" se oculta para honorarios propios. **RESUELTO:** Cuando se selecciona categoría `own_fees`, el campo `actual_amount` se oculta y se muestra mensaje explicativo: "Los honorarios son ingresos y no requieren importe real de coste."
 
 - [x] **Purchase Order Coverage Display:** Simplificada visualización de cobertura de órdenes de compra. **RESUELTO:** Se eliminó el importe cubierto del display y el porcentaje se limita a un máximo de 100%.
+
+- [x] **Mark Products as Excluded from Project (Phase 6):** Los ítems del proyecto pueden marcarse como excluidos del presupuesto. **RESUELTO:** Se añadió `is_excluded` (boolean, default false) en `project_items`. Checkbox "Excluir del proyecto" en el formulario de ítem (no se puede excluir si tiene PO activa). En la pestaña Presupuesto los productos excluidos no se muestran ni entran en totales ni en el PDF. En el diálogo de productos por espacio se muestran con estilo atenuado (opacity/grayscale) y etiqueta "Excluido del proyecto". Los excluidos se filtran en el diálogo de órdenes de compra al elegir ítems.

@@ -43,6 +43,7 @@ export interface ProjectItem {
   internal_reference?: string;
   supplier_id?: string;
   purchase_order_id?: string | null;
+  is_excluded?: boolean;
   purchase_order?: {
     order_number: string;
     status: string;
@@ -197,8 +198,8 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       // Use project tax_rate or default to 0
       const taxRate = project.tax_rate !== null && project.tax_rate !== undefined ? project.tax_rate : 0;
       
-      // Pass budget lines to PDF generator
-      const asPdf = await generateProjectPDF(project, items, budgetLines, taxRate, architectName);
+      // Pass budget lines to PDF generator (includedItems already excludes is_excluded)
+      const asPdf = await generateProjectPDF(project, includedItems, budgetLines, taxRate, architectName);
       const blob = await asPdf.toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -235,8 +236,11 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     return acc;
   }, {} as Record<string, Record<BudgetCategory, ProjectBudgetLine[]>>);
 
+  // Exclude products marked as excluded from display and totals
+  const includedItems = items.filter(item => !item.is_excluded);
+  
   // Calculate totals
-  const totalItemsPrice = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
+  const totalItemsPrice = includedItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
   const totalBudgetLinesEstimated = budgetLines.reduce((sum, line) => sum + Number(line.estimated_amount), 0);
   
   // For client budget, we use estimated_amount as the price shown
@@ -498,7 +502,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {items.map((item) => (
+                  {includedItems.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
                         {item.image_url && (
