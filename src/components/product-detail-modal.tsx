@@ -1,4 +1,6 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Pencil } from 'lucide-react';
 import type { Product } from '@/types';
 import type { ProjectItem } from '@/modules/app/projects/project-budget';
 
@@ -15,9 +17,11 @@ interface ProductDetailModalProps {
   onOpenChange: (open: boolean) => void;
   product?: Product | null;
   projectItem?: ProjectItem | null;
+  onEdit?: () => void;
+  projectId?: string;
 }
 
-export function ProductDetailModal({ open, onOpenChange, product, projectItem }: ProductDetailModalProps) {
+export function ProductDetailModal({ open, onOpenChange, product, projectItem, onEdit, projectId }: ProductDetailModalProps) {
   // Si hay projectItem, usar sus datos; si no, usar product
   const displayProduct = projectItem || product;
   
@@ -147,6 +151,18 @@ export function ProductDetailModal({ open, onOpenChange, product, projectItem }:
             )}
           </div>
         </div>
+
+        <DialogFooter>
+          {projectItem && projectId && onEdit && (
+            <Button onClick={onEdit} variant="default">
+              <Pencil className="mr-2 h-4 w-4" />
+              Editar
+            </Button>
+          )}
+          <Button onClick={() => onOpenChange(false)} variant="outline">
+            Cerrar
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

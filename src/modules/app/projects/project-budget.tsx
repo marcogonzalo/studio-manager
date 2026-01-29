@@ -645,6 +645,12 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         open={isProductModalOpen}
         onOpenChange={setIsProductModalOpen}
         projectItem={selectedItem}
+        projectId={projectId}
+        onEdit={() => {
+          setIsProductModalOpen(false);
+          setEditingItem(selectedItem);
+          setIsItemDialogOpen(true);
+        }}
       />
     </div>
   );
