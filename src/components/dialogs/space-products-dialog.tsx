@@ -92,7 +92,10 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {items.map((item) => (
-                  <div key={item.id} className="border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow">
+                  <div 
+                    key={item.id} 
+                    className={`border rounded-lg overflow-hidden bg-card hover:shadow-md transition-shadow ${item.is_excluded ? 'opacity-50 grayscale' : ''}`}
+                  >
                     <div 
                       className="aspect-square bg-secondary/30 dark:bg-muted relative cursor-pointer"
                       onClick={() => {
@@ -112,7 +115,7 @@ export function SpaceProductsDialog({ open, onOpenChange, space, projectId }: Sp
                         </div>
                       )}
                     </div>
-                    <div className={`p-3 ${item.is_excluded ? 'opacity-50 grayscale' : ''}`}>
+                    <div className="p-3">
                       {item.is_excluded && (
                         <div className="text-xs text-muted-foreground mb-1 italic">Excluido del proyecto</div>
                       )}
