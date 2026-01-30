@@ -1,6 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
-import type { CookieOptions } from '@supabase/ssr';
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+import type { CookieOptions } from "@supabase/ssr";
 
 interface CookieToSet {
   name: string;
@@ -50,19 +50,19 @@ export async function updateSession(request: NextRequest) {
 
   // Define public routes that don't require authentication
   const publicRoutes = [
-    '/',
-    '/about',
-    '/pricing',
-    '/contact',
-    '/privacy',
-    '/terms',
-    '/auth',
+    "/",
+    "/about",
+    "/pricing",
+    "/contact",
+    "/privacy",
+    "/terms",
+    "/auth",
   ];
 
   // Allow auth routes (including callback) to be accessed without authentication
   const isPublicRoute =
     publicRoutes.some((route) => request.nextUrl.pathname === route) ||
-    request.nextUrl.pathname.startsWith('/auth');
+    request.nextUrl.pathname.startsWith("/auth");
 
   // Redirect unauthenticated users trying to access protected routes
   if (!user && !isPublicRoute) {
@@ -70,17 +70,17 @@ export async function updateSession(request: NextRequest) {
     const redirectTo = encodeURIComponent(
       request.nextUrl.pathname + request.nextUrl.search
     );
-    url.pathname = '/auth';
-    url.searchParams.set('redirect', redirectTo);
+    url.pathname = "/auth";
+    url.searchParams.set("redirect", redirectTo);
     return NextResponse.redirect(url);
   }
 
   // Redirect authenticated users away from auth page to dashboard
-  if (user && request.nextUrl.pathname === '/auth') {
+  if (user && request.nextUrl.pathname === "/auth") {
     const url = request.nextUrl.clone();
-    const redirectTo = request.nextUrl.searchParams.get('redirect');
-    url.pathname = redirectTo ? decodeURIComponent(redirectTo) : '/dashboard';
-    url.searchParams.delete('redirect');
+    const redirectTo = request.nextUrl.searchParams.get("redirect");
+    url.pathname = redirectTo ? decodeURIComponent(redirectTo) : "/dashboard";
+    url.searchParams.delete("redirect");
     return NextResponse.redirect(url);
   }
 

@@ -1,32 +1,45 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Trash2, Pencil, DollarSign, MoreVertical } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Plus, Trash2, Pencil, DollarSign, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { AdditionalCostDialog } from '@/components/dialogs/additional-cost-dialog';
-import { toast } from 'sonner';
-import type { AdditionalCost } from '@/types';
+} from "@/components/ui/dropdown-menu";
+import { AdditionalCostDialog } from "@/components/dialogs/additional-cost-dialog";
+import { toast } from "sonner";
+import type { AdditionalCost } from "@/types";
 
 const COST_TYPE_LABELS: Record<string, string> = {
-  shipping: 'Envío',
-  packaging: 'Embalaje',
-  installation: 'Instalación',
-  assembly: 'Montaje',
-  transport: 'Transporte',
-  insurance: 'Seguro',
-  customs: 'Aduanas',
-  storage: 'Almacenamiento',
-  handling: 'Manejo',
-  other: 'Otro',
+  shipping: "Envío",
+  packaging: "Embalaje",
+  installation: "Instalación",
+  assembly: "Montaje",
+  transport: "Transporte",
+  insurance: "Seguro",
+  customs: "Aduanas",
+  storage: "Almacenamiento",
+  handling: "Manejo",
+  other: "Otro",
 };
 
 export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
@@ -38,13 +51,13 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
   const fetchCosts = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from('additional_project_costs')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('created_at', { ascending: false });
-    
+      .from("additional_project_costs")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false });
+
     if (error) {
-      toast.error('Error al cargar costes adicionales');
+      toast.error("Error al cargar costes adicionales");
     } else {
       setCosts(data || []);
     }
@@ -56,16 +69,16 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
   }, [projectId]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este coste adicional?')) return;
+    if (!confirm("¿Eliminar este coste adicional?")) return;
     const { error } = await supabase
-      .from('additional_project_costs')
+      .from("additional_project_costs")
       .delete()
-      .eq('id', id);
-    
+      .eq("id", id);
+
     if (error) {
-      toast.error('Error al eliminar coste adicional');
+      toast.error("Error al eliminar coste adicional");
     } else {
-      toast.success('Coste adicional eliminado');
+      toast.success("Coste adicional eliminado");
       fetchCosts();
     }
   };
@@ -88,22 +101,25 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
   };
 
   // Group costs by type
-  const costsByType = costs.reduce((acc, cost) => {
-    if (!acc[cost.cost_type]) {
-      acc[cost.cost_type] = [];
-    }
-    acc[cost.cost_type].push(cost);
-    return acc;
-  }, {} as Record<string, AdditionalCost[]>);
+  const costsByType = costs.reduce(
+    (acc, cost) => {
+      if (!acc[cost.cost_type]) {
+        acc[cost.cost_type] = [];
+      }
+      acc[cost.cost_type].push(cost);
+      return acc;
+    },
+    {} as Record<string, AdditionalCost[]>
+  );
 
   const totalAmount = costs.reduce((sum, cost) => sum + Number(cost.amount), 0);
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="space-y-1">
           <h3 className="text-lg font-medium">Costes Adicionales</h3>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             Total: ${totalAmount.toFixed(2)}
           </div>
         </div>
@@ -113,12 +129,14 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
       </div>
 
       {loading ? (
-        <p className="text-center py-8 text-muted-foreground">Cargando...</p>
+        <p className="text-muted-foreground py-8 text-center">Cargando...</p>
       ) : costs.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No hay costes adicionales registrados.</p>
+            <DollarSign className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+            <p className="text-muted-foreground">
+              No hay costes adicionales registrados.
+            </p>
             <Button onClick={handleAddNew} className="mt-4">
               <Plus className="mr-2 h-4 w-4" /> Añadir Primer Coste
             </Button>
@@ -128,23 +146,28 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
         <div className="space-y-6">
           {/* Grouped view by cost type */}
           {Object.entries(costsByType).map(([type, typeCosts]) => {
-            const typeTotal = typeCosts.reduce((sum, cost) => sum + Number(cost.amount), 0);
+            const typeTotal = typeCosts.reduce(
+              (sum, cost) => sum + Number(cost.amount),
+              0
+            );
             return (
               <Card key={type}>
                 <CardHeader>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-base">
                         {COST_TYPE_LABELS[type] || type}
                       </CardTitle>
                       <CardDescription>
-                        {typeCosts.length} {typeCosts.length === 1 ? 'coste' : 'costes'} • Total: ${typeTotal.toFixed(2)}
+                        {typeCosts.length}{" "}
+                        {typeCosts.length === 1 ? "coste" : "costes"} • Total: $
+                        {typeTotal.toFixed(2)}
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="border rounded-md">
+                  <div className="rounded-md border">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -157,7 +180,11 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                         {typeCosts.map((cost) => (
                           <TableRow key={cost.id}>
                             <TableCell>
-                              {cost.description || <span className="text-muted-foreground italic">Sin descripción</span>}
+                              {cost.description || (
+                                <span className="text-muted-foreground italic">
+                                  Sin descripción
+                                </span>
+                              )}
                             </TableCell>
                             <TableCell className="text-right font-medium">
                               ${Number(cost.amount).toFixed(2)}
@@ -171,11 +198,13 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEdit(cost)}>
+                                    <DropdownMenuItem
+                                      onClick={() => handleEdit(cost)}
+                                    >
                                       <Pencil className="mr-2 h-4 w-4" />
                                       Editar
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem 
+                                    <DropdownMenuItem
                                       onClick={() => handleDelete(cost.id)}
                                       className="text-destructive"
                                     >
@@ -199,9 +228,11 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
           {/* Summary card */}
           <Card className="bg-secondary/30/50">
             <CardContent className="pt-6">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-lg font-semibold">Total General</span>
-                <span className="text-2xl font-bold">${totalAmount.toFixed(2)}</span>
+                <span className="text-2xl font-bold">
+                  ${totalAmount.toFixed(2)}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -222,5 +253,3 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
     </div>
   );
 }
-
-

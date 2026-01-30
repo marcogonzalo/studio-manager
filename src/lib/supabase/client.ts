@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { createBrowserClient } from '@supabase/ssr';
+import { createBrowserClient } from "@supabase/ssr";
 
 /**
  * Creates a Supabase client for the browser
@@ -26,4 +26,5 @@ export function getSupabaseClient() {
 }
 
 // Legacy export for backward compatibility during migration
-export const supabase = typeof window !== 'undefined' ? getSupabaseClient() : null!;
+export const supabase =
+  typeof window !== "undefined" ? getSupabaseClient() : null!;

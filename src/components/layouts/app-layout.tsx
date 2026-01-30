@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/components/providers/auth-provider';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useAuth } from "@/components/providers/auth-provider";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -25,7 +25,7 @@ import {
   Leaf,
   PanelLeftClose,
   PanelLeft,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -33,23 +33,23 @@ import {
   SheetTitle,
   SheetDescription,
   SheetTrigger,
-} from '@/components/ui/sheet';
-import { ThemeToggleSimple } from '@/components/theme-toggle-simple';
+} from "@/components/ui/sheet";
+import { ThemeToggleSimple } from "@/components/theme-toggle-simple";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/tooltip";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const navItems = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Clientes', href: '/clients', icon: Users },
-  { name: 'Proyectos', href: '/projects', icon: FolderKanban },
-  { name: 'Catálogo', href: '/catalog', icon: ShoppingBag },
-  { name: 'Proveedores', href: '/suppliers', icon: Truck },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Clientes", href: "/clients", icon: Users },
+  { name: "Proyectos", href: "/projects", icon: FolderKanban },
+  { name: "Catálogo", href: "/catalog", icon: ShoppingBag },
+  { name: "Proveedores", href: "/suppliers", icon: Truck },
 ];
 
 function SidebarContent({
@@ -62,7 +62,7 @@ function SidebarContent({
   setIsCollapsed,
 }: {
   collapsed?: boolean;
-  user: ReturnType<typeof useAuth>['user'];
+  user: ReturnType<typeof useAuth>["user"];
   signOut: () => Promise<void>;
   pathname: string;
   setIsMobileOpen: (open: boolean) => void;
@@ -70,18 +70,18 @@ function SidebarContent({
   setIsCollapsed: (collapsed: boolean) => void;
 }) {
   return (
-    <div className="flex flex-col h-full bg-sidebar border-r border-border relative">
+    <div className="bg-sidebar border-border relative flex h-full flex-col border-r">
       <div
         className={cn(
-          'p-6 flex items-center gap-2',
-          collapsed && 'justify-center p-4'
+          "flex items-center gap-2 p-6",
+          collapsed && "justify-center p-4"
         )}
       >
-        <div className="bg-primary text-primary-foreground p-1.5 rounded-lg flex-shrink-0">
+        <div className="bg-primary text-primary-foreground flex-shrink-0 rounded-lg p-1.5">
           <Leaf className="h-5 w-5" />
         </div>
         {!collapsed && (
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">
+          <h1 className="text-foreground text-xl font-semibold tracking-tight">
             Studio<span className="text-primary">Manager</span>
           </h1>
         )}
@@ -90,17 +90,19 @@ function SidebarContent({
       {/* Toggle button - positioned at the edge */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute top-1/2 -translate-y-1/2 -right-3 z-10 bg-background border border-border rounded-full p-1 shadow-md hover:bg-secondary transition-colors hidden md:flex"
-        aria-label={collapsed ? 'Expandir barra lateral' : 'Minimizar barra lateral'}
+        className="bg-background border-border hover:bg-secondary absolute top-1/2 -right-3 z-10 hidden -translate-y-1/2 rounded-full border p-1 shadow-md transition-colors md:flex"
+        aria-label={
+          collapsed ? "Expandir barra lateral" : "Minimizar barra lateral"
+        }
       >
         {collapsed ? (
-          <PanelLeft className="h-4 w-4 text-muted-foreground" />
+          <PanelLeft className="text-muted-foreground h-4 w-4" />
         ) : (
-          <PanelLeftClose className="h-4 w-4 text-muted-foreground" />
+          <PanelLeftClose className="text-muted-foreground h-4 w-4" />
         )}
       </button>
 
-      <nav className={cn('flex-1 space-y-1.5', collapsed ? 'px-2' : 'px-4')}>
+      <nav className={cn("flex-1 space-y-1.5", collapsed ? "px-2" : "px-4")}>
         {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -110,20 +112,20 @@ function SidebarContent({
               href={item.href}
               onClick={() => setIsMobileOpen(false)}
               className={cn(
-                'flex items-center text-sm font-medium rounded-xl transition-all duration-200 group',
-                collapsed ? 'justify-center px-2 py-2.5' : 'px-4 py-2.5',
+                "group flex items-center rounded-xl text-sm font-medium transition-all duration-200",
+                collapsed ? "justify-center px-2 py-2.5" : "px-4 py-2.5",
                 isActive
-                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20'
-                  : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
+                  ? "bg-primary text-primary-foreground shadow-primary/20 shadow-md"
+                  : "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground"
               )}
             >
               <item.icon
                 className={cn(
-                  'h-5 w-5 transition-transform group-hover:scale-110 flex-shrink-0',
-                  !collapsed && 'mr-3',
+                  "h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110",
+                  !collapsed && "mr-3",
                   isActive
-                    ? 'text-primary-foreground'
-                    : 'text-muted-foreground group-hover:text-secondary-foreground'
+                    ? "text-primary-foreground"
+                    : "text-muted-foreground group-hover:text-secondary-foreground"
                 )}
               />
               {!collapsed && item.name}
@@ -144,8 +146,8 @@ function SidebarContent({
       </nav>
       <div
         className={cn(
-          'border-t border-border mt-auto',
-          collapsed ? 'p-2' : 'p-4 space-y-3'
+          "border-border mt-auto border-t",
+          collapsed ? "p-2" : "space-y-3 p-4"
         )}
       >
         {collapsed ? (
@@ -154,7 +156,7 @@ function SidebarContent({
           </div>
         ) : (
           <div className="flex items-center justify-between px-2">
-            <span className="text-sm text-muted-foreground">Apariencia</span>
+            <span className="text-muted-foreground text-sm">Apariencia</span>
             <ThemeToggleSimple />
           </div>
         )}
@@ -163,8 +165,8 @@ function SidebarContent({
             <TooltipTrigger asChild>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="w-full flex justify-center p-2 rounded-xl hover:bg-secondary transition-colors cursor-pointer">
-                    <Avatar className="h-9 w-9 border border-border">
+                  <button className="hover:bg-secondary flex w-full cursor-pointer justify-center rounded-xl p-2 transition-colors">
+                    <Avatar className="border-border h-9 w-9 border">
                       <AvatarImage src={user?.user_metadata?.avatar_url} />
                       <AvatarFallback className="bg-primary/10 text-primary">
                         {user?.email?.substring(0, 2).toUpperCase()}
@@ -172,13 +174,19 @@ function SidebarContent({
                     </Avatar>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent side="right" align="end" className="w-56 rounded-xl">
+                <DropdownMenuContent
+                  side="right"
+                  align="end"
+                  className="w-56 rounded-xl"
+                >
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium">
-                        {user?.user_metadata?.full_name || 'Usuario'}
+                        {user?.user_metadata?.full_name || "Usuario"}
                       </p>
-                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {user?.email}
+                      </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -193,29 +201,31 @@ function SidebarContent({
               </DropdownMenu>
             </TooltipTrigger>
             <TooltipContent side="right">
-              {user?.user_metadata?.full_name || 'Usuario'}
+              {user?.user_metadata?.full_name || "Usuario"}
             </TooltipContent>
           </Tooltip>
         ) : (
-          <div className="flex items-center gap-3 bg-secondary/50 p-2 rounded-xl border border-border/50">
-            <Avatar className="h-9 w-9 border border-border">
+          <div className="bg-secondary/50 border-border/50 flex items-center gap-3 rounded-xl border p-2">
+            <Avatar className="border-border h-9 w-9 border">
               <AvatarImage src={user?.user_metadata?.avatar_url} />
               <AvatarFallback className="bg-primary/10 text-primary">
                 {user?.email?.substring(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium truncate text-foreground">
-                {user?.user_metadata?.full_name || 'Usuario'}
+              <p className="text-foreground truncate text-sm font-medium">
+                {user?.user_metadata?.full_name || "Usuario"}
               </p>
-              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              <p className="text-muted-foreground truncate text-xs">
+                {user?.email}
+              </p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 hover:bg-background text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="hover:bg-background text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer"
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
@@ -239,7 +249,11 @@ function SidebarContent({
   );
 }
 
-export default function AppLayoutClient({ children }: { children: React.ReactNode }) {
+export default function AppLayoutClient({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { user, signOut, loading } = useAuth();
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -248,19 +262,19 @@ export default function AppLayoutClient({ children }: { children: React.ReactNod
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Cargando...</div>
+        <div className="text-muted-foreground animate-pulse">Cargando...</div>
       </div>
     );
   }
 
   return (
     <TooltipProvider>
-      <div className="flex min-h-screen bg-background text-foreground">
+      <div className="bg-background text-foreground flex min-h-screen">
         {/* Desktop Sidebar */}
         <div
           className={cn(
-            'hidden md:flex md:flex-col md:fixed md:inset-y-0 z-50 print:hidden shadow-sm transition-all duration-300',
-            isCollapsed ? 'md:w-16' : 'md:w-64'
+            "z-50 hidden shadow-sm transition-all duration-300 md:fixed md:inset-y-0 md:flex md:flex-col print:hidden",
+            isCollapsed ? "md:w-16" : "md:w-64"
           )}
         >
           <SidebarContent
@@ -280,15 +294,17 @@ export default function AppLayoutClient({ children }: { children: React.ReactNod
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 print:hidden bg-background/80 backdrop-blur-sm border border-border shadow-sm"
+              className="bg-background/80 border-border fixed bottom-4 left-1/2 z-50 -translate-x-1/2 border shadow-sm backdrop-blur-sm md:hidden print:hidden"
             >
               <Menu className="h-6 w-6" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64 border-r border-border">
+          <SheetContent side="left" className="border-border w-64 border-r p-0">
             <SheetHeader className="sr-only">
               <SheetTitle>Menú de Navegación</SheetTitle>
-              <SheetDescription>Navegación principal de la aplicación</SheetDescription>
+              <SheetDescription>
+                Navegación principal de la aplicación
+              </SheetDescription>
             </SheetHeader>
             <SidebarContent
               collapsed={false}
@@ -305,11 +321,11 @@ export default function AppLayoutClient({ children }: { children: React.ReactNod
         {/* Main Content */}
         <div
           className={cn(
-            'flex-1 p-4 md:p-5 print:ml-0 print:p-0 overflow-x-hidden transition-all duration-300',
-            isCollapsed ? 'md:ml-16' : 'md:ml-64'
+            "flex-1 overflow-x-hidden p-4 transition-all duration-300 md:p-5 print:ml-0 print:p-0",
+            isCollapsed ? "md:ml-16" : "md:ml-64"
           )}
         >
-          <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500">
             {children}
           </div>
         </div>

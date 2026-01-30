@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { KeyboardHint } from '@/components/ui/keyboard-hint';
-import { toast } from 'sonner';
-import { format } from 'date-fns';
-import { useAuth } from '@/components/auth-provider';
-import { Trash2, MoreVertical } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { KeyboardHint } from "@/components/ui/keyboard-hint";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { useAuth } from "@/components/auth-provider";
+import { Trash2, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 interface Note {
   id: string;
@@ -28,21 +28,21 @@ interface Note {
 export function ProjectNotes({ projectId }: { projectId: string }) {
   const { user } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
-  const [newNote, setNewNote] = useState('');
+  const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(false);
 
   const fetchNotes = async () => {
     const { data, error } = await supabase
-      .from('project_notes')
-      .select('*, user:profiles(full_name)')
-      .eq('project_id', projectId)
-      .order('archived', { ascending: true })
-      .order('created_at', { ascending: false });
-    
+      .from("project_notes")
+      .select("*, user:profiles(full_name)")
+      .eq("project_id", projectId)
+      .order("archived", { ascending: true })
+      .order("created_at", { ascending: false });
+
     if (!error) {
       // Separar notas archivadas y no archivadas, mostrar primero las no archivadas
-      const nonArchived = (data || []).filter(n => !n.archived);
-      const archived = (data || []).filter(n => n.archived);
+      const nonArchived = (data || []).filter((n) => !n.archived);
+      const archived = (data || []).filter((n) => n.archived);
       setNotes([...nonArchived, ...archived]);
     }
   };
@@ -54,48 +54,50 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
   const handleAddNote = async () => {
     if (!newNote.trim()) return;
     setLoading(true);
-    const { error } = await supabase.from('project_notes').insert([{
-      project_id: projectId,
-      content: newNote,
-      user_id: user?.id,
-      archived: false
-    }]);
+    const { error } = await supabase.from("project_notes").insert([
+      {
+        project_id: projectId,
+        content: newNote,
+        user_id: user?.id,
+        archived: false,
+      },
+    ]);
 
     if (error) {
-      toast.error('Error al añadir nota');
+      toast.error("Error al añadir nota");
     } else {
-      toast.success('Nota añadida');
-      setNewNote('');
+      toast.success("Nota añadida");
+      setNewNote("");
       fetchNotes();
     }
     setLoading(false);
   };
 
   const handleDeleteNote = async (id: string) => {
-    if (!confirm('¿Eliminar esta nota?')) return;
+    if (!confirm("¿Eliminar esta nota?")) return;
     const { error } = await supabase
-      .from('project_notes')
+      .from("project_notes")
       .delete()
-      .eq('id', id);
-    
+      .eq("id", id);
+
     if (error) {
-      toast.error('Error al eliminar nota');
+      toast.error("Error al eliminar nota");
     } else {
-      toast.success('Nota eliminada');
+      toast.success("Nota eliminada");
       fetchNotes();
     }
   };
 
   const handleToggleArchive = async (id: string, currentArchived: boolean) => {
     const { error } = await supabase
-      .from('project_notes')
+      .from("project_notes")
       .update({ archived: !currentArchived })
-      .eq('id', id);
-    
+      .eq("id", id);
+
     if (error) {
-      toast.error('Error al actualizar nota');
+      toast.error("Error al actualizar nota");
     } else {
-      toast.success(currentArchived ? 'Nota desarchivada' : 'Nota archivada');
+      toast.success(currentArchived ? "Nota desarchivada" : "Nota archivada");
       fetchNotes();
     }
   };
@@ -107,12 +109,12 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
           <CardTitle>Añadir Nota</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Textarea 
-            placeholder="Escribe una nota..." 
+          <Textarea
+            placeholder="Escribe una nota..."
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
             onKeyDown={(e) => {
-              if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+              if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
                 e.preventDefault();
                 handleAddNote();
               }
@@ -121,7 +123,7 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
           />
           <div className="flex items-center gap-2">
             <Button onClick={handleAddNote} disabled={loading}>
-              {loading ? 'Guardando...' : 'Guardar Nota'}
+              {loading ? "Guardando..." : "Guardar Nota"}
             </Button>
             <KeyboardHint keys="Ctrl/Cmd + Enter" description="para guardar" />
           </div>
@@ -130,21 +132,24 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
 
       <div className="space-y-4">
         {notes.map((note) => (
-          <Card 
-            key={note.id} 
-            className={note.archived ? "opacity-60 bg-secondary/30/50" : ""}
+          <Card
+            key={note.id}
+            className={note.archived ? "bg-secondary/30/50 opacity-60" : ""}
           >
             <CardContent className="pt-6">
-              <div className="flex items-start justify-between mb-4">
+              <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     checked={note.archived}
                     onChange={() => handleToggleArchive(note.id, note.archived)}
-                    className="w-4 h-4 rounded border-border"
+                    className="border-border h-4 w-4 rounded"
                     title={note.archived ? "Desarchivar" : "Archivar"}
                   />
-                  <label className="text-xs text-muted-foreground cursor-pointer" onClick={() => handleToggleArchive(note.id, note.archived)}>
+                  <label
+                    className="text-muted-foreground cursor-pointer text-xs"
+                    onClick={() => handleToggleArchive(note.id, note.archived)}
+                  >
                     {note.archived ? "Archivada" : "Archivar"}
                   </label>
                 </div>
@@ -155,7 +160,7 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       onClick={() => handleDeleteNote(note.id)}
                       className="text-destructive"
                     >
@@ -165,15 +170,19 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <p className="whitespace-pre-wrap mb-4">{note.content}</p>
-              <div className="text-xs text-muted-foreground flex justify-between">
-                <span>{note.user?.full_name || 'Usuario'}</span>
-                <span>{format(new Date(note.created_at), 'dd/MM/yyyy HH:mm')}</span>
+              <p className="mb-4 whitespace-pre-wrap">{note.content}</p>
+              <div className="text-muted-foreground flex justify-between text-xs">
+                <span>{note.user?.full_name || "Usuario"}</span>
+                <span>
+                  {format(new Date(note.created_at), "dd/MM/yyyy HH:mm")}
+                </span>
               </div>
             </CardContent>
           </Card>
         ))}
-        {notes.length === 0 && <p className="text-muted-foreground text-center">No hay notas.</p>}
+        {notes.length === 0 && (
+          <p className="text-muted-foreground text-center">No hay notas.</p>
+        )}
       </div>
     </div>
   );

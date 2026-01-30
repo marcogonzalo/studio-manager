@@ -1,0 +1,11 @@
+node_modules
+.next
+.cursor
+memory-bank
+out
+build
+dist
+coverage
+*.min.js
+package-lock.json
+pnpm-lock.yaml

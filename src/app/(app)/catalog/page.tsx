@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { getSupabaseClient } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { getSupabaseClient } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Plus,
   Pencil,
@@ -19,24 +19,24 @@ import {
   Image as ImageIcon,
   MoreVertical,
   ShoppingBag,
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ProductDialog } from '@/components/dialogs/product-dialog';
-import { ProductDetailModal } from '@/components/product-detail-modal';
-import { toast } from 'sonner';
+} from "@/components/ui/dropdown-menu";
+import { ProductDialog } from "@/components/dialogs/product-dialog";
+import { ProductDetailModal } from "@/components/product-detail-modal";
+import { toast } from "sonner";
 
-import type { Product } from '@/types';
+import type { Product } from "@/types";
 
 export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -46,11 +46,13 @@ export default function CatalogPage() {
   const fetchProducts = async () => {
     setLoading(true);
     let query = supabase
-      .from('products')
-      .select('*, supplier:suppliers(name)')
-      .order('name');
+      .from("products")
+      .select("*, supplier:suppliers(name)")
+      .order("name");
     if (search)
-      query = query.or(`name.ilike.%${search}%,reference_code.ilike.%${search}%`);
+      query = query.or(
+        `name.ilike.%${search}%,reference_code.ilike.%${search}%`
+      );
 
     const { data, error } = await query;
     if (!error) setProducts(data || []);
@@ -62,52 +64,66 @@ export default function CatalogPage() {
   }, [search]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar producto?')) return;
-    
+    if (!confirm("¿Eliminar producto?")) return;
+
     try {
       // Verificar si puede ser eliminado
-      const { canDeleteProduct } = await import('@/lib/validation');
+      const { canDeleteProduct } = await import("@/lib/validation");
       const canDelete = await canDeleteProduct(id);
-      
+
       if (!canDelete) {
-        toast.error('No se puede eliminar el producto porque está asociado a un proyecto');
+        toast.error(
+          "No se puede eliminar el producto porque está asociado a un proyecto"
+        );
         return;
       }
-      
-      const { error, data } = await supabase.from('products').delete().eq('id', id).select();
-      
+
+      const { error, data } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id)
+        .select();
+
       if (error) {
-        console.error('Error deleting product:', error);
+        console.error("Error deleting product:", error);
         // Error específico para permisos RLS
-        if (error.code === '42501' || error.message?.includes('permission') || error.message?.includes('policy')) {
-          toast.error('No tienes permisos para eliminar este producto');
+        if (
+          error.code === "42501" ||
+          error.message?.includes("permission") ||
+          error.message?.includes("policy")
+        ) {
+          toast.error("No tienes permisos para eliminar este producto");
         } else {
-          toast.error(`Error al eliminar: ${error.message || 'Error desconocido'}`);
+          toast.error(
+            `Error al eliminar: ${error.message || "Error desconocido"}`
+          );
         }
         return;
       }
-      
+
       // Verificar que realmente se eliminó
       if (!data || data.length === 0) {
         // Si no hay error pero tampoco datos, puede ser que RLS bloqueó silenciosamente
-        toast.error('No se pudo eliminar el producto. Verifica que tengas permisos y que el producto no esté asociado a un proyecto.');
+        toast.error(
+          "No se pudo eliminar el producto. Verifica que tengas permisos y que el producto no esté asociado a un proyecto."
+        );
         fetchProducts(); // Refrescar para actualizar la lista
         return;
       }
-      
-      toast.success('Producto eliminado correctamente');
+
+      toast.success("Producto eliminado correctamente");
       fetchProducts();
     } catch (error) {
-      console.error('Unexpected error in handleDelete:', error);
-      toast.error('Error inesperado al eliminar el producto');
+      console.error("Unexpected error in handleDelete:", error);
+      toast.error("Error inesperado al eliminar el producto");
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <ShoppingBag className="h-8 w-8 text-primary" />
+          <ShoppingBag className="text-primary h-8 w-8" />
           <h2 className="text-3xl font-bold">Catálogo de Productos</h2>
         </div>
         <Button
@@ -121,8 +137,8 @@ export default function CatalogPage() {
       </div>
 
       <div className="flex items-center space-x-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="relative max-w-sm flex-1">
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
             placeholder="Buscar por nombre o referencia..."
             className="pl-8"
@@ -132,7 +148,7 @@ export default function CatalogPage() {
         </div>
       </div>
 
-      <div className="border rounded-md bg-card">
+      <div className="bg-card rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -148,13 +164,13 @@ export default function CatalogPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">
+                <TableCell colSpan={7} className="py-10 text-center">
                   Cargando...
                 </TableCell>
               </TableRow>
             ) : products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-10">
+                <TableCell colSpan={7} className="py-10 text-center">
                   No se encontraron productos
                 </TableCell>
               </TableRow>
@@ -166,15 +182,15 @@ export default function CatalogPage() {
                       <img
                         src={p.image_url}
                         alt={p.name}
-                        className="w-10 h-10 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        className="h-10 w-10 cursor-pointer rounded object-cover transition-opacity hover:opacity-80"
                         onClick={() => {
                           setSelectedProduct(p);
                           setIsProductModalOpen(true);
                         }}
                       />
                     ) : (
-                      <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
-                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                      <div className="bg-muted flex h-10 w-10 items-center justify-center rounded">
+                        <ImageIcon className="text-muted-foreground h-5 w-5" />
                       </div>
                     )}
                   </TableCell>
@@ -185,9 +201,9 @@ export default function CatalogPage() {
                   <TableCell>{p.category}</TableCell>
                   <TableCell>{p.supplier?.name}</TableCell>
                   <TableCell className="text-right">
-                    {new Intl.NumberFormat('es-ES', {
-                      style: 'currency',
-                      currency: 'EUR',
+                    {new Intl.NumberFormat("es-ES", {
+                      style: "currency",
+                      currency: "EUR",
                     }).format(p.cost_price)}
                   </TableCell>
                   <TableCell className="text-right">

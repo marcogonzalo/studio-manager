@@ -1,31 +1,55 @@
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from 'sonner';
-import { useAuth } from '@/components/auth-provider';
-import { 
-  getCategoryOptions, 
-  getSubcategoryOptions, 
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { useAuth } from "@/components/auth-provider";
+import {
+  getCategoryOptions,
+  getSubcategoryOptions,
   getPhaseLabel,
-  isCostCategory
-} from '@/lib/utils';
-import type { ProjectBudgetLine, BudgetCategory, ProjectPhase, Supplier } from '@/types';
+  isCostCategory,
+} from "@/lib/utils";
+import type {
+  ProjectBudgetLine,
+  BudgetCategory,
+  ProjectPhase,
+  Supplier,
+} from "@/types";
 
 const formSchema = z.object({
-  category: z.string().min(1, 'Categoría requerida'),
-  subcategory: z.string().min(1, 'Subcategoría requerida'),
+  category: z.string().min(1, "Categoría requerida"),
+  subcategory: z.string().min(1, "Subcategoría requerida"),
   description: z.string().optional(),
-  estimated_amount: z.string().transform(v => parseFloat(v) || 0),
-  actual_amount: z.string().transform(v => parseFloat(v) || 0),
+  estimated_amount: z.string().transform((v) => parseFloat(v) || 0),
+  actual_amount: z.string().transform((v) => parseFloat(v) || 0),
   is_internal_cost: z.boolean().default(false),
   phase: z.string().optional(),
   supplier_id: z.string().optional(),
@@ -52,26 +76,41 @@ interface BudgetLineDialogProps {
   budgetLine?: ProjectBudgetLine | null;
 }
 
-const PROJECT_PHASES: ProjectPhase[] = ['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery'];
+const PROJECT_PHASES: ProjectPhase[] = [
+  "diagnosis",
+  "design",
+  "executive",
+  "budget",
+  "construction",
+  "delivery",
+];
 
-export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, budgetLine }: BudgetLineDialogProps) {
+export function BudgetLineDialog({
+  open,
+  onOpenChange,
+  projectId,
+  onSuccess,
+  budgetLine,
+}: BudgetLineDialogProps) {
   const { user } = useAuth();
   const isEditing = !!budgetLine;
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | ''>('');
+  const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | "">(
+    ""
+  );
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as any,
     defaultValues: {
-      category: '',
-      subcategory: '',
-      description: '',
-      estimated_amount: '0',
-      actual_amount: '0',
+      category: "",
+      subcategory: "",
+      description: "",
+      estimated_amount: "0",
+      actual_amount: "0",
       is_internal_cost: false,
       phase: undefined,
       supplier_id: undefined,
-      notes: '',
+      notes: "",
     },
   });
 
@@ -79,9 +118,9 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
   useEffect(() => {
     const fetchSuppliers = async () => {
       const { data } = await supabase
-        .from('suppliers')
-        .select('*')
-        .order('name');
+        .from("suppliers")
+        .select("*")
+        .order("name");
       if (data) setSuppliers(data);
     };
     fetchSuppliers();
@@ -96,26 +135,26 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
         form.reset({
           category: budgetLine.category,
           subcategory: budgetLine.subcategory,
-          description: budgetLine.description || '',
+          description: budgetLine.description || "",
           estimated_amount: budgetLine.estimated_amount.toString(),
           actual_amount: budgetLine.actual_amount.toString(),
           is_internal_cost: budgetLine.is_internal_cost,
           phase: budgetLine.phase || undefined,
           supplier_id: budgetLine.supplier_id || undefined,
-          notes: budgetLine.notes || '',
+          notes: budgetLine.notes || "",
         });
       } else {
-        setSelectedCategory('');
+        setSelectedCategory("");
         form.reset({
-          category: '',
-          subcategory: '',
-          description: '',
-          estimated_amount: '0',
-          actual_amount: '0',
+          category: "",
+          subcategory: "",
+          description: "",
+          estimated_amount: "0",
+          actual_amount: "0",
           is_internal_cost: false,
           phase: undefined,
           supplier_id: undefined,
-          notes: '',
+          notes: "",
         });
       }
     }
@@ -124,14 +163,14 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
 
   // Update subcategory options when category changes
   const handleCategoryChange = (value: string) => {
-    if (value && value !== '') {
+    if (value && value !== "") {
       const category = value as BudgetCategory;
       setSelectedCategory(category);
-      form.setValue('category', value);
-      form.setValue('subcategory', ''); // Reset subcategory when category changes
+      form.setValue("category", value);
+      form.setValue("subcategory", ""); // Reset subcategory when category changes
       // Reset actual_amount to 0 if the category is not a cost category (e.g., own_fees)
       if (!isCostCategory(category)) {
-        form.setValue('actual_amount', '0');
+        form.setValue("actual_amount", "0");
       }
     }
   };
@@ -139,7 +178,7 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
   const onSubmit = async (values: z.infer<typeof formSchema> | FormValues) => {
     try {
       if (!user?.id) {
-        toast.error('No se pudo identificar el usuario');
+        toast.error("No se pudo identificar el usuario");
         return;
       }
 
@@ -148,12 +187,14 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
         category: values.category,
         subcategory: values.subcategory,
         description: values.description || null,
-        estimated_amount: typeof values.estimated_amount === 'string' 
-          ? parseFloat(values.estimated_amount) || 0 
-          : values.estimated_amount,
-        actual_amount: typeof values.actual_amount === 'string' 
-          ? parseFloat(values.actual_amount) || 0 
-          : values.actual_amount,
+        estimated_amount:
+          typeof values.estimated_amount === "string"
+            ? parseFloat(values.estimated_amount) || 0
+            : values.estimated_amount,
+        actual_amount:
+          typeof values.actual_amount === "string"
+            ? parseFloat(values.actual_amount) || 0
+            : values.actual_amount,
         is_internal_cost: values.is_internal_cost,
         phase: values.phase || null,
         supplier_id: values.supplier_id || null,
@@ -163,60 +204,78 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
 
       if (isEditing && budgetLine) {
         const { error } = await supabase
-          .from('project_budget_lines')
+          .from("project_budget_lines")
           .update(data)
-          .eq('id', budgetLine.id);
+          .eq("id", budgetLine.id);
 
         if (error) {
           // Check if table doesn't exist
-          if (error.code === '42P01' || error.message?.includes('does not exist')) {
-            toast.error('La tabla project_budget_lines no existe. Por favor, ejecuta las migraciones primero.');
+          if (
+            error.code === "42P01" ||
+            error.message?.includes("does not exist")
+          ) {
+            toast.error(
+              "La tabla project_budget_lines no existe. Por favor, ejecuta las migraciones primero."
+            );
           } else {
-            toast.error('Error al actualizar la partida: ' + (error.message || 'Error desconocido'));
+            toast.error(
+              "Error al actualizar la partida: " +
+                (error.message || "Error desconocido")
+            );
           }
-          console.error('Error updating budget line:', error);
+          console.error("Error updating budget line:", error);
           return;
         }
-        
-        toast.success('Partida actualizada');
+
+        toast.success("Partida actualizada");
         onSuccess();
         onOpenChange(false);
       } else {
         const { error } = await supabase
-          .from('project_budget_lines')
+          .from("project_budget_lines")
           .insert([data]);
 
         if (error) {
           // Check if table doesn't exist
-          if (error.code === '42P01' || error.message?.includes('does not exist')) {
-            toast.error('La tabla project_budget_lines no existe. Por favor, ejecuta las migraciones primero.');
+          if (
+            error.code === "42P01" ||
+            error.message?.includes("does not exist")
+          ) {
+            toast.error(
+              "La tabla project_budget_lines no existe. Por favor, ejecuta las migraciones primero."
+            );
           } else {
-            toast.error('Error al crear la partida: ' + (error.message || 'Error desconocido'));
+            toast.error(
+              "Error al crear la partida: " +
+                (error.message || "Error desconocido")
+            );
           }
-          console.error('Error creating budget line:', error);
+          console.error("Error creating budget line:", error);
           return;
         }
-        
-        toast.success('Partida añadida');
+
+        toast.success("Partida añadida");
         onSuccess();
         onOpenChange(false);
       }
     } catch (error: any) {
-      console.error('Unexpected error in onSubmit:', error);
-      toast.error('Error inesperado: ' + (error?.message || 'Error desconocido'));
+      console.error("Unexpected error in onSubmit:", error);
+      toast.error(
+        "Error inesperado: " + (error?.message || "Error desconocido")
+      );
     }
   };
 
   let categoryOptions: { value: BudgetCategory; label: string }[] = [];
   let subcategoryOptions: { value: string; label: string }[] = [];
-  
+
   try {
     categoryOptions = getCategoryOptions();
     if (selectedCategory) {
       subcategoryOptions = getSubcategoryOptions(selectedCategory);
     }
   } catch (error) {
-    console.error('Error getting category options:', error);
+    console.error("Error getting category options:", error);
     // Fallback to empty arrays
   }
 
@@ -228,7 +287,9 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Editar Partida' : 'Nueva Partida'}</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Editar Partida" : "Nueva Partida"}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -239,8 +300,8 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel required>Categoría</FormLabel>
-                    <Select 
-                      onValueChange={handleCategoryChange} 
+                    <Select
+                      onValueChange={handleCategoryChange}
                       value={field.value}
                     >
                       <FormControl>
@@ -267,8 +328,8 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel required>Subcategoría</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
+                    <Select
+                      onValueChange={field.onChange}
                       value={field.value}
                       disabled={!selectedCategory}
                     >
@@ -308,7 +369,9 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
               )}
             />
 
-            <div className={`grid gap-4 ${selectedCategory && isCostCategory(selectedCategory) ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <div
+              className={`grid gap-4 ${selectedCategory && isCostCategory(selectedCategory) ? "grid-cols-2" : "grid-cols-1"}`}
+            >
               <FormField
                 control={form.control}
                 name="estimated_amount"
@@ -347,10 +410,11 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
                     </FormItem>
                   )}
                 />
-              ) : selectedCategory === 'own_fees' ? (
+              ) : selectedCategory === "own_fees" ? (
                 <div className="flex items-center">
-                  <p className="text-sm text-muted-foreground">
-                    Los honorarios son ingresos y no requieren importe real de coste.
+                  <p className="text-muted-foreground text-sm">
+                    Los honorarios son ingresos y no requieren importe real de
+                    coste.
                   </p>
                 </div>
               ) : null}
@@ -360,19 +424,20 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
               control={form.control}
               name="is_internal_cost"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
-                      onCheckedChange={(checked) => field.onChange(checked === true)}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked === true)
+                      }
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Coste interno
-                    </FormLabel>
-                    <p className="text-sm text-muted-foreground">
-                      Si está marcado, esta partida NO aparecerá en el presupuesto del cliente ni en el PDF
+                    <FormLabel>Coste interno</FormLabel>
+                    <p className="text-muted-foreground text-sm">
+                      Si está marcado, esta partida NO aparecerá en el
+                      presupuesto del cliente ni en el PDF
                     </p>
                   </div>
                 </FormItem>
@@ -386,8 +451,10 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Fase (opcional)</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(value || undefined)} 
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value || undefined)
+                      }
                       value={field.value || undefined}
                     >
                       <FormControl>
@@ -414,8 +481,10 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Proveedor (opcional)</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(value || undefined)} 
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value || undefined)
+                      }
                       value={field.value || undefined}
                     >
                       <FormControl>
@@ -444,10 +513,7 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
                 <FormItem>
                   <FormLabel>Notas (opcional)</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Notas adicionales..."
-                      {...field}
-                    />
+                    <Textarea placeholder="Notas adicionales..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -455,10 +521,16 @@ export function BudgetLineDialog({ open, onOpenChange, projectId, onSuccess, bud
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancelar
               </Button>
-              <Button type="submit">{isEditing ? 'Actualizar' : 'Añadir'}</Button>
+              <Button type="submit">
+                {isEditing ? "Actualizar" : "Añadir"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

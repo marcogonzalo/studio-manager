@@ -1,34 +1,40 @@
-import type { Metadata } from 'next';
-import { Mail, MessageSquare, MapPin } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from "next";
+import { Mail, MessageSquare, MapPin } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: 'Contacto',
+  title: "Contacto",
   description:
-    'Ponte en contacto con el equipo de StudioManager. Estamos aquí para ayudarte.',
+    "Ponte en contacto con el equipo de StudioManager. Estamos aquí para ayudarte.",
 };
 
 const contactMethods = [
   {
     icon: Mail,
-    title: 'Email',
-    description: 'Envíanos un correo y te respondemos en menos de 24 horas.',
-    value: 'hola@studiomanager.app',
-    href: 'mailto:hola@studiomanager.app',
+    title: "Email",
+    description: "Envíanos un correo y te respondemos en menos de 24 horas.",
+    value: "hola@studiomanager.app",
+    href: "mailto:hola@studiomanager.app",
   },
   {
     icon: MessageSquare,
-    title: 'Chat en Vivo',
-    description: 'Habla con nuestro equipo de soporte en tiempo real.',
-    value: 'Disponible L-V, 9am-6pm',
-    href: '#chat',
+    title: "Chat en Vivo",
+    description: "Habla con nuestro equipo de soporte en tiempo real.",
+    value: "Disponible L-V, 9am-6pm",
+    href: "#chat",
   },
   {
     icon: MapPin,
-    title: 'Oficina',
-    description: 'Visítanos en nuestra oficina en Madrid.',
-    value: 'Madrid, España',
-    href: '#',
+    title: "Oficina",
+    description: "Visítanos en nuestra oficina en Madrid.",
+    value: "Madrid, España",
+    href: "#",
   },
 ];
 
@@ -42,9 +48,9 @@ export default function ContactPage() {
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
               ¿Cómo podemos <span className="text-primary">ayudarte</span>?
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground md:text-xl">
-              Nuestro equipo está listo para responder tus preguntas y ayudarte a
-              sacar el máximo provecho de StudioManager.
+            <p className="text-muted-foreground mt-6 text-lg md:text-xl">
+              Nuestro equipo está listo para responder tus preguntas y ayudarte
+              a sacar el máximo provecho de StudioManager.
             </p>
           </div>
         </div>
@@ -57,11 +63,11 @@ export default function ContactPage() {
             {contactMethods.map((method) => (
               <Card
                 key={method.title}
-                className="border-none shadow-md hover:shadow-lg transition-shadow text-center"
+                className="border-none text-center shadow-md transition-shadow hover:shadow-lg"
               >
                 <CardHeader>
-                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <method.icon className="h-7 w-7 text-primary" />
+                  <div className="bg-primary/10 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
+                    <method.icon className="text-primary h-7 w-7" />
                   </div>
                   <CardTitle>{method.title}</CardTitle>
                   <CardDescription>{method.description}</CardDescription>
@@ -69,7 +75,7 @@ export default function ContactPage() {
                 <CardContent>
                   <a
                     href={method.href}
-                    className="text-lg font-medium text-primary hover:underline"
+                    className="text-primary text-lg font-medium hover:underline"
                   >
                     {method.value}
                   </a>
@@ -81,14 +87,14 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-2xl">
-            <div className="text-center mb-12">
+            <div className="mb-12 text-center">
               <h2 className="text-3xl font-bold tracking-tight">
                 Envíanos un mensaje
               </h2>
-              <p className="mt-4 text-muted-foreground">
+              <p className="text-muted-foreground mt-4">
                 Completa el formulario y nos pondremos en contacto contigo lo
                 antes posible.
               </p>
@@ -101,7 +107,7 @@ export default function ContactPage() {
                     <div className="space-y-2">
                       <label
                         htmlFor="name"
-                        className="text-sm font-medium leading-none"
+                        className="text-sm leading-none font-medium"
                       >
                         Nombre
                       </label>
@@ -109,13 +115,13 @@ export default function ContactPage() {
                         id="name"
                         type="text"
                         placeholder="Tu nombre"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                       />
                     </div>
                     <div className="space-y-2">
                       <label
                         htmlFor="email"
-                        className="text-sm font-medium leading-none"
+                        className="text-sm leading-none font-medium"
                       >
                         Email
                       </label>
@@ -123,7 +129,7 @@ export default function ContactPage() {
                         id="email"
                         type="email"
                         placeholder="tu@email.com"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                       />
                     </div>
                   </div>
@@ -131,7 +137,7 @@ export default function ContactPage() {
                   <div className="space-y-2">
                     <label
                       htmlFor="subject"
-                      className="text-sm font-medium leading-none"
+                      className="text-sm leading-none font-medium"
                     >
                       Asunto
                     </label>
@@ -139,14 +145,14 @@ export default function ContactPage() {
                       id="subject"
                       type="text"
                       placeholder="¿En qué podemos ayudarte?"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label
                       htmlFor="message"
-                      className="text-sm font-medium leading-none"
+                      className="text-sm leading-none font-medium"
                     >
                       Mensaje
                     </label>
@@ -154,13 +160,13 @@ export default function ContactPage() {
                       id="message"
                       rows={5}
                       placeholder="Cuéntanos más detalles..."
-                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 resize-none"
+                      className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full resize-none rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex w-full items-center justify-center rounded-md px-4 py-2 text-sm font-medium shadow focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                   >
                     Enviar Mensaje
                   </button>

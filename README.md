@@ -118,6 +118,7 @@ docker compose up
 ```
 
 This will:
+
 - Build the Docker image if it doesn't exist
 - Start the container with the application
 - Mount your code for hot-reload
@@ -272,11 +273,13 @@ npm run test:coverage
 ### Test Structure
 
 Tests are located alongside their source files with the `.test.ts` or `.test.tsx` extension:
+
 - `src/lib/utils.test.ts` - Utility function tests
 - `src/components/*.test.tsx` - Component tests
 - `src/pages/*.test.tsx` - Page component tests
 
 Test utilities and mocks are located in `src/test/`:
+
 - `src/test/setup.ts` - Test configuration and global setup
 - `src/test/utils.tsx` - Testing utilities and custom render functions
 - `src/test/mocks/` - Mock implementations for external dependencies
@@ -310,31 +313,37 @@ The production build will be available in the `dist/` directory.
 ## 🐳 Docker Commands Reference
 
 **Start services:**
+
 ```bash
 docker compose up
 ```
 
 **Start in background:**
+
 ```bash
 docker compose up -d
 ```
 
 **Stop services:**
+
 ```bash
 docker compose down
 ```
 
 **Rebuild containers:**
+
 ```bash
 docker compose up --build
 ```
 
 **View logs:**
+
 ```bash
 docker compose logs -f app
 ```
 
 **Execute commands in container:**
+
 ```bash
 # Run npm commands
 docker compose exec app npm <command>
@@ -344,6 +353,7 @@ docker compose exec app sh
 ```
 
 **Clean up (remove containers, volumes, networks):**
+
 ```bash
 docker compose down -v
 ```

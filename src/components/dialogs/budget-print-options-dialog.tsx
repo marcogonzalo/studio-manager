@@ -1,16 +1,38 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Printer } from 'lucide-react';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
 
-export type BudgetPrintOption = 'full' | 'products' | 'lines';
+export type BudgetPrintOption = "full" | "products" | "lines";
 
-const OPTIONS: { value: BudgetPrintOption; label: string; description: string }[] = [
-  { value: 'full', label: 'Presupuesto completo', description: 'Productos y partidas de presupuesto' },
-  { value: 'products', label: 'Solo productos', description: 'Solo mobiliario y productos por ubicación' },
-  { value: 'lines', label: 'Solo partidas', description: 'Solo servicios y partidas de presupuesto' },
+const OPTIONS: {
+  value: BudgetPrintOption;
+  label: string;
+  description: string;
+}[] = [
+  {
+    value: "full",
+    label: "Presupuesto completo",
+    description: "Productos y partidas de presupuesto",
+  },
+  {
+    value: "products",
+    label: "Solo productos",
+    description: "Solo mobiliario y productos por ubicación",
+  },
+  {
+    value: "lines",
+    label: "Solo partidas",
+    description: "Solo servicios y partidas de presupuesto",
+  },
 ];
 
 interface BudgetPrintOptionsDialogProps {
@@ -26,7 +48,7 @@ export function BudgetPrintOptionsDialog({
   onConfirm,
   isGenerating = false,
 }: BudgetPrintOptionsDialogProps) {
-  const [selected, setSelected] = useState<BudgetPrintOption>('full');
+  const [selected, setSelected] = useState<BudgetPrintOption>("full");
 
   const handleConfirm = () => {
     onConfirm(selected);
@@ -43,7 +65,7 @@ export function BudgetPrintOptionsDialog({
           {OPTIONS.map((opt) => (
             <label
               key={opt.value}
-              className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-accent/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+              className="hover:bg-accent/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5 flex cursor-pointer items-start gap-3 rounded-lg border p-3"
             >
               <input
                 type="radio"
@@ -55,18 +77,24 @@ export function BudgetPrintOptionsDialog({
               />
               <div>
                 <span className="font-medium">{opt.label}</span>
-                <p className="text-sm text-muted-foreground">{opt.description}</p>
+                <p className="text-muted-foreground text-sm">
+                  {opt.description}
+                </p>
               </div>
             </label>
           ))}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isGenerating}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isGenerating}
+          >
             Cancelar
           </Button>
           <Button onClick={handleConfirm} disabled={isGenerating}>
             <Printer className="mr-2 h-4 w-4" />
-            {isGenerating ? 'Generando...' : 'Generar PDF'}
+            {isGenerating ? "Generando..." : "Generar PDF"}
           </Button>
         </DialogFooter>
       </DialogContent>

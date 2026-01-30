@@ -1,19 +1,33 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { toast } from 'sonner';
-import type { Client } from '@/types';
-import { useEffect } from 'react';
-import { useAuth } from '@/components/auth-provider';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { toast } from "sonner";
+import type { Client } from "@/types";
+import { useEffect } from "react";
+import { useAuth } from "@/components/auth-provider";
 
 const formSchema = z.object({
   full_name: z.string().min(2, "Nombre requerido"),
-  email: z.string().email().optional().or(z.literal('')),
+  email: z.string().email().optional().or(z.literal("")),
   phone: z.string().optional(),
   address: z.string().optional(),
 });
@@ -25,9 +39,14 @@ interface ClientDialogProps {
   onSuccess: (clientId?: string) => void;
 }
 
-export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDialogProps) {
+export function ClientDialog({
+  open,
+  onOpenChange,
+  client,
+  onSuccess,
+}: ClientDialogProps) {
   const { user } = useAuth();
-  
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,20 +82,20 @@ export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDi
         full_name: values.full_name,
         user_id: user?.id,
       };
-      
+
       // Only include optional fields if they have values
       if (values.email && values.email.trim()) {
         clientData.email = values.email;
       } else {
         clientData.email = null;
       }
-      
+
       if (values.phone && values.phone.trim()) {
         clientData.phone = values.phone;
       } else {
         clientData.phone = null;
       }
-      
+
       if (values.address && values.address.trim()) {
         clientData.address = values.address;
       } else {
@@ -85,24 +104,24 @@ export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDi
 
       if (client) {
         const { error } = await supabase
-          .from('clients')
+          .from("clients")
           .update(clientData)
-          .eq('id', client.id);
+          .eq("id", client.id);
         if (error) throw error;
-        toast.success('Cliente actualizado');
+        toast.success("Cliente actualizado");
         onSuccess();
       } else {
         const { data: newClient, error } = await supabase
-          .from('clients')
+          .from("clients")
           .insert([clientData])
           .select()
           .single();
         if (error) throw error;
-        toast.success('Cliente creado');
+        toast.success("Cliente creado");
         onSuccess(newClient.id);
       }
     } catch (error: any) {
-      console.error('Error saving client:', error);
+      console.error("Error saving client:", error);
       toast.error(error.message || "Error al guardar cliente");
     }
   }
@@ -111,7 +130,9 @@ export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{client ? "Editar Cliente" : "Nuevo Cliente"}</DialogTitle>
+          <DialogTitle>
+            {client ? "Editar Cliente" : "Nuevo Cliente"}
+          </DialogTitle>
           <DialogDescription>
             Ingresa los datos del cliente. Click en guardar cuando termines.
           </DialogDescription>
@@ -179,4 +200,3 @@ export function ClientDialog({ open, onOpenChange, client, onSuccess }: ClientDi
     </Dialog>
   );
 }
-

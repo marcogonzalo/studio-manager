@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { AuthProvider, useAuth } from './auth-provider';
-import { createMockUser, createMockSession } from '@/test/mocks/supabase';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { AuthProvider, useAuth } from "./auth-provider";
+import { createMockUser, createMockSession } from "@/test/mocks/supabase";
 
 // Mock the supabase module using hoisted mocks
 const mockGetSession = vi.hoisted(() => vi.fn());
 const mockOnAuthStateChange = vi.hoisted(() => vi.fn());
 const mockSignOut = vi.hoisted(() => vi.fn());
 
-vi.mock('@/lib/supabase', () => ({
+vi.mock("@/lib/supabase", () => ({
   supabase: {
     auth: {
       getSession: mockGetSession,
@@ -23,9 +23,9 @@ const TestComponent = () => {
   const { user, session, loading, signOut } = useAuth();
   return (
     <div>
-      <div data-testid="loading">{loading ? 'loading' : 'not-loading'}</div>
-      <div data-testid="user-email">{user?.email || 'no-user'}</div>
-      <div data-testid="session">{session ? 'has-session' : 'no-session'}</div>
+      <div data-testid="loading">{loading ? "loading" : "not-loading"}</div>
+      <div data-testid="user-email">{user?.email || "no-user"}</div>
+      <div data-testid="session">{session ? "has-session" : "no-session"}</div>
       <button onClick={signOut} data-testid="sign-out-button">
         Sign Out
       </button>
@@ -33,7 +33,7 @@ const TestComponent = () => {
   );
 };
 
-describe('AuthProvider', () => {
+describe("AuthProvider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetSession.mockResolvedValue({
@@ -54,17 +54,17 @@ describe('AuthProvider', () => {
     vi.restoreAllMocks();
   });
 
-  it('should provide loading state initially', async () => {
+  it("should provide loading state initially", async () => {
     render(
       <AuthProvider>
         <TestComponent />
       </AuthProvider>
     );
 
-    expect(screen.getByTestId('loading')).toHaveTextContent('loading');
+    expect(screen.getByTestId("loading")).toHaveTextContent("loading");
   });
 
-  it('should initialize with no session', async () => {
+  it("should initialize with no session", async () => {
     render(
       <AuthProvider>
         <TestComponent />
@@ -72,16 +72,16 @@ describe('AuthProvider', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('loading')).toHaveTextContent('not-loading');
+      expect(screen.getByTestId("loading")).toHaveTextContent("not-loading");
     });
 
-    expect(screen.getByTestId('user-email')).toHaveTextContent('no-user');
-    expect(screen.getByTestId('session')).toHaveTextContent('no-session');
+    expect(screen.getByTestId("user-email")).toHaveTextContent("no-user");
+    expect(screen.getByTestId("session")).toHaveTextContent("no-session");
     expect(mockGetSession).toHaveBeenCalledTimes(1);
   });
 
-  it('should initialize with existing session', async () => {
-    const mockUser = createMockUser({ email: 'user@example.com' });
+  it("should initialize with existing session", async () => {
+    const mockUser = createMockUser({ email: "user@example.com" });
     const mockSession = createMockSession(mockUser);
 
     mockGetSession.mockResolvedValue({
@@ -96,14 +96,16 @@ describe('AuthProvider', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('loading')).toHaveTextContent('not-loading');
+      expect(screen.getByTestId("loading")).toHaveTextContent("not-loading");
     });
 
-    expect(screen.getByTestId('user-email')).toHaveTextContent('user@example.com');
-    expect(screen.getByTestId('session')).toHaveTextContent('has-session');
+    expect(screen.getByTestId("user-email")).toHaveTextContent(
+      "user@example.com"
+    );
+    expect(screen.getByTestId("session")).toHaveTextContent("has-session");
   });
 
-  it('should handle sign out', async () => {
+  it("should handle sign out", async () => {
     render(
       <AuthProvider>
         <TestComponent />
@@ -111,10 +113,10 @@ describe('AuthProvider', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('loading')).toHaveTextContent('not-loading');
+      expect(screen.getByTestId("loading")).toHaveTextContent("not-loading");
     });
 
-    const signOutButton = screen.getByTestId('sign-out-button');
+    const signOutButton = screen.getByTestId("sign-out-button");
     signOutButton.click();
 
     await waitFor(() => {
@@ -122,7 +124,7 @@ describe('AuthProvider', () => {
     });
   });
 
-  it('should set up auth state change listener', async () => {
+  it("should set up auth state change listener", async () => {
     render(
       <AuthProvider>
         <TestComponent />
@@ -134,11 +136,13 @@ describe('AuthProvider', () => {
     });
 
     const callback = mockOnAuthStateChange.mock.calls[0][0];
-    expect(typeof callback).toBe('function');
+    expect(typeof callback).toBe("function");
   });
 
-  it('should update state when auth changes', async () => {
-    let authStateChangeCallback: ((event: string, session: any) => void) | null = null;
+  it("should update state when auth changes", async () => {
+    let authStateChangeCallback:
+      | ((event: string, session: any) => void)
+      | null = null;
 
     mockOnAuthStateChange.mockImplementation((callback) => {
       authStateChangeCallback = callback;
@@ -161,20 +165,25 @@ describe('AuthProvider', () => {
       expect(authStateChangeCallback).toBeTruthy();
     });
 
-    const mockUser = createMockUser({ email: 'newuser@example.com' });
+    const mockUser = createMockUser({ email: "newuser@example.com" });
     const mockSession = createMockSession(mockUser);
 
     if (authStateChangeCallback) {
-      (authStateChangeCallback as (event: string, session: any) => void)('SIGNED_IN', mockSession);
+      (authStateChangeCallback as (event: string, session: any) => void)(
+        "SIGNED_IN",
+        mockSession
+      );
     }
 
     await waitFor(() => {
-      expect(screen.getByTestId('user-email')).toHaveTextContent('newuser@example.com');
-      expect(screen.getByTestId('session')).toHaveTextContent('has-session');
+      expect(screen.getByTestId("user-email")).toHaveTextContent(
+        "newuser@example.com"
+      );
+      expect(screen.getByTestId("session")).toHaveTextContent("has-session");
     });
   });
 
-  it('should clean up subscription on unmount', async () => {
+  it("should clean up subscription on unmount", async () => {
     const unsubscribe = vi.fn();
     mockOnAuthStateChange.mockReturnValue({
       data: {
@@ -199,12 +208,14 @@ describe('AuthProvider', () => {
     expect(unsubscribe).toHaveBeenCalledTimes(1);
   });
 
-  it('should handle URL hash cleanup on SIGNED_IN event', async () => {
-    const replaceStateSpy = vi.spyOn(window.history, 'replaceState');
+  it("should handle URL hash cleanup on SIGNED_IN event", async () => {
+    const replaceStateSpy = vi.spyOn(window.history, "replaceState");
     const originalHash = window.location.hash;
-    window.location.hash = '#access_token=test';
+    window.location.hash = "#access_token=test";
 
-    let authStateChangeCallback: ((event: string, session: any) => void) | null = null;
+    let authStateChangeCallback:
+      | ((event: string, session: any) => void)
+      | null = null;
 
     mockOnAuthStateChange.mockImplementation((callback) => {
       authStateChangeCallback = callback;
@@ -231,7 +242,10 @@ describe('AuthProvider', () => {
     const mockSession = createMockSession(mockUser);
 
     if (authStateChangeCallback) {
-      (authStateChangeCallback as (event: string, session: any) => void)('SIGNED_IN', mockSession);
+      (authStateChangeCallback as (event: string, session: any) => void)(
+        "SIGNED_IN",
+        mockSession
+      );
     }
 
     await waitFor(() => {
@@ -242,4 +256,3 @@ describe('AuthProvider', () => {
     window.location.hash = originalHash;
   });
 });
-

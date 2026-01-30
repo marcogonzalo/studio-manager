@@ -1,6 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
-import type { CookieOptions } from '@supabase/ssr';
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+import type { CookieOptions } from "@supabase/ssr";
 
 interface CookieToSet {
   name: string;
@@ -10,12 +10,12 @@ interface CookieToSet {
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const nextParam = searchParams.get('next');
-  const next = nextParam ? decodeURIComponent(nextParam) : '/dashboard';
+  const code = searchParams.get("code");
+  const nextParam = searchParams.get("next");
+  const next = nextParam ? decodeURIComponent(nextParam) : "/dashboard";
 
   if (code) {
-    const redirectPath = next.startsWith('/') ? next : `/${next}`;
+    const redirectPath = next.startsWith("/") ? next : `/${next}`;
     const supabaseResponse = NextResponse.redirect(`${origin}${redirectPath}`);
 
     // CRITICAL: Must use the SAME URL as the client for PKCE cookies to work
@@ -43,16 +43,18 @@ export async function GET(request: NextRequest) {
     );
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    
+
     if (!error) {
       return supabaseResponse;
     }
-    
+
     return NextResponse.redirect(
-      `${origin}/auth?error=${encodeURIComponent(error.message || 'Could not authenticate user')}`
+      `${origin}/auth?error=${encodeURIComponent(error.message || "Could not authenticate user")}`
     );
   }
 
   // Return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent('No authentication code provided')}`);
+  return NextResponse.redirect(
+    `${origin}/auth?error=${encodeURIComponent("No authentication code provided")}`
+  );
 }

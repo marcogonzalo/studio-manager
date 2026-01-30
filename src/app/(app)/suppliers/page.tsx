@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { getSupabaseClient } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState } from "react";
+import { getSupabaseClient } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,7 +10,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Plus,
   Pencil,
@@ -19,31 +19,31 @@ import {
   ExternalLink,
   MoreVertical,
   Truck,
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { SupplierDialog } from '@/components/dialogs/supplier-dialog';
-import { toast } from 'sonner';
+} from "@/components/ui/dropdown-menu";
+import { SupplierDialog } from "@/components/dialogs/supplier-dialog";
+import { toast } from "sonner";
 
-import type { Supplier } from '@/types';
+import type { Supplier } from "@/types";
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const supabase = getSupabaseClient();
 
   const fetchSuppliers = async () => {
     setLoading(true);
-    let query = supabase.from('suppliers').select('*').order('name');
-    if (search) query = query.ilike('name', `%${search}%`);
+    let query = supabase.from("suppliers").select("*").order("name");
+    if (search) query = query.ilike("name", `%${search}%`);
 
     const { data, error } = await query;
     if (!error) setSuppliers(data || []);
@@ -55,30 +55,32 @@ export default function SuppliersPage() {
   }, [search]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar proveedor?')) return;
-    
+    if (!confirm("¿Eliminar proveedor?")) return;
+
     // Verificar si puede ser eliminado
-    const { canDeleteSupplier } = await import('@/lib/validation');
+    const { canDeleteSupplier } = await import("@/lib/validation");
     const canDelete = await canDeleteSupplier(id);
-    
+
     if (!canDelete) {
-      toast.error('No se puede eliminar el proveedor porque está asociado a productos u órdenes de compra en proyectos');
+      toast.error(
+        "No se puede eliminar el proveedor porque está asociado a productos u órdenes de compra en proyectos"
+      );
       return;
     }
-    
-    const { error } = await supabase.from('suppliers').delete().eq('id', id);
-    if (error) toast.error('Error al eliminar');
+
+    const { error } = await supabase.from("suppliers").delete().eq("id", id);
+    if (error) toast.error("Error al eliminar");
     else {
-      toast.success('Proveedor eliminado');
+      toast.success("Proveedor eliminado");
       fetchSuppliers();
     }
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Truck className="h-8 w-8 text-primary" />
+          <Truck className="text-primary h-8 w-8" />
           <h2 className="text-3xl font-bold">Proveedores</h2>
         </div>
         <Button
@@ -92,8 +94,8 @@ export default function SuppliersPage() {
       </div>
 
       <div className="flex items-center space-x-2">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <div className="relative max-w-sm flex-1">
+          <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
             placeholder="Buscar..."
             className="pl-8"
@@ -103,7 +105,7 @@ export default function SuppliersPage() {
         </div>
       </div>
 
-      <div className="border rounded-md bg-card">
+      <div className="bg-card rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -117,13 +119,13 @@ export default function SuppliersPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10">
+                <TableCell colSpan={5} className="py-10 text-center">
                   Cargando...
                 </TableCell>
               </TableRow>
             ) : suppliers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10">
+                <TableCell colSpan={5} className="py-10 text-center">
                   No se encontraron proveedores
                 </TableCell>
               </TableRow>
@@ -133,47 +135,53 @@ export default function SuppliersPage() {
                   <TableCell className="font-medium">{s.name}</TableCell>
                   <TableCell>{s.contact_name}</TableCell>
                   <TableCell>
-                    <div className="relative overflow-hidden max-w-[200px]">
+                    <div className="relative max-w-[200px] overflow-hidden">
                       <div className="text-sm whitespace-nowrap">{s.email}</div>
-                      <div className="text-xs text-muted-foreground whitespace-nowrap">
+                      <div className="text-muted-foreground text-xs whitespace-nowrap">
                         {s.phone}
                       </div>
-                      <span className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none"></span>
+                      <span className="from-card pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l to-transparent"></span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    {s.website && (() => {
-                      // Normalize URL: add protocol if missing
-                      const normalizedUrl = s.website.startsWith('http://') || s.website.startsWith('https://')
-                        ? s.website
-                        : `https://${s.website}`;
-                      
-                      // Extract hostname safely
-                      let hostname = s.website;
-                      try {
-                        hostname = new URL(normalizedUrl).hostname.replace('www.', '');
-                      } catch {
-                        // If URL parsing fails, use the original value
-                        hostname = s.website.replace(/^https?:\/\//, '').replace(/^www\./, '');
-                      }
-                      
-                      return (
-                        <a
-                          href={normalizedUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-primary hover:underline max-w-[200px]"
-                        >
-                          <span className="relative overflow-hidden whitespace-nowrap block flex-1 min-w-0">
-                            <span className="block">
-                              {hostname}
+                    {s.website &&
+                      (() => {
+                        // Normalize URL: add protocol if missing
+                        const normalizedUrl =
+                          s.website.startsWith("http://") ||
+                          s.website.startsWith("https://")
+                            ? s.website
+                            : `https://${s.website}`;
+
+                        // Extract hostname safely
+                        let hostname = s.website;
+                        try {
+                          hostname = new URL(normalizedUrl).hostname.replace(
+                            "www.",
+                            ""
+                          );
+                        } catch {
+                          // If URL parsing fails, use the original value
+                          hostname = s.website
+                            .replace(/^https?:\/\//, "")
+                            .replace(/^www\./, "");
+                        }
+
+                        return (
+                          <a
+                            href={normalizedUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary flex max-w-[200px] items-center gap-1 hover:underline"
+                          >
+                            <span className="relative block min-w-0 flex-1 overflow-hidden whitespace-nowrap">
+                              <span className="block">{hostname}</span>
+                              <span className="from-card pointer-events-none absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l to-transparent"></span>
                             </span>
-                            <span className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent pointer-events-none"></span>
-                          </span>
-                          <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                        </a>
-                      );
-                    })()}
+                            <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                          </a>
+                        );
+                      })()}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

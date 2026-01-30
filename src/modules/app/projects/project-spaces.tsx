@@ -1,15 +1,21 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Plus, Image as ImageIcon, Package } from 'lucide-react';
-import { SpaceDialog } from '@/components/dialogs/space-dialog';
-import { SpaceImagesDialog } from '@/components/dialogs/space-images-dialog';
-import { SpaceProductsDialog } from '@/components/dialogs/space-products-dialog';
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from "@/components/ui/card";
+import { Plus, Image as ImageIcon, Package } from "lucide-react";
+import { SpaceDialog } from "@/components/dialogs/space-dialog";
+import { SpaceImagesDialog } from "@/components/dialogs/space-images-dialog";
+import { SpaceProductsDialog } from "@/components/dialogs/space-products-dialog";
 
-import type { Space } from '@/types';
+import type { Space } from "@/types";
 
 export function ProjectSpaces({ projectId }: { projectId: string }) {
   const [spaces, setSpaces] = useState<Space[]>([]);
@@ -20,11 +26,11 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
 
   const fetchSpaces = async () => {
     const { data, error } = await supabase
-      .from('spaces')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('created_at');
-    
+      .from("spaces")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("created_at");
+
     if (!error) setSpaces(data || []);
   };
 
@@ -44,7 +50,7 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium">Espacios del Proyecto</h3>
         <Button onClick={() => setIsDialogOpen(true)} size="sm">
           <Plus className="mr-2 h-4 w-4" /> Nuevo Espacio
@@ -58,14 +64,26 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
               <CardTitle>{space.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">{space.description || "Sin descripción"}</p>
+              <p className="text-muted-foreground text-sm">
+                {space.description || "Sin descripción"}
+              </p>
             </CardContent>
             <CardFooter className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1" onClick={() => openProducts(space)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => openProducts(space)}
+              >
                 <Package className="h-4 w-4 lg:mr-2" />
                 <span className="hidden lg:inline">Productos</span>
               </Button>
-              <Button variant="outline" size="sm" className="flex-1" onClick={() => openImages(space)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={() => openImages(space)}
+              >
                 <ImageIcon className="h-4 w-4 lg:mr-2" />
                 <span className="hidden lg:inline">Renders</span>
               </Button>
@@ -73,15 +91,15 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
           </Card>
         ))}
         {spaces.length === 0 && (
-          <div className="col-span-full text-center py-8 text-muted-foreground border rounded-md border-dashed">
+          <div className="text-muted-foreground col-span-full rounded-md border border-dashed py-8 text-center">
             No hay espacios registrados.
           </div>
         )}
       </div>
 
-      <SpaceDialog 
-        open={isDialogOpen} 
-        onOpenChange={setIsDialogOpen} 
+      <SpaceDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
         projectId={projectId}
         onSuccess={() => {
           setIsDialogOpen(false);
@@ -91,11 +109,11 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
 
       {selectedSpace && (
         <>
-        <SpaceImagesDialog
-          open={isImagesOpen}
-          onOpenChange={setIsImagesOpen}
-          space={selectedSpace}
-        />
+          <SpaceImagesDialog
+            open={isImagesOpen}
+            onOpenChange={setIsImagesOpen}
+            space={selectedSpace}
+          />
           <SpaceProductsDialog
             open={isProductsOpen}
             onOpenChange={setIsProductsOpen}

@@ -1,22 +1,41 @@
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { useAuth } from '@/components/auth-provider';
-import type { AdditionalCost } from '@/types';
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useAuth } from "@/components/auth-provider";
+import type { AdditionalCost } from "@/types";
 
 const formSchema = z.object({
   cost_type: z.string().min(1, "Tipo de coste requerido"),
   description: z.string().optional(),
-  amount: z.string().transform(v => parseFloat(v) || 0),
+  amount: z.string().transform((v) => parseFloat(v) || 0),
 });
 
 interface AdditionalCostDialogProps {
@@ -28,19 +47,25 @@ interface AdditionalCostDialogProps {
 }
 
 const COST_TYPES = [
-  { value: 'shipping', label: 'Envío' },
-  { value: 'packaging', label: 'Embalaje' },
-  { value: 'installation', label: 'Instalación' },
-  { value: 'assembly', label: 'Montaje' },
-  { value: 'transport', label: 'Transporte' },
-  { value: 'insurance', label: 'Seguro' },
-  { value: 'customs', label: 'Aduanas' },
-  { value: 'storage', label: 'Almacenamiento' },
-  { value: 'handling', label: 'Manejo' },
-  { value: 'other', label: 'Otro' },
+  { value: "shipping", label: "Envío" },
+  { value: "packaging", label: "Embalaje" },
+  { value: "installation", label: "Instalación" },
+  { value: "assembly", label: "Montaje" },
+  { value: "transport", label: "Transporte" },
+  { value: "insurance", label: "Seguro" },
+  { value: "customs", label: "Aduanas" },
+  { value: "storage", label: "Almacenamiento" },
+  { value: "handling", label: "Manejo" },
+  { value: "other", label: "Otro" },
 ];
 
-export function AdditionalCostDialog({ open, onOpenChange, projectId, onSuccess, cost }: AdditionalCostDialogProps) {
+export function AdditionalCostDialog({
+  open,
+  onOpenChange,
+  projectId,
+  onSuccess,
+  cost,
+}: AdditionalCostDialogProps) {
   const { user } = useAuth();
   const isEditing = !!cost;
 
@@ -79,44 +104,44 @@ export function AdditionalCostDialog({ open, onOpenChange, projectId, onSuccess,
 
   const onSubmit = async (values: z.infer<typeof formSchema> | FormValues) => {
     if (!user?.id) {
-      toast.error('No se pudo identificar el usuario');
+      toast.error("No se pudo identificar el usuario");
       return;
     }
 
     if (isEditing && cost) {
       // Update existing cost
       const { error } = await supabase
-        .from('additional_project_costs')
+        .from("additional_project_costs")
         .update({
           cost_type: values.cost_type,
           description: values.description || null,
           amount: values.amount,
         })
-        .eq('id', cost.id);
+        .eq("id", cost.id);
 
       if (error) {
-        toast.error('Error al actualizar coste adicional');
+        toast.error("Error al actualizar coste adicional");
       } else {
-        toast.success('Coste adicional actualizado');
+        toast.success("Coste adicional actualizado");
         onSuccess();
         onOpenChange(false);
       }
     } else {
       // Create new cost
-      const { error } = await supabase
-        .from('additional_project_costs')
-        .insert([{
+      const { error } = await supabase.from("additional_project_costs").insert([
+        {
           project_id: projectId,
           cost_type: values.cost_type,
           description: values.description || null,
           amount: values.amount,
           user_id: user.id,
-        }]);
+        },
+      ]);
 
       if (error) {
-        toast.error('Error al crear coste adicional');
+        toast.error("Error al crear coste adicional");
       } else {
-        toast.success('Coste adicional añadido');
+        toast.success("Coste adicional añadido");
         onSuccess();
         onOpenChange(false);
       }
@@ -127,7 +152,9 @@ export function AdditionalCostDialog({ open, onOpenChange, projectId, onSuccess,
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Editar Coste Adicional' : 'Añadir Coste Adicional'}</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Editar Coste Adicional" : "Añadir Coste Adicional"}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -193,10 +220,16 @@ export function AdditionalCostDialog({ open, onOpenChange, projectId, onSuccess,
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancelar
               </Button>
-              <Button type="submit">{isEditing ? 'Actualizar' : 'Añadir'}</Button>
+              <Button type="submit">
+                {isEditing ? "Actualizar" : "Añadir"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
@@ -204,4 +237,3 @@ export function AdditionalCostDialog({ open, onOpenChange, projectId, onSuccess,
     </Dialog>
   );
 }
-

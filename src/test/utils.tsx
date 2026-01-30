@@ -1,10 +1,10 @@
-import type { ReactElement } from 'react';
-import { render, type RenderOptions } from '@testing-library/react';
-import { vi } from 'vitest';
-import { AuthProvider } from '@/components/auth-provider';
+import type { ReactElement } from "react";
+import { render, type RenderOptions } from "@testing-library/react";
+import { vi } from "vitest";
+import { AuthProvider } from "@/components/auth-provider";
 
 // Mock Next.js navigation
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock('next/navigation', () => ({
     back: vi.fn(),
     forward: vi.fn(),
   }),
-  usePathname: () => '/',
+  usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
   useParams: () => ({}),
 }));
@@ -24,8 +24,8 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
 
 const customRender = (
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'>
+  options?: Omit<RenderOptions, "wrapper">
 ) => render(ui, { wrapper: AllTheProviders, ...options });
 
-export * from '@testing-library/react';
+export * from "@testing-library/react";
 export { customRender as render };

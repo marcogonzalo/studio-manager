@@ -1,13 +1,27 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
@@ -21,7 +35,12 @@ interface SpaceDialogProps {
   onSuccess: () => void;
 }
 
-export function SpaceDialog({ open, onOpenChange, projectId, onSuccess }: SpaceDialogProps) {
+export function SpaceDialog({
+  open,
+  onOpenChange,
+  projectId,
+  onSuccess,
+}: SpaceDialogProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -32,16 +51,16 @@ export function SpaceDialog({ open, onOpenChange, projectId, onSuccess }: SpaceD
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const { error } = await supabase
-        .from('spaces')
-        .insert([{
+      const { error } = await supabase.from("spaces").insert([
+        {
           ...values,
-          project_id: projectId
-        }]);
-      
+          project_id: projectId,
+        },
+      ]);
+
       if (error) throw error;
-      
-      toast.success('Espacio creado');
+
+      toast.success("Espacio creado");
       form.reset();
       onSuccess();
     } catch (error: any) {

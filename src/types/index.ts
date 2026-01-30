@@ -6,13 +6,13 @@ export interface Client {
   address: string;
 }
 
-export type ProjectPhase = 
-  | 'diagnosis'      // Diagnóstico
-  | 'design'         // Diseño
-  | 'executive'      // Proyecto Ejecutivo
-  | 'budget'         // Presupuestos
-  | 'construction'   // Obra
-  | 'delivery';      // Entrega
+export type ProjectPhase =
+  | "diagnosis" // Diagnóstico
+  | "design" // Diseño
+  | "executive" // Proyecto Ejecutivo
+  | "budget" // Presupuestos
+  | "construction" // Obra
+  | "delivery"; // Entrega
 
 export interface Project {
   id: string;
@@ -67,11 +67,11 @@ export interface AdditionalCost {
   user_id: string;
 }
 
-export type PaymentType = 
-  | 'fees'              // Honorarios
-  | 'purchase_provision' // Provisión de compras
-  | 'additional_cost'   // Coste adicional
-  | 'other';            // Otro
+export type PaymentType =
+  | "fees" // Honorarios
+  | "purchase_provision" // Provisión de compras
+  | "additional_cost" // Coste adicional
+  | "other"; // Otro
 
 export interface Payment {
   id: string;
@@ -103,56 +103,56 @@ export interface PurchaseOrder {
 }
 
 // Budget Management Types
-export type BudgetCategory = 
-  | 'construction'       // Obra
-  | 'own_fees'           // Honorarios Propios
-  | 'external_services'  // Servicios Externos
-  | 'operations';        // Gastos Operativos
+export type BudgetCategory =
+  | "construction" // Obra
+  | "own_fees" // Honorarios Propios
+  | "external_services" // Servicios Externos
+  | "operations"; // Gastos Operativos
 
 export type ConstructionSubcategory =
-  | 'demolition'         // Demolición
-  | 'masonry'            // Albañilería
-  | 'electricity'        // Electricidad
-  | 'plumbing'           // Fontanería
-  | 'interior_painting'  // Pintura Interior
-  | 'exterior_painting'  // Pintura Exterior
-  | 'domotics'           // Domótica
-  | 'carpentry'          // Carpintería
-  | 'locksmithing'       // Cerrajería
-  | 'hvac'               // Climatización
-  | 'flooring'           // Suelos y Pavimentos
-  | 'tiling'             // Alicatados
-  | 'other';             // Otros
+  | "demolition" // Demolición
+  | "masonry" // Albañilería
+  | "electricity" // Electricidad
+  | "plumbing" // Fontanería
+  | "interior_painting" // Pintura Interior
+  | "exterior_painting" // Pintura Exterior
+  | "domotics" // Domótica
+  | "carpentry" // Carpintería
+  | "locksmithing" // Cerrajería
+  | "hvac" // Climatización
+  | "flooring" // Suelos y Pavimentos
+  | "tiling" // Alicatados
+  | "other"; // Otros
 
 export type OwnFeesSubcategory =
-  | 'design'             // Diseño
-  | 'executive_project'  // Proyecto Ejecutivo
-  | 'site_supervision'   // Supervisión de Obra
-  | 'management'         // Gestión y Coordinación
-  | 'other';             // Otros
+  | "design" // Diseño
+  | "executive_project" // Proyecto Ejecutivo
+  | "site_supervision" // Supervisión de Obra
+  | "management" // Gestión y Coordinación
+  | "other"; // Otros
 
 export type ExternalServicesSubcategory =
-  | 'technical_architect' // Arquitecto Técnico
-  | 'engineering'         // Ingenierías
-  | 'logistics'           // Logística
-  | 'permits'             // Gestión de Permisos
-  | 'consulting'          // Consultoría
-  | 'other';              // Otros
+  | "technical_architect" // Arquitecto Técnico
+  | "engineering" // Ingenierías
+  | "logistics" // Logística
+  | "permits" // Gestión de Permisos
+  | "consulting" // Consultoría
+  | "other"; // Otros
 
 export type OperationsSubcategory =
-  | 'shipping'           // Envío
-  | 'packaging'          // Embalaje
-  | 'transport'          // Transporte
-  | 'storage'            // Almacenamiento
-  | 'insurance'          // Seguros
-  | 'customs'            // Aduanas
-  | 'handling'           // Manipulación
-  | 'other';             // Otros
+  | "shipping" // Envío
+  | "packaging" // Embalaje
+  | "transport" // Transporte
+  | "storage" // Almacenamiento
+  | "insurance" // Seguros
+  | "customs" // Aduanas
+  | "handling" // Manipulación
+  | "other"; // Otros
 
-export type BudgetSubcategory = 
-  | ConstructionSubcategory 
-  | OwnFeesSubcategory 
-  | ExternalServicesSubcategory 
+export type BudgetSubcategory =
+  | ConstructionSubcategory
+  | OwnFeesSubcategory
+  | ExternalServicesSubcategory
   | OperationsSubcategory;
 
 export interface ProjectBudgetLine {

@@ -1,33 +1,63 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/components/auth-provider';
-import { Plus } from 'lucide-react';
-import type { Client, Project } from '@/types';
-import { ClientDialog } from '@/components/dialogs/client-dialog';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/components/auth-provider";
+import { Plus } from "lucide-react";
+import type { Client, Project } from "@/types";
+import { ClientDialog } from "@/components/dialogs/client-dialog";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   description: z.string().optional(),
   client_id: z.string().min(1, "Cliente requerido"),
-  status: z.string().default('draft').optional(),
+  status: z.string().default("draft").optional(),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
   address: z.string().optional(),
-  phase: z.enum(['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery']).optional(),
-  tax_rate: z.string()
+  phase: z
+    .enum([
+      "diagnosis",
+      "design",
+      "executive",
+      "budget",
+      "construction",
+      "delivery",
+    ])
+    .optional(),
+  tax_rate: z
+    .string()
     .optional()
-    .refine(val => {
-      if (!val || val.trim() === '') return true;
+    .refine((val) => {
+      if (!val || val.trim() === "") return true;
       const num = parseFloat(val);
       return !isNaN(num) && num >= 0;
     }, "El impuesto debe ser mayor o igual a 0"),
@@ -40,7 +70,12 @@ interface ProjectDialogProps {
   project?: Project | null;
 }
 
-export function ProjectDialog({ open, onOpenChange, onSuccess, project }: ProjectDialogProps) {
+export function ProjectDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+  project,
+}: ProjectDialogProps) {
   const { user } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
@@ -53,7 +88,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
       description: "",
       client_id: "",
       status: "draft",
-      start_date: new Date().toISOString().split('T')[0],
+      start_date: new Date().toISOString().split("T")[0],
       end_date: "",
       address: "",
       tax_rate: "",
@@ -62,7 +97,10 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
 
   useEffect(() => {
     async function loadClients() {
-      const { data } = await supabase.from('clients').select('*').order('full_name');
+      const { data } = await supabase
+        .from("clients")
+        .select("*")
+        .order("full_name");
       setClients(data || []);
     }
     if (open) loadClients();
@@ -71,40 +109,48 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
   // Sincronizar el valor del cliente cuando la lista se actualiza y hay un cliente pendiente
   useEffect(() => {
     if (pendingClientId && clients.length > 0) {
-      const clientExists = clients.some(c => c.id === pendingClientId);
+      const clientExists = clients.some((c) => c.id === pendingClientId);
       if (clientExists) {
-        form.setValue('client_id', pendingClientId, { shouldValidate: true, shouldDirty: true });
+        form.setValue("client_id", pendingClientId, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
         setPendingClientId(null);
       }
     }
   }, [clients, pendingClientId, form]);
 
   // Sugerir la dirección del cliente cuando se selecciona un cliente y el campo está vacío
-  const clientId = form.watch('client_id');
+  const clientId = form.watch("client_id");
   useEffect(() => {
     if (clientId && clients.length > 0) {
-      const currentAddress = form.getValues('address');
+      const currentAddress = form.getValues("address");
       // Solo sugerir si el campo de dirección está vacío
-      if (!currentAddress || currentAddress.trim() === '') {
-        const selectedClient = clients.find(c => c.id === clientId);
+      if (!currentAddress || currentAddress.trim() === "") {
+        const selectedClient = clients.find((c) => c.id === clientId);
         if (selectedClient && selectedClient.address) {
-          form.setValue('address', selectedClient.address, { shouldDirty: false });
+          form.setValue("address", selectedClient.address, {
+            shouldDirty: false,
+          });
         }
       }
     }
   }, [clientId, clients, form]);
 
-
   useEffect(() => {
     if (project && open) {
-      const startDate = project.start_date 
-        ? (project.start_date.includes('T') ? project.start_date.split('T')[0] : project.start_date)
-        : new Date().toISOString().split('T')[0];
-      
-      const endDate = project.end_date 
-        ? (project.end_date.includes('T') ? project.end_date.split('T')[0] : project.end_date)
+      const startDate = project.start_date
+        ? project.start_date.includes("T")
+          ? project.start_date.split("T")[0]
+          : project.start_date
+        : new Date().toISOString().split("T")[0];
+
+      const endDate = project.end_date
+        ? project.end_date.includes("T")
+          ? project.end_date.split("T")[0]
+          : project.end_date
         : "";
-      
+
       form.reset({
         name: project.name || "",
         description: project.description || "",
@@ -114,7 +160,10 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         end_date: endDate,
         address: project.address || "",
         phase: project.phase || undefined,
-        tax_rate: project.tax_rate !== null && project.tax_rate !== undefined ? project.tax_rate.toString() : "",
+        tax_rate:
+          project.tax_rate !== null && project.tax_rate !== undefined
+            ? project.tax_rate.toString()
+            : "",
       });
     } else if (!project && open) {
       form.reset({
@@ -122,7 +171,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         description: "",
         client_id: "",
         status: "draft",
-        start_date: new Date().toISOString().split('T')[0],
+        start_date: new Date().toISOString().split("T")[0],
         end_date: "",
         address: "",
         phase: undefined,
@@ -134,17 +183,27 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
   async function onSubmit(values: z.input<typeof formSchema>) {
     try {
       // Transform tax_rate from string to number
-      const taxRateTransformed = values.tax_rate 
-        ? (values.tax_rate.trim() === '' ? undefined : parseFloat(values.tax_rate))
+      const taxRateTransformed = values.tax_rate
+        ? values.tax_rate.trim() === ""
+          ? undefined
+          : parseFloat(values.tax_rate)
         : undefined;
-      
+
       // Handle tax_rate: if empty, use last value (if editing) or 0 (if new)
       let taxRateValue: number | null = null;
-      if (taxRateTransformed !== undefined && taxRateTransformed !== null && !isNaN(taxRateTransformed)) {
+      if (
+        taxRateTransformed !== undefined &&
+        taxRateTransformed !== null &&
+        !isNaN(taxRateTransformed)
+      ) {
         taxRateValue = taxRateTransformed;
       } else {
         // If empty and editing, use last known value
-        if (project && project.tax_rate !== null && project.tax_rate !== undefined) {
+        if (
+          project &&
+          project.tax_rate !== null &&
+          project.tax_rate !== undefined
+        ) {
           taxRateValue = project.tax_rate;
         } else {
           // If new or no previous value, use 0
@@ -156,30 +215,30 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
       const updateData: Record<string, unknown> = {
         name: values.name,
         client_id: values.client_id,
-        status: values.status || 'draft',
+        status: values.status || "draft",
         end_date: values.end_date || null,
         tax_rate: taxRateValue,
       };
-      
+
       // Only include optional fields if they have values
       if (values.description && values.description.trim()) {
         updateData.description = values.description;
       } else {
         updateData.description = null;
       }
-      
+
       if (values.address && values.address.trim()) {
         updateData.address = values.address;
       } else {
         updateData.address = null;
       }
-      
+
       if (values.start_date && values.start_date.trim()) {
         updateData.start_date = values.start_date;
       } else {
         updateData.start_date = null;
       }
-      
+
       if (values.phase) {
         updateData.phase = values.phase;
       } else {
@@ -187,45 +246,50 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
       }
 
       // Si el estado cambia a "completed", establecer la fecha efectiva de finalización
-      if (values.status === 'completed') {
+      if (values.status === "completed") {
         // Solo establecer completed_date si el proyecto no estaba completado antes
         // Si ya estaba completado, mantener la fecha existente
-        if (!project || project.status !== 'completed') {
-          updateData.completed_date = new Date().toISOString().split('T')[0];
+        if (!project || project.status !== "completed") {
+          updateData.completed_date = new Date().toISOString().split("T")[0];
         }
         // Si ya estaba completado, no incluir completed_date en el update para mantener el valor existente
       } else {
         // Si el estado cambia de "completed" a otro, limpiar la fecha efectiva
-        if (project && project.status === 'completed') {
+        if (project && project.status === "completed") {
           updateData.completed_date = null;
         }
       }
 
       if (project) {
         const { error } = await supabase
-          .from('projects')
+          .from("projects")
           .update(updateData)
-          .eq('id', project.id);
-        
+          .eq("id", project.id);
+
         if (error) throw error;
-        
-        toast.success('Proyecto actualizado');
+
+        toast.success("Proyecto actualizado");
       } else {
-        const { error } = await supabase
-          .from('projects')
-          .insert([{
+        const { error } = await supabase.from("projects").insert([
+          {
             ...updateData,
             user_id: user?.id,
-          }]);
-        
+          },
+        ]);
+
         if (error) throw error;
-        
-        toast.success('Proyecto creado');
+
+        toast.success("Proyecto creado");
         form.reset();
       }
       onSuccess();
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : (project ? "Error al actualizar proyecto" : "Error al crear proyecto");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : project
+            ? "Error al actualizar proyecto"
+            : "Error al crear proyecto";
       toast.error(errorMessage);
     }
   }
@@ -234,9 +298,11 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{project ? 'Editar' : 'Nuevo'} Proyecto</DialogTitle>
+          <DialogTitle>{project ? "Editar" : "Nuevo"} Proyecto</DialogTitle>
           <DialogDescription>
-            {project ? 'Edita la información del proyecto.' : 'Crea un nuevo proyecto de diseño.'}
+            {project
+              ? "Edita la información del proyecto."
+              : "Crea un nuevo proyecto de diseño."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -265,7 +331,10 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
                   <FormItem className="col-span-3">
                     <FormLabel required>Cliente</FormLabel>
                     <div className="flex gap-2">
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger className="flex-1">
                             <SelectValue placeholder="Selecciona un cliente" />
@@ -301,12 +370,12 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
                   <FormItem className="col-span-1">
                     <FormLabel required>Impuesto (%)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        step="0.01" 
-                        placeholder="Ej: 21" 
-                        {...field} 
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Ej: 21"
+                        {...field}
                         value={field.value || ""}
                       />
                     </FormControl>
@@ -339,7 +408,10 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
                 <FormItem>
                   <FormLabel>Descripción</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Detalles del proyecto..." {...field} />
+                    <Textarea
+                      placeholder="Detalles del proyecto..."
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -361,9 +433,13 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="diagnosis">1. Diagnóstico</SelectItem>
+                        <SelectItem value="diagnosis">
+                          1. Diagnóstico
+                        </SelectItem>
                         <SelectItem value="design">2. Diseño</SelectItem>
-                        <SelectItem value="executive">3. Proyecto Ejecutivo</SelectItem>
+                        <SelectItem value="executive">
+                          3. Proyecto Ejecutivo
+                        </SelectItem>
                         <SelectItem value="budget">4. Presupuestos</SelectItem>
                         <SelectItem value="construction">5. Obra</SelectItem>
                         <SelectItem value="delivery">6. Entrega</SelectItem>
@@ -413,7 +489,7 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="end_date"
@@ -430,7 +506,9 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
             </div>
 
             <DialogFooter>
-              <Button type="submit">{project ? 'Guardar Cambios' : 'Crear Proyecto'}</Button>
+              <Button type="submit">
+                {project ? "Guardar Cambios" : "Crear Proyecto"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
@@ -443,18 +521,20 @@ export function ProjectDialog({ open, onOpenChange, onSuccess, project }: Projec
         onSuccess={async (clientId) => {
           if (clientId) {
             // Recargar la lista de clientes
-            const { data } = await supabase.from('clients').select('*').order('full_name');
+            const { data } = await supabase
+              .from("clients")
+              .select("*")
+              .order("full_name");
             if (data) {
               setClients(data);
               // Establecer el cliente pendiente para que se seleccione cuando la lista se actualice
               setPendingClientId(clientId);
             }
             setIsClientDialogOpen(false);
-            toast.success('Cliente creado y seleccionado');
+            toast.success("Cliente creado y seleccionado");
           }
         }}
       />
     </Dialog>
   );
 }
-

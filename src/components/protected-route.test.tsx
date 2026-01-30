@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import ProtectedRoute from './protected-route';
-import { AuthProvider } from './auth-provider';
-import { createMockUser, createMockSession } from '@/test/mocks/supabase';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./protected-route";
+import { AuthProvider } from "./auth-provider";
+import { createMockUser, createMockSession } from "@/test/mocks/supabase";
 
 // Mock the supabase module using hoisted mocks
 const mockGetSession = vi.hoisted(() => vi.fn());
 const mockOnAuthStateChange = vi.hoisted(() => vi.fn());
 const mockSignOut = vi.hoisted(() => vi.fn());
 
-vi.mock('@/lib/supabase', () => ({
+vi.mock("@/lib/supabase", () => ({
   supabase: {
     auth: {
       getSession: mockGetSession,
@@ -22,7 +22,7 @@ vi.mock('@/lib/supabase', () => ({
 
 const TestProtectedComponent = () => <div>Protected Content</div>;
 
-describe('ProtectedRoute', () => {
+describe("ProtectedRoute", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetSession.mockResolvedValue({
@@ -38,7 +38,7 @@ describe('ProtectedRoute', () => {
     });
   });
 
-  it('should show loading state when auth is loading', async () => {
+  it("should show loading state when auth is loading", async () => {
     mockGetSession.mockImplementation(() => new Promise(() => {})); // Never resolves
 
     render(
@@ -53,17 +53,17 @@ describe('ProtectedRoute', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Cargando...')).toBeInTheDocument();
+    expect(screen.getByText("Cargando...")).toBeInTheDocument();
   });
 
-  it('should redirect to /auth when user is not authenticated', async () => {
+  it("should redirect to /auth when user is not authenticated", async () => {
     mockGetSession.mockResolvedValue({
       data: { session: null },
       error: null,
     });
 
     const TestApp = () => (
-      <MemoryRouter initialEntries={['/protected']}>
+      <MemoryRouter initialEntries={["/protected"]}>
         <AuthProvider>
           <Routes>
             <Route element={<ProtectedRoute />}>
@@ -81,8 +81,8 @@ describe('ProtectedRoute', () => {
     });
   });
 
-  it.skip('should render protected content when user is authenticated', async () => {
-    const mockUser = createMockUser({ email: 'user@example.com' });
+  it.skip("should render protected content when user is authenticated", async () => {
+    const mockUser = createMockUser({ email: "user@example.com" });
     const mockSession = createMockSession(mockUser);
 
     mockGetSession.mockResolvedValue({
@@ -92,7 +92,7 @@ describe('ProtectedRoute', () => {
 
     mockOnAuthStateChange.mockImplementation((callback) => {
       // Simulate auth state change with session
-      setTimeout(() => callback('SIGNED_IN', mockSession), 0);
+      setTimeout(() => callback("SIGNED_IN", mockSession), 0);
       return {
         data: {
           subscription: {
@@ -114,9 +114,11 @@ describe('ProtectedRoute', () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => {
-      expect(screen.getByText('Protected Content')).toBeInTheDocument();
-    }, { timeout: 5000 });
+    await waitFor(
+      () => {
+        expect(screen.getByText("Protected Content")).toBeInTheDocument();
+      },
+      { timeout: 5000 }
+    );
   });
 });
-

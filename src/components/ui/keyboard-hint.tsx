@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface KeyboardHintProps {
   keys: string;
@@ -6,15 +6,18 @@ interface KeyboardHintProps {
   className?: string;
 }
 
-export function KeyboardHint({ keys, description, className }: KeyboardHintProps) {
+export function KeyboardHint({
+  keys,
+  description,
+  className,
+}: KeyboardHintProps) {
   return (
-    <span className={cn('text-xs text-muted-foreground', className)}>
-      {description && '('}
-      <span className="bg-muted/60 px-1 rounded font-mono text-[0.9em] border border-muted">
+    <span className={cn("text-muted-foreground text-xs", className)}>
+      {description && "("}
+      <span className="bg-muted/60 border-muted rounded border px-1 font-mono text-[0.9em]">
         {keys}
       </span>
       {description && ` ${description})`}
     </span>
   );
 }
-

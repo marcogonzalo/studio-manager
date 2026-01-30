@@ -1,37 +1,37 @@
-import type { Metadata } from 'next';
-import { Users, Target, Heart, Award } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Metadata } from "next";
+import { Users, Target, Heart, Award } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: 'Sobre Nosotros',
+  title: "Sobre Nosotros",
   description:
-    'Conoce al equipo detrás de StudioManager, la plataforma diseñada para profesionales del diseño interior.',
+    "Conoce al equipo detrás de StudioManager, la plataforma diseñada para profesionales del diseño interior.",
 };
 
 const values = [
   {
     icon: Target,
-    title: 'Simplicidad',
+    title: "Simplicidad",
     description:
-      'Creemos que las herramientas deben ser intuitivas y fáciles de usar, sin curvas de aprendizaje innecesarias.',
+      "Creemos que las herramientas deben ser intuitivas y fáciles de usar, sin curvas de aprendizaje innecesarias.",
   },
   {
     icon: Heart,
-    title: 'Pasión por el Diseño',
+    title: "Pasión por el Diseño",
     description:
-      'Entendemos las necesidades de los diseñadores porque compartimos su pasión por crear espacios únicos.',
+      "Entendemos las necesidades de los diseñadores porque compartimos su pasión por crear espacios únicos.",
   },
   {
     icon: Users,
-    title: 'Comunidad',
+    title: "Comunidad",
     description:
-      'Construimos StudioManager junto a nuestra comunidad de usuarios, escuchando sus necesidades.',
+      "Construimos StudioManager junto a nuestra comunidad de usuarios, escuchando sus necesidades.",
   },
   {
     icon: Award,
-    title: 'Excelencia',
+    title: "Excelencia",
     description:
-      'Nos comprometemos a ofrecer la mejor experiencia posible, mejorando constantemente nuestra plataforma.',
+      "Nos comprometemos a ofrecer la mejor experiencia posible, mejorando constantemente nuestra plataforma.",
   },
 ];
 
@@ -43,49 +43,52 @@ export default function AboutPage() {
         <div className="container mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Diseñado por diseñadores,{' '}
+              Diseñado por diseñadores,{" "}
               <span className="text-primary">para diseñadores</span>
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground md:text-xl">
+            <p className="text-muted-foreground mt-6 text-lg md:text-xl">
               StudioManager nació de la necesidad real de simplificar la gestión
-              de proyectos de diseño interior. Entendemos tus desafíos porque los
-              hemos vivido.
+              de proyectos de diseño interior. Entendemos tus desafíos porque
+              los hemos vivido.
             </p>
           </div>
         </div>
       </section>
 
       {/* Story Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="grid gap-12 lg:grid-cols-2 items-center">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">Nuestra Historia</h2>
-              <div className="mt-6 space-y-4 text-muted-foreground">
+              <h2 className="text-3xl font-bold tracking-tight">
+                Nuestra Historia
+              </h2>
+              <div className="text-muted-foreground mt-6 space-y-4">
                 <p>
-                  StudioManager comenzó como un proyecto interno para resolver los
-                  desafíos diarios de gestionar un estudio de diseño interior.
-                  Hojas de cálculo dispersas, presupuestos difíciles de rastrear y
-                  comunicación fragmentada con proveedores eran problemas
-                  constantes.
+                  StudioManager comenzó como un proyecto interno para resolver
+                  los desafíos diarios de gestionar un estudio de diseño
+                  interior. Hojas de cálculo dispersas, presupuestos difíciles
+                  de rastrear y comunicación fragmentada con proveedores eran
+                  problemas constantes.
                 </p>
                 <p>
-                  Después de meses de desarrollo y pruebas con diseñadores reales,
-                  creamos una plataforma que realmente entiende las necesidades
-                  específicas del sector. Desde la gestión de espacios hasta el
-                  control de costos, cada característica fue diseñada pensando en
-                  el flujo de trabajo real de un diseñador.
+                  Después de meses de desarrollo y pruebas con diseñadores
+                  reales, creamos una plataforma que realmente entiende las
+                  necesidades específicas del sector. Desde la gestión de
+                  espacios hasta el control de costos, cada característica fue
+                  diseñada pensando en el flujo de trabajo real de un diseñador.
                 </p>
                 <p>
-                  Hoy, StudioManager ayuda a estudios de diseño a ahorrar tiempo,
-                  reducir errores y ofrecer un mejor servicio a sus clientes.
+                  Hoy, StudioManager ayuda a estudios de diseño a ahorrar
+                  tiempo, reducir errores y ofrecer un mejor servicio a sus
+                  clientes.
                 </p>
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-square rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-border shadow-lg flex items-center justify-center">
-                <div className="text-center p-8">
-                  <Users className="h-20 w-20 text-primary mx-auto mb-4" />
+              <div className="from-primary/20 via-primary/10 border-border flex aspect-square items-center justify-center rounded-xl border bg-gradient-to-br to-transparent shadow-lg">
+                <div className="p-8 text-center">
+                  <Users className="text-primary mx-auto mb-4 h-20 w-20" />
                   <p className="text-lg font-medium">Nuestro Equipo</p>
                 </div>
               </div>
@@ -97,11 +100,11 @@ export default function AboutPage() {
       {/* Values Section */}
       <section className="py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto max-w-2xl text-center mb-16">
+          <div className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Nuestros Valores
             </h2>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="text-muted-foreground mt-4 text-lg">
               Los principios que guían todo lo que hacemos.
             </p>
           </div>
@@ -110,11 +113,11 @@ export default function AboutPage() {
             {values.map((value) => (
               <Card
                 key={value.title}
-                className="border-none shadow-md hover:shadow-lg transition-shadow"
+                className="border-none shadow-md transition-shadow hover:shadow-lg"
               >
                 <CardHeader>
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                    <value.icon className="h-6 w-6 text-primary" />
+                  <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
+                    <value.icon className="text-primary h-6 w-6" />
                   </div>
                   <CardTitle>{value.title}</CardTitle>
                 </CardHeader>
@@ -128,16 +131,16 @@ export default function AboutPage() {
       </section>
 
       {/* Mission Section */}
-      <section className="py-20 bg-primary/5">
+      <section className="bg-primary/5 py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Nuestra Misión
             </h2>
-            <p className="mt-6 text-xl text-muted-foreground">
+            <p className="text-muted-foreground mt-6 text-xl">
               Empoderar a los profesionales del diseño interior con herramientas
-              que simplifiquen su trabajo, para que puedan dedicar más tiempo a lo
-              que realmente importa: crear espacios que transforman vidas.
+              que simplifiquen su trabajo, para que puedan dedicar más tiempo a
+              lo que realmente importa: crear espacios que transforman vidas.
             </p>
           </div>
         </div>

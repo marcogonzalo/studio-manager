@@ -1,36 +1,72 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { supabase } from '@/lib/supabase';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '@/components/auth-provider';
-import type { Payment, PurchaseOrder, AdditionalCost } from '@/types';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { supabase } from "@/lib/supabase";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { useEffect, useState, useCallback } from "react";
+import { useAuth } from "@/components/auth-provider";
+import type { Payment, PurchaseOrder, AdditionalCost } from "@/types";
 
-const formSchema = z.object({
-  amount: z.number().min(0.01, "El monto debe ser mayor a 0"),
-  payment_date: z.string().min(1, "Fecha requerida"),
-  reference_number: z.string().optional(),
-  description: z.string().optional(),
-  payment_type: z.enum(['fees', 'purchase_provision', 'additional_cost', 'other']),
-  purchase_order_id: z.string().optional(),
-  additional_cost_id: z.string().optional(),
-  phase: z.enum(['diagnosis', 'design', 'executive', 'budget', 'construction', 'delivery']).optional(),
-}).refine(
-  () => {
-    // Flexible: permite pagos sin asociación
-    return true;
-  },
-  {
-    message: "Especifica al menos una asociación o tipo de pago",
-  }
-);
+const formSchema = z
+  .object({
+    amount: z.number().min(0.01, "El monto debe ser mayor a 0"),
+    payment_date: z.string().min(1, "Fecha requerida"),
+    reference_number: z.string().optional(),
+    description: z.string().optional(),
+    payment_type: z.enum([
+      "fees",
+      "purchase_provision",
+      "additional_cost",
+      "other",
+    ]),
+    purchase_order_id: z.string().optional(),
+    additional_cost_id: z.string().optional(),
+    phase: z
+      .enum([
+        "diagnosis",
+        "design",
+        "executive",
+        "budget",
+        "construction",
+        "delivery",
+      ])
+      .optional(),
+  })
+  .refine(
+    () => {
+      // Flexible: permite pagos sin asociación
+      return true;
+    },
+    {
+      message: "Especifica al menos una asociación o tipo de pago",
+    }
+  );
 
 interface PaymentDialogProps {
   open: boolean;
@@ -42,10 +78,10 @@ interface PaymentDialogProps {
   defaultAdditionalCostId?: string;
 }
 
-export function PaymentDialog({ 
-  open, 
-  onOpenChange, 
-  onSuccess, 
+export function PaymentDialog({
+  open,
+  onOpenChange,
+  onSuccess,
   projectId,
   payment,
   defaultPurchaseOrderId,
@@ -60,10 +96,10 @@ export function PaymentDialog({
     resolver: zodResolver(formSchema),
     defaultValues: {
       amount: 0,
-      payment_date: new Date().toISOString().split('T')[0],
+      payment_date: new Date().toISOString().split("T")[0],
       reference_number: "",
       description: "",
-      payment_type: 'fees',
+      payment_type: "fees",
       purchase_order_id: "",
       additional_cost_id: "",
       phase: undefined,
@@ -72,21 +108,21 @@ export function PaymentDialog({
 
   const fetchPurchaseOrders = useCallback(async () => {
     const { data } = await supabase
-      .from('purchase_orders')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('created_at', { ascending: false });
-    
+      .from("purchase_orders")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false });
+
     if (data) setPurchaseOrders(data);
   }, [projectId]);
 
   const fetchAdditionalCosts = useCallback(async () => {
     const { data } = await supabase
-      .from('additional_project_costs')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('created_at', { ascending: false });
-    
+      .from("additional_project_costs")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false });
+
     if (data) setAdditionalCosts(data);
   }, [projectId]);
 
@@ -99,15 +135,15 @@ export function PaymentDialog({
 
   useEffect(() => {
     if (defaultPurchaseOrderId && open) {
-      form.setValue('purchase_order_id', defaultPurchaseOrderId);
-      form.setValue('payment_type', 'purchase_provision');
+      form.setValue("purchase_order_id", defaultPurchaseOrderId);
+      form.setValue("payment_type", "purchase_provision");
     }
   }, [defaultPurchaseOrderId, open, form]);
 
   useEffect(() => {
     if (defaultAdditionalCostId && open) {
-      form.setValue('additional_cost_id', defaultAdditionalCostId);
-      form.setValue('payment_type', 'additional_cost');
+      form.setValue("additional_cost_id", defaultAdditionalCostId);
+      form.setValue("payment_type", "additional_cost");
     }
   }, [defaultAdditionalCostId, open, form]);
 
@@ -126,10 +162,14 @@ export function PaymentDialog({
     } else if (!payment && open) {
       form.reset({
         amount: 0,
-        payment_date: new Date().toISOString().split('T')[0],
+        payment_date: new Date().toISOString().split("T")[0],
         reference_number: defaultPurchaseOrderId ? "" : "",
         description: "",
-        payment_type: defaultPurchaseOrderId ? 'purchase_provision' : (defaultAdditionalCostId ? 'additional_cost' : 'fees'),
+        payment_type: defaultPurchaseOrderId
+          ? "purchase_provision"
+          : defaultAdditionalCostId
+            ? "additional_cost"
+            : "fees",
         purchase_order_id: defaultPurchaseOrderId || "",
         additional_cost_id: defaultAdditionalCostId || "",
         phase: undefined,
@@ -137,7 +177,7 @@ export function PaymentDialog({
     }
   }, [payment, open, form, defaultPurchaseOrderId, defaultAdditionalCostId]);
 
-  const paymentType = form.watch('payment_type');
+  const paymentType = form.watch("payment_type");
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -157,26 +197,29 @@ export function PaymentDialog({
 
       if (payment) {
         const { error } = await supabase
-          .from('payments')
+          .from("payments")
           .update(paymentData)
-          .eq('id', payment.id);
-        
+          .eq("id", payment.id);
+
         if (error) throw error;
-        toast.success('Pago actualizado');
+        toast.success("Pago actualizado");
       } else {
-        const { error } = await supabase
-          .from('payments')
-          .insert([paymentData]);
-        
+        const { error } = await supabase.from("payments").insert([paymentData]);
+
         if (error) throw error;
-        toast.success('Pago registrado');
+        toast.success("Pago registrado");
       }
 
       form.reset();
       onSuccess();
       onOpenChange(false);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : (payment ? "Error al actualizar pago" : "Error al registrar pago");
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : payment
+            ? "Error al actualizar pago"
+            : "Error al registrar pago";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -187,9 +230,11 @@ export function PaymentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{payment ? 'Editar' : 'Nuevo'} Pago</DialogTitle>
+          <DialogTitle>{payment ? "Editar" : "Nuevo"} Pago</DialogTitle>
           <DialogDescription>
-            {payment ? 'Edita la información del pago.' : 'Registra un nuevo pago del cliente.'}
+            {payment
+              ? "Edita la información del pago."
+              : "Registra un nuevo pago del cliente."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -201,13 +246,15 @@ export function PaymentDialog({
                 <FormItem>
                   <FormLabel>Monto (€)</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
+                    <Input
+                      type="number"
                       step="0.01"
-                      placeholder="0.00" 
+                      placeholder="0.00"
                       {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                      value={field.value || ''}
+                      onChange={(e) =>
+                        field.onChange(parseFloat(e.target.value) || 0)
+                      }
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -236,7 +283,10 @@ export function PaymentDialog({
                 <FormItem>
                   <FormLabel>Número de Referencia</FormLabel>
                   <FormControl>
-                    <Input placeholder="Transferencia, cheque, etc." {...field} />
+                    <Input
+                      placeholder="Transferencia, cheque, etc."
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -257,8 +307,12 @@ export function PaymentDialog({
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="fees">Honorarios</SelectItem>
-                      <SelectItem value="purchase_provision">Provisión de Compras</SelectItem>
-                      <SelectItem value="additional_cost">Coste Adicional</SelectItem>
+                      <SelectItem value="purchase_provision">
+                        Provisión de Compras
+                      </SelectItem>
+                      <SelectItem value="additional_cost">
+                        Coste Adicional
+                      </SelectItem>
                       <SelectItem value="other">Otro</SelectItem>
                     </SelectContent>
                   </Select>
@@ -267,15 +321,17 @@ export function PaymentDialog({
               )}
             />
 
-            {paymentType === 'purchase_provision' && (
+            {paymentType === "purchase_provision" && (
               <FormField
                 control={form.control}
                 name="purchase_order_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Orden de Compra</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(value === "__none__" ? "" : value)} 
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value === "__none__" ? "" : value)
+                      }
                       value={field.value || "__none__"}
                     >
                       <FormControl>
@@ -298,15 +354,17 @@ export function PaymentDialog({
               />
             )}
 
-            {paymentType === 'additional_cost' && (
+            {paymentType === "additional_cost" && (
               <FormField
                 control={form.control}
                 name="additional_cost_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Coste Adicional</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(value === "__none__" ? "" : value)} 
+                    <Select
+                      onValueChange={(value) =>
+                        field.onChange(value === "__none__" ? "" : value)
+                      }
                       value={field.value || "__none__"}
                     >
                       <FormControl>
@@ -335,8 +393,10 @@ export function PaymentDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Fase del Proyecto</FormLabel>
-                  <Select 
-                    onValueChange={(value) => field.onChange(value === "__none__" ? undefined : value)} 
+                  <Select
+                    onValueChange={(value) =>
+                      field.onChange(value === "__none__" ? undefined : value)
+                    }
                     value={field.value || "__none__"}
                   >
                     <FormControl>
@@ -348,7 +408,9 @@ export function PaymentDialog({
                       <SelectItem value="__none__">Ninguna</SelectItem>
                       <SelectItem value="diagnosis">1. Diagnóstico</SelectItem>
                       <SelectItem value="design">2. Diseño</SelectItem>
-                      <SelectItem value="executive">3. Proyecto Ejecutivo</SelectItem>
+                      <SelectItem value="executive">
+                        3. Proyecto Ejecutivo
+                      </SelectItem>
                       <SelectItem value="budget">4. Presupuestos</SelectItem>
                       <SelectItem value="construction">5. Obra</SelectItem>
                       <SelectItem value="delivery">6. Entrega</SelectItem>
@@ -366,7 +428,10 @@ export function PaymentDialog({
                 <FormItem>
                   <FormLabel>Descripción</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Descripción adicional del pago..." {...field} />
+                    <Textarea
+                      placeholder="Descripción adicional del pago..."
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -375,7 +440,7 @@ export function PaymentDialog({
 
             <DialogFooter>
               <Button type="submit" disabled={loading}>
-                {payment ? 'Guardar Cambios' : 'Registrar Pago'}
+                {payment ? "Guardar Cambios" : "Registrar Pago"}
               </Button>
             </DialogFooter>
           </form>
