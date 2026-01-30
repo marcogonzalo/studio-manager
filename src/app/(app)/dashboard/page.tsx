@@ -23,6 +23,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { reportError } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import type { Project } from "@/types";
@@ -145,7 +146,7 @@ export default function DashboardPage() {
         confirmedOrdersError ||
         recentError
       ) {
-        toast.error("Error al cargar estadísticas");
+        toast.error("Error al cargar estadísticas", { id: "dashboard-stats" });
         return;
       }
 
@@ -171,8 +172,8 @@ export default function DashboardPage() {
         recentProjects: recentProjects || [],
       });
     } catch (error) {
-      console.error("Error fetching dashboard stats:", error);
-      toast.error("Error al cargar estadísticas");
+      reportError(error, "Error fetching dashboard stats:");
+      toast.error("Error al cargar estadísticas", { id: "dashboard-stats" });
     } finally {
       setLoading(false);
     }

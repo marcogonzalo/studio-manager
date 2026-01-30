@@ -31,6 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
+import { reportError } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import type { Supplier } from "@/types";
@@ -157,8 +158,8 @@ export function PurchaseOrderDialog({
           .eq("project_id", projectId);
 
         if (itemsError) {
-          console.error("Error fetching items:", itemsError);
-          toast.error("Error al cargar los ítems");
+          reportError(itemsError, "Error fetching items:");
+          toast.error("Error al cargar los ítems", { id: "po-items-load" });
           setAvailableItems([]);
           setLoadingItems(false);
           return;
@@ -232,8 +233,8 @@ export function PurchaseOrderDialog({
           });
         }
       } catch (error) {
-        console.error("Error in fetchAvailableItems:", error);
-        toast.error("Error al cargar los ítems");
+        reportError(error, "Error in fetchAvailableItems:");
+        toast.error("Error al cargar los ítems", { id: "po-items-load" });
         setAvailableItems([]);
       } finally {
         setLoadingItems(false);
@@ -252,7 +253,7 @@ export function PurchaseOrderDialog({
         .eq("project_id", projectId)
         .then(async ({ data: items, error }) => {
           if (error) {
-            console.error("Error fetching project items:", error);
+            reportError(error, "Error fetching project items:");
             setSuppliers([]);
             return;
           }
@@ -346,8 +347,8 @@ export function PurchaseOrderDialog({
       }
       setSearchQuery("");
     } catch (error) {
-      console.error("Error resetting form:", error);
-      toast.error("Error al cargar los datos de la orden");
+      reportError(error, "Error resetting form:");
+      toast.error("Error al cargar los datos de la orden", { id: "po-form-load" });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, order?.id]);
@@ -401,7 +402,7 @@ export function PurchaseOrderDialog({
 
   // Early return if critical props are missing
   if (!projectId) {
-    console.error("PurchaseOrderDialog: projectId is required");
+    reportError(new Error("PurchaseOrderDialog: projectId is required"));
     return null;
   }
 
@@ -921,7 +922,7 @@ export function PurchaseOrderDialog({
       </Dialog>
     );
   } catch (error) {
-    console.error("Error rendering PurchaseOrderDialog:", error);
+    reportError(error, "Error rendering PurchaseOrderDialog:");
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent>

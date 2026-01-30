@@ -1,4 +1,5 @@
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { reportError } from "@/lib/utils";
 
 /**
  * Comprueba si una tabla tiene filas con la columna = value.
@@ -19,12 +20,12 @@ async function tableHasNoRows(
       .limit(1);
 
     if (error) {
-      console.error(logContext, error);
+      reportError(error, logContext);
       return false;
     }
     return !(data && data.length > 0);
   } catch (err) {
-    console.error(`Error in tableHasNoRows(${table}):`, err);
+    reportError(err, `Error in tableHasNoRows(${table}):`);
     return false;
   }
 }

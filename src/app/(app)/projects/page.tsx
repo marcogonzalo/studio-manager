@@ -33,7 +33,7 @@ export default function ProjectsPage() {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast.error("Error al cargar proyectos");
+      toast.error("Error al cargar proyectos", { id: "projects-load" });
     } else {
       setProjects(data || []);
     }

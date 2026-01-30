@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { reportError } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -85,7 +86,7 @@ export default function CatalogPage() {
         .select();
 
       if (error) {
-        console.error("Error deleting product:", error);
+        reportError(error, "Error deleting product:");
         // Error específico para permisos RLS
         if (
           error.code === "42501" ||
@@ -114,7 +115,7 @@ export default function CatalogPage() {
       toast.success("Producto eliminado correctamente");
       fetchProducts();
     } catch (error) {
-      console.error("Unexpected error in handleDelete:", error);
+      reportError(error, "Unexpected error in handleDelete:");
       toast.error("Error inesperado al eliminar el producto");
     }
   };

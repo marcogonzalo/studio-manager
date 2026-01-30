@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
-import { isCostCategory } from "@/lib/utils";
+import { isCostCategory, reportError, reportWarn } from "@/lib/utils";
 import type { ProjectBudgetLine } from "@/types";
 
 export interface UseProjectBudgetLinesOptions {
@@ -50,12 +50,12 @@ export function useProjectBudgetLines(
           error.code === "42P01" ||
           error.message?.includes("does not exist")
         ) {
-          console.warn(
+          reportWarn(
             "Table project_budget_lines does not exist yet. Please run migrations."
           );
           setBudgetLines([]);
         } else {
-          console.error("Error fetching budget lines:", error);
+          reportError(error, "Error fetching budget lines:");
           setBudgetLines([]);
         }
       } else {

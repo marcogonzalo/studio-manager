@@ -45,7 +45,7 @@ export default function ProjectDetailPage() {
       .single();
 
     if (error) {
-      toast.error("Error al cargar proyecto");
+      toast.error("Error al cargar proyecto", { id: "project-load" });
     } else {
       setProject(data);
     }

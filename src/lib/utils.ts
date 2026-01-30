@@ -12,6 +12,25 @@ export function getErrorMessage(error: unknown): string {
   return "Error desconocido";
 }
 
+/**
+ * Centraliza el reporte de errores (log; opcionalmente Sentry en el futuro).
+ * Usar en lugar de console.error en rutas críticas.
+ */
+export function reportError(error: unknown, context?: string): void {
+  if (context) {
+    console.error(context, error);
+  } else {
+    console.error(error);
+  }
+}
+
+/**
+ * Centraliza avisos (log; opcionalmente monitoreo en el futuro).
+ */
+export function reportWarn(message: string): void {
+  console.warn(message);
+}
+
 export function getPhaseLabel(phase?: ProjectPhase): string {
   if (!phase) return "No asignada";
 

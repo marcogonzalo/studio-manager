@@ -52,7 +52,7 @@ export default function ClientsPage() {
 
     const { data, error } = await query;
     if (error) {
-      toast.error("Error al cargar clientes");
+      toast.error("Error al cargar clientes", { id: "clients-load" });
     } else {
       setClients(data || []);
     }

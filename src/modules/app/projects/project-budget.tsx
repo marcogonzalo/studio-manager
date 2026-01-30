@@ -58,6 +58,7 @@ import {
   getBudgetSubcategoryLabel,
   getPhaseLabel,
   getErrorMessage,
+  reportError,
 } from "@/lib/utils";
 
 import type {
@@ -118,7 +119,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       if (!projectError && projectData) {
         setProject(projectData);
       } else if (projectError) {
-        console.error("Error fetching project:", projectError);
+        reportError(projectError, "Error fetching project:");
         setError("Error al cargar el proyecto");
       }
 
@@ -132,7 +133,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         .order("created_at");
 
       if (itemsError) {
-        console.error("Error fetching items:", itemsError);
+        reportError(itemsError, "Error fetching items:");
         setItems([]);
       } else {
         setItems(itemsData || []);
@@ -140,7 +141,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
 
       await refetchBudgetLines();
     } catch (error: unknown) {
-      console.error("Unexpected error in fetchData:", error);
+      reportError(error, "Unexpected error in fetchData:");
       setError(
         "Error inesperado al cargar los datos: " + getErrorMessage(error)
       );
@@ -170,7 +171,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       .eq("id", id);
     if (error) {
       toast.error("Error al eliminar la partida");
-      console.error("Error deleting budget line:", error);
+      reportError(error, "Error deleting budget line:");
     } else {
       toast.success("Partida eliminada");
       refetchBudgetLines();
@@ -237,7 +238,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
 
       toast.success("PDF generado correctamente");
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      reportError(error, "Error generating PDF:");
       toast.error("Error al generar el PDF");
     } finally {
       setIsGeneratingPDF(false);

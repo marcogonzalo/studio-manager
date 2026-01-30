@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { reportError } from "@/lib/utils";
 import type { Product, Supplier } from "@/types";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
@@ -212,7 +213,7 @@ export function ProductDialog({
       }
       onSuccess();
     } catch (error: unknown) {
-      console.error("Error saving product:", error);
+      reportError(error, "Error saving product:");
       toast.error(error instanceof Error ? error.message : "Error al guardar");
     }
   }

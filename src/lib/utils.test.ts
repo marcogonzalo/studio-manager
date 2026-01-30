@@ -8,6 +8,8 @@ import {
   getSubcategoryOptions,
   getCategoryOptions,
   isCostCategory,
+  reportError,
+  reportWarn,
 } from "./utils";
 
 describe("cn utility function", () => {
@@ -167,5 +169,30 @@ describe("isCostCategory", () => {
 
   it("should return false for own_fees (income, not cost)", () => {
     expect(isCostCategory("own_fees")).toBe(false);
+  });
+});
+
+describe("reportError", () => {
+  it("should call console.error with context and error when context provided", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    reportError(new Error("test"), "Context:");
+    expect(spy).toHaveBeenCalledWith("Context:", expect.any(Error));
+    spy.mockRestore();
+  });
+
+  it("should call console.error with only error when no context", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    reportError(new Error("test"));
+    expect(spy).toHaveBeenCalledWith(expect.any(Error));
+    spy.mockRestore();
+  });
+});
+
+describe("reportWarn", () => {
+  it("should call console.warn with message", () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    reportWarn("Warning message");
+    expect(spy).toHaveBeenCalledWith("Warning message");
+    spy.mockRestore();
   });
 });

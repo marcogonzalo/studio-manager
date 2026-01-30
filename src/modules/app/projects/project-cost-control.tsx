@@ -42,6 +42,7 @@ import {
   getBudgetCategoryLabel,
   getBudgetSubcategoryLabel,
   getPhaseLabel,
+  reportError,
   COST_CATEGORIES,
   isCostCategory,
 } from "@/lib/utils";
@@ -92,7 +93,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
       .eq("id", id);
     if (error) {
       toast.error("Error al eliminar la partida");
-      console.error("Error deleting budget line:", error);
+      reportError(error, "Error deleting budget line:");
     } else {
       toast.success("Partida eliminada");
       refetchBudgetLines();
@@ -109,7 +110,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
       setEditingBudgetLine(null);
       setIsBudgetLineDialogOpen(true);
     } catch (error) {
-      console.error("Error opening budget line dialog:", error);
+      reportError(error, "Error opening budget line dialog:");
       toast.error("Error al abrir el diálogo");
     }
   };

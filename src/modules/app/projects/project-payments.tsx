@@ -57,7 +57,7 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
       .order("payment_date", { ascending: false });
 
     if (error) {
-      toast.error("Error al cargar pagos");
+      toast.error("Error al cargar pagos", { id: "payments-load" });
     } else {
       setPayments(data || []);
     }

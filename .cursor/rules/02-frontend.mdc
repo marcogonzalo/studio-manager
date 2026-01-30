@@ -62,7 +62,7 @@ globs: src/**/*.tsx, src/**/*.ts
 
 ## Directory Structure
 
-- `src/pages`: Routes/Views.
+- `src/app`: Routes/Views (Next.js App Router).
 - `src/components/ui`: Shadcn primitives.
 - `src/components`: Domain components.
 - `src/lib`: Utilities and configs.

@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import type { Client } from "@/types";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { getErrorMessage } from "@/lib/utils";
+import { getErrorMessage, reportError } from "@/lib/utils";
 
 const formSchema = z.object({
   full_name: z.string().min(2, "Nombre requerido"),
@@ -123,7 +123,7 @@ export function ClientDialog({
         onSuccess(newClient.id);
       }
     } catch (error: unknown) {
-      console.error("Error saving client:", error);
+      reportError(error, "Error saving client:");
       toast.error(getErrorMessage(error) || "Error al guardar cliente");
     }
   }

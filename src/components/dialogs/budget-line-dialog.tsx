@@ -36,6 +36,7 @@ import {
   getSubcategoryOptions,
   getPhaseLabel,
   getErrorMessage,
+  reportError,
   isCostCategory,
 } from "@/lib/utils";
 import type {
@@ -225,7 +226,7 @@ export function BudgetLineDialog({
                 (error.message || "Error desconocido")
             );
           }
-          console.error("Error updating budget line:", error);
+          reportError(error, "Error updating budget line:");
           return;
         }
 
@@ -252,7 +253,7 @@ export function BudgetLineDialog({
                 (error.message || "Error desconocido")
             );
           }
-          console.error("Error creating budget line:", error);
+          reportError(error, "Error creating budget line:");
           return;
         }
 
@@ -261,7 +262,7 @@ export function BudgetLineDialog({
         onOpenChange(false);
       }
     } catch (error: unknown) {
-      console.error("Unexpected error in onSubmit:", error);
+      reportError(error, "Unexpected error in onSubmit:");
       toast.error("Error inesperado: " + getErrorMessage(error));
     }
   };
@@ -275,7 +276,7 @@ export function BudgetLineDialog({
       subcategoryOptions = getSubcategoryOptions(selectedCategory);
     }
   } catch (error) {
-    console.error("Error getting category options:", error);
+    reportError(error, "Error getting category options:");
     // Fallback to empty arrays
   }
 

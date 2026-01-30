@@ -18,6 +18,8 @@ import {
   getPhaseLabel,
   getBudgetCategoryLabel,
   isCostCategory,
+  reportError,
+  reportWarn,
 } from "@/lib/utils";
 import type {
   Project,
@@ -93,12 +95,12 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         budgetLinesError.code === "42P01" ||
         budgetLinesError.message?.includes("does not exist")
       ) {
-        console.warn(
+        reportWarn(
           "Table project_budget_lines does not exist yet. Please run migrations."
         );
         setBudgetLines([]);
       } else {
-        console.error("Error fetching budget lines:", budgetLinesError);
+        reportError(budgetLinesError, "Error fetching budget lines:");
         setBudgetLines([]);
       }
     } else {
