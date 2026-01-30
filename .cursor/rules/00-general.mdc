@@ -49,6 +49,25 @@ You are an expert Senior Full Stack Developer and Security Engineer specializing
 
 - **Commits:** Use Conventional Commits (e.g., `feat: add login`, `fix: repair budget calc`, `chore: update deps`).
 - **Reviews:** Before declaring a task done, self-review code for unused variables, console logs, and potential edge cases.
+- **Branch Strategy:** Create a dedicated feature branch for each phase/feature implementation.
+
+### Approval & Release Process
+
+When a development is approved by the user:
+
+1. **Update Documentation:** Update `memory-bank/progress.md` and any relevant documentation files with completed features.
+2. **Commit Changes:** Stage all changes and create a descriptive commit message following Conventional Commits format.
+3. **Build Verification:** Verify that the application builds successfully without errors (`npm run build` or equivalent).
+4. **Test Coverage:** Check test coverage and ensure it meets project standards (minimum 80% for new code).
+5. **Create Pull Request:**
+   - Push the feature branch to remote repository
+   - Create a concise PR that includes:
+     - Summary of changes (based on commits)
+     - List of modified/new files
+     - Build status (passing/failing)
+     - Test coverage metrics
+     - Test plan checklist
+   - If GitHub CLI (`gh`) is available, attempt to create PR automatically. Otherwise, provide PR content and URL for manual creation.
 
 ## 7. Specific Implementation Directives
 

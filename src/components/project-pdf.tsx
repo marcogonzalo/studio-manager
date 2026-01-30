@@ -422,16 +422,12 @@ export function ProjectPDF({ project, items, budgetLines, taxRate = 0, architect
           </View>
         )}
 
-        {/* Items by Location */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mobiliario y Productos</Text>
+        {/* Items by Location - solo si hay productos */}
+        {Object.keys(itemsBySpace).length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Mobiliario y Productos</Text>
           
-          {Object.keys(itemsBySpace).length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text>No hay productos registrados en el proyecto.</Text>
-            </View>
-          ) : (
-            Object.entries(itemsBySpace).map(([spaceName, spaceItems]) => {
+            {Object.entries(itemsBySpace).map(([spaceName, spaceItems]) => {
               const spaceSubtotal = spaceItems.reduce(
                 (sum, item) => sum + (item.unit_price * item.quantity),
                 0
@@ -508,9 +504,9 @@ export function ProjectPDF({ project, items, budgetLines, taxRate = 0, architect
                   </View>
                 </View>
               );
-            })
-          )}
-        </View>
+            })}
+          </View>
+        )}
 
         {/* Summary */}
         <View style={styles.section}>
@@ -521,10 +517,12 @@ export function ProjectPDF({ project, items, budgetLines, taxRate = 0, architect
                 <Text style={styles.summaryValue}>{formatCurrency(totalBudgetLines)}</Text>
               </View>
             )}
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal Mobiliario y Productos:</Text>
-              <Text style={styles.summaryValue}>{formatCurrency(totalItemsPrice)}</Text>
-            </View>
+            {items.length > 0 && (
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Subtotal Mobiliario y Productos:</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(totalItemsPrice)}</Text>
+              </View>
+            )}
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal:</Text>
               <Text style={styles.summaryValue}>{formatCurrency(subtotal)}</Text>
