@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -49,12 +50,17 @@ import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
 
 export function ProjectCostControl({ projectId }: { projectId: string }) {
   const supabase = getSupabaseClient();
-  const [budgetLines, setBudgetLines] = useState<ProjectBudgetLine[]>([]);
+  const {
+    budgetLines,
+    loading: budgetLinesLoading,
+    refetch: refetchBudgetLines,
+  } = useProjectBudgetLines(projectId, { costOnly: true });
+
   const [items, setItems] = useState<ProjectItem[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(true);
   const [isBudgetLineDialogOpen, setIsBudgetLineDialogOpen] = useState(false);
   const [editingBudgetLine, setEditingBudgetLine] =
     useState<ProjectBudgetLine | null>(null);
-  const [loading, setLoading] = useState(true);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     construction: true,
     external_services: true,
@@ -62,51 +68,20 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
     products: true,
   });
 
-  const fetchData = async () => {
-    setLoading(true);
+  const loading = budgetLinesLoading || itemsLoading;
 
-    // Fetch ALL budget lines (including internal)
-    const { data: budgetLinesData, error: budgetLinesError } = await supabase
-      .from("project_budget_lines")
-      .select("*, supplier:suppliers(name)")
-      .eq("project_id", projectId)
-      .order("category")
-      .order("created_at");
-
-    if (budgetLinesError) {
-      // Table might not exist yet - silently handle it
-      if (
-        budgetLinesError.code === "42P01" ||
-        budgetLinesError.message?.includes("does not exist")
-      ) {
-        console.warn(
-          "Table project_budget_lines does not exist yet. Please run migrations."
-        );
-        setBudgetLines([]);
-      } else {
-        console.error("Error fetching budget lines:", budgetLinesError);
-        setBudgetLines([]);
-      }
-    } else {
-      // Solo cargar partidas que son costes (excluir own_fees que son ingresos)
-      setBudgetLines(
-        budgetLinesData?.filter((line) => isCostCategory(line.category)) || []
-      );
-    }
-
-    // Fetch project items for cost summary
-    const { data: itemsData, error: itemsError } = await supabase
+  const fetchItems = async () => {
+    setItemsLoading(true);
+    const { data, error } = await supabase
       .from("project_items")
       .select("id, name, quantity, unit_cost, unit_price")
       .eq("project_id", projectId);
-
-    if (!itemsError) setItems(itemsData || []);
-
-    setLoading(false);
+    if (!error) setItems(data || []);
+    setItemsLoading(false);
   };
 
   useEffect(() => {
-    fetchData();
+    fetchItems();
   }, [projectId]);
 
   const handleDeleteBudgetLine = async (id: string) => {
@@ -120,7 +95,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
       console.error("Error deleting budget line:", error);
     } else {
       toast.success("Partida eliminada");
-      fetchData();
+      refetchBudgetLines();
     }
   };
 
@@ -546,7 +521,7 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
         onSuccess={() => {
           setIsBudgetLineDialogOpen(false);
           setEditingBudgetLine(null);
-          fetchData();
+          refetchBudgetLines();
         }}
       />
     </div>

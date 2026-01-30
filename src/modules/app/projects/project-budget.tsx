@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -70,8 +71,12 @@ import type {
 export function ProjectBudget({ projectId }: { projectId: string }) {
   const { user } = useAuth();
   const supabase = getSupabaseClient();
+  const {
+    budgetLines,
+    refetch: refetchBudgetLines,
+  } = useProjectBudgetLines(projectId, { excludeInternal: true, autoFetch: false });
+
   const [items, setItems] = useState<ProjectItem[]>([]);
-  const [budgetLines, setBudgetLines] = useState<ProjectBudgetLine[]>([]);
   const [project, setProject] = useState<
     | (Project & {
         client?: {
@@ -133,40 +138,14 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         setItems(itemsData || []);
       }
 
-      // Fetch budget lines (only non-internal for client budget view)
-      const { data: budgetLinesData, error: budgetLinesError } = await supabase
-        .from("project_budget_lines")
-        .select("*, supplier:suppliers(name)")
-        .eq("project_id", projectId)
-        .eq("is_internal_cost", false)
-        .order("category")
-        .order("created_at");
-
-      if (budgetLinesError) {
-        // Table might not exist yet - silently handle it
-        if (
-          budgetLinesError.code === "42P01" ||
-          budgetLinesError.message?.includes("does not exist")
-        ) {
-          console.warn(
-            "Table project_budget_lines does not exist yet. Please run migrations."
-          );
-          setBudgetLines([]);
-        } else {
-          console.error("Error fetching budget lines:", budgetLinesError);
-          setBudgetLines([]);
-        }
-      } else {
-        setBudgetLines(budgetLinesData || []);
-      }
+      await refetchBudgetLines();
     } catch (error: unknown) {
       console.error("Unexpected error in fetchData:", error);
       setError(
         "Error inesperado al cargar los datos: " + getErrorMessage(error)
       );
-      // Ensure we set empty arrays to prevent UI from breaking
       setItems([]);
-      setBudgetLines([]);
+      await refetchBudgetLines();
     } finally {
       setLoading(false);
     }
@@ -194,7 +173,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       console.error("Error deleting budget line:", error);
     } else {
       toast.success("Partida eliminada");
-      fetchData();
+      refetchBudgetLines();
     }
   };
 
