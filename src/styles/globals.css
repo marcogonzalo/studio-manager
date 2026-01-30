@@ -42,94 +42,110 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ============================================
+   BASE / DEFAULTS
+   Tokens shared across themes
+   ============================================ */
 :root {
+  /* Spacing & radius */
   --radius: 0.75rem;
-  
-  /* Natural/Pastel Palette - Light Mode */
-  /* Warm Cream Background */
-  --background: oklch(0.98 0.01 100); 
-  /* Dark Earthy Grey Text */
-  --foreground: oklch(0.25 0.02 100); 
-  
-  /* White Cards */
-  --card: oklch(1 0 0);
+
+  /* Identical in light and dark (Natural/Pastel palette) */
+  --primary: oklch(0.65 0.08 140);           /* Soft Sage Green */
+  --primary-foreground: oklch(0.98 0.01 100);
+  --ring: oklch(0.65 0.08 140);
+  --destructive-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.65 0.08 140);
+  --sidebar-primary-foreground: oklch(0.98 0.01 100);
+}
+
+/* ============================================
+   LIGHT MODE
+   :root + .light (default fallback)
+   ============================================ */
+:root,
+.light {
+  /* Background & text */
+  --background: oklch(0.98 0.01 100);        /* Warm Cream */
+  --foreground: oklch(0.25 0.02 100);        /* Dark Earthy Grey */
+
+  /* Card & popover */
+  --card: oklch(1 0 0);                      /* White */
   --card-foreground: oklch(0.25 0.02 100);
-  
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.25 0.02 100);
-  
-  /* Soft Sage Green Primary */
-  --primary: oklch(0.65 0.08 140);
-  --primary-foreground: oklch(0.98 0.01 100);
-  
-  /* Sand/Beige Secondary */
-  --secondary: oklch(0.94 0.03 95);
+
+  /* Secondary & muted */
+  --secondary: oklch(0.94 0.03 95);          /* Sand/Beige */
   --secondary-foreground: oklch(0.35 0.04 100);
-  
   --muted: oklch(0.94 0.03 95);
   --muted-foreground: oklch(0.55 0.04 100);
-  
-  --accent: oklch(0.92 0.04 140); /* Lighter Sage for hovers */
+
+  /* Accent */
+  --accent: oklch(0.92 0.04 140);            /* Lighter Sage for hovers */
   --accent-foreground: oklch(0.25 0.02 100);
-  
+
+  /* Destructive, border, input */
   --destructive: oklch(0.6 0.15 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  
   --border: oklch(0.90 0.02 100);
   --input: oklch(0.90 0.02 100);
-  --ring: oklch(0.65 0.08 140);
 
+  /* Charts */
   --chart-1: oklch(0.65 0.08 140);
-  --chart-2: oklch(0.75 0.10 80); /* Terra cottaish */
+  --chart-2: oklch(0.75 0.10 80);            /* Terra cottaish */
   --chart-3: oklch(0.80 0.08 100);
   --chart-4: oklch(0.70 0.08 180);
   --chart-5: oklch(0.85 0.08 50);
 
-  /* Sidebar - Slightly darker cream/beige */
-  --sidebar: oklch(0.97 0.02 100);
+  /* Sidebar */
+  --sidebar: oklch(0.97 0.02 100);           /* Slightly darker cream/beige */
   --sidebar-foreground: oklch(0.30 0.03 100);
-  --sidebar-primary: oklch(0.65 0.08 140);
-  --sidebar-primary-foreground: oklch(0.98 0.01 100);
   --sidebar-accent: oklch(0.93 0.03 100);
   --sidebar-accent-foreground: oklch(0.25 0.02 100);
   --sidebar-border: oklch(0.90 0.02 100);
   --sidebar-ring: oklch(0.65 0.08 140);
 }
 
+/* ============================================
+   DARK MODE
+   .dark
+   ============================================ */
 .dark {
-  /* Soft Dark Beige */
-  --background: oklch(0.35 0.02 95);
+  /* Background & text */
+  --background: oklch(0.35 0.02 95);         /* Soft Dark Beige */
   --foreground: oklch(0.90 0.02 95);
-  
+
+  /* Card & popover */
   --card: oklch(0.32 0.025 90);
   --card-foreground: oklch(0.90 0.02 95);
-  
   --popover: oklch(0.32 0.025 90);
   --popover-foreground: oklch(0.90 0.02 95);
-  
-  --primary: oklch(0.65 0.08 140);
-  --primary-foreground: oklch(0.98 0.01 100);
-  
+
+  /* Secondary & muted */
   --secondary: oklch(0.35 0.03 85);
   --secondary-foreground: oklch(0.88 0.03 90);
-  
   --muted: oklch(0.34 0.025 95);
   --muted-foreground: oklch(0.68 0.03 95);
-  
+
+  /* Accent */
   --accent: oklch(0.38 0.035 110);
   --accent-foreground: oklch(0.90 0.02 95);
-  
+
+  /* Destructive, border, input */
   --destructive: oklch(0.50 0.18 30);
-  --destructive-foreground: oklch(0.98 0.01 100);
-  
   --border: oklch(0.40 0.025 90);
   --input: oklch(0.40 0.025 90);
-  --ring: oklch(0.65 0.08 140);
-  
+
+  /* Charts (same values, remain readable in dark) */
+  --chart-1: oklch(0.65 0.08 140);
+  --chart-2: oklch(0.75 0.10 80);
+  --chart-3: oklch(0.80 0.08 100);
+  --chart-4: oklch(0.70 0.08 180);
+  --chart-5: oklch(0.85 0.08 50);
+
+  /* Sidebar */
   --sidebar: oklch(0.24 0.02 95);
   --sidebar-foreground: oklch(0.88 0.025 90);
-  --sidebar-primary: oklch(0.65 0.08 140);
-  --sidebar-primary-foreground: oklch(0.98 0.01 100);
   --sidebar-accent: oklch(0.28 0.025 90);
   --sidebar-accent-foreground: oklch(0.90 0.02 95);
   --sidebar-border: oklch(0.40 0.025 90);
@@ -146,30 +162,31 @@
 }
 
 @layer utilities {
+  /* Base: print */
   @media print {
     body {
       background-color: white !important;
       color: black !important;
     }
   }
-  
-  /* Estilos para el ícono del calendario en inputs de tipo date */
+
+  /* Base: calendar icon (light mode) */
   input[type="date"]::-webkit-calendar-picker-indicator {
     cursor: pointer;
     opacity: 1;
     filter: brightness(0) saturate(100%);
   }
-  
+
+  /* Dark mode: inverted calendar icon */
   .dark input[type="date"]::-webkit-calendar-picker-indicator {
     filter: brightness(0) saturate(100%) invert(1);
   }
-  
-  /* Hide scrollbar but allow scrolling */
+
+  /* Base: hide scrollbar */
   .scrollbar-hide {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
   }
-  
   .scrollbar-hide::-webkit-scrollbar {
     display: none;  /* Chrome, Safari and Opera */
   }
