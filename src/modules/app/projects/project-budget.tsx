@@ -16,6 +16,7 @@ import { Plus, Trash2, Printer, Pencil, ChevronDown, MoreVertical, Clock, Truck,
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AddItemDialog } from '@/components/dialogs/add-item-dialog';
 import { BudgetLineDialog } from '@/components/dialogs/budget-line-dialog';
+import { BudgetPrintOptionsDialog, type BudgetPrintOption } from '@/components/dialogs/budget-print-options-dialog';
 import { ProductDetailModal } from '@/components/product-detail-modal';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/auth-provider';
@@ -72,6 +73,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
   const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isPrintOptionsOpen, setIsPrintOptionsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -184,7 +186,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     setIsBudgetLineDialogOpen(true);
   };
 
-  const handleGeneratePDF = async () => {
+  const handleGeneratePDF = async (option: BudgetPrintOption) => {
     if (!project) {
       toast.error('No se pudo cargar la información del proyecto');
       return;
@@ -194,12 +196,12 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     try {
       const { generateProjectPDF } = await import('@/lib/pdf-generator');
       const architectName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Arquitecto/a';
-      
-      // Use project tax_rate or default to 0
       const taxRate = project.tax_rate !== null && project.tax_rate !== undefined ? project.tax_rate : 0;
-      
-      // Pass budget lines to PDF generator (includedItems already excludes is_excluded)
-      const asPdf = await generateProjectPDF(project, includedItems, budgetLines, taxRate, architectName);
+
+      const itemsToPdf = option === 'lines' ? [] : includedItems;
+      const linesToPdf = option === 'products' ? [] : budgetLines;
+
+      const asPdf = await generateProjectPDF(project, itemsToPdf, linesToPdf, taxRate, architectName);
       const blob = await asPdf.toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -209,7 +211,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      
+
       toast.success('PDF generado correctamente');
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -321,7 +323,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         <div className="space-x-2 flex">
           <Button 
             variant="outline" 
-            onClick={handleGeneratePDF} 
+            onClick={() => setIsPrintOptionsOpen(true)} 
             className="print:hidden"
             disabled={isGeneratingPDF || !project}
           >
@@ -655,6 +657,13 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
           setEditingItem(selectedItem);
           setIsItemDialogOpen(true);
         }}
+      />
+
+      <BudgetPrintOptionsDialog
+        open={isPrintOptionsOpen}
+        onOpenChange={setIsPrintOptionsOpen}
+        onConfirm={handleGeneratePDF}
+        isGenerating={isGeneratingPDF}
       />
     </div>
   );
