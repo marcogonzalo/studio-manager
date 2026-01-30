@@ -1,11 +1,11 @@
 // Dynamic PDF generator utility
 // This file helps Vite handle @react-pdf/renderer by loading it dynamically
 
-import type { ProjectBudgetLine } from "@/types";
+import type { Project, ProjectItem, ProjectBudgetLine } from "@/types";
 
 export async function generateProjectPDF(
-  project: any,
-  items: any[],
+  project: Project & { client?: { full_name: string; email?: string; phone?: string; address?: string } },
+  items: ProjectItem[],
   budgetLines: ProjectBudgetLine[],
   taxRate: number = 0,
   architectName?: string
@@ -26,6 +26,7 @@ export async function generateProjectPDF(
 
   // Type assertion to satisfy react-pdf's type requirements
   // ProjectPDF returns a Document component, which is what pdf() expects
-  const asPdf = pdf(doc as any);
+  // react-pdf's pdf() expects DocumentProps; createElement returns ReactElement
+  const asPdf = pdf(doc as Parameters<typeof pdf>[0]);
   return asPdf;
 }

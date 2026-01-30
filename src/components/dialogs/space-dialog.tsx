@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -41,6 +41,7 @@ export function SpaceDialog({
   projectId,
   onSuccess,
 }: SpaceDialogProps) {
+  const supabase = getSupabaseClient();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -63,8 +64,10 @@ export function SpaceDialog({
       toast.success("Espacio creado");
       form.reset();
       onSuccess();
-    } catch (error: any) {
-      toast.error(error.message || "Error al crear espacio");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Error al crear espacio"
+      );
     }
   }
 

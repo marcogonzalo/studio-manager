@@ -4,4 +4,4 @@
  */
 "use client";
 
-export { AuthProvider, useAuth } from "@/components/providers/auth-provider";
+export { AuthProvider, useAuth } from "./providers/auth-provider";

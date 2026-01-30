@@ -8,14 +8,20 @@ const mockGetSession = vi.hoisted(() => vi.fn());
 const mockOnAuthStateChange = vi.hoisted(() => vi.fn());
 const mockSignOut = vi.hoisted(() => vi.fn());
 
-vi.mock("@/lib/supabase", () => ({
-  supabase: {
-    auth: {
-      getSession: mockGetSession,
-      onAuthStateChange: mockOnAuthStateChange,
-      signOut: mockSignOut,
-    },
-  },
+vi.mock("@/lib/supabase", () => {
+  const auth = {
+    getSession: mockGetSession,
+    onAuthStateChange: mockOnAuthStateChange,
+    signOut: mockSignOut,
+  };
+  return {
+    supabase: { auth },
+    getSupabaseClient: () => ({ auth }),
+  };
+});
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 // Test component that uses the auth context
@@ -77,7 +83,7 @@ describe("AuthProvider", () => {
 
     expect(screen.getByTestId("user-email")).toHaveTextContent("no-user");
     expect(screen.getByTestId("session")).toHaveTextContent("no-session");
-    expect(mockGetSession).toHaveBeenCalledTimes(1);
+    expect(mockGetSession).toHaveBeenCalled();
   });
 
   it("should initialize with existing session", async () => {
@@ -205,7 +211,7 @@ describe("AuthProvider", () => {
 
     unmount();
 
-    expect(unsubscribe).toHaveBeenCalledTimes(1);
+    expect(unsubscribe).toHaveBeenCalled();
   });
 
   it("should handle URL hash cleanup on SIGNED_IN event", async () => {

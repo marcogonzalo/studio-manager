@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -56,50 +56,20 @@ import {
   getBudgetCategoryLabel,
   getBudgetSubcategoryLabel,
   getPhaseLabel,
+  getErrorMessage,
 } from "@/lib/utils";
 
 import type {
   Project,
   ProjectBudgetLine,
+  ProjectItem,
   BudgetCategory,
   ProjectPhase,
 } from "@/types";
 
-export interface ProjectItem {
-  id: string;
-  name: string;
-  description: string;
-  space_id: string | null;
-  product_id: string | null;
-  space?: { name: string };
-  quantity: number;
-  unit_cost: number;
-  markup: number;
-  unit_price: number;
-  status: string;
-  image_url: string;
-  internal_reference?: string;
-  supplier_id?: string;
-  purchase_order_id?: string | null;
-  is_excluded?: boolean;
-  purchase_order?: {
-    order_number: string;
-    status: string;
-    delivery_deadline?: string | null;
-    delivery_date?: string | null;
-  };
-  product?: {
-    name?: string;
-    supplier?: { name: string };
-    description?: string;
-    reference_code?: string;
-    reference_url?: string;
-    category?: string;
-  };
-}
-
 export function ProjectBudget({ projectId }: { projectId: string }) {
   const { user } = useAuth();
+  const supabase = getSupabaseClient();
   const [items, setItems] = useState<ProjectItem[]>([]);
   const [budgetLines, setBudgetLines] = useState<ProjectBudgetLine[]>([]);
   const [project, setProject] = useState<
@@ -189,11 +159,10 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       } else {
         setBudgetLines(budgetLinesData || []);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Unexpected error in fetchData:", error);
       setError(
-        "Error inesperado al cargar los datos: " +
-          (error?.message || "Error desconocido")
+        "Error inesperado al cargar los datos: " + getErrorMessage(error)
       );
       // Ensure we set empty arrays to prevent UI from breaking
       setItems([]);

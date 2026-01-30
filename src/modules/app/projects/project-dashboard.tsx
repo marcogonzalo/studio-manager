@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Wallet,
@@ -55,6 +55,7 @@ interface ProjectDashboardProps {
 }
 
 export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
+  const supabase = getSupabaseClient();
   const [project, setProject] = useState<Project | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [budgetLines, setBudgetLines] = useState<ProjectBudgetLine[]>([]);
@@ -112,8 +113,9 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
 
     if (posData) {
       const coveragePromises = posData.map(async (po) => {
+        type PoItem = { id: string; quantity: number; unit_cost: number };
         const totalAmount = (po.project_items || []).reduce(
-          (sum: number, item: any) => sum + item.unit_cost * item.quantity,
+          (sum: number, item: PoItem) => sum + item.unit_cost * item.quantity,
           0
         );
 

@@ -1,7 +1,7 @@
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,8 +32,7 @@ import { toast } from "sonner";
 import { useEffect, useState, useMemo } from "react";
 import { Plus, Search } from "lucide-react";
 import { ProductDetailModal } from "@/components/product-detail-modal";
-import type { Product, Space, Supplier } from "@/types";
-import type { ProjectItem } from "@/modules/app/projects/project-budget";
+import type { Product, ProjectItem, Space, Supplier } from "@/types";
 import { useAuth } from "@/components/auth-provider";
 import { SupplierDialog } from "./supplier-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -80,6 +79,7 @@ export function AddItemDialog({
   spaceId,
 }: AddItemDialogProps) {
   const { user } = useAuth();
+  const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -94,25 +94,9 @@ export function AddItemDialog({
   );
   const isEditing = !!item;
 
-  type FormValues = {
-    product_id?: string;
-    space_id?: string;
-    supplier_id?: string;
-    name: string;
-    description?: string;
-    reference_code?: string;
-    reference_url?: string;
-    category?: string;
-    internal_reference?: string;
-    quantity: string;
-    unit_cost: string;
-    markup: string;
-    unit_price: string;
-    image_url?: string;
-    is_excluded?: boolean;
-  };
+  type FormValues = z.input<typeof formSchema>;
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       product_id: "",
       space_id: "none",
@@ -123,10 +107,10 @@ export function AddItemDialog({
       reference_url: "",
       category: "",
       internal_reference: "",
-      quantity: "1" as any,
-      unit_cost: "0" as any,
-      markup: "20" as any,
-      unit_price: "0" as any,
+      quantity: "1",
+      unit_cost: "0",
+      markup: "20",
+      unit_price: "0",
       image_url: "",
       is_excluded: false,
     },
@@ -150,13 +134,10 @@ export function AddItemDialog({
 
   useEffect(() => {
     if (unitCost && markup !== undefined) {
-      // Price = Cost + (Cost * Markup / 100)
-      // OR Price = Cost / (1 - Markup/100) ? Usually Markup is % of cost added.
-      // Let's assume Markup is percentage added to cost.
-      const cost = parseFloat(unitCost as any) || 0;
-      const mark = parseFloat(markup as any) || 0;
+      const cost = parseFloat(String(unitCost)) || 0;
+      const mark = parseFloat(String(markup)) || 0;
       const price = cost * (1 + mark / 100);
-      form.setValue("unit_price", price.toFixed(2) as any);
+      form.setValue("unit_price", price.toFixed(2));
     }
   }, [unitCost, markup, form]);
 
@@ -238,10 +219,10 @@ export function AddItemDialog({
           reference_url: "",
           category: "",
           internal_reference: "",
-          quantity: "1" as any,
-          unit_cost: "0" as any,
-          markup: "20" as any,
-          unit_price: "0" as any,
+          quantity: "1",
+          unit_cost: "0",
+          markup: "20",
+          unit_price: "0",
           image_url: "",
         });
         setSelectedProduct(null);
@@ -262,7 +243,7 @@ export function AddItemDialog({
       form.setValue("reference_code", prod.reference_code || "");
       form.setValue("reference_url", prod.reference_url || "");
       form.setValue("category", prod.category || "");
-      form.setValue("unit_cost", prod.cost_price.toString() as any);
+      form.setValue("unit_cost", prod.cost_price.toString());
       form.setValue("image_url", prod.image_url || "");
       form.setValue("supplier_id", prod.supplier_id || "none");
     }
@@ -424,8 +405,6 @@ export function AddItemDialog({
       toast.error("Error al guardar");
     }
   }
-
-  // const selectedProductId = form.watch('product_id'); // No usado actualmente
 
   // Sincronizar el valor del proveedor cuando la lista se actualiza y hay un proveedor pendiente
   useEffect(() => {

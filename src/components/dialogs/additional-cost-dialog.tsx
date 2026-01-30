@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -67,6 +67,7 @@ export function AdditionalCostDialog({
   cost,
 }: AdditionalCostDialogProps) {
   const { user } = useAuth();
+  const supabase = getSupabaseClient();
   const isEditing = !!cost;
 
   type FormValues = {
@@ -75,11 +76,11 @@ export function AdditionalCostDialog({
     amount: string;
   };
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       cost_type: "",
       description: "",
-      amount: "0" as any,
+      amount: "0",
     },
   });
 
@@ -90,13 +91,13 @@ export function AdditionalCostDialog({
         form.reset({
           cost_type: cost.cost_type,
           description: cost.description || "",
-          amount: cost.amount.toString() as any,
+          amount: cost.amount.toString(),
         });
       } else {
         form.reset({
           cost_type: "",
           description: "",
-          amount: "0" as any,
+          amount: "0",
         });
       }
     }

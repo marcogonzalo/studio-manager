@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -134,6 +134,7 @@ export function PurchaseOrderDialog({
     },
   });
 
+  const supabase = getSupabaseClient();
   const selectedSupplierId = form.watch("supplier_id");
 
   // Define fetchAvailableItems before using it in useEffect
@@ -629,8 +630,10 @@ export function PurchaseOrderDialog({
 
       onSuccess();
       onOpenChange(false);
-    } catch (error: any) {
-      toast.error(error.message || "Error al guardar la orden de compra");
+    } catch (error: unknown) {
+      toast.error(
+        error instanceof Error ? error.message : "Error al guardar la orden de compra"
+      );
     }
   };
 

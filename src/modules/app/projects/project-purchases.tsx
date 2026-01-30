@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingBag, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-// import { useAuth } from '@/components/auth-provider'; // No usado actualmente
 import { PurchaseOrderDialog } from "@/components/dialogs/purchase-order-dialog";
 import {
   Table,
@@ -63,7 +62,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export function ProjectPurchases({ projectId }: { projectId: string }) {
-  // const { user } = useAuth(); // No usado actualmente
+  const supabase = getSupabaseClient();
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

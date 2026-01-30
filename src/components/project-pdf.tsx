@@ -9,10 +9,10 @@ import {
 import type {
   Project,
   ProjectBudgetLine,
+  ProjectItem,
   BudgetCategory,
   ProjectPhase,
 } from "@/types";
-import type { ProjectItem } from "@/modules/app/projects/project-budget";
 import {
   BUDGET_CATEGORIES,
   BUDGET_SUBCATEGORIES,
@@ -604,7 +604,7 @@ export function ProjectPDF({
                         </View>
                         <View style={styles.colName}>
                           <Text style={styles.tableCellBold}>
-                            {(item as any).product?.name || item.name}
+                            {item.product?.name ?? item.name}
                           </Text>
                           {item.description && (
                             <Text

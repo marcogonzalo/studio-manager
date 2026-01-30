@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,6 +18,7 @@ import { SpaceProductsDialog } from "@/components/dialogs/space-products-dialog"
 import type { Space } from "@/types";
 
 export function ProjectSpaces({ projectId }: { projectId: string }) {
+  const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);

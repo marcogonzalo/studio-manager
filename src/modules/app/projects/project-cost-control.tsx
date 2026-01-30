@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -45,17 +45,10 @@ import {
   isCostCategory,
 } from "@/lib/utils";
 
-import type { ProjectBudgetLine, BudgetCategory } from "@/types";
-
-interface ProjectItem {
-  id: string;
-  name: string;
-  quantity: number;
-  unit_cost: number;
-  unit_price: number;
-}
+import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
 
 export function ProjectCostControl({ projectId }: { projectId: string }) {
+  const supabase = getSupabaseClient();
   const [budgetLines, setBudgetLines] = useState<ProjectBudgetLine[]>([]);
   const [items, setItems] = useState<ProjectItem[]>([]);
   const [isBudgetLineDialogOpen, setIsBudgetLineDialogOpen] = useState(false);

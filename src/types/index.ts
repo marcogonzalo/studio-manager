@@ -171,3 +171,36 @@ export interface ProjectBudgetLine {
   user_id: string;
   created_at: string;
 }
+
+export interface ProjectItem {
+  id: string;
+  name: string;
+  description: string;
+  space_id: string | null;
+  product_id: string | null;
+  space?: { name: string };
+  quantity: number;
+  unit_cost: number;
+  markup: number;
+  unit_price: number;
+  status: string;
+  image_url: string;
+  internal_reference?: string;
+  supplier_id?: string;
+  purchase_order_id?: string | null;
+  is_excluded?: boolean;
+  purchase_order?: {
+    order_number: string;
+    status: string;
+    delivery_deadline?: string | null;
+    delivery_date?: string | null;
+  };
+  product?: {
+    name?: string;
+    supplier?: { name: string };
+    description?: string;
+    reference_code?: string;
+    reference_url?: string;
+    category?: string;
+  };
+}

@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import type { Client } from "@/types";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { getErrorMessage } from "@/lib/utils";
 
 const formSchema = z.object({
   full_name: z.string().min(2, "Nombre requerido"),
@@ -46,6 +47,7 @@ export function ClientDialog({
   onSuccess,
 }: ClientDialogProps) {
   const { user } = useAuth();
+  const supabase = getSupabaseClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -120,9 +122,9 @@ export function ClientDialog({
         toast.success("Cliente creado");
         onSuccess(newClient.id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving client:", error);
-      toast.error(error.message || "Error al guardar cliente");
+      toast.error(getErrorMessage(error) || "Error al guardar cliente");
     }
   }
 

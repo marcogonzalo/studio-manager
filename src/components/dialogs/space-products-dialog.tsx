@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { AddItemDialog } from "@/components/dialogs/add-item-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import type { Space } from "@/types";
-import type { ProjectItem } from "@/modules/app/projects/project-budget";
+import type { ProjectItem } from "@/types";
 
 interface SpaceProductsDialogProps {
   open: boolean;
@@ -34,6 +34,7 @@ export function SpaceProductsDialog({
   space,
   projectId,
 }: SpaceProductsDialogProps) {
+  const supabase = getSupabaseClient();
   const [items, setItems] = useState<ProjectItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);

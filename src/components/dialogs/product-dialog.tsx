@@ -1,7 +1,7 @@
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -59,6 +59,7 @@ export function ProductDialog({
   onSuccess,
 }: ProductDialogProps) {
   const { user } = useAuth();
+  const supabase = getSupabaseClient();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(
@@ -76,13 +77,13 @@ export function ProductDialog({
     image_url?: string;
   };
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       name: "",
       reference_code: "",
       reference_url: "",
       description: "",
-      cost_price: 0 as any, // Form input uses string usually, handled by transform
+      cost_price: "0",
       category: "",
       supplier_id: "",
       image_url: "",
@@ -132,7 +133,7 @@ export function ProductDialog({
         reference_code: product.reference_code || "",
         reference_url: product.reference_url || "",
         description: product.description || "",
-        cost_price: product.cost_price?.toString() as any,
+        cost_price: product.cost_price?.toString() ?? "0",
         category: product.category || "",
         supplier_id: product.supplier_id || "",
         image_url: product.image_url || "",
@@ -143,7 +144,7 @@ export function ProductDialog({
         reference_code: "",
         reference_url: "",
         description: "",
-        cost_price: "0" as any,
+        cost_price: "0",
         category: "",
         supplier_id: "",
         image_url: "",
@@ -210,9 +211,9 @@ export function ProductDialog({
         toast.success("Producto creado");
       }
       onSuccess();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error saving product:", error);
-      toast.error("Error al guardar");
+      toast.error(error instanceof Error ? error.message : "Error al guardar");
     }
   }
 

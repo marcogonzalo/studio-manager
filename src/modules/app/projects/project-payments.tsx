@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Wallet, Plus, Pencil, Trash2 } from "lucide-react";
@@ -41,6 +41,7 @@ const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
 };
 
 export function ProjectPayments({ projectId }: { projectId: string }) {
+  const supabase = getSupabaseClient();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

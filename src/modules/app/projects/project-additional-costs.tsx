@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -43,6 +43,7 @@ const COST_TYPE_LABELS: Record<string, string> = {
 };
 
 export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
+  const supabase = getSupabaseClient();
   const [costs, setCosts] = useState<AdditionalCost[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCost, setEditingCost] = useState<AdditionalCost | null>(null);

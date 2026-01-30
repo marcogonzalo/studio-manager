@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AuthProvider } from "@/components/providers/auth-provider";
+import { AuthProvider } from "@/components/auth-provider";
 import AppLayoutClient from "@/components/layouts/app-layout";
 
 export const metadata: Metadata = {

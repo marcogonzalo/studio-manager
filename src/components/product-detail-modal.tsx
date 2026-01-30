@@ -7,8 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
-import type { Product } from "@/types";
-import type { ProjectItem } from "@/modules/app/projects/project-budget";
+import type { Product, ProjectItem } from "@/types";
 
 const PO_STATUS_LABELS: Record<string, string> = {
   draft: "Borrador",

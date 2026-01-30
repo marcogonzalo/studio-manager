@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,6 +35,7 @@ import {
   getCategoryOptions,
   getSubcategoryOptions,
   getPhaseLabel,
+  getErrorMessage,
   isCostCategory,
 } from "@/lib/utils";
 import type {
@@ -93,6 +94,7 @@ export function BudgetLineDialog({
   budgetLine,
 }: BudgetLineDialogProps) {
   const { user } = useAuth();
+  const supabase = getSupabaseClient();
   const isEditing = !!budgetLine;
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | "">(
@@ -100,7 +102,7 @@ export function BudgetLineDialog({
   );
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       category: "",
       subcategory: "",
@@ -258,11 +260,9 @@ export function BudgetLineDialog({
         onSuccess();
         onOpenChange(false);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Unexpected error in onSubmit:", error);
-      toast.error(
-        "Error inesperado: " + (error?.message || "Error desconocido")
-      );
+      toast.error("Error inesperado: " + getErrorMessage(error));
     }
   };
 

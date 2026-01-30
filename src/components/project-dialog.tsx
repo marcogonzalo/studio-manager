@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -77,6 +77,7 @@ export function ProjectDialog({
   project,
 }: ProjectDialogProps) {
   const { user } = useAuth();
+  const supabase = getSupabaseClient();
   const [clients, setClients] = useState<Client[]>([]);
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
   const [pendingClientId, setPendingClientId] = useState<string | null>(null);
