@@ -25,6 +25,7 @@ import {
   Leaf,
   PanelLeftClose,
   PanelLeft,
+  User,
 } from "lucide-react";
 import {
   Sheet,
@@ -190,6 +191,12 @@ function SidebarContent({
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/account">
+                      <User className="mr-2 h-4 w-4" />
+                      Mi perfil
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={signOut}
                     className="text-destructive focus:text-destructive cursor-pointer"
@@ -233,6 +240,12 @@ function SidebarContent({
               <DropdownMenuContent align="end" className="w-56 rounded-xl">
                 <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/account">
+                    <User className="mr-2 h-4 w-4" />
+                    Mi perfil
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={signOut}
                   className="text-destructive focus:text-destructive cursor-pointer"

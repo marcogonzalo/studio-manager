@@ -72,10 +72,10 @@ import type {
 export function ProjectBudget({ projectId }: { projectId: string }) {
   const { user } = useAuth();
   const supabase = getSupabaseClient();
-  const {
-    budgetLines,
-    refetch: refetchBudgetLines,
-  } = useProjectBudgetLines(projectId, { excludeInternal: true, autoFetch: false });
+  const { budgetLines, refetch: refetchBudgetLines } = useProjectBudgetLines(
+    projectId,
+    { excludeInternal: true, autoFetch: false }
+  );
 
   const [items, setItems] = useState<ProjectItem[]>([]);
   const [project, setProject] = useState<
@@ -207,10 +207,15 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     setIsGeneratingPDF(true);
     try {
       const { generateProjectPDF } = await import("@/lib/pdf-generator");
-      const architectName =
-        user?.user_metadata?.full_name ||
-        user?.email?.split("@")[0] ||
-        "Arquitecto/a";
+      let architectName: string | undefined;
+      if (user?.id) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("public_name")
+          .eq("id", user.id)
+          .single();
+        architectName = profile?.public_name?.trim() || undefined;
+      }
       const taxRate =
         project.tax_rate !== null && project.tax_rate !== undefined
           ? project.tax_rate

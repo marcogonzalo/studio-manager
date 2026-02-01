@@ -1,3 +1,15 @@
+export interface Profile {
+  id: string;
+  email?: string;
+  full_name?: string;
+  avatar_url?: string;
+  first_name?: string;
+  last_name?: string;
+  company?: string;
+  public_name?: string;
+  updated_at?: string;
+}
+
 export interface Client {
   id: string;
   full_name: string;
