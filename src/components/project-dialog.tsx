@@ -34,6 +34,7 @@ import { useAuth } from "@/components/auth-provider";
 import { Plus } from "lucide-react";
 import type { Client, Project } from "@/types";
 import { ClientDialog } from "@/components/dialogs/client-dialog";
+import { CURRENCIES } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
@@ -61,6 +62,7 @@ const formSchema = z.object({
       const num = parseFloat(val);
       return !isNaN(num) && num >= 0;
     }, "El impuesto debe ser mayor o igual a 0"),
+  currency: z.string().optional(),
 });
 
 interface ProjectDialogProps {
@@ -93,6 +95,7 @@ export function ProjectDialog({
       end_date: "",
       address: "",
       tax_rate: "",
+      currency: "EUR",
     },
   });
 
@@ -165,6 +168,7 @@ export function ProjectDialog({
           project.tax_rate !== null && project.tax_rate !== undefined
             ? project.tax_rate.toString()
             : "",
+        currency: project.currency ?? "EUR",
       });
     } else if (!project && open) {
       form.reset({
@@ -177,6 +181,7 @@ export function ProjectDialog({
         address: "",
         phase: undefined,
         tax_rate: "",
+        currency: "EUR",
       });
     }
   }, [project, open, form]);
@@ -219,6 +224,7 @@ export function ProjectDialog({
         status: values.status || "draft",
         end_date: values.end_date || null,
         tax_rate: taxRateValue,
+        currency: values.currency ?? "EUR",
       };
 
       // Only include optional fields if they have values
@@ -323,68 +329,42 @@ export function ProjectDialog({
               )}
             />
 
-            {/* Segunda línea: Cliente e Impuesto */}
-            <div className="grid grid-cols-4 gap-4">
-              <FormField
-                control={form.control}
-                name="client_id"
-                render={({ field }) => (
-                  <FormItem className="col-span-3">
-                    <FormLabel required>Cliente</FormLabel>
-                    <div className="flex gap-2">
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Selecciona un cliente" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {clients.map((client) => (
-                            <SelectItem key={client.id} value={client.id}>
-                              {client.full_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setIsClientDialogOpen(true)}
-                        title="Agregar nuevo cliente"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="tax_rate"
-                render={({ field }) => (
-                  <FormItem className="col-span-1">
-                    <FormLabel required>Impuesto (%)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        placeholder="Ej: 21"
-                        {...field}
-                        value={field.value || ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            {/* Segunda línea: Cliente */}
+            <FormField
+              control={form.control}
+              name="client_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel required>Cliente</FormLabel>
+                  <div className="flex gap-2">
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Selecciona un cliente" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {clients.map((client) => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.full_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setIsClientDialogOpen(true)}
+                      title="Agregar nuevo cliente"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Tercera línea: Dirección */}
             <FormField
@@ -499,6 +479,59 @@ export function ProjectDialog({
                     <FormLabel>Fecha Estimada de Entrega</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Moneda e Impuesto */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="currency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Moneda</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? "EUR"}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Moneda" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.entries(CURRENCIES)
+                          .sort(([a], [b]) => a.localeCompare(b))
+                          .map(([code, label]) => (
+                            <SelectItem key={code} value={code}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tax_rate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Impuesto (%)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Ej: 21"
+                        {...field}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -2,6 +2,57 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { ProjectPhase, BudgetCategory } from "@/types";
 
+/** Monedas soportadas: código ISO → etiqueta mostrada */
+export const CURRENCIES: Record<string, string> = {
+  EUR: "EUR - €",
+  USD: "USD - $",
+  GBP: "GBP - £",
+  CHF: "CHF - Fr",
+  MXN: "MXN - $",
+  BRL: "BRL - R$",
+  ARS: "ARS - $",
+  COP: "COP - $",
+  CLP: "CLP - $",
+} as const;
+
+/** Formatea un importe con la moneda. Si moneda es undefined o no reconocida, usa "??" como símbolo. */
+export function formatCurrency(
+  amount: number,
+  currencyCode?: string
+): string {
+  const hasValidCurrency =
+    currencyCode && currencyCode.trim() && CURRENCIES[currencyCode];
+  if (!hasValidCurrency) {
+    return `${amount.toLocaleString("es-ES", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} ??`;
+  }
+  return new Intl.NumberFormat("es-ES", {
+    style: "currency",
+    currency: currencyCode,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+/** Devuelve solo el símbolo de la moneda. Si es undefined o no reconocida, devuelve "??". */
+export function getCurrencySymbol(currencyCode?: string): string {
+  const hasValidCurrency =
+    currencyCode && currencyCode.trim() && CURRENCIES[currencyCode];
+  if (!hasValidCurrency) return "??";
+  return (
+    new Intl.NumberFormat("es-ES", {
+      style: "currency",
+      currency: currencyCode,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+      .formatToParts(0)
+      .find((p) => p.type === "currency")?.value ?? "??"
+  );
+}
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

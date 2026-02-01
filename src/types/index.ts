@@ -38,6 +38,7 @@ export interface Project {
   address?: string;
   phase?: ProjectPhase;
   tax_rate?: number;
+  currency?: string;
   client?: { full_name: string };
 }
 
@@ -57,6 +58,7 @@ export interface Product {
   reference_code: string;
   reference_url?: string;
   cost_price: number;
+  currency?: string;
   image_url: string;
   category: string;
   supplier_id: string;

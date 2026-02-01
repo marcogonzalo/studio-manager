@@ -20,6 +20,7 @@ import {
   isCostCategory,
   reportError,
   reportWarn,
+  formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 import type {
   Project,
@@ -262,12 +263,8 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     >
   );
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-    }).format(amount);
-  };
+  const formatCurrency = (amount: number) =>
+    formatCurrencyUtil(amount, project?.currency);
 
   if (loading) {
     return <div className="py-12 text-center">Cargando...</div>;

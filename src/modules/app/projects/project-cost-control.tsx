@@ -45,12 +45,14 @@ import {
   reportError,
   COST_CATEGORIES,
   isCostCategory,
+  formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 
 import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
 
 export function ProjectCostControl({ projectId }: { projectId: string }) {
   const supabase = getSupabaseClient();
+  const [project, setProject] = useState<{ currency?: string } | null>(null);
   const {
     budgetLines,
     loading: budgetLinesLoading,
@@ -73,11 +75,15 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
 
   const fetchItems = async () => {
     setItemsLoading(true);
-    const { data, error } = await supabase
-      .from("project_items")
-      .select("id, name, quantity, unit_cost, unit_price")
-      .eq("project_id", projectId);
-    if (!error) setItems(data || []);
+    const [{ data: projectData }, { data: itemsData, error }] = await Promise.all([
+      supabase.from("projects").select("currency").eq("id", projectId).single(),
+      supabase
+        .from("project_items")
+        .select("id, name, quantity, unit_cost, unit_price")
+        .eq("project_id", projectId),
+    ]);
+    if (projectData) setProject(projectData);
+    if (!error) setItems(itemsData || []);
     setItemsLoading(false);
   };
 
@@ -174,12 +180,8 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
     return "text-destructive";
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-    }).format(amount);
-  };
+  const formatCurrency = (amount: number) =>
+    formatCurrencyUtil(amount, project?.currency);
 
   const getDeviationIndicator = (estimated: number, actual: number) => {
     if (estimated === 0 && actual === 0)
