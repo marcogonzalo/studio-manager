@@ -348,7 +348,9 @@ export function PurchaseOrderDialog({
       setSearchQuery("");
     } catch (error) {
       reportError(error, "Error resetting form:");
-      toast.error("Error al cargar los datos de la orden", { id: "po-form-load" });
+      toast.error("Error al cargar los datos de la orden", {
+        id: "po-form-load",
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, order?.id]);
@@ -633,7 +635,9 @@ export function PurchaseOrderDialog({
       onOpenChange(false);
     } catch (error: unknown) {
       toast.error(
-        error instanceof Error ? error.message : "Error al guardar la orden de compra"
+        error instanceof Error
+          ? error.message
+          : "Error al guardar la orden de compra"
       );
     }
   };

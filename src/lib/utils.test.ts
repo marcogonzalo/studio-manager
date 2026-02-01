@@ -72,7 +72,9 @@ describe("cn utility function", () => {
 
 describe("getErrorMessage", () => {
   it("should return message for Error instance", () => {
-    expect(getErrorMessage(new Error("Something failed"))).toBe("Something failed");
+    expect(getErrorMessage(new Error("Something failed"))).toBe(
+      "Something failed"
+    );
   });
 
   it("should return string when error is a string", () => {
@@ -106,7 +108,9 @@ describe("getBudgetCategoryLabel", () => {
   it("should return label for known category", () => {
     expect(getBudgetCategoryLabel("construction")).toBe("Obra");
     expect(getBudgetCategoryLabel("own_fees")).toBe("Honorarios Propios");
-    expect(getBudgetCategoryLabel("external_services")).toBe("Servicios Externos");
+    expect(getBudgetCategoryLabel("external_services")).toBe(
+      "Servicios Externos"
+    );
     expect(getBudgetCategoryLabel("operations")).toBe("Gastos Operativos");
   });
 
@@ -117,17 +121,23 @@ describe("getBudgetCategoryLabel", () => {
 
 describe("getBudgetSubcategoryLabel", () => {
   it("should return label for known category and subcategory", () => {
-    expect(getBudgetSubcategoryLabel("construction", "demolition")).toBe("Demolición");
+    expect(getBudgetSubcategoryLabel("construction", "demolition")).toBe(
+      "Demolición"
+    );
     expect(getBudgetSubcategoryLabel("own_fees", "design")).toBe("Diseño");
     expect(getBudgetSubcategoryLabel("operations", "shipping")).toBe("Envío");
   });
 
   it("should return subcategory as-is for unknown subcategory", () => {
-    expect(getBudgetSubcategoryLabel("construction", "unknown")).toBe("unknown");
+    expect(getBudgetSubcategoryLabel("construction", "unknown")).toBe(
+      "unknown"
+    );
   });
 
   it("should return subcategory as-is for unknown category", () => {
-    expect(getBudgetSubcategoryLabel("unknown" as "construction", "demolition")).toBe("demolition");
+    expect(
+      getBudgetSubcategoryLabel("unknown" as "construction", "demolition")
+    ).toBe("demolition");
   });
 });
 
@@ -135,7 +145,10 @@ describe("getSubcategoryOptions", () => {
   it("should return options array for category", () => {
     const opts = getSubcategoryOptions("construction");
     expect(opts.length).toBeGreaterThan(0);
-    expect(opts[0]).toEqual({ value: expect.any(String), label: expect.any(String) });
+    expect(opts[0]).toEqual({
+      value: expect.any(String),
+      label: expect.any(String),
+    });
     expect(opts.find((o) => o.value === "demolition")).toEqual({
       value: "demolition",
       label: "Demolición",

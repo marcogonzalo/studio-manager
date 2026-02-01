@@ -58,7 +58,9 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast.error("Error al cargar costes adicionales", { id: "additional-costs-load" });
+      toast.error("Error al cargar costes adicionales", {
+        id: "additional-costs-load",
+      });
     } else {
       setCosts(data || []);
     }
