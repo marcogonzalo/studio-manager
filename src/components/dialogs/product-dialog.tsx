@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { reportError } from "@/lib/utils";
+import { reportError, CURRENCIES } from "@/lib/utils";
 import type { Product, Supplier } from "@/types";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
@@ -41,6 +41,7 @@ const formSchema = z.object({
   reference_url: z.string().optional(),
   description: z.string().optional(),
   cost_price: z.string().transform((val) => parseFloat(val) || 0),
+  currency: z.string().optional(),
   category: z.string().optional(),
   supplier_id: z.string().optional(),
   image_url: z.string().optional(),
@@ -73,6 +74,7 @@ export function ProductDialog({
     reference_url?: string;
     description?: string;
     cost_price: string;
+    currency?: string;
     category?: string;
     supplier_id?: string;
     image_url?: string;
@@ -85,6 +87,7 @@ export function ProductDialog({
       reference_url: "",
       description: "",
       cost_price: "0",
+      currency: "EUR",
       category: "",
       supplier_id: "",
       image_url: "",
@@ -135,6 +138,7 @@ export function ProductDialog({
         reference_url: product.reference_url || "",
         description: product.description || "",
         cost_price: product.cost_price?.toString() ?? "0",
+        currency: product.currency ?? "EUR",
         category: product.category || "",
         supplier_id: product.supplier_id || "",
         image_url: product.image_url || "",
@@ -146,6 +150,7 @@ export function ProductDialog({
         reference_url: "",
         description: "",
         cost_price: "0",
+        currency: "EUR",
         category: "",
         supplier_id: "",
         image_url: "",
@@ -159,6 +164,7 @@ export function ProductDialog({
       const data: Record<string, unknown> = {
         name: values.name,
         cost_price: values.cost_price,
+        currency: values.currency ?? "EUR",
         user_id: user?.id,
       };
 
@@ -302,10 +308,47 @@ export function ProductDialog({
                 name="cost_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Costo Base ($)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
+                    <FormLabel>Costo Base</FormLabel>
+                    <div className="border-input flex overflow-hidden rounded-md border shadow-sm">
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          className="rounded-none border-0 border-r focus-visible:ring-0 focus-visible:ring-offset-0"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormField
+                        control={form.control}
+                        name="currency"
+                        render={({ field: currencyField }) => (
+                          <FormItem className="mb-0 mt-0 w-[110px] shrink-0 space-y-0">
+                            <FormControl>
+                              <Select
+                                onValueChange={currencyField.onChange}
+                                value={currencyField.value ?? "EUR"}
+                              >
+                                <SelectTrigger className="border-0 bg-muted/30 h-full rounded-none focus:ring-0 focus:ring-offset-0">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(CURRENCIES)
+                                    .sort(([a], [b]) => a.localeCompare(b))
+                                    .map(([code, label]) => (
+                                      <SelectItem key={code} value={code}>
+                                        {label}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

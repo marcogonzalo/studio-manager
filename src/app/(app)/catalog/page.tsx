@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
-import { reportError } from "@/lib/utils";
+import { reportError, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -202,10 +202,7 @@ export default function CatalogPage() {
                   <TableCell>{p.category}</TableCell>
                   <TableCell>{p.supplier?.name}</TableCell>
                   <TableCell className="text-right">
-                    {new Intl.NumberFormat("es-ES", {
-                      style: "currency",
-                      currency: "EUR",
-                    }).format(p.cost_price)}
+                    {formatCurrency(Number(p.cost_price), p.currency)}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
