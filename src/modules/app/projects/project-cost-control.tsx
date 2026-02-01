@@ -75,13 +75,18 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
 
   const fetchItems = async () => {
     setItemsLoading(true);
-    const [{ data: projectData }, { data: itemsData, error }] = await Promise.all([
-      supabase.from("projects").select("currency").eq("id", projectId).single(),
-      supabase
-        .from("project_items")
-        .select("id, name, quantity, unit_cost, unit_price")
-        .eq("project_id", projectId),
-    ]);
+    const [{ data: projectData }, { data: itemsData, error }] =
+      await Promise.all([
+        supabase
+          .from("projects")
+          .select("currency")
+          .eq("id", projectId)
+          .single(),
+        supabase
+          .from("project_items")
+          .select("id, name, quantity, unit_cost, unit_price")
+          .eq("project_id", projectId),
+      ]);
     if (projectData) setProject(projectData);
     if (!error) setItems(itemsData || []);
     setItemsLoading(false);

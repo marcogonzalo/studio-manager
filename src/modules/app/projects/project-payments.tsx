@@ -31,7 +31,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Payment, PaymentType } from "@/types";
-import { getPhaseLabel, formatCurrency as formatCurrencyUtil } from "@/lib/utils";
+import {
+  getPhaseLabel,
+  formatCurrency as formatCurrencyUtil,
+} from "@/lib/utils";
 
 const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
   fees: "Honorarios",

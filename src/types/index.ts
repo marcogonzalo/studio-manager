@@ -7,6 +7,8 @@ export interface Profile {
   last_name?: string;
   company?: string;
   public_name?: string;
+  default_tax_rate?: number;
+  default_currency?: string;
   updated_at?: string;
 }
 

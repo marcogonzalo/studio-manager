@@ -112,7 +112,9 @@ export default function AccountPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <p className="text-muted-foreground animate-pulse">Cargando perfil...</p>
+        <p className="text-muted-foreground animate-pulse">
+          Cargando perfil...
+        </p>
       </div>
     );
   }
@@ -142,7 +144,7 @@ export default function AccountPage() {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-6 max-w-xl"
+              className="max-w-xl space-y-6"
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
@@ -216,9 +218,13 @@ export default function AccountPage() {
                         onFocus={() => {
                           const current = (field.value ?? "").trim();
                           if (!current) {
-                            const first = form.getValues("first_name")?.trim() ?? "";
-                            const last = form.getValues("last_name")?.trim() ?? "";
-                            const suggested = [first, last].filter(Boolean).join(" ");
+                            const first =
+                              form.getValues("first_name")?.trim() ?? "";
+                            const last =
+                              form.getValues("last_name")?.trim() ?? "";
+                            const suggested = [first, last]
+                              .filter(Boolean)
+                              .join(" ");
                             if (suggested) field.onChange(suggested);
                           }
                         }}
@@ -234,7 +240,9 @@ export default function AccountPage() {
               />
 
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Guardando..." : "Guardar cambios"}
+                {form.formState.isSubmitting
+                  ? "Guardando..."
+                  : "Guardar cambios"}
               </Button>
             </form>
           </Form>

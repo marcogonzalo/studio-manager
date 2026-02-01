@@ -16,10 +16,7 @@ export const CURRENCIES: Record<string, string> = {
 } as const;
 
 /** Formatea un importe con la moneda. Si moneda es undefined o no reconocida, usa "??" como símbolo. */
-export function formatCurrency(
-  amount: number,
-  currencyCode?: string
-): string {
+export function formatCurrency(amount: number, currencyCode?: string): string {
   const hasValidCurrency =
     currencyCode && currencyCode.trim() && CURRENCIES[currencyCode];
   if (!hasValidCurrency) {

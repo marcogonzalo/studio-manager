@@ -171,20 +171,60 @@ export function ProjectDialog({
         currency: project.currency ?? "EUR",
       });
     } else if (!project && open) {
-      form.reset({
-        name: "",
-        description: "",
-        client_id: "",
-        status: "draft",
-        start_date: new Date().toISOString().split("T")[0],
-        end_date: "",
-        address: "",
-        phase: undefined,
-        tax_rate: "",
-        currency: "EUR",
-      });
+      if (!user?.id) {
+        form.reset({
+          name: "",
+          description: "",
+          client_id: "",
+          status: "draft",
+          start_date: new Date().toISOString().split("T")[0],
+          end_date: "",
+          address: "",
+          phase: undefined,
+          tax_rate: "",
+          currency: "EUR",
+        });
+        return;
+      }
+      void (async () => {
+        try {
+          const { data } = await supabase
+            .from("profiles")
+            .select("default_tax_rate, default_currency")
+            .eq("id", user.id)
+            .single();
+          form.reset({
+            name: "",
+            description: "",
+            client_id: "",
+            status: "draft",
+            start_date: new Date().toISOString().split("T")[0],
+            end_date: "",
+            address: "",
+            phase: undefined,
+            tax_rate:
+              data?.default_tax_rate != null
+                ? data.default_tax_rate.toString()
+                : "",
+            currency: data?.default_currency ?? "EUR",
+          });
+        } catch {
+          form.reset({
+            name: "",
+            description: "",
+            client_id: "",
+            status: "draft",
+            start_date: new Date().toISOString().split("T")[0],
+            end_date: "",
+            address: "",
+            phase: undefined,
+            tax_rate: "",
+            currency: "EUR",
+          });
+        }
+      })();
     }
-  }, [project, open, form]);
+  }, [project, open, form, user?.id, supabase]);
 
   async function onSubmit(values: z.input<typeof formSchema>) {
     try {

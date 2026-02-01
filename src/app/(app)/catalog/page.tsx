@@ -30,11 +30,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProductDialog } from "@/components/dialogs/product-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
+import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { toast } from "sonner";
 
 import type { Product } from "@/types";
 
 export default function CatalogPage() {
+  const profileDefaults = useProfileDefaults();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -202,7 +204,10 @@ export default function CatalogPage() {
                   <TableCell>{p.category}</TableCell>
                   <TableCell>{p.supplier?.name}</TableCell>
                   <TableCell className="text-right">
-                    {formatCurrency(Number(p.cost_price), p.currency)}
+                    {formatCurrency(
+                      Number(p.cost_price),
+                      p.currency ?? profileDefaults?.default_currency
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

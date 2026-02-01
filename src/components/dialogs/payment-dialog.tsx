@@ -380,7 +380,8 @@ export function PaymentDialog({
                         <SelectItem value="__none__">Ninguno</SelectItem>
                         {additionalCosts.map((cost) => (
                           <SelectItem key={cost.id} value={cost.id}>
-                            {cost.cost_type} - {formatCurrency(Number(cost.amount), currency)}
+                            {cost.cost_type} -{" "}
+                            {formatCurrency(Number(cost.amount), currency)}
                           </SelectItem>
                         ))}
                       </SelectContent>

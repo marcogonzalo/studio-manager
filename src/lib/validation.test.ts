@@ -13,7 +13,8 @@ const createChain = () => ({
   from: () => ({
     select: () => ({
       eq: () => ({
-        limit: () => Promise.resolve(responseQueue.shift() ?? { data: [], error: null }),
+        limit: () =>
+          Promise.resolve(responseQueue.shift() ?? { data: [], error: null }),
       }),
     }),
   }),

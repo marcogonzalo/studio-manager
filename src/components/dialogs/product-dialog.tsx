@@ -143,7 +143,40 @@ export function ProductDialog({
         supplier_id: product.supplier_id || "",
         image_url: product.image_url || "",
       });
-    } else {
+    } else if (open && user?.id) {
+      void (async () => {
+        try {
+          const { data } = await supabase
+            .from("profiles")
+            .select("default_currency")
+            .eq("id", user.id)
+            .single();
+          form.reset({
+            name: "",
+            reference_code: "",
+            reference_url: "",
+            description: "",
+            cost_price: "0",
+            currency: data?.default_currency ?? "EUR",
+            category: "",
+            supplier_id: "",
+            image_url: "",
+          });
+        } catch {
+          form.reset({
+            name: "",
+            reference_code: "",
+            reference_url: "",
+            description: "",
+            cost_price: "0",
+            currency: "EUR",
+            category: "",
+            supplier_id: "",
+            image_url: "",
+          });
+        }
+      })();
+    } else if (open) {
       form.reset({
         name: "",
         reference_code: "",
@@ -156,7 +189,7 @@ export function ProductDialog({
         image_url: "",
       });
     }
-  }, [product, open, form]);
+  }, [product, open, form, user?.id, supabase]);
 
   async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
@@ -325,13 +358,13 @@ export function ProductDialog({
                         control={form.control}
                         name="currency"
                         render={({ field: currencyField }) => (
-                          <FormItem className="mb-0 mt-0 w-[110px] shrink-0 space-y-0">
+                          <FormItem className="mt-0 mb-0 w-[110px] shrink-0 space-y-0">
                             <FormControl>
                               <Select
                                 onValueChange={currencyField.onChange}
                                 value={currencyField.value ?? "EUR"}
                               >
-                                <SelectTrigger className="border-0 bg-muted/30 h-full rounded-none focus:ring-0 focus:ring-offset-0">
+                                <SelectTrigger className="bg-muted/30 h-full rounded-none border-0 focus:ring-0 focus:ring-offset-0">
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
