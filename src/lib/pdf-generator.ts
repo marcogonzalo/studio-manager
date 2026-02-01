@@ -4,7 +4,14 @@
 import type { Project, ProjectItem, ProjectBudgetLine } from "@/types";
 
 export async function generateProjectPDF(
-  project: Project & { client?: { full_name: string; email?: string; phone?: string; address?: string } },
+  project: Project & {
+    client?: {
+      full_name: string;
+      email?: string;
+      phone?: string;
+      address?: string;
+    };
+  },
   items: ProjectItem[],
   budgetLines: ProjectBudgetLine[],
   taxRate: number = 0,

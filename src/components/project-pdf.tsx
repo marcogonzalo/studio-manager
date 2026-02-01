@@ -17,6 +17,7 @@ import {
   BUDGET_CATEGORIES,
   BUDGET_SUBCATEGORIES,
   getPhaseLabel,
+  formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 
 // Color palette matching the application (from index.css)
@@ -350,12 +351,8 @@ export function ProjectPDF({
   const tax = subtotal * (taxRate / 100);
   const grandTotal = subtotal + tax;
 
-  const formatCurrency = (amount: number) => {
-    return `${amount.toLocaleString("es-ES", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })} €`;
-  };
+  const formatCurrency = (amount: number) =>
+    formatCurrencyUtil(amount, project?.currency);
 
   // Order of phases to display in PDF
   const phaseOrder: (ProjectPhase | "no_phase")[] = [

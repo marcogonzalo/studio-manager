@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
 import type { Payment, PurchaseOrder, AdditionalCost } from "@/types";
+import { getCurrencySymbol, formatCurrency } from "@/lib/utils";
 
 const formSchema = z
   .object({
@@ -76,6 +77,7 @@ interface PaymentDialogProps {
   payment?: Payment | null;
   defaultPurchaseOrderId?: string;
   defaultAdditionalCostId?: string;
+  currency?: string;
 }
 
 export function PaymentDialog({
@@ -86,6 +88,7 @@ export function PaymentDialog({
   payment,
   defaultPurchaseOrderId,
   defaultAdditionalCostId,
+  currency = "EUR",
 }: PaymentDialogProps) {
   const { user } = useAuth();
   const supabase = getSupabaseClient();
@@ -245,7 +248,7 @@ export function PaymentDialog({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monto (€)</FormLabel>
+                  <FormLabel>Monto ({getCurrencySymbol(currency)})</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -377,7 +380,8 @@ export function PaymentDialog({
                         <SelectItem value="__none__">Ninguno</SelectItem>
                         {additionalCosts.map((cost) => (
                           <SelectItem key={cost.id} value={cost.id}>
-                            {cost.cost_type} - {cost.amount}€
+                            {cost.cost_type} -{" "}
+                            {formatCurrency(Number(cost.amount), currency)}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -7,6 +7,8 @@ export interface Profile {
   last_name?: string;
   company?: string;
   public_name?: string;
+  default_tax_rate?: number;
+  default_currency?: string;
   updated_at?: string;
 }
 
@@ -38,6 +40,7 @@ export interface Project {
   address?: string;
   phase?: ProjectPhase;
   tax_rate?: number;
+  currency?: string;
   client?: { full_name: string };
 }
 
@@ -57,6 +60,7 @@ export interface Product {
   reference_code: string;
   reference_url?: string;
   cost_price: number;
+  currency?: string;
   image_url: string;
   category: string;
   supplier_id: string;

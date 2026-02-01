@@ -26,6 +26,7 @@ import {
   PanelLeftClose,
   PanelLeft,
   User,
+  SlidersHorizontal,
 } from "lucide-react";
 import {
   Sheet,
@@ -197,6 +198,12 @@ function SidebarContent({
                       Mi perfil
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <SlidersHorizontal className="mr-2 h-4 w-4" />
+                      Configuración
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={signOut}
                     className="text-destructive focus:text-destructive cursor-pointer"
@@ -244,6 +251,12 @@ function SidebarContent({
                   <Link href="/account">
                     <User className="mr-2 h-4 w-4" />
                     Mi perfil
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">
+                    <SlidersHorizontal className="mr-2 h-4 w-4" />
+                    Configuración
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem

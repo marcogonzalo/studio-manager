@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
-import { reportError } from "@/lib/utils";
+import { reportError, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -30,11 +30,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProductDialog } from "@/components/dialogs/product-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
+import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { toast } from "sonner";
 
 import type { Product } from "@/types";
 
 export default function CatalogPage() {
+  const profileDefaults = useProfileDefaults();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -202,10 +204,10 @@ export default function CatalogPage() {
                   <TableCell>{p.category}</TableCell>
                   <TableCell>{p.supplier?.name}</TableCell>
                   <TableCell className="text-right">
-                    {new Intl.NumberFormat("es-ES", {
-                      style: "currency",
-                      currency: "EUR",
-                    }).format(p.cost_price)}
+                    {formatCurrency(
+                      Number(p.cost_price),
+                      p.currency ?? profileDefaults?.default_currency
+                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

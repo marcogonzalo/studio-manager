@@ -86,3 +86,11 @@
 - [x] **Mark Products as Excluded from Project (Phase 6):** Los ítems del proyecto pueden marcarse como excluidos del presupuesto. **RESUELTO:** Se añadió `is_excluded` (boolean, default false) en `project_items`. Checkbox "Excluir del proyecto" en el formulario de ítem (no se puede excluir si tiene PO activa). En la pestaña Presupuesto los productos excluidos no se muestran ni entran en totales ni en el PDF. En el diálogo de productos por espacio se muestran con estilo atenuado (opacity/grayscale) y etiqueta "Excluido del proyecto". Los excluidos se filtran en el diálogo de órdenes de compra al elegir ítems.
 
 - [x] **Budget Print Filtering Options (Phase 7):** Opciones de filtrado al exportar presupuesto a PDF. **RESUELTO:** Al pulsar "Exportar PDF" se abre un diálogo con tres opciones: Presupuesto completo (productos + partidas), Solo productos (mobiliario por ubicación), Solo partidas (servicios y partidas). El PDF generado incluye solo las secciones elegidas y la totalización correspondiente.
+
+- [x] **Account View & Profile (Mi cuenta):** Vista de cuenta accesible desde el menú del usuario. Permite editar perfil: nombre, apellido, empresa y nombre público (visible en presupuestos PDF). Pre-llenado de nombre público al enfocar si está vacío. Migración añade campos a `profiles`.
+
+- [x] **Currency per Project:** Cada proyecto tiene moneda configurable (EUR, USD, GBP, CHF, MXN, BRL, ARS, COP, CLP). Selector en formulario de proyecto. Todos los importes del proyecto (presupuesto, dashboard, costes, pagos, PDF) usan la moneda del proyecto. Símbolo "??" cuando moneda es undefined.
+
+- [x] **Currency per Product:** Productos del catálogo tienen coste base + moneda. Campo compuesto (input group) en formulario de producto. Catálogo muestra coste con la moneda del producto.
+
+- [x] **Settings / Configuration View:** Vista de configuración accesible desde menú del usuario. Valores por defecto de cuenta: impuesto y moneda. Se sugieren al crear nuevo proyecto o producto. Productos del catálogo sin moneda usan moneda por defecto. Migración añade `default_tax_rate` y `default_currency` a `profiles`.

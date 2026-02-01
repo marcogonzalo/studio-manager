@@ -31,7 +31,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Payment, PaymentType } from "@/types";
-import { getPhaseLabel } from "@/lib/utils";
+import {
+  getPhaseLabel,
+  formatCurrency as formatCurrencyUtil,
+} from "@/lib/utils";
 
 const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
   fees: "Honorarios",
@@ -43,6 +46,7 @@ const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
 export function ProjectPayments({ projectId }: { projectId: string }) {
   const supabase = getSupabaseClient();
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [projectCurrency, setProjectCurrency] = useState<string>("EUR");
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
@@ -50,12 +54,15 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
 
   const fetchPayments = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("payments")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("payment_date", { ascending: false });
-
+    const [{ data: projectData }, { data, error }] = await Promise.all([
+      supabase.from("projects").select("currency").eq("id", projectId).single(),
+      supabase
+        .from("payments")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("payment_date", { ascending: false }),
+    ]);
+    if (projectData?.currency) setProjectCurrency(projectData.currency);
     if (error) {
       toast.error("Error al cargar pagos", { id: "payments-load" });
     } else {
@@ -163,10 +170,7 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
                 <div className="text-muted-foreground text-sm">
                   Total:{" "}
                   <span className="font-semibold">
-                    {new Intl.NumberFormat("es-ES", {
-                      style: "currency",
-                      currency: "EUR",
-                    }).format(totalAmount)}
+                    {formatCurrencyUtil(totalAmount, projectCurrency)}
                   </span>
                 </div>
               </div>
@@ -192,10 +196,10 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
                           {format(new Date(payment.payment_date), "dd/MM/yyyy")}
                         </TableCell>
                         <TableCell className="font-semibold">
-                          {new Intl.NumberFormat("es-ES", {
-                            style: "currency",
-                            currency: "EUR",
-                          }).format(Number(payment.amount))}
+                          {formatCurrencyUtil(
+                            Number(payment.amount),
+                            projectCurrency
+                          )}
                         </TableCell>
                         <TableCell>
                           <span className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs">
@@ -251,6 +255,7 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
         onSuccess={fetchPayments}
         projectId={projectId}
         payment={editingPayment}
+        currency={projectCurrency}
       />
     </div>
   );

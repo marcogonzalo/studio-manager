@@ -59,6 +59,7 @@ import {
   getPhaseLabel,
   getErrorMessage,
   reportError,
+  formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 
 import type {
@@ -286,12 +287,8 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
   // For client budget, we use estimated_amount as the price shown
   const grandTotal = totalItemsPrice + totalBudgetLinesEstimated;
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: "EUR",
-    }).format(amount);
-  };
+  const formatCurrency = (amount: number) =>
+    formatCurrencyUtil(amount, project?.currency);
 
   // Map delivery_deadline codes to readable labels (same as purchase-order-dialog options)
   const deliveryDeadlineLabel: Record<string, string> = {
