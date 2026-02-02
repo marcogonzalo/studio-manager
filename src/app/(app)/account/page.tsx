@@ -29,8 +29,7 @@ import { getErrorMessage, reportError } from "@/lib/utils";
 import type { Profile } from "@/types";
 
 const formSchema = z.object({
-  first_name: z.string().optional(),
-  last_name: z.string().optional(),
+  full_name: z.string().optional(),
   company: z.string().optional(),
   public_name: z.string().optional(),
 });
@@ -46,8 +45,7 @@ export default function AccountPage() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      first_name: "",
-      last_name: "",
+      full_name: "",
       company: "",
       public_name: "",
     },
@@ -65,8 +63,7 @@ export default function AccountPage() {
       if (error) throw error;
       setProfile(data);
       form.reset({
-        first_name: data?.first_name ?? "",
-        last_name: data?.last_name ?? "",
+        full_name: data?.full_name ?? "",
         company: data?.company ?? "",
         public_name: data?.public_name ?? "",
       });
@@ -92,8 +89,7 @@ export default function AccountPage() {
       const { error } = await supabase
         .from("profiles")
         .update({
-          first_name: values.first_name?.trim() || null,
-          last_name: values.last_name?.trim() || null,
+          full_name: values.full_name?.trim() || null,
           company: values.company?.trim() || null,
           public_name: values.public_name?.trim() || null,
           updated_at: new Date().toISOString(),
@@ -146,42 +142,23 @@ export default function AccountPage() {
               onSubmit={form.handleSubmit(onSubmit)}
               className="max-w-xl space-y-6"
             >
-              <div className="grid gap-4 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="first_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Tu nombre"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="last_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Apellido</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Tu apellido"
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="full_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre completo</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Tu nombre"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -218,13 +195,8 @@ export default function AccountPage() {
                         onFocus={() => {
                           const current = (field.value ?? "").trim();
                           if (!current) {
-                            const first =
-                              form.getValues("first_name")?.trim() ?? "";
-                            const last =
-                              form.getValues("last_name")?.trim() ?? "";
-                            const suggested = [first, last]
-                              .filter(Boolean)
-                              .join(" ");
+                            const suggested =
+                              form.getValues("full_name")?.trim() ?? "";
                             if (suggested) field.onChange(suggested);
                           }
                         }}

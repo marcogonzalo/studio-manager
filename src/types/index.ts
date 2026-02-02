@@ -3,8 +3,6 @@ export interface Profile {
   email?: string;
   full_name?: string;
   avatar_url?: string;
-  first_name?: string;
-  last_name?: string;
   company?: string;
   public_name?: string;
   default_tax_rate?: number;

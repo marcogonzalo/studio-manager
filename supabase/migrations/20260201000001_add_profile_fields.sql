@@ -1,9 +1,7 @@
 -- Add profile fields for "Mi cuenta" / "Mi perfil"
--- first_name, last_name, company, public_name (for budgets)
+-- company, public_name (for budgets) - full_name already exists from initial schema
 
 alter table profiles
-  add column if not exists first_name text,
-  add column if not exists last_name text,
   add column if not exists company text,
   add column if not exists public_name text;
 
