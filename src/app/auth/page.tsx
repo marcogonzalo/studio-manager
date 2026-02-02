@@ -25,12 +25,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Leaf, ArrowLeft } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
   fullName: z.string().optional(),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "Debes aceptar los términos de uso y privacidad",
+  }),
 });
 
 function AuthContent() {
@@ -57,8 +61,14 @@ function AuthContent() {
     defaultValues: {
       email: "",
       fullName: "",
+      acceptTerms: mode !== "signup",
     },
   });
+
+  // Al cambiar entre login/signup, actualizar acceptTerms para que la validación sea correcta
+  useEffect(() => {
+    form.setValue("acceptTerms", isLogin);
+  }, [isLogin, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
@@ -245,6 +255,45 @@ function AuthContent() {
                     <FormMessage />
                   </FormItem>
                 )}
+              />
+              <FormField
+                control={form.control}
+                name="acceptTerms"
+                render={({ field }) =>
+                  isLogin ? (
+                    <FormItem className="hidden">
+                      <FormControl>
+                        <Checkbox
+                          checked={true}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  ) : (
+                    <FormItem className="flex flex-row items-start space-y-0 space-x-3">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="font-normal">
+                          He leído y estoy conforme con los{" "}
+                          <Link
+                            href="/legal"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline hover:no-underline"
+                          >
+                            términos de uso y privacidad
+                          </Link>
+                        </FormLabel>
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  )
+                }
               />
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading

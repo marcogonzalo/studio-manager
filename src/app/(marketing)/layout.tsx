@@ -127,18 +127,10 @@ function Footer() {
             <ul className="text-muted-foreground space-y-2 text-sm">
               <li>
                 <Link
-                  href="/privacy"
+                  href="/legal"
                   className="hover:text-foreground transition-colors"
                 >
-                  Privacidad
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="hover:text-foreground transition-colors"
-                >
-                  Términos
+                  Términos y Privacidad
                 </Link>
               </li>
             </ul>
