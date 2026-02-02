@@ -43,6 +43,17 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
    - Build de producción exitoso.
    - Todas las funcionalidades probadas y operativas.
 
+## Recently Completed (This Session)
+
+1. **Legal Page & Terms Acceptance:**
+   - Nueva vista `/legal` con términos de uso, política de privacidad y derechos RGPD.
+   - Checkbox obligatorio en registro con enlace a términos.
+   - Footer actualizado con enlace único "Términos y Privacidad".
+2. **Profile Schema Simplification:**
+   - Eliminados `first_name` y `last_name` de `profiles`; se usa solo `full_name`.
+   - Migración que copia datos existentes y elimina columnas redundantes.
+   - Vista de cuenta (Mi perfil) actualizada a un único campo "Nombre completo".
+
 ## Work in Progress / Next Steps
 
 - **Image Uploads:** Currently, the app accepts image URLs. Integrating real file uploads to Supabase Storage bucket is the next logical step.

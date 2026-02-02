@@ -192,6 +192,10 @@ interior-design-project/
 └── ...
 ```
 
+## 📜 Legal & Compliance
+
+- **Terms & Privacy:** The app includes a legal page (`/legal`) with terms of use, privacy policy, and GDPR rights. Registration requires acceptance of terms via a mandatory checkbox.
+
 ## 🔒 Security
 
 This project follows security best practices:

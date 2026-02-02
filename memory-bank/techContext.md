@@ -37,7 +37,7 @@
 
 ## Database Schema (Key Tables)
 
-- `profiles`: Extends auth.users.
+- `profiles`: Extends auth.users. Fields: `full_name`, `email`, `avatar_url`, `company`, `public_name`, `default_tax_rate`, `default_currency`.
 - `projects`: Main project entity (with address, completed_date fields).
 - `clients`: Client CRM data.
 - `spaces`: Spaces within a project.
