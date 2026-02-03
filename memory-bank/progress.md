@@ -25,7 +25,7 @@
 - [x] Session Expiration Handling: Redirige al login guardando la ruta de destino cuando la sesión caduca, y redirige automáticamente después del login exitoso.
 - [x] Custom 404 Page: Página de error 404 personalizada con temática de arquitectura, diseño moderno y navegación contextual.
 
-- [x] **Product Image Upload (Backblaze B2):** Subida de imágenes de producto a Backblaze B2. Opción URL (por defecto) o subir archivo (JPG, PNG, WebP). Ruta en bucket: `<userId>/<productId>.ext`. Al eliminar producto del catálogo se borra la imagen en B2.
+- [x] **Product Image Upload (Backblaze B2):** Subida de imágenes de producto a Backblaze B2. Opción URL (por defecto) o subir archivo (JPG, PNG, WebP). Compresión con Sharp: redimensionado a 1200px máximo, conversión a WebP calidad 100. Ruta en bucket: `<userId>/<productId>.ext`. Al eliminar producto del catálogo se borra la imagen en B2. Al cambiar la URL al guardar se elimina la imagen previa en B2. Disponible en catálogo y en formulario de nuevo producto desde presupuesto (add-item-dialog).
 
 ## Pending Features
 

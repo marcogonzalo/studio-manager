@@ -48,8 +48,11 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
 1. **Product Image Upload (Backblaze B2):**
    - Integración con Backblaze B2 para almacenar imágenes de productos.
    - Formulario con pestañas: URL (por defecto) o Subir archivo (drag & drop).
+   - Compresión Sharp: redimensionado 1200px máximo, WebP calidad 100.
    - Validación JPG, PNG, WebP. Ruta: `<userId>/<productId>.ext`.
-   - Al eliminar producto del catálogo se borra la imagen en el bucket B2.
+   - Al eliminar producto del catálogo se borra la imagen en B2.
+   - Al cambiar URL al guardar se elimina la imagen previa en B2.
+   - Disponible en catálogo y en add-item-dialog (nuevo producto desde presupuesto).
    - API keys en servidor (no expuestas en frontend).
 2. **Legal Page & Terms Acceptance:**
    - Nueva vista `/legal` con términos de uso, política de privacidad y derechos RGPD.

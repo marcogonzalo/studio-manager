@@ -43,7 +43,7 @@
 - `clients`: Client CRM data.
 - `spaces`: Spaces within a project.
 - `space_images`: Images associated with spaces.
-- `products`: Global item catalog (reference_url, image_url). Imágenes en Backblaze B2.
+- `products`: Global item catalog (reference_url, image_url). Imágenes en Backblaze B2. Compresión Sharp (1200px, WebP) en servidor.
 - `project_items`: Join table (Project <-> Product) with custom pricing/status and purchase_order_id.
 - `suppliers`: Vendor directory.
 - `purchase_orders`: Grouped orders by supplier with status tracking.

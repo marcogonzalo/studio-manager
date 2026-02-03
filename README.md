@@ -26,7 +26,7 @@ A modern, full-stack web application designed to streamline the workflow of inte
 ### 🛒 Catalog & Purchasing
 
 - **Product Catalog:** Global database of furniture, fixtures, and materials
-- **Product Images:** Upload images (JPG, PNG, WebP) to Backblaze B2 or use external URLs. Images are deleted from storage when a product is removed.
+- **Product Images:** Upload images (JPG, PNG, WebP) to Backblaze B2 or use external URLs. Images are resized to 1200px max and converted to WebP. Images are deleted from B2 when a product is removed or when the URL is changed.
 - **Supplier Management:** Track vendors and their contact information
 - **Purchase Orders:** Automatically generate POs grouped by supplier
 - **Logistics Tracking:** Monitor order status (pending → ordered → received → delivered)
