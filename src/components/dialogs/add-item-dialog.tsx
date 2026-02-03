@@ -32,7 +32,9 @@ import { toast } from "sonner";
 import { useEffect, useState, useMemo } from "react";
 import { Plus, Search } from "lucide-react";
 import { ProductDetailModal } from "@/components/product-detail-modal";
+import { ProductImageUpload } from "@/components/product-image-upload";
 import type { Product, ProjectItem, Space, Supplier } from "@/types";
+import { reportError } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { SupplierDialog } from "./supplier-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -93,6 +95,13 @@ export function AddItemDialog({
     null
   );
   const isEditing = !!item;
+
+  // Para productos nuevos: ID pre-generado para la ruta B2 (UID/product_id.ext)
+  const productIdForUpload = useMemo(() => {
+    if (item?.product_id) return item.product_id;
+    if (open && !item) return crypto.randomUUID();
+    return "";
+  }, [open, item?.product_id]);
 
   type FormValues = z.input<typeof formSchema>;
   const form = useForm<FormValues>({
@@ -320,24 +329,27 @@ export function AddItemDialog({
           return;
         }
 
+        const productData: Record<string, unknown> = {
+          name: values.name,
+          description: values.description || "",
+          reference_code: values.reference_code || "",
+          reference_url: values.reference_url || null,
+          category: values.category || "",
+          cost_price: values.unit_cost,
+          image_url: values.image_url || null,
+          supplier_id:
+            values.supplier_id === "none" || !values.supplier_id
+              ? null
+              : values.supplier_id,
+          user_id: user.id,
+        };
+        if (productIdForUpload) {
+          productData.id = productIdForUpload;
+        }
+
         const { data: newProduct, error: productError } = await supabase
           .from("products")
-          .insert([
-            {
-              name: values.name,
-              description: values.description || "",
-              reference_code: values.reference_code || "",
-              reference_url: values.reference_url || null,
-              category: values.category || "",
-              cost_price: values.unit_cost,
-              image_url: values.image_url || null,
-              supplier_id:
-                values.supplier_id === "none" || !values.supplier_id
-                  ? null
-                  : values.supplier_id,
-              user_id: user.id,
-            },
-          ])
+          .insert([productData])
           .select()
           .single();
 
@@ -364,6 +376,19 @@ export function AddItemDialog({
       };
 
       if (isEditing && item?.id) {
+        const prevImageUrl = (item.image_url || "").trim();
+        const newImageUrl = (values.image_url || "").trim();
+        if (prevImageUrl && prevImageUrl !== newImageUrl) {
+          try {
+            await fetch(
+              `/api/upload/product-image?url=${encodeURIComponent(prevImageUrl)}`,
+              { method: "DELETE" }
+            );
+          } catch (err) {
+            reportError(err, "Error deleting previous image:");
+          }
+        }
+
         // Si estamos editando y el producto era custom, actualizar el producto también
         if (
           (values.product_id === "custom" || activeTab === "new") &&
@@ -677,14 +702,43 @@ export function AddItemDialog({
                     name="image_url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Imagen URL</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="http://..."
-                            {...field}
-                            className="bg-background"
-                          />
-                        </FormControl>
+                        <FormLabel>Imagen del producto</FormLabel>
+                        <Tabs defaultValue="url" className="w-full">
+                          <TabsList className="bg-background">
+                            <TabsTrigger value="url">URL</TabsTrigger>
+                            <TabsTrigger value="upload">
+                              Subir archivo
+                            </TabsTrigger>
+                          </TabsList>
+                          <TabsContent value="url">
+                            <FormControl>
+                              <Input
+                                placeholder="https://..."
+                                {...field}
+                                className="mt-2 bg-background"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </TabsContent>
+                          <TabsContent value="upload">
+                            {productIdForUpload && user?.id ? (
+                              <ProductImageUpload
+                                productId={productIdForUpload}
+                                currentImageUrl={field.value || undefined}
+                                onUploadSuccess={(url) => {
+                                  field.onChange(url);
+                                  toast.success("Imagen subida");
+                                }}
+                                onUploadError={(msg) => toast.error(msg)}
+                                className="mt-2"
+                              />
+                            ) : (
+                              <p className="text-muted-foreground mt-2 text-sm">
+                                Cargando…
+                              </p>
+                            )}
+                          </TabsContent>
+                        </Tabs>
                       </FormItem>
                     )}
                   />

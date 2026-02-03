@@ -248,6 +248,19 @@ export function ProductDialog({
       }
 
       if (product) {
+        const prevUrl = (product.image_url || "").trim();
+        const newUrl = (values.image_url || "").trim();
+        if (prevUrl && prevUrl !== newUrl) {
+          try {
+            await fetch(
+              `/api/upload/product-image?url=${encodeURIComponent(prevUrl)}`,
+              { method: "DELETE" }
+            );
+          } catch (err) {
+            reportError(err, "Error deleting previous image:");
+          }
+        }
+
         const { error } = await supabase
           .from("products")
           .update(data)
