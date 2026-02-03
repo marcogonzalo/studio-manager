@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { CookieOptions } from "@supabase/ssr";
+import sharp from "sharp";
 import { uploadProductImage } from "@/lib/backblaze";
 import { validateImageFile } from "@/lib/image-validation";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_DIMENSION = 1200;
 
 export async function DELETE(request: Request) {
   try {
@@ -113,11 +115,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
-    const buffer = await file.arrayBuffer();
+    const inputBuffer = Buffer.from(await file.arrayBuffer());
+    const processedBuffer = await sharp(inputBuffer)
+      .resize(MAX_DIMENSION, MAX_DIMENSION, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 100 })
+      .toBuffer();
+
+    const arrayBuffer = new ArrayBuffer(processedBuffer.length);
+    new Uint8Array(arrayBuffer).set(processedBuffer);
 
     const url = await uploadProductImage({
-      buffer,
-      mimeType: file.type,
+      buffer: arrayBuffer,
+      mimeType: "image/webp",
       userId: user.id,
       productId: productId.trim(),
     });

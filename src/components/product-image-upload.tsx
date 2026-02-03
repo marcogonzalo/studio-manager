@@ -146,6 +146,10 @@ export function ProductImageUpload({
             <p className="text-muted-foreground/80 text-xs">
               JPG, PNG o WebP (máx. 5MB)
             </p>
+            <p className="text-muted-foreground/70 text-xs">
+              La imagen será redimensionada a 1200px como máximo y convertida a
+              formato WebP.
+            </p>
           </div>
         )}
       </div>
