@@ -715,7 +715,7 @@ export function AddItemDialog({
                               <Input
                                 placeholder="https://..."
                                 {...field}
-                                className="mt-2 bg-background"
+                                className="bg-background mt-2"
                               />
                             </FormControl>
                             <FormMessage />
@@ -748,96 +748,55 @@ export function AddItemDialog({
 
             {/* Campos de project_item - siempre visibles */}
             <div className="space-y-4 border-t pt-4">
-              <FormField
-                control={form.control}
-                name="space_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ubicación</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="Seleccionar espacio" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">General / Ninguno</SelectItem>
-                        {spaces.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.name}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="space_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ubicación</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="bg-background">
+                            <SelectValue placeholder="Seleccionar espacio" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">
+                            General / Ninguno
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
+                          {spaces.map((s) => (
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="internal_reference"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Código</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Clave para asociar con anotaciones en planos"
-                        {...field}
-                        className="bg-background"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="is_excluded"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          field.onChange(checked);
-                          // Validar si está asociado a PO no cancelada
-                          if (checked && item?.purchase_order_id) {
-                            supabase
-                              .from("purchase_orders")
-                              .select("status")
-                              .eq("id", item.purchase_order_id)
-                              .single()
-                              .then(({ data: poData }) => {
-                                if (poData && poData.status !== "cancelled") {
-                                  toast.error(
-                                    "No se puede excluir un producto asociado a una orden de compra activa. Cancela la orden primero."
-                                  );
-                                  field.onChange(false);
-                                }
-                              });
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="cursor-pointer">
-                        Excluir del proyecto
-                      </FormLabel>
-                      <p className="text-muted-foreground text-xs">
-                        Si está marcado, el producto no se incluirá en el
-                        presupuesto ni en los cálculos de costos.
-                      </p>
-                      {item?.purchase_order_id && (
-                        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                          ⚠ No se puede excluir si está asociado a una orden de
-                          compra activa.
-                        </p>
-                      )}
-                    </div>
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="internal_reference"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Código</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Clave para asociar con anotaciones en planos"
+                          {...field}
+                          className="bg-background"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <div className="grid grid-cols-4 gap-4">
                 <FormField
@@ -913,6 +872,54 @@ export function AddItemDialog({
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="is_excluded"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          // Validar si está asociado a PO no cancelada
+                          if (checked && item?.purchase_order_id) {
+                            supabase
+                              .from("purchase_orders")
+                              .select("status")
+                              .eq("id", item.purchase_order_id)
+                              .single()
+                              .then(({ data: poData }) => {
+                                if (poData && poData.status !== "cancelled") {
+                                  toast.error(
+                                    "No se puede excluir un producto asociado a una orden de compra activa. Cancela la orden primero."
+                                  );
+                                  field.onChange(false);
+                                }
+                              });
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">
+                        Excluir del proyecto
+                      </FormLabel>
+                      <p className="text-muted-foreground text-xs">
+                        Si está marcado, el producto no se incluirá en el
+                        presupuesto ni en los cálculos de costos.
+                      </p>
+                      {item?.purchase_order_id && (
+                        <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                          ⚠ No se puede excluir si está asociado a una orden de
+                          compra activa.
+                        </p>
+                      )}
+                    </div>
+                  </FormItem>
+                )}
+              />
             </div>
 
             <DialogFooter>
