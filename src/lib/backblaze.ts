@@ -158,3 +158,100 @@ export async function uploadProductImage(params: {
 
   return `${downloadUrl}/file/${bucketName}/${data.fileName}`;
 }
+
+/**
+ * Comprueba si una URL es de nuestro bucket B2.
+ */
+function isOurB2Url(imageUrl: string): boolean {
+  const bucketName = process.env.B2_BUCKET_NAME;
+  if (!bucketName || !imageUrl?.trim()) return false;
+  try {
+    const url = new URL(imageUrl);
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    // Formato: /file/{bucketName}/{fileName}
+    return (
+      url.hostname.includes("backblazeb2.com") &&
+      pathParts[0] === "file" &&
+      pathParts[1] === bucketName &&
+      pathParts.length >= 3
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Extrae el fileName (path) de una URL B2 nuestra.
+ * Formato URL: .../file/bucketName/userId/productId.ext
+ */
+function extractFileNameFromB2Url(imageUrl: string): string | null {
+  const bucketName = process.env.B2_BUCKET_NAME;
+  if (!bucketName || !imageUrl?.trim()) return null;
+  try {
+    const url = new URL(imageUrl);
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    if (pathParts[0] !== "file" || pathParts[1] !== bucketName) return null;
+    return decodeURIComponent(pathParts.slice(2).join("/"));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Elimina una imagen de B2 por su URL pública.
+ * Solo elimina si la URL pertenece a nuestro bucket.
+ */
+export async function deleteProductImage(imageUrl: string): Promise<void> {
+  if (!isOurB2Url(imageUrl)) return;
+
+  const fileName = extractFileNameFromB2Url(imageUrl);
+  if (!fileName) return;
+
+  const auth = await b2Authorize();
+  const bucketId = process.env.B2_BUCKET_ID;
+  if (!bucketId) {
+    throw new Error("B2_BUCKET_ID es requerido");
+  }
+
+  const { apiUrl } = getApiUrls(auth);
+
+  const listRes = await fetch(`${apiUrl}/b2api/v2/b2_list_file_names`, {
+    method: "POST",
+    headers: {
+      Authorization: auth.authorizationToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      bucketId,
+      prefix: fileName,
+      maxFileCount: 1,
+    }),
+  });
+
+  if (!listRes.ok) return;
+
+  const listData = (await listRes.json()) as { files?: { fileId: string; fileName: string }[] };
+  const files = listData.files ?? [];
+  if (files.length === 0) return;
+
+  const file = files[0];
+  const deleteRes = await fetch(`${apiUrl}/b2api/v2/b2_delete_file_version`, {
+    method: "POST",
+    headers: {
+      Authorization: auth.authorizationToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fileId: file.fileId,
+      fileName: file.fileName,
+    }),
+  });
+
+  if (!deleteRes.ok) {
+    const err = await deleteRes.json().catch(() => ({}));
+    throw new Error(
+      (err as { message?: string }).message ||
+        `B2 delete failed: ${deleteRes.status} ${deleteRes.statusText}`
+    );
+  }
+}
