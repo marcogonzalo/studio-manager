@@ -91,8 +91,16 @@ A modern, full-stack web application designed to streamline the workflow of inte
    Create a `.env` file in the root directory:
 
    ```env
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+   # Backblaze B2 - Imágenes de productos (opcional)
+   # Crear Application Key en: https://secure.backblaze.com/app_keys.htm
+   # El bucket debe ser público para que las imágenes se muestren
+   B2_APPLICATION_KEY_ID=your_application_key_id
+   B2_APPLICATION_KEY=your_application_key
+   B2_BUCKET_ID=your_bucket_id
+   B2_BUCKET_NAME=your_bucket_name
    ```
 
 4. **Run database migrations**
