@@ -26,6 +26,7 @@ A modern, full-stack web application designed to streamline the workflow of inte
 ### 🛒 Catalog & Purchasing
 
 - **Product Catalog:** Global database of furniture, fixtures, and materials
+- **Product Images:** Upload images (JPG, PNG, WebP) to Backblaze B2 or use external URLs. Images are resized to 1200px max and converted to WebP. Images are deleted from B2 when a product is removed or when the URL is changed.
 - **Supplier Management:** Track vendors and their contact information
 - **Purchase Orders:** Automatically generate POs grouped by supplier
 - **Logistics Tracking:** Monitor order status (pending → ordered → received → delivered)
@@ -91,8 +92,16 @@ A modern, full-stack web application designed to streamline the workflow of inte
    Create a `.env` file in the root directory:
 
    ```env
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+   # Backblaze B2 - Imágenes de productos (opcional)
+   # Crear Application Key en: https://secure.backblaze.com/app_keys.htm
+   # El bucket debe ser público para que las imágenes se muestren
+   B2_APPLICATION_KEY_ID=your_application_key_id
+   B2_APPLICATION_KEY=your_application_key
+   B2_BUCKET_ID=your_bucket_id
+   B2_BUCKET_NAME=your_bucket_name
    ```
 
 4. **Run database migrations**

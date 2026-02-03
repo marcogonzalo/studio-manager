@@ -66,13 +66,13 @@ export default function CatalogPage() {
     fetchProducts();
   }, [search]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (product: Product) => {
     if (!confirm("¿Eliminar producto?")) return;
 
     try {
       // Verificar si puede ser eliminado
       const { canDeleteProduct } = await import("@/lib/validation");
-      const canDelete = await canDeleteProduct(id);
+      const canDelete = await canDeleteProduct(product.id);
 
       if (!canDelete) {
         toast.error(
@@ -81,10 +81,25 @@ export default function CatalogPage() {
         return;
       }
 
+      if (product.image_url?.trim()) {
+        try {
+          const res = await fetch(
+            `/api/upload/product-image?url=${encodeURIComponent(product.image_url)}`,
+            { method: "DELETE" }
+          );
+          if (!res.ok) {
+            const data = (await res.json()) as { error?: string };
+            reportError(new Error(data.error), "Error deleting B2 image:");
+          }
+        } catch (err) {
+          reportError(err, "Error deleting B2 image:");
+        }
+      }
+
       const { error, data } = await supabase
         .from("products")
         .delete()
-        .eq("id", id)
+        .eq("id", product.id)
         .select();
 
       if (error) {
@@ -227,7 +242,7 @@ export default function CatalogPage() {
                           Editar
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => handleDelete(p.id)}
+                          onClick={() => handleDelete(p)}
                           className="text-destructive"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />

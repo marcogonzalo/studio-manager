@@ -30,9 +30,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { reportError, CURRENCIES } from "@/lib/utils";
 import type { Product, Supplier } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { SupplierDialog } from "./supplier-dialog";
+import { ProductImageUpload } from "@/components/product-image-upload";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
 
 const formSchema = z.object({
@@ -67,6 +69,13 @@ export function ProductDialog({
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(
     null
   );
+
+  // Para productos nuevos: ID pre-generado para la ruta B2 (UID/product_id.ext)
+  const productIdForUpload = useMemo(() => {
+    if (product) return product.id;
+    if (open) return crypto.randomUUID();
+    return "";
+  }, [open, product?.id]);
 
   type FormValues = {
     name: string;
@@ -239,6 +248,19 @@ export function ProductDialog({
       }
 
       if (product) {
+        const prevUrl = (product.image_url || "").trim();
+        const newUrl = (values.image_url || "").trim();
+        if (prevUrl && prevUrl !== newUrl) {
+          try {
+            await fetch(
+              `/api/upload/product-image?url=${encodeURIComponent(prevUrl)}`,
+              { method: "DELETE" }
+            );
+          } catch (err) {
+            reportError(err, "Error deleting previous image:");
+          }
+        }
+
         const { error } = await supabase
           .from("products")
           .update(data)
@@ -246,6 +268,9 @@ export function ProductDialog({
         if (error) throw error;
         toast.success("Producto actualizado");
       } else {
+        if (productIdForUpload) {
+          data.id = productIdForUpload;
+        }
         const { error } = await supabase.from("products").insert([data]);
         if (error) throw error;
         toast.success("Producto creado");
@@ -427,20 +452,51 @@ export function ProductDialog({
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="image_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Imagen URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="http://..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
+
+            <FormField
+              control={form.control}
+              name="image_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Imagen del producto</FormLabel>
+                  <Tabs defaultValue="url" className="w-full">
+                    <TabsList>
+                      <TabsTrigger value="url">URL</TabsTrigger>
+                      <TabsTrigger value="upload">Subir archivo</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="url">
+                      <FormControl>
+                        <Input
+                          placeholder="https://..."
+                          {...field}
+                          className="mt-2"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </TabsContent>
+                    <TabsContent value="upload">
+                      {productIdForUpload && user?.id ? (
+                        <ProductImageUpload
+                          productId={productIdForUpload}
+                          currentImageUrl={field.value || undefined}
+                          onUploadSuccess={(url) => {
+                            field.onChange(url);
+                            toast.success("Imagen subida");
+                          }}
+                          onUploadError={(msg) => toast.error(msg)}
+                          className="mt-2"
+                        />
+                      ) : (
+                        <p className="text-muted-foreground mt-2 text-sm">
+                          Cargando…
+                        </p>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </FormItem>
+              )}
+            />
 
             <DialogFooter>
               <Button type="submit">Guardar</Button>
