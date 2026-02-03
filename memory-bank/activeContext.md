@@ -45,7 +45,13 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
 
 ## Recently Completed (This Session)
 
-1. **Legal Page & Terms Acceptance:**
+1. **Product Image Upload (Backblaze B2):**
+   - Integración con Backblaze B2 para almacenar imágenes de productos.
+   - Formulario con pestañas: URL (por defecto) o Subir archivo (drag & drop).
+   - Validación JPG, PNG, WebP. Ruta: `<userId>/<productId>.ext`.
+   - Al eliminar producto del catálogo se borra la imagen en el bucket B2.
+   - API keys en servidor (no expuestas en frontend).
+2. **Legal Page & Terms Acceptance:**
    - Nueva vista `/legal` con términos de uso, política de privacidad y derechos RGPD.
    - Checkbox obligatorio en registro con enlace a términos.
    - Footer actualizado con enlace único "Términos y Privacidad".
@@ -56,7 +62,6 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
 
 ## Work in Progress / Next Steps
 
-- **Image Uploads:** Currently, the app accepts image URLs. Integrating real file uploads to Supabase Storage bucket is the next logical step.
 - **Payment Control System:** System to track client payments with dates, amounts, and payment methods. Will feed into Dashboard income metrics.
 - **Deployment:** The app is running locally. Deployment to Vercel/Netlify + Supabase Cloud is pending.
 

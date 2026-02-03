@@ -447,11 +447,21 @@ export function ProductDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Imagen del producto</FormLabel>
-                  <Tabs defaultValue="upload" className="w-full">
+                  <Tabs defaultValue="url" className="w-full">
                     <TabsList>
-                      <TabsTrigger value="upload">Subir archivo</TabsTrigger>
                       <TabsTrigger value="url">URL</TabsTrigger>
+                      <TabsTrigger value="upload">Subir archivo</TabsTrigger>
                     </TabsList>
+                    <TabsContent value="url">
+                      <FormControl>
+                        <Input
+                          placeholder="https://..."
+                          {...field}
+                          className="mt-2"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </TabsContent>
                     <TabsContent value="upload">
                       {productIdForUpload && user?.id ? (
                         <ProductImageUpload
@@ -469,16 +479,6 @@ export function ProductDialog({
                           Cargando…
                         </p>
                       )}
-                    </TabsContent>
-                    <TabsContent value="url">
-                      <FormControl>
-                        <Input
-                          placeholder="https://..."
-                          {...field}
-                          className="mt-2"
-                        />
-                      </FormControl>
-                      <FormMessage />
                     </TabsContent>
                   </Tabs>
                 </FormItem>

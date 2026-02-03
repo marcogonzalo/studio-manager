@@ -230,7 +230,9 @@ export async function deleteProductImage(imageUrl: string): Promise<void> {
 
   if (!listRes.ok) return;
 
-  const listData = (await listRes.json()) as { files?: { fileId: string; fileName: string }[] };
+  const listData = (await listRes.json()) as {
+    files?: { fileId: string; fileName: string }[];
+  };
   const files = listData.files ?? [];
   if (files.length === 0) return;
 

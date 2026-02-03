@@ -33,6 +33,7 @@
   - PKCE authentication flow with magic links.
 - **Environment Variables:** 
   - `.env.local` (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY).
+  - Backblaze B2 para imágenes de productos: B2_APPLICATION_KEY_ID, B2_APPLICATION_KEY, B2_BUCKET_ID, B2_BUCKET_NAME.
   - Docker uses `extra_hosts: localhost:host-gateway` for Supabase connectivity.
 
 ## Database Schema (Key Tables)
@@ -42,7 +43,7 @@
 - `clients`: Client CRM data.
 - `spaces`: Spaces within a project.
 - `space_images`: Images associated with spaces.
-- `products`: Global item catalog (with reference_url field).
+- `products`: Global item catalog (reference_url, image_url). Imágenes en Backblaze B2.
 - `project_items`: Join table (Project <-> Product) with custom pricing/status and purchase_order_id.
 - `suppliers`: Vendor directory.
 - `purchase_orders`: Grouped orders by supplier with status tracking.
