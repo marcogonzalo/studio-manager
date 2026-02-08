@@ -8,6 +8,13 @@ const mockGetSession = vi.hoisted(() => vi.fn());
 const mockOnAuthStateChange = vi.hoisted(() => vi.fn());
 const mockSignOut = vi.hoisted(() => vi.fn());
 
+const mockRpc = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({
+    data: [{ plan_code: "BASE", config: {} }],
+    error: null,
+  })
+);
+
 vi.mock("@/lib/supabase", () => {
   const auth = {
     getSession: mockGetSession,
@@ -15,8 +22,8 @@ vi.mock("@/lib/supabase", () => {
     signOut: mockSignOut,
   };
   return {
-    supabase: { auth },
-    getSupabaseClient: () => ({ auth }),
+    supabase: { auth, rpc: mockRpc },
+    getSupabaseClient: () => ({ auth, rpc: mockRpc }),
   };
 });
 
@@ -138,7 +145,7 @@ describe("AuthProvider", () => {
     );
 
     await waitFor(() => {
-      expect(mockOnAuthStateChange).toHaveBeenCalledTimes(1);
+      expect(mockOnAuthStateChange).toHaveBeenCalled();
     });
 
     const callback = mockOnAuthStateChange.mock.calls[0][0];

@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import {
@@ -94,7 +95,9 @@ export function BudgetLineDialog({
   onSuccess,
   budgetLine,
 }: BudgetLineDialogProps) {
-  const { user } = useAuth();
+  const { user, effectivePlan } = useAuth();
+  const costsManagementEnabled =
+    effectivePlan?.config?.costs_management === "full";
   const supabase = getSupabaseClient();
   const isEditing = !!budgetLine;
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -171,8 +174,11 @@ export function BudgetLineDialog({
       setSelectedCategory(category);
       form.setValue("category", value);
       form.setValue("subcategory", ""); // Reset subcategory when category changes
-      // Reset actual_amount to 0 if the category is not a cost category (e.g., own_fees)
-      if (!isCostCategory(category)) {
+      if (category === "own_fees") {
+        // Honorarios: real = estimado (el real se rellena con el estimado)
+        const estimated = form.getValues("estimated_amount");
+        form.setValue("actual_amount", estimated);
+      } else if (!isCostCategory(category)) {
         form.setValue("actual_amount", "0");
       }
     }
@@ -195,10 +201,16 @@ export function BudgetLineDialog({
             ? parseFloat(values.estimated_amount) || 0
             : values.estimated_amount,
         actual_amount:
-          typeof values.actual_amount === "string"
-            ? parseFloat(values.actual_amount) || 0
-            : values.actual_amount,
-        is_internal_cost: values.is_internal_cost,
+          values.category === "own_fees"
+            ? (typeof values.estimated_amount === "string"
+                ? parseFloat(values.estimated_amount) || 0
+                : values.estimated_amount)
+            : costsManagementEnabled
+              ? (typeof values.actual_amount === "string"
+                  ? parseFloat(values.actual_amount) || 0
+                  : values.actual_amount)
+              : 0,
+        is_internal_cost: costsManagementEnabled ? values.is_internal_cost : false,
         phase: values.phase || null,
         supplier_id: values.supplier_id || null,
         notes: values.notes || null,
@@ -370,9 +382,7 @@ export function BudgetLineDialog({
               )}
             />
 
-            <div
-              className={`grid gap-4 ${selectedCategory && isCostCategory(selectedCategory) ? "grid-cols-2" : "grid-cols-1"}`}
-            >
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="estimated_amount"
@@ -385,61 +395,91 @@ export function BudgetLineDialog({
                         step="0.01"
                         placeholder="0.00"
                         {...field}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          field.onChange(v);
+                          if (selectedCategory === "own_fees") {
+                            form.setValue("actual_amount", v);
+                          }
+                        }}
                       />
                     </FormControl>
+                    {selectedCategory === "own_fees" && (
+                      <p className="text-muted-foreground text-xs">
+                        Para honorarios el importe real se rellena con este valor.
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              {selectedCategory && isCostCategory(selectedCategory) ? (
-                <FormField
-                  control={form.control}
-                  name="actual_amount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Importe Real</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ) : selectedCategory === "own_fees" ? (
-                <div className="flex items-center">
-                  <p className="text-muted-foreground text-sm">
-                    Los honorarios son ingresos y no requieren importe real de
-                    coste.
-                  </p>
-                </div>
-              ) : null}
+              <FormField
+                control={form.control}
+                name="actual_amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Importe Real</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        {...field}
+                        disabled={
+                          !selectedCategory ||
+                          !costsManagementEnabled ||
+                          selectedCategory === "own_fees"
+                        }
+                      />
+                    </FormControl>
+                    {!costsManagementEnabled && (
+                      <p className="text-muted-foreground text-xs">
+                        <Link href="/pricing" className="underline">
+                          Mejora tu plan
+                        </Link>{" "}
+                        para activar la gestión de costes.
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <FormField
               control={form.control}
               name="is_internal_cost"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
+                <FormItem
+                  className={`flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
+                    !costsManagementEnabled ? "opacity-60" : ""
+                  }`}
+                >
                   <FormControl>
                     <Checkbox
-                      checked={field.value}
+                      checked={costsManagementEnabled ? field.value : false}
                       onCheckedChange={(checked) =>
+                        costsManagementEnabled &&
                         field.onChange(checked === true)
                       }
+                      disabled={!costsManagementEnabled}
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel>Coste interno</FormLabel>
                     <p className="text-muted-foreground text-sm">
                       Si está marcado, esta partida NO aparecerá en el
-                      presupuesto del cliente ni en el PDF
+                      presupuesto del cliente ni en el PDF.
                     </p>
+                    {!costsManagementEnabled && (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        <Link href="/pricing" className="underline">
+                          Mejora tu plan
+                        </Link>{" "}
+                        para activar la gestión de costes.
+                      </p>
+                    )}
                   </div>
                 </FormItem>
               )}
@@ -451,7 +491,7 @@ export function BudgetLineDialog({
                 name="phase"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fase (opcional)</FormLabel>
+                    <FormLabel>Fase</FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value || undefined)
@@ -481,7 +521,7 @@ export function BudgetLineDialog({
                 name="supplier_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Proveedor (opcional)</FormLabel>
+                    <FormLabel>Proveedor</FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value || undefined)
@@ -512,7 +552,7 @@ export function BudgetLineDialog({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notas (opcional)</FormLabel>
+                  <FormLabel>Notas</FormLabel>
                   <FormControl>
                     <Textarea placeholder="Notas adicionales..." {...field} />
                   </FormControl>

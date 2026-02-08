@@ -53,9 +53,16 @@ const navItems = [
   { name: "Proveedores", href: "/suppliers", icon: Truck },
 ];
 
+const PLAN_DISPLAY_NAMES: Record<string, string> = {
+  BASE: "Prueba",
+  PRO: "Pro",
+  STUDIO: "Studio",
+};
+
 function SidebarContent({
   collapsed = false,
   user,
+  effectivePlan,
   signOut,
   pathname,
   setIsMobileOpen,
@@ -64,6 +71,7 @@ function SidebarContent({
 }: {
   collapsed?: boolean;
   user: ReturnType<typeof useAuth>["user"];
+  effectivePlan: ReturnType<typeof useAuth>["effectivePlan"];
   signOut: () => Promise<void>;
   pathname: string;
   setIsMobileOpen: (open: boolean) => void;
@@ -250,7 +258,14 @@ function SidebarContent({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl">
-                <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+                <DropdownMenuLabel className="flex flex-wrap items-center gap-2">
+                  Mi Cuenta
+                  {effectivePlan?.plan_code && (
+                    <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+                      {PLAN_DISPLAY_NAMES[effectivePlan.plan_code] ?? effectivePlan.plan_code}
+                    </span>
+                  )}
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/account">
@@ -285,7 +300,7 @@ export default function AppLayoutClient({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, signOut, loading } = useAuth();
+  const { user, effectivePlan, signOut, loading } = useAuth();
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -311,6 +326,7 @@ export default function AppLayoutClient({
           <SidebarContent
             collapsed={isCollapsed}
             user={user}
+            effectivePlan={effectivePlan}
             signOut={signOut}
             pathname={pathname}
             setIsMobileOpen={setIsMobileOpen}
@@ -341,6 +357,7 @@ export default function AppLayoutClient({
             <SidebarContent
               collapsed={false}
               user={user}
+              effectivePlan={effectivePlan}
               signOut={signOut}
               pathname={pathname}
               setIsMobileOpen={setIsMobileOpen}

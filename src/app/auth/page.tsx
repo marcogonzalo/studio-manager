@@ -38,11 +38,23 @@ const formSchema = z.object({
   }),
 });
 
+const VALID_PLAN_CODES = ["BASE", "PRO", "STUDIO"] as const;
+const PLAN_DISPLAY_NAMES: Record<(typeof VALID_PLAN_CODES)[number], string> = {
+  BASE: "Prueba",
+  PRO: "Pro",
+  STUDIO: "Studio",
+};
+
 function AuthContent() {
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");
   const redirectTo = searchParams.get("redirect");
   const errorParam = searchParams.get("error");
+  const planParam = searchParams.get("plan");
+  const selectedPlan =
+    planParam && VALID_PLAN_CODES.includes(planParam as (typeof VALID_PLAN_CODES)[number])
+      ? (planParam as (typeof VALID_PLAN_CODES)[number])
+      : null;
 
   const [isLogin, setIsLogin] = useState(mode !== "signup");
   const [loading, setLoading] = useState(false);
@@ -216,6 +228,22 @@ function AuthContent() {
                 ? "Ingresa tu correo para enviarte el enlace de inicio de sesión"
                 : "Ingresa tu correo y te enviaremos un enlace para crear tu cuenta"}
           </CardDescription>
+          {!isLogin && selectedPlan && (
+            <p className="text-muted-foreground mt-2 text-sm">
+              Te registrarás con el plan{" "}
+              <span className="font-medium text-foreground">
+                {PLAN_DISPLAY_NAMES[selectedPlan]}
+              </span>
+              .
+            </p>
+          )}
+          {!isLogin && !selectedPlan && (
+            <p className="text-muted-foreground mt-2 text-sm">
+              Se te asignará el plan{" "}
+              <span className="font-medium text-foreground">Prueba</span> por
+              defecto.
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <Form {...form}>

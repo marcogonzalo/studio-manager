@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase";
+import { useAuth } from "@/components/auth-provider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,12 +30,30 @@ import { Pencil, ChevronDown } from "lucide-react";
 export default function ProjectDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const { effectivePlan } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("resumen");
   const tabsListRef = useRef<HTMLDivElement>(null);
   const supabase = getSupabaseClient();
+
+  const config = effectivePlan?.config;
+  const costsDisabled = false; // Tab siempre habilitado; la vista se muestra desactivada con marca de agua en plan base
+  const purchasesDisabled = !config?.purchase_orders;
+  const paymentsDisabled = !config?.payments_management;
+  const documentsDisabled = !config?.documents;
+
+  useEffect(() => {
+    if (
+      (activeTab === "control" && costsDisabled) ||
+      (activeTab === "compras" && purchasesDisabled) ||
+      (activeTab === "pagos" && paymentsDisabled) ||
+      (activeTab === "documentos" && documentsDisabled)
+    ) {
+      setActiveTab("resumen");
+    }
+  }, [activeTab, costsDisabled, purchasesDisabled, paymentsDisabled, documentsDisabled]);
 
   async function fetchProject() {
     if (!id) return;
@@ -179,13 +199,29 @@ export default function ProjectDetailPage() {
             <TabsTrigger value="resumen">Resumen</TabsTrigger>
             <TabsTrigger value="espacios">Espacios</TabsTrigger>
             <TabsTrigger value="presupuesto">Presupuesto</TabsTrigger>
-            <TabsTrigger value="control">Control Costos</TabsTrigger>
-            <TabsTrigger value="compras">Compras</TabsTrigger>
-            <TabsTrigger value="pagos">Pagos</TabsTrigger>
-            <TabsTrigger value="documentos">Documentos</TabsTrigger>
+            <TabsTrigger value="control" disabled={costsDisabled}>
+              Control Costos
+            </TabsTrigger>
+            <TabsTrigger value="compras" disabled={purchasesDisabled}>
+              Compras
+            </TabsTrigger>
+            <TabsTrigger value="pagos" disabled={paymentsDisabled}>
+              Pagos
+            </TabsTrigger>
+            <TabsTrigger value="documentos" disabled={documentsDisabled}>
+              Documentos
+            </TabsTrigger>
             <TabsTrigger value="notas">Notas</TabsTrigger>
           </TabsList>
         </div>
+        {(costsDisabled || purchasesDisabled || paymentsDisabled || documentsDisabled) && (
+          <p className="text-muted-foreground mt-2 text-sm">
+            Algunas secciones no están disponibles en tu plan.{" "}
+            <Link href="/pricing" className="font-medium underline">
+              Mejora tu plan
+            </Link>
+          </p>
+        )}
 
         <TabsContent value="resumen">
           <ProjectDashboard projectId={id} />

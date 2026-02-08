@@ -60,6 +60,17 @@ export function getErrorMessage(error: unknown): string {
   return "Error desconocido";
 }
 
+/** True when the error is from plan limit (backend rejected with PLAN_LIMIT_EXCEEDED). */
+export function isPlanLimitExceeded(error: unknown): boolean {
+  const msg =
+    error instanceof Error
+      ? error.message
+      : typeof (error as { message?: string })?.message === "string"
+        ? (error as { message: string }).message
+        : "";
+  return msg.includes("PLAN_LIMIT_EXCEEDED");
+}
+
 /**
  * Centraliza el reporte de errores (log; opcionalmente Sentry en el futuro).
  * Usar en lugar de console.error en rutas críticas.

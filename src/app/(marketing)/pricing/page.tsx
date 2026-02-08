@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,54 +19,63 @@ export const metadata: Metadata = {
 
 const plans = [
   {
-    name: "Starter",
-    description: "Perfecto para diseñadores independientes",
+    name: "Prueba",
+    planCode: "BASE" as const,
+    description: "Plan de prueba con límites básicos",
     price: "Gratis",
-    priceNote: "Para siempre",
+    priceNote: "/siempre",
     features: [
-      "Hasta 3 proyectos activos",
+      "Hasta 3 proyectos",
       "10 clientes",
-      "Catálogo de 50 productos",
-      "Generación de PDFs básica",
-      "Soporte por email",
+      "10 proveedores",
+      "50 productos en catálogo",
+      "Exportación PDF básica",
+      "Notas y resumen",
+      "Solo una moneda por defecto",
+      "Sin órdenes de compra",
+      "Sin control de costes ni pagos",
+      "Sin subida de renders ni documentos",
     ],
     cta: "Comenzar Gratis",
     ctaVariant: "outline" as const,
     popular: false,
   },
   {
-    name: "Professional",
-    description: "Para estudios en crecimiento",
-    price: "€29",
+    name: "Pro",
+    planCode: "PRO" as const,
+    description: "Plan profesional con más recursos y funcionalidades",
+    price: "€25",
     priceNote: "/mes",
     features: [
-      "Proyectos ilimitados",
-      "Clientes ilimitados",
-      "Catálogo ilimitado",
-      "Control de costos avanzado",
-      "Documentos personalizados",
-      "Exportación de datos",
-      "Soporte prioritario",
+      "Hasta 10 proyectos",
+      "50 clientes",
+      "50 proveedores",
+      "500 productos en catálogo",
+      "Exportación PDF personalizada",
+      "Cambio de moneda por proyecto",
+      "Órdenes de compra",
+      "Control de costes",
+      "Gestión de pagos",
+      "Subida de renders y documentos, notas y resumen",
     ],
-    cta: "Prueba 14 días gratis",
+    cta: "Prueba 30 días gratis",
     ctaVariant: "default" as const,
     popular: true,
   },
   {
     name: "Studio",
-    description: "Para equipos y estudios grandes",
-    price: "€79",
+    planCode: "STUDIO" as const,
+    description: "Plan ilimitado para estudios",
+    price: "€75",
     priceNote: "/mes",
     features: [
-      "Todo en Professional",
-      "Hasta 5 usuarios",
-      "Permisos por rol",
-      "Reportes avanzados",
-      "API de integración",
-      "Onboarding personalizado",
-      "Soporte dedicado 24/7",
+      "Todas las funcionalidades Pro",
+      "Proyectos ilimitados",
+      "Clientes ilimitados",
+      "Proveedores ilimitados",
+      "Catálogo ilimitado",
     ],
-    cta: "Contactar Ventas",
+    cta: "Contratar",
     ctaVariant: "outline" as const,
     popular: false,
   },
@@ -76,7 +85,7 @@ const faqs = [
   {
     question: "¿Puedo cambiar de plan en cualquier momento?",
     answer:
-      "Sí, puedes actualizar o degradar tu plan en cualquier momento. Los cambios se aplican inmediatamente y ajustamos el cobro de forma proporcional.",
+      "Sí, puedes actualizar o degradar tu plan en cualquier momento. Los cambios se aplican inmediatamente. El plan anterior perderá vigencia automáticamente.",
   },
   {
     question: "¿Qué métodos de pago aceptan?",
@@ -91,12 +100,7 @@ const faqs = [
   {
     question: "¿Qué pasa con mis datos si cancelo?",
     answer:
-      "Tus datos permanecen accesibles durante 30 días después de la cancelación. Puedes exportar toda tu información en cualquier momento antes de ese periodo.",
-  },
-  {
-    question: "¿Ofrecen descuentos para estudiantes?",
-    answer:
-      "Sí, ofrecemos un 50% de descuento para estudiantes de diseño con una cuenta de correo educativo válida.",
+      "Tu plan se mantiene hasta el final del período. Al finalizar el plan, tus datos permanecen accesibles pero tu actividad queda limitada a lo estipulado en el plan base.",
   },
 ];
 
@@ -135,7 +139,7 @@ export default function PricingPage() {
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-semibold">
-                      Más Popular
+                      Recomendado
                     </span>
                   </div>
                 )}
@@ -151,17 +155,26 @@ export default function PricingPage() {
                     </span>
                   </div>
                   <ul className="space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <Check className="text-primary mt-0.5 h-5 w-5 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
+                    {plan.features.map((feature) => {
+                      const isRestriction = feature.startsWith("Sin ");
+                      return (
+                        <li key={feature} className="flex items-start gap-3">
+                          {isRestriction ? (
+                            <X className="text-destructive mt-0.5 h-5 w-5 flex-shrink-0" />
+                          ) : (
+                            <Check className="text-primary mt-0.5 h-5 w-5 flex-shrink-0" />
+                          )}
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </CardContent>
                 <CardFooter>
                   <Button className="w-full" variant={plan.ctaVariant} asChild>
-                    <Link href="/auth?mode=signup">
+                    <Link
+                      href={`/auth?mode=signup&plan=${plan.planCode}`}
+                    >
                       {plan.cta}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>

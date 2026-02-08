@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpaceImageUpload } from "@/components/space-image-upload";
+import Link from "next/link";
 import { toast } from "sonner";
 import type { Space } from "@/types";
 import { Trash2 } from "lucide-react";
@@ -26,11 +27,14 @@ export function SpaceImagesDialog({
   onOpenChange,
   space,
   projectId,
+  canAddRenders = true,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   space: Space;
   projectId: string;
+  /** Si false (plan sin subida de renders), el botón Añadir y el input se deshabilitan y se muestra mensaje. */
+  canAddRenders?: boolean;
 }) {
   const supabase = getSupabaseClient();
   const [images, setImages] = useState<Image[]>([]);
@@ -140,6 +144,31 @@ export function SpaceImagesDialog({
               )}
             </TabsContent>
           </Tabs>
+        </div>
+        <div className="mb-4 flex flex-col gap-2">
+          <div className="flex gap-2">
+            <Input
+              placeholder="URL de la imagen (http://...)"
+              value={newImageUrl}
+              onChange={(e) => setNewImageUrl(e.target.value)}
+              disabled={!canAddRenders}
+            />
+            <Button
+              onClick={handleAddByUrl}
+              disabled={loading || !canAddRenders || !newImageUrl?.trim()}
+            >
+              Añadir
+            </Button>
+          </div>
+          {!canAddRenders && (
+            <p className="text-muted-foreground text-xs">
+              No disponible en tu plan.{" "}
+              <Link href="/pricing" className="underline">
+                Mejora tu plan
+              </Link>{" "}
+              para subir renders.
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">

@@ -31,10 +31,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import type { Client, Project } from "@/types";
 import { ClientDialog } from "@/components/dialogs/client-dialog";
-import { CURRENCIES } from "@/lib/utils";
+import { CURRENCIES, isPlanLimitExceeded } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
@@ -78,11 +80,21 @@ export function ProjectDialog({
   onSuccess,
   project,
 }: ProjectDialogProps) {
-  const { user } = useAuth();
+  const { user, effectivePlan } = useAuth();
+  const profileDefaults = useProfileDefaults();
   const supabase = getSupabaseClient();
   const [clients, setClients] = useState<Client[]>([]);
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
   const [pendingClientId, setPendingClientId] = useState<string | null>(null);
+
+  const isBasePlan = effectivePlan?.plan_code === "BASE";
+  const currencyDisabled = isBasePlan;
+  const taxRateDisabled = isBasePlan;
+  const defaultCurrency = profileDefaults?.default_currency ?? "EUR";
+  const defaultTaxRateStr =
+    profileDefaults?.default_tax_rate != null
+      ? profileDefaults.default_tax_rate.toString()
+      : "";
 
   const form = useForm<z.input<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -140,6 +152,18 @@ export function ProjectDialog({
       }
     }
   }, [clientId, clients, form]);
+
+  useEffect(() => {
+    if (open && isBasePlan && profileDefaults) {
+      form.setValue("currency", profileDefaults.default_currency ?? "EUR");
+      form.setValue(
+        "tax_rate",
+        profileDefaults.default_tax_rate != null
+          ? profileDefaults.default_tax_rate.toString()
+          : ""
+      );
+    }
+  }, [open, isBasePlan, profileDefaults, form]);
 
   useEffect(() => {
     if (project && open) {
@@ -331,6 +355,13 @@ export function ProjectDialog({
       }
       onSuccess();
     } catch (error: unknown) {
+      if (isPlanLimitExceeded(error)) {
+        toast.error(
+          "El plan actual no permite realizar esa acción. Mejora tu plan para continuar.",
+          { duration: 5000 }
+        );
+        return;
+      }
       const errorMessage =
         error instanceof Error
           ? error.message
@@ -526,7 +557,7 @@ export function ProjectDialog({
               />
             </div>
 
-            {/* Moneda e Impuesto */}
+            {/* Moneda e Impuesto (deshabilitados en plan BASE: solo perfil) */}
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -536,7 +567,8 @@ export function ProjectDialog({
                     <FormLabel>Moneda</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value ?? "EUR"}
+                      value={currencyDisabled ? defaultCurrency : (field.value ?? "EUR")}
+                      disabled={currencyDisabled}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -570,13 +602,23 @@ export function ProjectDialog({
                         step="0.01"
                         placeholder="Ej: 21"
                         {...field}
-                        value={field.value || ""}
+                        value={taxRateDisabled ? defaultTaxRateStr : (field.value || "")}
+                        disabled={taxRateDisabled}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              {(currencyDisabled || taxRateDisabled) && (
+                <p className="text-muted-foreground col-span-2 text-xs">
+                  Moneda e impuesto definidos por tu perfil.{" "}
+                  <Link href="/pricing" className="underline">
+                    Mejora tu plan
+                  </Link>{" "}
+                  para definirlos por proyecto.
+                </p>
+              )}
             </div>
 
             <DialogFooter>

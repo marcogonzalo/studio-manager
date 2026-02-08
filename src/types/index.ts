@@ -1,3 +1,27 @@
+export type PlanFeatureModality = "basic" | "full" | null;
+
+export interface PlanConfig {
+  projects_limit: number;
+  clients_limit: number;
+  suppliers_limit: number;
+  catalog_products_limit: number;
+  budget_mode: PlanFeatureModality;
+  multi_currency_per_project: PlanFeatureModality;
+  purchase_orders: PlanFeatureModality;
+  costs_management: PlanFeatureModality;
+  payments_management: PlanFeatureModality;
+  documents: PlanFeatureModality;
+  notes: PlanFeatureModality;
+  summary: PlanFeatureModality;
+}
+
+export type PlanCode = "BASE" | "PRO" | "STUDIO";
+
+export interface EffectivePlan {
+  plan_code: PlanCode;
+  config: PlanConfig;
+}
+
 export interface Profile {
   id: string;
   email?: string;

@@ -71,7 +71,8 @@ import type {
 } from "@/types";
 
 export function ProjectBudget({ projectId }: { projectId: string }) {
-  const { user } = useAuth();
+  const { user, effectivePlan } = useAuth();
+  const pdfExportFull = effectivePlan?.config?.budget_mode === "full";
   const supabase = getSupabaseClient();
   const { budgetLines, refetch: refetchBudgetLines } = useProjectBudgetLines(
     projectId,
@@ -818,6 +819,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         onOpenChange={setIsPrintOptionsOpen}
         onConfirm={handleGeneratePDF}
         isGenerating={isGeneratingPDF}
+        pdfExportFull={pdfExportFull}
       />
     </div>
   );

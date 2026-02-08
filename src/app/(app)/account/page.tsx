@@ -23,6 +23,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import Link from "next/link";
 import { User, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage, reportError } from "@/lib/utils";
@@ -37,7 +38,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function AccountPage() {
-  const { user } = useAuth();
+  const { user, effectivePlan } = useAuth();
+  const isBasePlan = effectivePlan?.plan_code === "BASE";
   const supabase = getSupabaseClient();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -118,8 +120,17 @@ export default function AccountPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-foreground text-3xl font-bold tracking-tight">
+        <h1 className="text-foreground flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight">
           Mi Cuenta
+          {effectivePlan?.plan_code && (
+            <span className="bg-muted text-muted-foreground rounded-full px-3 py-1 text-sm font-medium">
+              {effectivePlan.plan_code === "BASE"
+                ? "Prueba"
+                : effectivePlan.plan_code === "PRO"
+                  ? "Pro"
+                  : "Studio"}
+            </span>
+          )}
         </h1>
         <p className="text-muted-foreground mt-1">
           Gestiona tu perfil y la información que aparece en los presupuestos
@@ -192,7 +203,9 @@ export default function AccountPage() {
                         placeholder="Ej. Estudio García Interiorismo"
                         {...field}
                         value={field.value ?? ""}
+                        disabled={isBasePlan}
                         onFocus={() => {
+                          if (isBasePlan) return;
                           const current = (field.value ?? "").trim();
                           if (!current) {
                             const suggested =
@@ -202,11 +215,21 @@ export default function AccountPage() {
                         }}
                       />
                     </FormControl>
+                    {isBasePlan && (
+                      <p className="text-muted-foreground text-xs">
+                        Mejora tu plan para poder personalizar tus presupuestos.{" "}
+                        <Link href="/pricing" className="font-medium underline">
+                          Mejora tu plan
+                        </Link>
+                      </p>
+                    )}
+                    {!isBasePlan && (
+                      <p className="text-muted-foreground text-xs">
+                        Este nombre aparecerá como &quot;Arquitecto/a&quot; en los
+                        PDF de presupuestos
+                      </p>
+                    )}
                     <FormMessage />
-                    <p className="text-muted-foreground text-xs">
-                      Este nombre aparecerá como &quot;Arquitecto/a&quot; en los
-                      PDF de presupuestos
-                    </p>
                   </FormItem>
                 )}
               />

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { useAuth } from "@/components/auth-provider";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,6 +52,9 @@ import {
 import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
 
 export function ProjectCostControl({ projectId }: { projectId: string }) {
+  const { effectivePlan } = useAuth();
+  const costsManagementEnabled =
+    effectivePlan?.config?.costs_management === "full";
   const supabase = getSupabaseClient();
   const [project, setProject] = useState<{ currency?: string } | null>(null);
   const {
@@ -225,18 +229,27 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h3 className="text-lg font-medium">Control de Costes</h3>
-          <p className="text-muted-foreground text-sm">
-            Seguimiento interno de estimado vs real
-          </p>
-        </div>
-        <Button onClick={handleAddBudgetLine}>
-          <Plus className="mr-2 h-4 w-4" /> Nueva Partida
-        </Button>
-      </div>
+      <div className="relative">
+        <div
+          className={
+            !costsManagementEnabled ? "pointer-events-none select-none" : ""
+          }
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h3 className="text-lg font-medium">Control de Costes</h3>
+              <p className="text-muted-foreground text-sm">
+                Seguimiento interno de estimado vs real
+              </p>
+            </div>
+            <Button
+              onClick={handleAddBudgetLine}
+              disabled={!costsManagementEnabled}
+            >
+              <Plus className="mr-2 h-4 w-4" /> Nueva Partida
+            </Button>
+          </div>
 
       {/* Cost Totalization Summary */}
       <Card>
@@ -510,12 +523,24 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
             <p className="text-muted-foreground mb-4">
               No hay partidas de presupuesto registradas.
             </p>
-            <Button onClick={handleAddBudgetLine}>
+            <Button
+              onClick={handleAddBudgetLine}
+              disabled={!costsManagementEnabled}
+            >
               <Plus className="mr-2 h-4 w-4" /> Añadir Primera Partida
             </Button>
           </CardContent>
         </Card>
       )}
+        </div>
+
+        {!costsManagementEnabled && (
+          <div
+            className="absolute inset-0 z-10 bg-background/50 pointer-events-auto"
+            aria-hidden="true"
+          />
+        )}
+      </div>
 
       {/* Dialog */}
       <BudgetLineDialog
