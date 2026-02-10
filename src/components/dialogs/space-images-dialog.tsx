@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SpaceImageUpload } from "@/components/space-image-upload";
 import { toast } from "sonner";
 import type { Space } from "@/types";
 import { Trash2 } from "lucide-react";
@@ -23,15 +25,21 @@ export function SpaceImagesDialog({
   open,
   onOpenChange,
   space,
+  projectId,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   space: Space;
+  projectId: string;
 }) {
   const supabase = getSupabaseClient();
   const [images, setImages] = useState<Image[]>([]);
   const [newImageUrl, setNewImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const imageIdForUpload = useMemo(
+    () => (open ? crypto.randomUUID() : ""),
+    [open]
+  );
 
   const fetchImages = async () => {
     const { data } = await supabase
@@ -45,25 +53,40 @@ export function SpaceImagesDialog({
     if (open) fetchImages();
   }, [open, space.id]);
 
-  const handleAddImage = async () => {
-    if (!newImageUrl) return;
-    setLoading(true);
+  const insertImage = async (url: string) => {
     const { error } = await supabase.from("space_images").insert([
       {
         space_id: space.id,
-        url: newImageUrl,
+        url,
         description: "Render",
       },
     ]);
-
     if (error) {
       toast.error("Error al añadir imagen");
-    } else {
-      toast.success("Imagen añadida");
-      setNewImageUrl("");
-      fetchImages();
+      throw error;
     }
-    setLoading(false);
+    toast.success("Imagen añadida");
+    setNewImageUrl("");
+    fetchImages();
+  };
+
+  const handleAddByUrl = async () => {
+    if (!newImageUrl) return;
+    setLoading(true);
+    try {
+      await insertImage(newImageUrl);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUploadSuccess = async (url: string) => {
+    setLoading(true);
+    try {
+      await insertImage(url);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -82,15 +105,41 @@ export function SpaceImagesDialog({
           <DialogDescription>Visualizaciones del espacio.</DialogDescription>
         </DialogHeader>
 
-        <div className="mb-4 flex gap-2">
-          <Input
-            placeholder="URL de la imagen (http://...)"
-            value={newImageUrl}
-            onChange={(e) => setNewImageUrl(e.target.value)}
-          />
-          <Button onClick={handleAddImage} disabled={loading}>
-            Añadir
-          </Button>
+        <div className="mb-4 space-y-2">
+          <Tabs defaultValue="url" className="w-full">
+            <TabsList>
+              <TabsTrigger value="url">URL</TabsTrigger>
+              <TabsTrigger value="upload">Subir archivo</TabsTrigger>
+            </TabsList>
+            <TabsContent value="url" className="mt-2">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="https://..."
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                />
+                <Button
+                  onClick={handleAddByUrl}
+                  disabled={loading || !newImageUrl?.trim()}
+                >
+                  Añadir
+                </Button>
+              </div>
+            </TabsContent>
+            <TabsContent value="upload" className="mt-2">
+              {imageIdForUpload && projectId ? (
+                <SpaceImageUpload
+                  projectId={projectId}
+                  spaceId={space.id}
+                  imageId={imageIdForUpload}
+                  onUploadSuccess={handleUploadSuccess}
+                  onUploadError={(msg) => toast.error(msg)}
+                />
+              ) : (
+                <p className="text-muted-foreground text-sm">Cargando…</p>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
