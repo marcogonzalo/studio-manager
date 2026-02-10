@@ -25,7 +25,13 @@
 - [x] Session Expiration Handling: Redirige al login guardando la ruta de destino cuando la sesión caduca, y redirige automáticamente después del login exitoso.
 - [x] Custom 404 Page: Página de error 404 personalizada con temática de arquitectura, diseño moderno y navegación contextual.
 
-- [x] **Product Image Upload (Backblaze B2):** Subida de imágenes de producto a Backblaze B2. Opción URL (por defecto) o subir archivo (JPG, PNG, WebP). Compresión con Sharp: redimensionado a 1200px máximo, conversión a WebP calidad 100. Ruta en bucket: `<userId>/<productId>.ext`. Al eliminar producto del catálogo se borra la imagen en B2. Al cambiar la URL al guardar se elimina la imagen previa en B2. Disponible en catálogo y en formulario de nuevo producto desde presupuesto (add-item-dialog).
+- [x] **Product Image Upload (Backblaze B2):** Subida de imágenes de producto a Backblaze B2. Opción URL (por defecto) o subir archivo (JPG, PNG, WebP). Compresión con Sharp: redimensionado a 1200px máximo, conversión a WebP calidad 100. Estructura de almacenamiento: `assets/{userId}/catalog/` (catálogo) y `assets/{userId}/projects/{projectId}/img/` (proyecto). Disponible en catálogo y en formulario de nuevo producto desde presupuesto (add-item-dialog).
+
+- [x] **Documents Module (Modal + Upload):** Vista de documentos con botón "Añadir documento" que abre modal. Campos: Nombre, URL/Imagen (tabs URL y Subir archivo). Subida de archivos: PDFs, docs, hojas de cálculo, presentaciones, texto (máx. 10MB). Auto-relleno del nombre desde nombre del fichero si está vacío. Limpieza automática: si el registro no se completa (cierre modal o fallo insert), se elimina el archivo huérfano de B2. Estructura: `assets/{userId}/projects/{projectId}/doc/`.
+
+- [x] **Space Renders Upload:** Modal de renders de espacios permite subir imágenes además de URL. Tabs URL / Subir archivo. Imágenes JPG, PNG, WebP (máx. 5MB), procesadas con Sharp. Estructura: `assets/{userId}/projects/{projectId}/img/{imageId}.ext`.
+
+- [x] **Storage Structure (assets):** Todos los archivos del proyecto organizados bajo `assets/{userId}/` con subcarpetas `catalog/` (imágenes producto catálogo), `projects/{projectId}/img/` (imágenes de proyecto y renders de espacios), `projects/{projectId}/doc/` (documentos).
 
 ## Pending Features
 

@@ -45,7 +45,13 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
 
 ## Recently Completed (This Session)
 
-1. **Product Image Upload (Backblaze B2):**
+1. **Documents & Renders Feature Branch:**
+   - Documentos: modal con URL + subida de archivos (PDFs, docs, hojas de cálculo, presentaciones, texto, máx. 10MB). Auto-nombre desde fichero. Limpieza de huérfanos si no se completa el registro.
+   - Renders de espacios: modal permite subir imágenes además de URL (JPG, PNG, WebP, máx. 5MB).
+   - Estructura de almacenamiento unificada: `assets/{userId}/catalog/`, `assets/{userId}/projects/{projectId}/img/`, `assets/{userId}/projects/{projectId}/doc/`.
+   - Imágenes de producto organizadas por proyecto cuando se suben desde add-item-dialog.
+
+2. **Product Image Upload (Backblaze B2):**
    - Integración con Backblaze B2 para almacenar imágenes de productos.
    - Formulario con pestañas: URL (por defecto) o Subir archivo (drag & drop).
    - Compresión Sharp: redimensionado 1200px máximo, WebP calidad 100.
