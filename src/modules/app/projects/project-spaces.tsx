@@ -114,6 +114,7 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
             open={isImagesOpen}
             onOpenChange={setIsImagesOpen}
             space={selectedSpace}
+            projectId={projectId}
           />
           <SpaceProductsDialog
             open={isProductsOpen}

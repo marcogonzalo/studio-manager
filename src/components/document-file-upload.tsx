@@ -1,29 +1,29 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { ImageIcon, Loader2, X } from "lucide-react";
+import { FileIcon, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { validateImageFile } from "@/lib/image-validation";
+import { validateDocumentFile } from "@/lib/document-validation";
 
-interface ProductImageUploadProps {
-  productId: string;
-  projectId?: string;
-  currentImageUrl?: string;
-  onUploadSuccess: (url: string) => void;
+interface DocumentFileUploadProps {
+  documentId: string;
+  projectId: string;
+  currentFileUrl?: string;
+  onUploadSuccess: (url: string, fileName?: string) => void;
   onUploadError?: (error: string) => void;
   disabled?: boolean;
   className?: string;
 }
 
-export function ProductImageUpload({
-  productId,
+export function DocumentFileUpload({
+  documentId,
   projectId,
-  currentImageUrl,
+  currentFileUrl,
   onUploadSuccess,
   onUploadError,
   disabled = false,
   className,
-}: ProductImageUploadProps) {
+}: DocumentFileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export function ProductImageUpload({
   const uploadFile = useCallback(
     async (file: File) => {
       setError(null);
-      const validation = validateImageFile(file);
+      const validation = validateDocumentFile(file);
       if (!validation.valid) {
         setError(validation.error);
         onUploadError?.(validation.error);
@@ -42,10 +42,10 @@ export function ProductImageUpload({
       try {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("productId", productId);
-        if (projectId) formData.append("projectId", projectId);
+        formData.append("documentId", documentId);
+        formData.append("projectId", projectId);
 
-        const res = await fetch("/api/upload/product-image", {
+        const res = await fetch("/api/upload/document", {
           method: "POST",
           body: formData,
         });
@@ -53,25 +53,25 @@ export function ProductImageUpload({
         const data = (await res.json()) as { url?: string; error?: string };
 
         if (!res.ok) {
-          const msg = data.error || "Error al subir la imagen";
+          const msg = data.error || "Error al subir el documento";
           setError(msg);
           onUploadError?.(msg);
           return;
         }
 
         if (data.url) {
-          onUploadSuccess(data.url);
+          onUploadSuccess(data.url, file.name);
         }
       } catch (err) {
         const msg =
-          err instanceof Error ? err.message : "Error al subir la imagen";
+          err instanceof Error ? err.message : "Error al subir el documento";
         setError(msg);
         onUploadError?.(msg);
       } finally {
         setIsUploading(false);
       }
     },
-    [productId, projectId, onUploadSuccess, onUploadError]
+    [documentId, projectId, onUploadSuccess, onUploadError]
   );
 
   const handleDrop = useCallback(
@@ -113,7 +113,7 @@ export function ProductImageUpload({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         className={cn(
-          "relative flex min-h-[120px] flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors",
+          "relative flex min-h-[100px] flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors",
           "bg-muted/30 border-muted-foreground/25",
           isDragging && "border-primary bg-primary/5",
           (disabled || isUploading) && "pointer-events-none opacity-60",
@@ -122,36 +122,30 @@ export function ProductImageUpload({
       >
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+          accept=".pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.numbers,.ppt,.pptx,.key,.rtf,.odt,.ods,.odp,application/pdf,text/plain,text/csv,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.apple.numbers,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.apple.keynote,application/rtf,text/rtf,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/vnd.oasis.opendocument.presentation"
           onChange={handleFileInput}
           disabled={disabled || isUploading}
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
-          aria-label="Seleccionar imagen"
+          aria-label="Seleccionar documento"
         />
         {isUploading ? (
           <Loader2 className="text-muted-foreground h-10 w-10 animate-spin" />
-        ) : currentImageUrl ? (
-          <div className="relative flex h-full min-h-[120px] w-full items-center justify-center overflow-hidden rounded-md p-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={currentImageUrl}
-              alt="Vista previa"
-              className="max-h-[180px] max-w-full object-contain"
-            />
+        ) : currentFileUrl ? (
+          <div className="flex flex-col items-center gap-2 p-4">
+            <FileIcon className="text-muted-foreground h-10 w-10" />
+            <p className="text-muted-foreground max-w-[200px] truncate text-center text-sm">
+              Documento subido
+            </p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
-            <ImageIcon className="text-muted-foreground h-10 w-10" />
+            <FileIcon className="text-muted-foreground h-10 w-10" />
             <div className="text-muted-foreground text-sm">
-              <p className="font-medium">Arrastra una imagen aquí</p>
+              <p className="font-medium">Arrastra un documento aquí</p>
               <p>o haz clic para seleccionar</p>
             </div>
             <p className="text-muted-foreground/80 text-xs">
-              JPG, PNG o WebP (máx. 5MB)
-            </p>
-            <p className="text-muted-foreground/70 text-xs">
-              La imagen será redimensionada a 1200px como máximo y convertida a
-              formato WebP.
+              PDFs, docs, hojas de cálculo, presentaciones, texto… (máx. 10MB)
             </p>
           </div>
         )}

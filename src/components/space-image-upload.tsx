@@ -5,9 +5,10 @@ import { ImageIcon, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { validateImageFile } from "@/lib/image-validation";
 
-interface ProductImageUploadProps {
-  productId: string;
-  projectId?: string;
+interface SpaceImageUploadProps {
+  projectId: string;
+  spaceId: string;
+  imageId: string;
   currentImageUrl?: string;
   onUploadSuccess: (url: string) => void;
   onUploadError?: (error: string) => void;
@@ -15,15 +16,16 @@ interface ProductImageUploadProps {
   className?: string;
 }
 
-export function ProductImageUpload({
-  productId,
+export function SpaceImageUpload({
   projectId,
+  spaceId,
+  imageId,
   currentImageUrl,
   onUploadSuccess,
   onUploadError,
   disabled = false,
   className,
-}: ProductImageUploadProps) {
+}: SpaceImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,10 +44,11 @@ export function ProductImageUpload({
       try {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("productId", productId);
-        if (projectId) formData.append("projectId", projectId);
+        formData.append("projectId", projectId);
+        formData.append("spaceId", spaceId);
+        formData.append("imageId", imageId);
 
-        const res = await fetch("/api/upload/product-image", {
+        const res = await fetch("/api/upload/space-image", {
           method: "POST",
           body: formData,
         });
@@ -71,7 +74,7 @@ export function ProductImageUpload({
         setIsUploading(false);
       }
     },
-    [productId, projectId, onUploadSuccess, onUploadError]
+    [projectId, spaceId, imageId, onUploadSuccess, onUploadError]
   );
 
   const handleDrop = useCallback(
@@ -113,7 +116,7 @@ export function ProductImageUpload({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         className={cn(
-          "relative flex min-h-[120px] flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors",
+          "relative flex min-h-[100px] flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors",
           "bg-muted/30 border-muted-foreground/25",
           isDragging && "border-primary bg-primary/5",
           (disabled || isUploading) && "pointer-events-none opacity-60",
@@ -131,12 +134,12 @@ export function ProductImageUpload({
         {isUploading ? (
           <Loader2 className="text-muted-foreground h-10 w-10 animate-spin" />
         ) : currentImageUrl ? (
-          <div className="relative flex h-full min-h-[120px] w-full items-center justify-center overflow-hidden rounded-md p-2">
+          <div className="relative flex h-full min-h-[100px] w-full items-center justify-center overflow-hidden rounded-md p-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={currentImageUrl}
               alt="Vista previa"
-              className="max-h-[180px] max-w-full object-contain"
+              className="max-h-[160px] max-w-full object-contain"
             />
           </div>
         ) : (
@@ -148,10 +151,6 @@ export function ProductImageUpload({
             </div>
             <p className="text-muted-foreground/80 text-xs">
               JPG, PNG o WebP (máx. 5MB)
-            </p>
-            <p className="text-muted-foreground/70 text-xs">
-              La imagen será redimensionada a 1200px como máximo y convertida a
-              formato WebP.
             </p>
           </div>
         )}

@@ -2,12 +2,20 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { CookieOptions } from "@supabase/ssr";
-import sharp from "sharp";
-import { uploadProductImage } from "@/lib/backblaze";
-import { validateImageFile } from "@/lib/image-validation";
+import { uploadDocument, deleteProductImage } from "@/lib/backblaze";
+import {
+  validateDocumentFile,
+  getExtensionFromMime,
+  getExtensionFromFileName,
+} from "@/lib/document-validation";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const MAX_DIMENSION = 1200;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+interface CookieToSet {
+  name: string;
+  value: string;
+  options?: CookieOptions;
+}
 
 export async function DELETE(request: Request) {
   try {
@@ -38,30 +46,23 @@ export async function DELETE(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const imageUrl = searchParams.get("url");
+    const url = searchParams.get("url");
 
-    if (!imageUrl?.trim()) {
+    if (!url?.trim()) {
       return NextResponse.json(
         { error: "Falta el parámetro url" },
         { status: 400 }
       );
     }
 
-    const { deleteProductImage } = await import("@/lib/backblaze");
-    await deleteProductImage(imageUrl);
+    await deleteProductImage(url);
 
     return NextResponse.json({ ok: true });
   } catch (err) {
     const message =
-      err instanceof Error ? err.message : "Error al eliminar la imagen";
+      err instanceof Error ? err.message : "Error al eliminar el documento";
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
-
-interface CookieToSet {
-  name: string;
-  value: string;
-  options?: CookieOptions;
 }
 
 export async function POST(request: Request) {
@@ -94,52 +95,55 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    const productId = formData.get("productId") as string | null;
-    const projectId = (formData.get("projectId") as string | null) || undefined;
+    const documentId = formData.get("documentId") as string | null;
+    const projectId = formData.get("projectId") as string | null;
 
-    if (!file || !productId?.trim()) {
+    if (!file || !documentId?.trim() || !projectId?.trim()) {
       return NextResponse.json(
-        { error: "Faltan archivo o productId" },
+        { error: "Faltan archivo, documentId o projectId" },
         { status: 400 }
       );
     }
 
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: "El archivo no puede superar 5MB" },
+        {
+          error:
+            "No se pueden subir archivos de más de 10Mb. Si lo tienes en Drive, OneDrive o iCloud, añádelo como URL.",
+        },
         { status: 400 }
       );
     }
 
-    const validation = validateImageFile(file);
+    const validation = validateDocumentFile(file);
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
+    const ext =
+      getExtensionFromMime(file.type) ||
+      getExtensionFromFileName(file.name) ||
+      ".bin";
+
     const inputBuffer = Buffer.from(await file.arrayBuffer());
-    const processedBuffer = await sharp(inputBuffer)
-      .resize(MAX_DIMENSION, MAX_DIMENSION, {
-        fit: "inside",
-        withoutEnlargement: true,
-      })
-      .webp({ quality: 100 })
-      .toBuffer();
+    const arrayBuffer = inputBuffer.buffer.slice(
+      inputBuffer.byteOffset,
+      inputBuffer.byteOffset + inputBuffer.byteLength
+    );
 
-    const arrayBuffer = new ArrayBuffer(processedBuffer.length);
-    new Uint8Array(arrayBuffer).set(processedBuffer);
-
-    const url = await uploadProductImage({
+    const url = await uploadDocument({
       buffer: arrayBuffer,
-      mimeType: "image/webp",
+      mimeType: file.type,
       userId: user.id,
-      productId: productId.trim(),
-      projectId: projectId?.trim() || undefined,
+      projectId: projectId.trim(),
+      documentId: documentId.trim(),
+      extension: ext,
     });
 
     return NextResponse.json({ url });
   } catch (err) {
     const message =
-      err instanceof Error ? err.message : "Error al subir la imagen";
+      err instanceof Error ? err.message : "Error al subir el documento";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
