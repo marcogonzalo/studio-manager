@@ -100,23 +100,146 @@ async function getUploadUrl(
 }
 
 /**
- * Uploads a file buffer to B2 with path: <userId>/<productId>.<ext>
- * Returns the public download URL.
+ * Estructura: assets/{userId}/catalog/ y assets/{userId}/projects/{projectId}/img|doc/
+ * - Catálogo: assets/{userId}/catalog/{productId}.webp
+ * - Proyecto: assets/{userId}/projects/{projectId}/img/{productId}.webp
  */
 export async function uploadProductImage(params: {
   buffer: ArrayBuffer;
   mimeType: string;
   userId: string;
   productId: string;
+  projectId?: string;
 }): Promise<string> {
-  const { buffer, mimeType, userId, productId } = params;
+  const { buffer, mimeType, userId, productId, projectId } = params;
 
   if (!isAllowedImageType(mimeType)) {
     throw new Error("Solo se permiten imágenes JPG, PNG o WebP");
   }
 
   const ext = getExtensionFromMime(mimeType);
-  const fileName = `${userId}/${productId}${ext}`;
+  const fileName = projectId
+    ? `assets/${userId}/projects/${projectId}/img/${productId}${ext}`
+    : `assets/${userId}/catalog/${productId}${ext}`;
+  const encodedFileName = encodeURIComponent(fileName);
+
+  const auth = await b2Authorize();
+  const { uploadUrl, authorizationToken } = await getUploadUrl(auth);
+
+  const sha1 = await crypto.subtle.digest("SHA-1", buffer).then((h) =>
+    Array.from(new Uint8Array(h))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+  );
+
+  const res = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      Authorization: authorizationToken,
+      "X-Bz-File-Name": encodedFileName,
+      "Content-Type": mimeType,
+      "Content-Length": String(buffer.byteLength),
+      "X-Bz-Content-Sha1": sha1,
+    },
+    body: buffer,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      err.message || `B2 upload failed: ${res.status} ${res.statusText}`
+    );
+  }
+
+  const data = (await res.json()) as B2UploadFileResponse;
+
+  const bucketName = process.env.B2_BUCKET_NAME;
+  const { downloadUrl } = getApiUrls(auth);
+
+  if (!bucketName || !downloadUrl) {
+    throw new Error("B2_BUCKET_NAME o downloadUrl no configurados");
+  }
+
+  return `${downloadUrl}/file/${bucketName}/${data.fileName}`;
+}
+
+/**
+ * Estructura: assets/{userId}/projects/{projectId}/img/{imageId}.ext
+ */
+export async function uploadSpaceImage(params: {
+  buffer: ArrayBuffer;
+  mimeType: string;
+  userId: string;
+  projectId: string;
+  spaceId: string;
+  imageId: string;
+}): Promise<string> {
+  const { buffer, mimeType, userId, projectId, imageId } = params;
+
+  if (!isAllowedImageType(mimeType)) {
+    throw new Error("Solo se permiten imágenes JPG, PNG o WebP");
+  }
+
+  const ext = getExtensionFromMime(mimeType);
+  const fileName = `assets/${userId}/projects/${projectId}/img/${imageId}${ext}`;
+  const encodedFileName = encodeURIComponent(fileName);
+
+  const auth = await b2Authorize();
+  const { uploadUrl, authorizationToken } = await getUploadUrl(auth);
+
+  const sha1 = await crypto.subtle.digest("SHA-1", buffer).then((h) =>
+    Array.from(new Uint8Array(h))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+  );
+
+  const res = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      Authorization: authorizationToken,
+      "X-Bz-File-Name": encodedFileName,
+      "Content-Type": mimeType,
+      "Content-Length": String(buffer.byteLength),
+      "X-Bz-Content-Sha1": sha1,
+    },
+    body: buffer,
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      err.message || `B2 upload failed: ${res.status} ${res.statusText}`
+    );
+  }
+
+  const data = (await res.json()) as B2UploadFileResponse;
+
+  const bucketName = process.env.B2_BUCKET_NAME;
+  const { downloadUrl } = getApiUrls(auth);
+
+  if (!bucketName || !downloadUrl) {
+    throw new Error("B2_BUCKET_NAME o downloadUrl no configurados");
+  }
+
+  return `${downloadUrl}/file/${bucketName}/${data.fileName}`;
+}
+
+/**
+ * Estructura: assets/{userId}/projects/{projectId}/doc/{documentId}.ext
+ */
+export async function uploadDocument(params: {
+  buffer: ArrayBuffer;
+  mimeType: string;
+  userId: string;
+  projectId: string;
+  documentId: string;
+  extension: string;
+}): Promise<string> {
+  const { buffer, mimeType, userId, projectId, documentId, extension } =
+    params;
+
+  const ext = extension.startsWith(".") ? extension : `.${extension}`;
+  const fileName = `assets/${userId}/projects/${projectId}/doc/${documentId}${ext}`;
   const encodedFileName = encodeURIComponent(fileName);
 
   const auth = await b2Authorize();

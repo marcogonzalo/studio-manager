@@ -724,6 +724,7 @@ export function AddItemDialog({
                             {productIdForUpload && user?.id ? (
                               <ProductImageUpload
                                 productId={productIdForUpload}
+                                projectId={projectId}
                                 currentImageUrl={field.value || undefined}
                                 onUploadSuccess={(url) => {
                                   field.onChange(url);

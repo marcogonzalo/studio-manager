@@ -95,6 +95,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const productId = formData.get("productId") as string | null;
+    const projectId = (formData.get("projectId") as string | null) || undefined;
 
     if (!file || !productId?.trim()) {
       return NextResponse.json(
@@ -132,6 +133,7 @@ export async function POST(request: Request) {
       mimeType: "image/webp",
       userId: user.id,
       productId: productId.trim(),
+      projectId: projectId?.trim() || undefined,
     });
 
     return NextResponse.json({ url });

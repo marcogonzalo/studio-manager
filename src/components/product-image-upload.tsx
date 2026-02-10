@@ -7,6 +7,7 @@ import { validateImageFile } from "@/lib/image-validation";
 
 interface ProductImageUploadProps {
   productId: string;
+  projectId?: string;
   currentImageUrl?: string;
   onUploadSuccess: (url: string) => void;
   onUploadError?: (error: string) => void;
@@ -16,6 +17,7 @@ interface ProductImageUploadProps {
 
 export function ProductImageUpload({
   productId,
+  projectId,
   currentImageUrl,
   onUploadSuccess,
   onUploadError,
@@ -41,6 +43,7 @@ export function ProductImageUpload({
         const formData = new FormData();
         formData.append("file", file);
         formData.append("productId", productId);
+        if (projectId) formData.append("projectId", projectId);
 
         const res = await fetch("/api/upload/product-image", {
           method: "POST",
@@ -68,7 +71,7 @@ export function ProductImageUpload({
         setIsUploading(false);
       }
     },
-    [productId, onUploadSuccess, onUploadError]
+    [productId, projectId, onUploadSuccess, onUploadError]
   );
 
   const handleDrop = useCallback(
