@@ -38,15 +38,16 @@ globs: src/**/*.tsx, src/**/*.ts
 ## Shadcn/UI Components (Radix UI)
 
 - **Select Component:** **CRITICAL:** Never use `value=""` (empty string) in `<SelectItem>`. Radix UI Select does not allow empty string values because it uses empty strings internally to clear selections and show placeholders.
-  - **Wrong:** `<SelectItem value="">Sin opción</SelectItem>`
+  - **Wrong:** `<SelectItem value="">No option</SelectItem>`
   - **Correct:** Remove the SelectItem and use `undefined` for optional values. Handle empty state with placeholder:
+
     ```tsx
     <Select 
       onValueChange={(value) => field.onChange(value || undefined)} 
       value={field.value || undefined}
     >
       <SelectTrigger>
-        <SelectValue placeholder="Seleccionar opción" />
+        <SelectValue placeholder="Select option" />
       </SelectTrigger>
       <SelectContent>
         {/* Only include SelectItems with non-empty values */}
@@ -58,6 +59,7 @@ globs: src/**/*.tsx, src/**/*.ts
       </SelectContent>
     </Select>
     ```
+
   - **Form Defaults:** Use `undefined` instead of empty strings for optional Select fields in form defaultValues.
 
 ## Directory Structure

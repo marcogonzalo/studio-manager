@@ -53,25 +53,9 @@ You are an expert Senior Full Stack Developer and Security Engineer specializing
 
 ### Approval & Release Process
 
-**IMPORTANT:** This process is only executed when the user explicitly approves the development (e.g., "apruebo el desarrollo", "está listo", "genera la PR"). During iterative development and refinements, commits should be made normally without creating PRs.
+This process **only** runs when the user explicitly approves (e.g. "approve the development", "it's ready", "generate the PR"). During iterative development, make normal commits without creating a PR.
 
-When a development is explicitly approved by the user:
-
-1. **Update Documentation:** Update `memory-bank/progress.md` and any relevant documentation files with completed features.
-2. **Commit All Changes:** Stage all pending changes and create descriptive commit messages following Conventional Commits format.
-3. **Build Verification:** Verify that the application builds successfully without errors (`npm run build` or equivalent).
-4. **Test Coverage:** Check test coverage and ensure it meets project standards (minimum 80% for new code).
-5. **Create Pull Request:**
-   - Push the feature branch to remote repository
-   - Create a concise PR that includes:
-     - Summary of changes (based on all commits in the branch)
-     - List of modified/new files
-     - Build status (passing/failing)
-     - Test coverage metrics
-     - Test plan checklist
-   - If GitHub CLI (`gh`) is available, attempt to create PR automatically. Otherwise, provide PR content and URL for manual creation.
-
-**Note:** During development iterations, continue making commits as needed. The PR is only created once at the end when explicitly approved.
+**Detailed steps:** See the rule *Workflow: Generate the PR* (05-generate-pr-workflow.mdc): clean → tests and build → documentation → commits → create PR.
 
 ## 7. Specific Implementation Directives
 

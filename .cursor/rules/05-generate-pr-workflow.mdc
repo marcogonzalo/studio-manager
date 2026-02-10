@@ -1,0 +1,52 @@
+---
+description: Workflow when user asks to generate the PR (generate the PR, create PR, etc.)
+alwaysApply: true
+---
+
+# Workflow: Generate the PR
+
+When the user asks to **generate the PR** (or equivalent: "generate the PR", "create the PR", "open the PR", "prepare the PR"), run **in this order**:
+
+## 1. Clean
+
+- Remove `console.log`, `debugger`, and debug code.
+- Remove unused imports and variables.
+- Review and remove temporary or test files that should not be in the repo.
+- Fix linter warnings in touched files.
+
+## 2. Verify and fix formatting (Prettier)
+
+- Run the formatter (e.g. `npm run format` or `npx prettier --write .`). Verify there are no format-only diffs left; fix any reported issues.
+- Do this **before** running tests and build so the build sees the final formatted code.
+
+## 3. Verify everything works
+
+- **Tests:** Run the test suite (e.g. `npm run test`). Fix failures before continuing. Minimum 80% coverage for new code (per project standards).
+- **Build:** Run the build (e.g. `npm run build`). Ensure it completes without errors.
+- Do not proceed to the next step if tests or build fail.
+
+## 4. Update documentation
+
+- Update `memory-bank/progress.md` (or equivalent) with what was completed on the branch.
+- Update README, API docs, or guides if the change requires it.
+- Include these changes in the documentation commit or in previous commits if already ready.
+
+## 5. Commits
+
+- Review `git status` and ensure all relevant changes are included.
+- Create commits using **Conventional Commits** (`feat:`, `fix:`, `chore:`, `docs:`, etc.).
+- Clear, descriptive messages per logical set of changes.
+- Optional: a final commit `docs: update progress and release notes` if documentation was updated in step 4.
+
+## 6. Create the PR
+
+- Push the branch to the remote.
+- Create the Pull Request with:
+  - Descriptive title.
+  - Description: summary of changes, modified/new files, build and test status, coverage.
+  - Review checklist or test plan if applicable.
+- If `gh` (GitHub CLI) is available, use it to create the PR; otherwise provide the content and URL for manual creation.
+
+---
+
+**Summary:** Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push → PR. Do not skip steps; if something fails, fix it before continuing.
