@@ -81,14 +81,14 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Gestiona tu estudio de diseño{" "}
+              Gestiona tus proyectos de diseño{" "}
               <span className="text-primary">sin complicaciones</span>
             </h1>
 
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
               La plataforma todo-en-uno para diseñadores de interiores.
               Administra proyectos, clientes, proveedores y presupuestos desde
-              un solo lugar.
+              un solo lugar y toma el control.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -109,7 +109,7 @@ export default function HomePage() {
             </div>
 
             <p className="text-muted-foreground mt-4 text-sm">
-              Sin tarjeta de crédito. Prueba gratis por 14 días.
+              El período de pruebas es de 30 días.
             </p>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function HomePage() {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <div>
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                ¿Por qué elegir StudioManager?
+                ¿Por qué elegir Veta?
               </h2>
               <p className="text-muted-foreground mt-4 text-lg">
                 Simplificamos la gestión de tu estudio para que puedas enfocarte
@@ -205,8 +205,8 @@ export default function HomePage() {
               Comienza a gestionar tu estudio hoy
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Únete a diseñadores que ya confían en StudioManager para gestionar
-              sus proyectos.
+              Únete a diseñadores que ya confían en Veta para gestionar sus
+              proyectos.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" asChild>

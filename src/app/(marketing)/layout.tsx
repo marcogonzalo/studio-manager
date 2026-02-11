@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { VetaLogo } from "@/components/veta-logo";
 
 export const metadata: Metadata = {
   robots: {
@@ -15,13 +15,8 @@ function Header() {
   return (
     <header className="border-border/40 bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="bg-primary text-primary-foreground rounded-lg p-1.5">
-            <Leaf className="h-5 w-5" />
-          </div>
-          <span className="text-xl font-semibold tracking-tight">
-            Studio<span className="text-primary">Manager</span>
-          </span>
+        <Link href="/" className="flex items-center">
+          <VetaLogo height={28} />
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -66,15 +61,10 @@ function Footer() {
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="mb-4 flex items-center gap-2">
-              <div className="bg-primary text-primary-foreground rounded-lg p-1.5">
-                <Leaf className="h-5 w-5" />
-              </div>
-              <span className="text-lg font-semibold">
-                Studio<span className="text-primary">Manager</span>
-              </span>
+              <VetaLogo height={28} />
             </Link>
             <p className="text-muted-foreground text-sm">
-              La plataforma integral para estudios de diseño interior.
+              La plataforma para gestión de proyectos de diseño interior.
             </p>
           </div>
 
@@ -139,7 +129,7 @@ function Footer() {
 
         <div className="border-border text-muted-foreground mt-12 border-t pt-8 text-center text-sm">
           <p>
-            &copy; {new Date().getFullYear()} StudioManager. Todos los derechos
+            &copy; {new Date().getFullYear()} Veta. Todos los derechos
             reservados.
           </p>
         </div>
