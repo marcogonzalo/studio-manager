@@ -27,7 +27,8 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Leaf, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { VetaLogo } from "@/components/veta-logo";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -204,12 +205,7 @@ function AuthContent() {
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <Link href="/" className="flex items-center gap-2">
-              <div className="bg-primary text-primary-foreground rounded-lg p-1.5">
-                <Leaf className="h-5 w-5" />
-              </div>
-              <span className="text-xl font-semibold tracking-tight">
-                Studio<span className="text-primary">Manager</span>
-              </span>
+              <VetaLogo height={28} />
             </Link>
           </div>
           <CardTitle>{isLogin ? "Iniciar Sesión" : "Registrarse"}</CardTitle>

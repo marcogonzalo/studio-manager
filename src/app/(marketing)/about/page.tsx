@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export const metadata: Metadata = {
   title: "Sobre Nosotros",
   description:
-    "Conoce al equipo detrás de StudioManager, la plataforma diseñada para profesionales del diseño interior.",
+    "Conoce al equipo detrás de Veta, la plataforma diseñada para profesionales del diseño interior.",
 };
 
 const values = [
@@ -25,7 +25,7 @@ const values = [
     icon: Users,
     title: "Comunidad",
     description:
-      "Construimos StudioManager junto a nuestra comunidad de usuarios, escuchando sus necesidades.",
+      "Construimos Veta junto a nuestra comunidad de usuarios, escuchando sus necesidades.",
   },
   {
     icon: Award,
@@ -47,9 +47,9 @@ export default function AboutPage() {
               <span className="text-primary">para diseñadores</span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              StudioManager nació de la necesidad real de simplificar la gestión
-              de proyectos de diseño interior. Entendemos tus desafíos porque
-              los hemos vivido.
+              Veta nació de la necesidad real de simplificar la gestión de
+              proyectos de diseño interior. Entendemos tus desafíos porque los
+              hemos vivido.
             </p>
           </div>
         </div>
@@ -65,11 +65,11 @@ export default function AboutPage() {
               </h2>
               <div className="text-muted-foreground mt-6 space-y-4">
                 <p>
-                  StudioManager comenzó como un proyecto interno para resolver
-                  los desafíos diarios de gestionar un estudio de diseño
-                  interior. Hojas de cálculo dispersas, presupuestos difíciles
-                  de rastrear y comunicación fragmentada con proveedores eran
-                  problemas constantes.
+                  Veta comenzó como un proyecto interno para resolver los
+                  desafíos diarios de gestionar un estudio de diseño interior.
+                  Hojas de cálculo dispersas, presupuestos difíciles de rastrear
+                  y comunicación fragmentada con proveedores eran problemas
+                  constantes.
                 </p>
                 <p>
                   Después de meses de desarrollo y pruebas con diseñadores
@@ -79,9 +79,8 @@ export default function AboutPage() {
                   diseñada pensando en el flujo de trabajo real de un diseñador.
                 </p>
                 <p>
-                  Hoy, StudioManager ayuda a estudios de diseño a ahorrar
-                  tiempo, reducir errores y ofrecer un mejor servicio a sus
-                  clientes.
+                  Hoy, Veta ayuda a estudios de diseño a ahorrar tiempo, reducir
+                  errores y ofrecer un mejor servicio a sus clientes.
                 </p>
               </div>
             </div>
