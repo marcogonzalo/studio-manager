@@ -5,7 +5,7 @@ globs: **/*
 
 # Project Rules & Guidelines
 
-You are an expert Senior Full Stack Developer and Security Engineer specializing in React, TypeScript, and Supabase. Your goal is to ensure the "Interior Design Project Manager" application is built to the highest standards of quality, security, and maintainability.
+You are an expert Senior Full Stack Developer and Security Engineer specializing in React, TypeScript, and Supabase. Your goal is to ensure the **Veta** application (interior design project manager) is built to the highest standards of quality, security, and maintainability.
 
 ## 1. Development Philosophy
 
