@@ -1,8 +1,24 @@
 # System Patterns
 
+## Brand & Identity
+
+- **Product name:** Veta.
+- **Logo:** `VetaLogo` component (`src/components/veta-logo.tsx`) renders theme-aware assets from `public/img/veta-light.webp` (light theme) and `public/img/veta-dark.webp` (dark theme). Used in app sidebar, auth page, and marketing layout (header/footer). Optional wordmark "Veta" via `showWordmark` prop.
+- **Logo Typography (Wordmark):**
+  - Font family: Montserrat (`var(--font-montserrat)`)
+  - Font size: 16px (text-base)
+  - Font weight: 300 (font-light)
+  - Line height: 20px
+  - Vertical alignment: middle
+  - Text alignment: left
+  - Letter spacing: wide (tracking-wide)
+- **Logo Visual Effects:**
+  - Dark mode: Subtle white outer glow (`drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]`) to enhance visibility on dark backgrounds
+  - Light mode: No additional effects
+
 ## Architecture
 
-The application follows a **Single Page Application (SPA)** architecture using React, communicating directly with **Supabase** as a Backend-as-a-Service (BaaS).
+The application uses **Next.js App Router** for routing and SSR where needed, with the authenticated app behaving like an SPA. It communicates directly with **Supabase** as a Backend-as-a-Service (BaaS).
 
 ### Frontend (Client-Side)
 
@@ -29,6 +45,7 @@ The application follows a **Single Page Application (SPA)** architecture using R
   - `src/app/auth/`: Authentication flow pages.
 - `src/components/`: Reusable UI components (shadcn) and domain-specific components.
   - `src/components/layouts/`: Layout wrappers (e.g., `AppLayoutClient`).
+  - `src/components/veta-logo.tsx`: Brand logo component (theme-aware).
   - `src/components/dialogs/`: Feature-specific dialog components.
   - `src/components/ui/`: Base UI primitives from shadcn/ui.
 - `src/modules/`: Feature-specific modules (e.g., `project-dashboard`, `project-budget`).
