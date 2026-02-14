@@ -58,10 +58,7 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
           <CardContent className="py-12 text-center">
             <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
             <p className="text-muted-foreground mb-4">No hay documentos.</p>
-            <Button
-              onClick={() => setIsDialogOpen(true)}
-              variant="outline"
-            >
+            <Button onClick={() => setIsDialogOpen(true)} variant="outline">
               <Plus className="mr-2 h-4 w-4" /> Añadir primer documento
             </Button>
           </CardContent>

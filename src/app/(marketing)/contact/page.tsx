@@ -11,7 +11,7 @@ import {
 export const metadata: Metadata = {
   title: "Contacto",
   description:
-    "Ponte en contacto con el equipo de StudioManager. Estamos aquí para ayudarte.",
+    "Ponte en contacto con el equipo de Veta. Estamos aquí para ayudarte.",
 };
 
 const contactMethods = [
@@ -50,7 +50,7 @@ export default function ContactPage() {
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
               Nuestro equipo está listo para responder tus preguntas y ayudarte
-              a sacar el máximo provecho de StudioManager.
+              a sacar el máximo provecho de Veta.
             </p>
           </div>
         </div>

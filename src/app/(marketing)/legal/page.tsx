@@ -5,7 +5,7 @@ import { ArrowLeft, Shield, FileText, Scale } from "lucide-react";
 export const metadata: Metadata = {
   title: "Términos de Uso y Política de Privacidad",
   description:
-    "Términos de uso, política de privacidad y información sobre el cumplimiento del RGPD de StudioManager.",
+    "Términos de uso, política de privacidad y información sobre el cumplimiento del RGPD de Veta.",
 };
 
 const sections = [
@@ -16,14 +16,14 @@ const sections = [
     content: (
       <>
         <p>
-          Al utilizar StudioManager («la Plataforma»), aceptas los siguientes
-          términos. Si no estás de acuerdo, no utilices el servicio.
+          Al utilizar Veta («la Plataforma»), aceptas los siguientes términos.
+          Si no estás de acuerdo, no utilices el servicio.
         </p>
         <h3 className="mt-6 font-semibold">1. Descripción del Servicio</h3>
         <p className="mt-2">
-          StudioManager es una plataforma de gestión de proyectos de diseño
-          interior que permite a los usuarios administrar clientes, proyectos,
-          presupuestos, proveedores y catálogos de productos.
+          Veta es una plataforma de gestión de proyectos de diseño interior que
+          permite a los usuarios administrar clientes, proyectos, presupuestos,
+          proveedores y catálogos de productos.
         </p>
         <h3 className="mt-6 font-semibold">2. Uso Aceptable</h3>
         <p className="mt-2">
@@ -40,8 +40,8 @@ const sections = [
         <h3 className="mt-6 font-semibold">4. Propiedad Intelectual</h3>
         <p className="mt-2">
           El software, diseño y contenidos de la Plataforma son propiedad de
-          StudioManager o sus licenciantes. Los datos que introduces siguen
-          siendo de tu propiedad.
+          Veta o sus licenciantes. Los datos que introduces siguen siendo de tu
+          propiedad.
         </p>
       </>
     ),

@@ -20,14 +20,13 @@ import {
   Truck,
   Settings,
   LogOut,
-  Menu,
   Users,
-  Leaf,
   PanelLeftClose,
   PanelLeft,
   User,
   SlidersHorizontal,
 } from "lucide-react";
+import { VetaLogo } from "@/components/veta-logo";
 import {
   Sheet,
   SheetContent,
@@ -79,14 +78,20 @@ function SidebarContent({
           collapsed && "justify-center p-4"
         )}
       >
-        <div className="bg-primary text-primary-foreground flex-shrink-0 rounded-lg p-1.5">
-          <Leaf className="h-5 w-5" />
-        </div>
-        {!collapsed && (
-          <h1 className="text-foreground text-xl font-semibold tracking-tight">
-            Studio<span className="text-primary">Manager</span>
-          </h1>
-        )}
+        <Link
+          href="/dashboard"
+          aria-label={collapsed ? "Veta - Ir al inicio" : undefined}
+          className={cn(
+            "flex items-center gap-2",
+            collapsed && "justify-center"
+          )}
+        >
+          <VetaLogo
+            height={28}
+            showWordmark={!collapsed}
+            className="text-foreground"
+          />
+        </Link>
       </div>
 
       {/* Toggle button - positioned at the edge */}
@@ -320,9 +325,10 @@ export default function AppLayoutClient({
             <Button
               variant="ghost"
               size="icon"
-              className="bg-background/80 border-border fixed bottom-4 left-1/2 z-50 -translate-x-1/2 border shadow-sm backdrop-blur-sm md:hidden print:hidden"
+              className="bg-background/80 border-border fixed bottom-4 left-1/2 z-50 h-10 w-10 -translate-x-1/2 rounded-[25px] border shadow-sm backdrop-blur-sm md:hidden print:hidden"
+              aria-label="Abrir menú"
             >
-              <Menu className="h-6 w-6" />
+              <VetaLogo variant="icon" height={20} width={28} />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="border-border w-64 border-r p-0">

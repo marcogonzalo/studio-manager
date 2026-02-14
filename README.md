@@ -1,4 +1,4 @@
-# Studio Manager - Interior Design Project Manager
+# Veta - Interior Design Project Manager
 
 A modern, full-stack web application designed to streamline the workflow of interior designers. Manage clients, projects, budgets, catalogs, and purchasing all in one place.
 

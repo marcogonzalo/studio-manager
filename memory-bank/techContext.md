@@ -20,7 +20,8 @@
 
 ## Configuration
 
-- **Next.js:** `next.config.ts` with Turbopack, path aliases (`@/*`), and module resolution for PDF generation.
+- **Next.js:** `next.config.ts` with Turbopack, path aliases (`@/*`), module resolution for PDF generation, and `NEXT_PUBLIC_APP_NAME: "Veta"` for the product brand.
+- **Brand assets:** Logo images in `public/img/` — `veta-light.webp` (light theme) and `veta-dark.webp` (dark theme). Referenced by the `VetaLogo` component.
 - **Tailwind:** `src/styles/globals.css` using Tailwind v4 syntax (`@theme`, CSS variables).
 - **Theme System:**
   - **Light Mode:** Natural/pastel palette with warm cream backgrounds and sage green accents.

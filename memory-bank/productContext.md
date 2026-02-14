@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Interior Design Project Manager is a web application designed to streamline the workflow of interior designers. It handles the entire project lifecycle from client intake to budget generation and purchasing.
+**Veta** is a web application for interior design project management. It streamlines the workflow of interior designers and handles the entire project lifecycle from client intake to budget generation and purchasing. The product name and brand identity (logo, metadata, marketing copy) are unified under "Veta".
 
 ## Core Problems Solved
 
@@ -28,9 +28,20 @@ Interior Design Project Manager is a web application designed to streamline the 
 
 ## Tech Stack
 
-- **Frontend:** React (Vite), TypeScript, Tailwind CSS, Shadcn/UI.
+- **Frontend:** Next.js 16 (App Router), React, TypeScript, Tailwind CSS, Shadcn/UI.
 - **Backend:** Supabase (PostgreSQL, Auth, Storage, Realtime).
 - **Infrastructure:** Docker (local development).
+
+## Brand
+
+- **Product name:** Veta.
+- **Logo:** Dual asset for theme — `veta-light.webp` (light mode), `veta-dark.webp` (dark mode), served from `public/img/` and used via the `VetaLogo` component across app layout, auth, and marketing pages.
+- **Logo Typography:** Montserrat font, 16px, weight 300 (light), with subtle white glow effect in dark mode for enhanced visibility.
+- **Marketing Copy Updates:**
+  - Hero headline: "Gestiona tus proyectos de diseño sin complicaciones"
+  - Hero description: "La plataforma todo-en-uno para diseñadores de interiores. Administra proyectos, clientes, proveedores y presupuestos desde un solo lugar y toma el control."
+  - Trial period: "El período de pruebas es de 30 días."
+  - Footer tagline: "La plataforma para gestión de proyectos de diseño interior."
 
 ## Design Philosophy
 

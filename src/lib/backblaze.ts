@@ -235,8 +235,7 @@ export async function uploadDocument(params: {
   documentId: string;
   extension: string;
 }): Promise<string> {
-  const { buffer, mimeType, userId, projectId, documentId, extension } =
-    params;
+  const { buffer, mimeType, userId, projectId, documentId, extension } = params;
 
   const ext = extension.startsWith(".") ? extension : `.${extension}`;
   const fileName = `assets/${userId}/projects/${projectId}/doc/${documentId}${ext}`;

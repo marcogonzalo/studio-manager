@@ -110,7 +110,10 @@ export function DocumentDialog({
       if (error) throw error;
 
       const savedUrl = values.file_url.trim();
-      if (uploadedFileUrlRef.current && uploadedFileUrlRef.current !== savedUrl) {
+      if (
+        uploadedFileUrlRef.current &&
+        uploadedFileUrlRef.current !== savedUrl
+      ) {
         await deleteUploadedDocument(uploadedFileUrlRef.current);
       }
       uploadedFileUrlRef.current = null;
@@ -144,10 +147,7 @@ export function DocumentDialog({
           <DialogTitle>Añadir documento</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"

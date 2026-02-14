@@ -19,7 +19,7 @@ const nextConfig: NextConfig = {
 
   // Environment variables that should be available on the client
   env: {
-    NEXT_PUBLIC_APP_NAME: "StudioManager",
+    NEXT_PUBLIC_APP_NAME: "Veta",
   },
 
   // Turbopack configuration for @react-pdf/renderer compatibility
