@@ -45,7 +45,6 @@ import {
   getPhaseLabel,
   reportError,
   COST_CATEGORIES,
-  isCostCategory,
   formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 

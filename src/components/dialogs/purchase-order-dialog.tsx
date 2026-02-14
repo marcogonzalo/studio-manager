@@ -53,7 +53,7 @@ interface ProjectItem {
   unit_cost: number;
   status: string;
   purchase_order_id: string | null;
-  product?: { supplier_id: string | null };
+  product?: { supplier_id: string | null; supplier?: Supplier };
 }
 
 interface PurchaseOrder {
@@ -261,7 +261,7 @@ export function PurchaseOrderDialog({
           // Extract unique suppliers from project items
           const supplierMap = new Map<string, Supplier>();
 
-          items?.forEach((item: any) => {
+          items?.forEach((item: ProjectItem) => {
             const supplier = item.product?.supplier;
             if (supplier && supplier.id) {
               supplierMap.set(supplier.id, supplier);

@@ -88,7 +88,7 @@ export function SupplierDialog({
         toast.success("Proveedor creado");
         onSuccess(newSupplier.id);
       }
-    } catch (error) {
+    } catch {
       toast.error("Error al guardar");
     }
   }

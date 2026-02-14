@@ -429,7 +429,7 @@ export function AddItemDialog({
 
       form.reset();
       onSuccess();
-    } catch (error) {
+    } catch {
       toast.error("Error al guardar");
     }
   }
