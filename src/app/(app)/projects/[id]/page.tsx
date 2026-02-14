@@ -74,6 +74,7 @@ export default function ProjectDetailPage() {
 
   useEffect(() => {
     fetchProject();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when id changes only
   }, [id]);
 
   // Scroll to active tab when it changes

@@ -120,7 +120,7 @@ export function ProjectDialog({
       setClients(data || []);
     }
     if (open) loadClients();
-  }, [open]);
+  }, [open, supabase]);
 
   // Sincronizar el valor del cliente cuando la lista se actualiza y hay un cliente pendiente
   useEffect(() => {

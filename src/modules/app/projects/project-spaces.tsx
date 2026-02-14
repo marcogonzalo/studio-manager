@@ -47,6 +47,7 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
 
   useEffect(() => {
     fetchSpaces();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
   const openImages = (space: Space) => {

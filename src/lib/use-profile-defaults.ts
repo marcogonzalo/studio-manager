@@ -32,7 +32,7 @@ export function useProfileDefaults(): ProfileDefaults | null {
           });
         }
       });
-  }, [user?.id]);
+  }, [user?.id, supabase]);
 
   return defaults;
 }

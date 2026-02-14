@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useEffect, useState, useMemo } from "react";
 import { Plus, Search } from "lucide-react";
+import Image from "next/image";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ProductImageUpload } from "@/components/product-image-upload";
 import type { Product, ProjectItem, Space, Supplier } from "@/types";
@@ -104,6 +105,7 @@ export function AddItemDialog({
     if (item?.product_id) return item.product_id;
     if (open && !item) return crypto.randomUUID();
     return "";
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only open and product_id affect result
   }, [open, item?.product_id]);
 
   type FormValues = z.input<typeof formSchema>;
@@ -243,7 +245,7 @@ export function AddItemDialog({
       }
     }
     if (open) loadData();
-  }, [open, projectId, item, spaceId, form]);
+  }, [open, projectId, item, spaceId, form, supabase]);
 
   const handleProductSelect = (productId: string) => {
     const prod = products.find((p) => p.id === productId);
@@ -522,10 +524,12 @@ export function AddItemDialog({
                                   <div className="bg-secondary/30 dark:bg-muted relative aspect-square">
                                     {product.image_url ? (
                                       <div className="group relative h-full w-full">
-                                        <img
+                                        <Image
                                           src={product.image_url}
                                           alt={product.name}
-                                          className="h-full w-full object-cover"
+                                          fill
+                                          className="object-cover"
+                                          sizes="120px"
                                         />
                                         <button
                                           type="button"

@@ -5,6 +5,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import type { Product, ProjectItem } from "@/types";
@@ -70,10 +71,12 @@ export function ProductDetailModal({
           <div className="space-y-4">
             {imageUrl ? (
               <div className="bg-secondary/30 dark:bg-muted relative aspect-square overflow-hidden rounded-lg">
-                <img
+                <Image
                   src={imageUrl}
-                  alt={name}
-                  className="h-full w-full object-cover"
+                  alt={name ?? ""}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
               </div>
             ) : (

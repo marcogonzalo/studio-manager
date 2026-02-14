@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
@@ -156,6 +157,7 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
   const handleDeleteItem = async (id: string) => {
@@ -637,15 +639,22 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                     <TableRow key={item.id}>
                       <TableCell>
                         {item.image_url && (
-                          <img
-                            src={item.image_url}
-                            className="h-8 w-8 cursor-pointer rounded object-cover transition-opacity hover:opacity-80"
+                          <button
+                            type="button"
+                            className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
                             onClick={() => {
                               setSelectedItem(item);
                               setIsProductModalOpen(true);
                             }}
-                            alt={item.product?.name || item.name}
-                          />
+                          >
+                            <Image
+                              src={item.image_url}
+                              width={32}
+                              height={32}
+                              className="object-cover"
+                              alt={item.product?.name || item.name}
+                            />
+                          </button>
                         )}
                       </TableCell>
                       <TableCell>

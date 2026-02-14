@@ -75,6 +75,7 @@ export function ProductDialog({
     if (product) return product.id;
     if (open) return crypto.randomUUID();
     return "";
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only open and product id affect result
   }, [open, product?.id]);
 
   type FormValues = {
@@ -112,7 +113,7 @@ export function ProductDialog({
       setSuppliers(data || []);
     }
     if (open) loadSuppliers();
-  }, [open]);
+  }, [open, supabase]);
 
   // Sincronizar el valor del proveedor cuando la lista se actualiza y hay un proveedor pendiente
   useEffect(() => {

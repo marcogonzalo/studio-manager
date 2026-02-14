@@ -52,6 +52,7 @@ export default function SuppliersPage() {
 
   useEffect(() => {
     fetchSuppliers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when search changes only
   }, [search]);
 
   const handleDelete = async (id: string) => {

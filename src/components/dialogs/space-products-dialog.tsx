@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,6 +59,7 @@ export function SpaceProductsDialog({
 
   useEffect(() => {
     if (open) fetchItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when open or space.id changes only
   }, [open, space.id]);
 
   const handleDelete = async (id: string) => {
@@ -124,10 +126,12 @@ export function SpaceProductsDialog({
                       }}
                     >
                       {item.image_url ? (
-                        <img
+                        <Image
                           src={item.image_url}
                           alt={item.name}
-                          className="h-full w-full object-cover transition-opacity hover:opacity-90"
+                          fill
+                          className="object-cover transition-opacity hover:opacity-90"
+                          sizes="120px"
                         />
                       ) : (
                         <div className="text-muted-foreground flex h-full w-full items-center justify-center">

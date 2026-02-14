@@ -84,6 +84,7 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
 
   useEffect(() => {
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
   const handleCreateNew = () => {

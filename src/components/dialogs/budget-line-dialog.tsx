@@ -130,7 +130,7 @@ export function BudgetLineDialog({
       if (data) setSuppliers(data);
     };
     fetchSuppliers();
-  }, []);
+  }, [supabase]);
 
   // Reset form when dialog opens/closes or budgetLine changes
   useEffect(() => {

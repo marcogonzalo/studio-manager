@@ -240,7 +240,8 @@ export function PurchaseOrderDialog({
         setLoadingItems(false);
       }
     },
-    [projectId, isEditing, order?.id]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- order.project_items excluded to avoid refetch on every order change
+    [projectId, isEditing, order?.id, supabase]
   );
 
   // Fetch suppliers that have products in the project budget
@@ -290,7 +291,7 @@ export function PurchaseOrderDialog({
           setSuppliers(uniqueSuppliers);
         });
     }
-  }, [open, projectId, isEditing, order?.supplier_id]);
+  }, [open, projectId, isEditing, order?.supplier_id, supabase]);
 
   // Reset form and load data when dialog opens
   useEffect(() => {
@@ -378,6 +379,7 @@ export function PurchaseOrderDialog({
       setAvailableItems([]);
       setSelectedItemIds(new Set());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- order intentionally excluded to avoid reset loops
   }, [
     open,
     selectedSupplierId,

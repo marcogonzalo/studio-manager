@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpaceImageUpload } from "@/components/space-image-upload";
+import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import type { Space } from "@/types";
@@ -55,6 +56,7 @@ export function SpaceImagesDialog({
 
   useEffect(() => {
     if (open) fetchImages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when open or space.id changes only
   }, [open, space.id]);
 
   const insertImage = async (url: string) => {
@@ -177,10 +179,12 @@ export function SpaceImagesDialog({
               key={img.id}
               className="group relative aspect-video overflow-hidden rounded-md border"
             >
-              <img
+              <Image
                 src={img.url}
                 alt={img.description}
-                className="h-full w-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 33vw"
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { getSupabaseClient } from "@/lib/supabase";
 import { reportError, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -64,6 +65,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when search changes only
   }, [search]);
 
   const handleDelete = async (product: Product) => {
@@ -197,15 +199,22 @@ export default function CatalogPage() {
                 <TableRow key={p.id}>
                   <TableCell>
                     {p.image_url ? (
-                      <img
-                        src={p.image_url}
-                        alt={p.name}
-                        className="h-10 w-10 cursor-pointer rounded object-cover transition-opacity hover:opacity-80"
+                      <button
+                        type="button"
+                        className="relative h-10 w-10 overflow-hidden rounded transition-opacity hover:opacity-80"
                         onClick={() => {
                           setSelectedProduct(p);
                           setIsProductModalOpen(true);
                         }}
-                      />
+                      >
+                        <Image
+                          src={p.image_url}
+                          alt={p.name}
+                          width={40}
+                          height={40}
+                          className="object-cover"
+                        />
+                      </button>
                     ) : (
                       <div className="bg-muted flex h-10 w-10 items-center justify-center rounded">
                         <ImageIcon className="text-muted-foreground h-5 w-5" />
