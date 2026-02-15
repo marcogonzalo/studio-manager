@@ -251,67 +251,214 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
             </Button>
           </div>
 
-      {/* Cost Totalization Summary */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-3">
-            {/* Totals row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-secondary/30 rounded-lg p-3">
-                <p className="text-muted-foreground text-xs">Total Estimado</p>
-                <p className="text-xl font-bold">
-                  {formatCurrency(grandTotalEstimated)}
-                </p>
-              </div>
-              <div className="bg-secondary/30 rounded-lg p-3">
-                <p className="text-muted-foreground text-xs">Total Real</p>
-                <p className="text-xl font-bold">
-                  {formatCurrency(grandTotalActual)}
-                </p>
-              </div>
-            </div>
+          {/* Cost Totalization Summary */}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-3">
+                {/* Totals row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-secondary/30 rounded-lg p-3">
+                    <p className="text-muted-foreground text-xs">
+                      Total Estimado
+                    </p>
+                    <p className="text-xl font-bold">
+                      {formatCurrency(grandTotalEstimated)}
+                    </p>
+                  </div>
+                  <div className="bg-secondary/30 rounded-lg p-3">
+                    <p className="text-muted-foreground text-xs">Total Real</p>
+                    <p className="text-xl font-bold">
+                      {formatCurrency(grandTotalActual)}
+                    </p>
+                  </div>
+                </div>
 
-            {/* Deviation bar with percentage */}
-            <div className="flex items-center gap-3">
-              <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
-                <div
-                  className={`h-full ${getDeviationBarColor(deviationPercentage)} transition-all duration-300`}
-                  style={{ width: `${Math.min(deviationPercentage, 100)}%` }}
-                />
+                {/* Deviation bar with percentage */}
+                <div className="flex items-center gap-3">
+                  <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
+                    <div
+                      className={`h-full ${getDeviationBarColor(deviationPercentage)} transition-all duration-300`}
+                      style={{
+                        width: `${Math.min(deviationPercentage, 100)}%`,
+                      }}
+                    />
+                  </div>
+                  <span
+                    className={`min-w-[60px] text-right text-sm font-semibold ${getDeviationTextColor(deviationPercentage)}`}
+                  >
+                    {deviationPercentage.toFixed(1)}%
+                  </span>
+                </div>
               </div>
-              <span
-                className={`min-w-[60px] text-right text-sm font-semibold ${getDeviationTextColor(deviationPercentage)}`}
+            </CardContent>
+          </Card>
+
+          {/* Budget Lines by Category */}
+          {categoryOrder.map((category) => {
+            const lines = budgetLinesByCategory[category] || [];
+            if (lines.length === 0) return null;
+
+            const categoryEstimated = lines.reduce(
+              (sum, line) => sum + Number(line.estimated_amount),
+              0
+            );
+            const categoryActual = lines.reduce(
+              (sum, line) => sum + Number(line.actual_amount),
+              0
+            );
+            const categoryDeviation = getDeviationIndicator(
+              categoryEstimated,
+              categoryActual
+            );
+
+            return (
+              <Collapsible
+                key={category}
+                open={openSections[category]}
+                onOpenChange={() => toggleSection(category)}
               >
-                {deviationPercentage.toFixed(1)}%
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                <Card>
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="hover:bg-accent/30 cursor-pointer">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform ${openSections[category] ? "" : "-rotate-90"}`}
+                          />
+                          {getBudgetCategoryLabel(category)}
+                        </CardTitle>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="text-muted-foreground text-sm">
+                              Est: {formatCurrency(categoryEstimated)}
+                            </p>
+                            <p className="font-semibold">
+                              Real: {formatCurrency(categoryActual)}
+                            </p>
+                          </div>
+                          <div
+                            className={`flex items-center gap-1 ${categoryDeviation.color}`}
+                          >
+                            <categoryDeviation.icon className="h-4 w-4" />
+                            <span className="text-sm font-medium">
+                              {categoryDeviation.text}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <CardContent className="pt-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Concepto</TableHead>
+                            <TableHead>Descripción</TableHead>
+                            <TableHead>Fase</TableHead>
+                            <TableHead className="text-right">
+                              Estimado
+                            </TableHead>
+                            <TableHead className="text-right">Real</TableHead>
+                            <TableHead className="text-right">
+                              Desviación
+                            </TableHead>
+                            <TableHead className="w-[100px]"></TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {lines.map((line) => {
+                            const deviation = getDeviationIndicator(
+                              Number(line.estimated_amount),
+                              Number(line.actual_amount)
+                            );
+                            return (
+                              <TableRow key={line.id}>
+                                <TableCell className="font-medium">
+                                  {getBudgetSubcategoryLabel(
+                                    category,
+                                    line.subcategory
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground max-w-[200px] truncate">
+                                  {line.description || "-"}
+                                </TableCell>
+                                <TableCell className="text-muted-foreground text-xs">
+                                  {line.phase ? getPhaseLabel(line.phase) : "-"}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  {formatCurrency(
+                                    Number(line.estimated_amount)
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-right font-semibold">
+                                  {formatCurrency(Number(line.actual_amount))}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div
+                                    className={`flex items-center justify-end gap-1 ${deviation.color}`}
+                                  >
+                                    <deviation.icon className="h-3 w-3" />
+                                    <span className="text-sm">
+                                      {deviation.text}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center justify-end gap-2">
+                                    {line.is_internal_cost ? (
+                                      <span title="Coste interno (no visible para cliente)">
+                                        <EyeOff className="text-muted-foreground h-4 w-4" />
+                                      </span>
+                                    ) : (
+                                      <span title="Visible para cliente">
+                                        <Eye className="text-muted-foreground h-4 w-4" />
+                                      </span>
+                                    )}
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon">
+                                          <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                          onClick={() =>
+                                            handleEditBudgetLine(line)
+                                          }
+                                        >
+                                          <Pencil className="mr-2 h-4 w-4" />
+                                          Editar
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          onClick={() =>
+                                            handleDeleteBudgetLine(line.id)
+                                          }
+                                          className="text-destructive"
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          Eliminar
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
+            );
+          })}
 
-      {/* Budget Lines by Category */}
-      {categoryOrder.map((category) => {
-        const lines = budgetLinesByCategory[category] || [];
-        if (lines.length === 0) return null;
-
-        const categoryEstimated = lines.reduce(
-          (sum, line) => sum + Number(line.estimated_amount),
-          0
-        );
-        const categoryActual = lines.reduce(
-          (sum, line) => sum + Number(line.actual_amount),
-          0
-        );
-        const categoryDeviation = getDeviationIndicator(
-          categoryEstimated,
-          categoryActual
-        );
-
-        return (
+          {/* Products Cost Summary */}
           <Collapsible
-            key={category}
-            open={openSections[category]}
-            onOpenChange={() => toggleSection(category)}
+            open={openSections.products}
+            onOpenChange={() => toggleSection("products")}
           >
             <Card>
               <CollapsibleTrigger asChild>
@@ -319,25 +466,26 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2 text-base">
                       <ChevronDown
-                        className={`h-4 w-4 transition-transform ${openSections[category] ? "" : "-rotate-90"}`}
+                        className={`h-4 w-4 transition-transform ${openSections.products ? "" : "-rotate-90"}`}
                       />
-                      {getBudgetCategoryLabel(category)}
+                      Coste de Productos
                     </CardTitle>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="text-muted-foreground text-sm">
-                          Est: {formatCurrency(categoryEstimated)}
+                          Precio Venta: {formatCurrency(totalProductsPrice)}
                         </p>
                         <p className="font-semibold">
-                          Real: {formatCurrency(categoryActual)}
+                          Coste: {formatCurrency(totalProductsCost)}
                         </p>
                       </div>
-                      <div
-                        className={`flex items-center gap-1 ${categoryDeviation.color}`}
-                      >
-                        <categoryDeviation.icon className="h-4 w-4" />
+                      <div className="text-primary flex items-center gap-1">
+                        <TrendingUp className="h-4 w-4" />
                         <span className="text-sm font-medium">
-                          {categoryDeviation.text}
+                          Margen:{" "}
+                          {formatCurrency(
+                            totalProductsPrice - totalProductsCost
+                          )}
                         </span>
                       </div>
                     </div>
@@ -346,197 +494,68 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <CardContent className="pt-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Concepto</TableHead>
-                        <TableHead>Descripción</TableHead>
-                        <TableHead>Fase</TableHead>
-                        <TableHead className="text-right">Estimado</TableHead>
-                        <TableHead className="text-right">Real</TableHead>
-                        <TableHead className="text-right">Desviación</TableHead>
-                        <TableHead className="w-[100px]"></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {lines.map((line) => {
-                        const deviation = getDeviationIndicator(
-                          Number(line.estimated_amount),
-                          Number(line.actual_amount)
-                        );
-                        return (
-                          <TableRow key={line.id}>
-                            <TableCell className="font-medium">
-                              {getBudgetSubcategoryLabel(
-                                category,
-                                line.subcategory
-                              )}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground max-w-[200px] truncate">
-                              {line.description || "-"}
-                            </TableCell>
-                            <TableCell className="text-muted-foreground text-xs">
-                              {line.phase ? getPhaseLabel(line.phase) : "-"}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {formatCurrency(Number(line.estimated_amount))}
-                            </TableCell>
-                            <TableCell className="text-right font-semibold">
-                              {formatCurrency(Number(line.actual_amount))}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div
-                                className={`flex items-center justify-end gap-1 ${deviation.color}`}
-                              >
-                                <deviation.icon className="h-3 w-3" />
-                                <span className="text-sm">
-                                  {deviation.text}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center justify-end gap-2">
-                                {line.is_internal_cost ? (
-                                  <span title="Coste interno (no visible para cliente)">
-                                    <EyeOff className="text-muted-foreground h-4 w-4" />
-                                  </span>
-                                ) : (
-                                  <span title="Visible para cliente">
-                                    <Eye className="text-muted-foreground h-4 w-4" />
-                                  </span>
-                                )}
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                      onClick={() => handleEditBudgetLine(line)}
-                                    >
-                                      <Pencil className="mr-2 h-4 w-4" />
-                                      Editar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        handleDeleteBudgetLine(line.id)
-                                      }
-                                      className="text-destructive"
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Eliminar
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                  <p className="text-muted-foreground mb-4 text-sm">
+                    Resumen de costes de adquisición de los productos del
+                    proyecto. El detalle de productos se gestiona en la pestaña
+                    "Presupuesto".
+                  </p>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="bg-secondary/30 rounded-lg p-4">
+                      <p className="text-muted-foreground text-sm">
+                        Total Coste
+                      </p>
+                      <p className="text-xl font-bold">
+                        {formatCurrency(totalProductsCost)}
+                      </p>
+                    </div>
+                    <div className="bg-secondary/30 rounded-lg p-4">
+                      <p className="text-muted-foreground text-sm">
+                        Total Venta
+                      </p>
+                      <p className="text-xl font-bold">
+                        {formatCurrency(totalProductsPrice)}
+                      </p>
+                    </div>
+                    <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
+                      <p className="text-muted-foreground text-sm">
+                        Margen Productos
+                      </p>
+                      <p className="text-primary text-xl font-bold">
+                        {formatCurrency(totalProductsPrice - totalProductsCost)}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {totalProductsPrice > 0
+                          ? `${(((totalProductsPrice - totalProductsCost) / totalProductsPrice) * 100).toFixed(1)}%`
+                          : "0%"}
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </CollapsibleContent>
             </Card>
           </Collapsible>
-        );
-      })}
 
-      {/* Products Cost Summary */}
-      <Collapsible
-        open={openSections.products}
-        onOpenChange={() => toggleSection("products")}
-      >
-        <Card>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="hover:bg-accent/30 cursor-pointer">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <ChevronDown
-                    className={`h-4 w-4 transition-transform ${openSections.products ? "" : "-rotate-90"}`}
-                  />
-                  Coste de Productos
-                </CardTitle>
-                <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <p className="text-muted-foreground text-sm">
-                      Precio Venta: {formatCurrency(totalProductsPrice)}
-                    </p>
-                    <p className="font-semibold">
-                      Coste: {formatCurrency(totalProductsCost)}
-                    </p>
-                  </div>
-                  <div className="text-primary flex items-center gap-1">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="text-sm font-medium">
-                      Margen:{" "}
-                      {formatCurrency(totalProductsPrice - totalProductsCost)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent className="pt-0">
-              <p className="text-muted-foreground mb-4 text-sm">
-                Resumen de costes de adquisición de los productos del proyecto.
-                El detalle de productos se gestiona en la pestaña "Presupuesto".
-              </p>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="bg-secondary/30 rounded-lg p-4">
-                  <p className="text-muted-foreground text-sm">Total Coste</p>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(totalProductsCost)}
-                  </p>
-                </div>
-                <div className="bg-secondary/30 rounded-lg p-4">
-                  <p className="text-muted-foreground text-sm">Total Venta</p>
-                  <p className="text-xl font-bold">
-                    {formatCurrency(totalProductsPrice)}
-                  </p>
-                </div>
-                <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
-                  <p className="text-muted-foreground text-sm">
-                    Margen Productos
-                  </p>
-                  <p className="text-primary text-xl font-bold">
-                    {formatCurrency(totalProductsPrice - totalProductsCost)}
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {totalProductsPrice > 0
-                      ? `${(((totalProductsPrice - totalProductsCost) / totalProductsPrice) * 100).toFixed(1)}%`
-                      : "0%"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
-
-      {/* Empty State */}
-      {budgetLines.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground mb-4">
-              No hay partidas de presupuesto registradas.
-            </p>
-            <Button
-              onClick={handleAddBudgetLine}
-              disabled={!costsManagementEnabled}
-            >
-              <Plus className="mr-2 h-4 w-4" /> Añadir Primera Partida
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+          {/* Empty State */}
+          {budgetLines.length === 0 && (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-muted-foreground mb-4">
+                  No hay partidas de presupuesto registradas.
+                </p>
+                <Button
+                  onClick={handleAddBudgetLine}
+                  disabled={!costsManagementEnabled}
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Añadir Primera Partida
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {!costsManagementEnabled && (
           <div
-            className="absolute inset-0 z-10 bg-background/50 pointer-events-auto"
+            className="bg-background/50 pointer-events-auto absolute inset-0 z-10"
             aria-hidden="true"
           />
         )}

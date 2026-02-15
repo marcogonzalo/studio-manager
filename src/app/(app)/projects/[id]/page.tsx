@@ -53,7 +53,13 @@ export default function ProjectDetailPage() {
     ) {
       setActiveTab("resumen");
     }
-  }, [activeTab, costsDisabled, purchasesDisabled, paymentsDisabled, documentsDisabled]);
+  }, [
+    activeTab,
+    costsDisabled,
+    purchasesDisabled,
+    paymentsDisabled,
+    documentsDisabled,
+  ]);
 
   async function fetchProject() {
     if (!id) return;
@@ -215,7 +221,10 @@ export default function ProjectDetailPage() {
             <TabsTrigger value="notas">Notas</TabsTrigger>
           </TabsList>
         </div>
-        {(costsDisabled || purchasesDisabled || paymentsDisabled || documentsDisabled) && (
+        {(costsDisabled ||
+          purchasesDisabled ||
+          paymentsDisabled ||
+          documentsDisabled) && (
           <p className="text-muted-foreground mt-2 text-sm">
             Algunas secciones no están disponibles en tu plan.{" "}
             <Link href="/pricing" className="font-medium underline">

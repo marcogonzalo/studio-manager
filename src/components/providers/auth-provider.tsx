@@ -31,7 +31,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [effectivePlan, setEffectivePlan] = useState<EffectivePlan | null>(null);
+  const [effectivePlan, setEffectivePlan] = useState<EffectivePlan | null>(
+    null
+  );
   const [planLoading, setPlanLoading] = useState(true);
   const router = useRouter();
   const supabase = getSupabaseClient();

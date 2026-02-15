@@ -183,10 +183,12 @@ describe("AuthProvider", () => {
     const mockSession = createMockSession(mockUser);
 
     if (authStateChangeCallback) {
-      (authStateChangeCallback as (event: string, session: Session | null) => void)(
-        "SIGNED_IN",
-        mockSession
-      );
+      (
+        authStateChangeCallback as (
+          event: string,
+          session: Session | null
+        ) => void
+      )("SIGNED_IN", mockSession);
     }
 
     await waitFor(() => {
@@ -256,10 +258,12 @@ describe("AuthProvider", () => {
     const mockSession = createMockSession(mockUser);
 
     if (authStateChangeCallback) {
-      (authStateChangeCallback as (event: string, session: Session | null) => void)(
-        "SIGNED_IN",
-        mockSession
-      );
+      (
+        authStateChangeCallback as (
+          event: string,
+          session: Session | null
+        ) => void
+      )("SIGNED_IN", mockSession);
     }
 
     await waitFor(() => {

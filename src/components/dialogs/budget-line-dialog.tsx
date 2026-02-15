@@ -202,15 +202,17 @@ export function BudgetLineDialog({
             : values.estimated_amount,
         actual_amount:
           values.category === "own_fees"
-            ? (typeof values.estimated_amount === "string"
-                ? parseFloat(values.estimated_amount) || 0
-                : values.estimated_amount)
+            ? typeof values.estimated_amount === "string"
+              ? parseFloat(values.estimated_amount) || 0
+              : values.estimated_amount
             : costsManagementEnabled
-              ? (typeof values.actual_amount === "string"
-                  ? parseFloat(values.actual_amount) || 0
-                  : values.actual_amount)
+              ? typeof values.actual_amount === "string"
+                ? parseFloat(values.actual_amount) || 0
+                : values.actual_amount
               : 0,
-        is_internal_cost: costsManagementEnabled ? values.is_internal_cost : false,
+        is_internal_cost: costsManagementEnabled
+          ? values.is_internal_cost
+          : false,
         phase: values.phase || null,
         supplier_id: values.supplier_id || null,
         notes: values.notes || null,
@@ -406,7 +408,8 @@ export function BudgetLineDialog({
                     </FormControl>
                     {selectedCategory === "own_fees" && (
                       <p className="text-muted-foreground text-xs">
-                        Para honorarios el importe real se rellena con este valor.
+                        Para honorarios el importe real se rellena con este
+                        valor.
                       </p>
                     )}
                     <FormMessage />

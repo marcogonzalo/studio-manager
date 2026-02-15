@@ -226,8 +226,8 @@ export default function AccountPage() {
                     )}
                     {!isBasePlan && (
                       <p className="text-muted-foreground text-xs">
-                        Este nombre aparecerá como &quot;Arquitecto/a&quot; en los
-                        PDF de presupuestos
+                        Este nombre aparecerá como &quot;Arquitecto/a&quot; en
+                        los PDF de presupuestos
                       </p>
                     )}
                     <FormMessage />
