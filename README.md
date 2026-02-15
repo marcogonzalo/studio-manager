@@ -102,6 +102,17 @@ A modern, full-stack web application designed to streamline the workflow of inte
    B2_APPLICATION_KEY=your_application_key
    B2_BUCKET_ID=your_bucket_id
    B2_BUCKET_NAME=your_bucket_name
+
+   # Formulario de contacto (opcional)
+   # Sin RESEND_API_KEY el formulario mostrará un mensaje para contactar por email
+   RESEND_API_KEY=re_xxxxxxxx
+   CONTACT_EMAIL_TO=hola@veta.app
+   # CONTACT_EMAIL_FROM es opcional; por defecto usa onboarding@resend.dev (dev)
+   # CONTACT_EMAIL_FROM=Veta Web <hola@veta.app>
+
+   # URL base para sitemap, robots y metadata (opcional)
+   # Por defecto usa VERCEL_URL en Vercel o https://veta.app
+   # NEXT_PUBLIC_APP_URL=https://tudominio.com
    ```
 
 4. **Run database migrations**
