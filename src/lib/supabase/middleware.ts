@@ -56,9 +56,11 @@ export async function updateSession(request: NextRequest) {
     "/contact",
     "/legal",
     "/auth",
+    "/sitemap.xml",
+    "/robots.txt",
   ];
 
-  // Allow auth routes (including callback) to be accessed without authentication
+  // Allow auth routes (including callback) and SEO routes without authentication
   const isPublicRoute =
     publicRoutes.some((route) => request.nextUrl.pathname === route) ||
     request.nextUrl.pathname.startsWith("/auth");
