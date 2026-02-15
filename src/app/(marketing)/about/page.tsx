@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Sobre Nosotros",
   description:
     "Conoce al equipo detrás de Veta. Plataforma diseñada por diseñadores, para profesionales del diseño interior.",
+  alternates: { canonical: "/about" },
   openGraph: {
     title: "Sobre Nosotros | Veta",
     description:

@@ -3,6 +3,11 @@ import { Montserrat } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
+import {
+  JsonLd,
+  organizationJsonLd,
+  softwareApplicationJsonLd,
+} from "@/components/json-ld";
 import "@/styles/globals.css";
 
 const montserrat = Montserrat({
@@ -72,6 +77,8 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className={montserrat.variable}>
       <body className="bg-background min-h-screen font-sans antialiased">
+        <JsonLd data={organizationJsonLd} />
+        <JsonLd data={softwareApplicationJsonLd} />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

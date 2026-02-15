@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   title: "Términos de Uso y Política de Privacidad",
   description:
     "Términos de uso, política de privacidad y derechos RGPD de Veta.",
+  alternates: { canonical: "/legal" },
   openGraph: {
     title: "Términos y Privacidad | Veta",
-    description:
-      "Términos de uso, política de privacidad y cumplimiento RGPD.",
+    description: "Términos de uso, política de privacidad y cumplimiento RGPD.",
     url: "/legal",
   },
   twitter: {

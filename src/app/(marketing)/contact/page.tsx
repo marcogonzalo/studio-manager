@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   title: "Contacto",
   description:
     "Ponte en contacto con el equipo de Veta. Respuesta en menos de 24 horas.",
+  alternates: { canonical: "/contact" },
   openGraph: {
     title: "Contacto | Veta",
     description:

@@ -19,11 +19,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { JsonLd, faqPageJsonLd } from "@/components/json-ld";
 
 export const metadata: Metadata = {
   title: "Inicio",
   description:
     "Gestiona tus proyectos de diseño interior sin complicaciones. Plataforma todo-en-uno: clientes, proveedores, catálogos y presupuestos.",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Veta - Gestión de Proyectos de Diseño Interior",
     description:
@@ -86,9 +88,39 @@ const benefits = [
   "Sin comisiones por transacciones",
 ];
 
+const baseUrl =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://veta.app");
+
+const homeFaqs = [
+  {
+    question: "¿Qué es Veta?",
+    answer:
+      "Veta es una plataforma para gestionar proyectos de diseño interior. Centraliza clientes, proveedores, catálogo de productos, presupuestos y órdenes de compra en un solo lugar.",
+  },
+  {
+    question: "¿Para quién es Veta?",
+    answer:
+      "Veta está pensada para diseñadores de interiores, estudios de diseño y profesionales que gestionan proyectos con clientes, presupuestos y compras a proveedores.",
+  },
+  {
+    question: "¿Cómo empiezo?",
+    answer:
+      "Puedes crear una cuenta gratis y probar la plataforma durante 30 días sin tarjeta. Después puedes elegir el plan Pro o Studio según las necesidades de tu estudio.",
+  },
+  {
+    question: "¿Mis datos están seguros?",
+    answer:
+      "Sí. Tus datos se almacenan de forma segura y el acceso está protegido. Cumplimos con la normativa de protección de datos (RGPD).",
+  },
+];
+
 export default function HomePage() {
   return (
     <>
+      <JsonLd data={faqPageJsonLd(homeFaqs, baseUrl)} />
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-32">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
@@ -128,7 +160,8 @@ export default function HomePage() {
             </div>
 
             <p className="text-muted-foreground mt-4 text-sm">
-              30 días de prueba gratis. Sin tarjeta, sin compromiso. Cancela cuando quieras.
+              30 días de prueba gratis. Sin tarjeta, sin compromiso. Cancela
+              cuando quieras.
             </p>
           </div>
         </div>
@@ -212,6 +245,34 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="bg-muted/30 py-20">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Preguntas Frecuentes
+            </h2>
+            <p className="text-muted-foreground mt-4 text-lg">
+              Resolvemos las dudas más habituales sobre Veta.
+            </p>
+          </div>
+          <div className="mx-auto max-w-3xl space-y-4">
+            {homeFaqs.map((faq) => (
+              <Card key={faq.question} className="border-none shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-lg font-medium">
+                    {faq.question}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{faq.answer}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>

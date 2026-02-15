@@ -10,11 +10,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { JsonLd, faqPageJsonLd } from "@/components/json-ld";
+
+const baseUrl =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://veta.app");
 
 export const metadata: Metadata = {
   title: "Precios",
   description:
     "Planes flexibles para estudios de diseño interior. Prueba gratis, Pro y Studio. Sin sorpresas ni costos ocultos.",
+  alternates: { canonical: "/pricing" },
   openGraph: {
     title: "Precios | Veta",
     description:
@@ -119,6 +127,7 @@ const faqs = [
 export default function PricingPage() {
   return (
     <>
+      <JsonLd data={faqPageJsonLd(faqs, `${baseUrl}/pricing`)} />
       {/* Hero Section */}
       <section className="py-20 md:py-32">
         <div className="container mx-auto max-w-7xl px-4">
@@ -184,9 +193,7 @@ export default function PricingPage() {
                 </CardContent>
                 <CardFooter>
                   <Button className="w-full" variant={plan.ctaVariant} asChild>
-                    <Link
-                      href={`/auth?mode=signup&plan=${plan.planCode}`}
-                    >
+                    <Link href={`/auth?mode=signup&plan=${plan.planCode}`}>
                       {plan.cta}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
