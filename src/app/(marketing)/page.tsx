@@ -81,12 +81,12 @@ const features = [
 ];
 
 const benefits = [
-  "Interfaz intuitiva diseñada para diseñadores",
-  "Acceso desde cualquier dispositivo",
-  "Datos seguros con cifrado de extremo a extremo",
-  "Actualizaciones constantes sin costo adicional",
-  "Soporte técnico personalizado",
-  "Sin comisiones por transacciones",
+  "Interfaz pensada para arquitectos y diseñadores de interior",
+  "Acceso en todo momento desde cualquier dispositivo",
+  "Tus datos almacenados de forma segura (HTTPS, normativa RGPD)",
+  "Mejoras y actualizaciones sin coste adicional",
+  "Escucha activa para responder a tus necesidades",
+  "Planes con precio fijo, sin comisiones por uso",
 ];
 
 const baseUrl =
@@ -99,22 +99,22 @@ const homeFaqs = [
   {
     question: "¿Qué es Veta?",
     answer:
-      "Veta es una plataforma para gestionar proyectos de diseño interior. Centraliza clientes, proveedores, catálogo de productos, presupuestos y órdenes de compra en un solo lugar.",
+      "Veta es un software de gestión de proyectos de interiorismo diseñado para centralizar toda tu operativa en un solo lugar. Con nuestra plataforma, puedes gestionar la relación con clientes y proveedores, además de crear un catálogo de productos digital reutilizable para agilizar tus diseños. Veta te permite mantener presupuestos de interiorismo actualizados en tiempo real ante cualquier cambio, facilitando el control de órdenes de compra, costes y pagos, y el seguimiento financiero de cada obra. Al optimizar las tareas administrativas, con Veta ganas tiempo para lo que de verdad importa: aportar valor creativo a tus proyectos de arquitectura de interiores.",
   },
   {
     question: "¿Para quién es Veta?",
     answer:
-      "Veta está pensada para diseñadores de interiores, estudios de diseño y profesionales que gestionan proyectos con clientes, presupuestos y compras a proveedores.",
+      "Veta es una herramienta digital diseñada específicamente para profesionales del sector Contract y Residencial: interioristas, estudios y diseñadores freelance que buscan profesionalizar su gestión y dejar de usar hojas de cálculo dispersas; estudios de diseño de interiores que necesitan centralizar la comunicación, delegar tareas y controlar la rentabilidad de varios proyectos simultáneos; arquitectos de interiores que requieren un control técnico y financiero riguroso sobre las compras a proveedores y presupuestos de obra; y project managers de diseño, especialistas en la ejecución que demandan una herramienta ágil para gestionar órdenes de compra y pagos.",
   },
   {
     question: "¿Cómo empiezo?",
     answer:
-      "Puedes crear una cuenta gratis y probar la plataforma durante 30 días sin tarjeta. Después puedes elegir el plan Pro o Studio según las necesidades de tu estudio.",
+      "Comenzar a optimizar tus proyectos de interiorismo es muy sencillo y no requiere compromiso inicial: regístrate gratis y crea tu cuenta base en segundos sin necesidad de introducir tu tarjeta de crédito; explora las herramientas configurando tus primeros clientes y creando tu catálogo de productos; y elige tu ritmo manteniéndote en el plan gratuito el tiempo que necesites o escalando a los planes Pro o Studio cuando tu volumen de proyectos y equipo lo requieran.",
   },
   {
     question: "¿Mis datos están seguros?",
     answer:
-      "Sí. Tus datos se almacenan de forma segura y el acceso está protegido. Cumplimos con la normativa de protección de datos (RGPD).",
+      "La seguridad de tu información es nuestra prioridad. En Veta implementamos protocolos de protección de datos de nivel bancario para que tu estudio de interiorismo opere con total tranquilidad: cumplimos estrictamente con el Reglamento General de Protección de Datos (RGPD), garantizando la privacidad de tu base de datos en todo momento; solo tú y las personas autorizadas de tu equipo tenéis acceso a la plataforma mediante credenciales protegidas; y como titular puedes ejercer tus derechos de acceso, rectificación o supresión de datos de forma sencilla y directa.",
   },
 ];
 
@@ -148,12 +148,12 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Gestiona tus proyectos de diseño{" "}
+              Gestiona tus proyectos de interiorismo{" "}
               <span className="text-primary">sin complicaciones</span>
             </h1>
 
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              La plataforma todo-en-uno para diseñadores de interiores.
+              La plataforma todo-en-uno para arquitectos y diseñadores.
               Administra proyectos, clientes, proveedores y presupuestos desde
               un solo lugar y toma el control.
             </p>
@@ -228,8 +228,9 @@ export default function HomePage() {
                 ¿Por qué elegir Veta?
               </h2>
               <p className="text-muted-foreground mt-4 text-lg">
-                Simplificamos la gestión de tu estudio para que puedas enfocarte
-                en lo que mejor sabes hacer: diseñar espacios increíbles.
+                Simplificamos la gestión de tu estudio de interiorismo para que
+                puedas enfocarte en lo que mejor sabes hacer: diseñar espacios
+                increíbles.
               </p>
 
               <ul className="mt-8 space-y-4">
@@ -273,8 +274,8 @@ export default function HomePage() {
               Lo que dicen de Veta
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Estudios de diseño que ya confían en Veta para gestionar sus
-              proyectos.
+              Estudios y profesionales de arquitectura y diseño interior que ya
+              confían en Veta.
             </p>
           </div>
           <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
@@ -293,6 +294,32 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section - before FAQ */}
+      <section className="bg-primary/5 py-20">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Comienza a gestionar tu estudio hoy
+            </h2>
+            <p className="text-muted-foreground mt-4 text-lg">
+              Únete a diseñadores que ya confían en Veta para gestionar sus
+              proyectos.
+            </p>
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Button size="lg" asChild>
+                <Link href="/auth?mode=signup">
+                  Crear Cuenta Gratis
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link href="/pricing">Ver planes</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>
@@ -325,16 +352,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section - interiorismo */}
       <section className="bg-primary/5 py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Comienza a gestionar tu estudio hoy
+              ¿Quieres empezar a mejorar la experiencia en tus proyectos de
+              interiorismo?
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Únete a diseñadores que ya confían en Veta para gestionar sus
-              proyectos.
+              Prueba Veta sin compromiso y descubre cómo centralizar toda la
+              gestión de tus proyectos en un solo lugar.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" asChild>
@@ -344,7 +372,7 @@ export default function HomePage() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/contact">Contactar Ventas</Link>
+                <Link href="/pricing">Ver planes</Link>
               </Button>
             </div>
           </div>

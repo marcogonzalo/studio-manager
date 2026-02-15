@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Users, Target, Heart, Award } from "lucide-react";
+import Link from "next/link";
+import { Users, Target, Heart, Award, Linkedin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = {
@@ -56,13 +57,16 @@ export default function AboutPage() {
         <div className="container mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Diseñado por diseñadores,{" "}
-              <span className="text-primary">para diseñadores</span>
+              Diseñada para ayudar a crear{" "}
+              <span className="text-primary">
+                espacios que transforman vidas
+              </span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Veta nació de la necesidad real de simplificar la gestión de
-              proyectos de diseño interior. Entendemos tus desafíos porque los
-              hemos vivido.
+              Veta nace de la necesidad real de simplificar la gestión de
+              proyectos de diseño interior para que arquitectas y diseñadores
+              puedan hacer lo que mejor saben hacer: crear espacios que
+              transforman vidas.
             </p>
           </div>
         </div>
@@ -71,39 +75,36 @@ export default function AboutPage() {
       {/* Story Section */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">
-                Nuestra Historia
-              </h2>
-              <div className="text-muted-foreground mt-6 space-y-4">
-                <p>
-                  Veta comenzó como un proyecto interno para resolver los
-                  desafíos diarios de gestionar un estudio de diseño interior.
-                  Hojas de cálculo dispersas, presupuestos difíciles de rastrear
-                  y comunicación fragmentada con proveedores eran problemas
-                  constantes.
-                </p>
-                <p>
-                  Después de meses de desarrollo y pruebas con diseñadores
-                  reales, creamos una plataforma que realmente entiende las
-                  necesidades específicas del sector. Desde la gestión de
-                  espacios hasta el control de costos, cada característica fue
-                  diseñada pensando en el flujo de trabajo real de un diseñador.
-                </p>
-                <p>
-                  Hoy, Veta ayuda a estudios de diseño a ahorrar tiempo, reducir
-                  errores y ofrecer un mejor servicio a sus clientes.
-                </p>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="from-primary/20 via-primary/10 border-border flex aspect-square items-center justify-center rounded-xl border bg-gradient-to-br to-transparent shadow-lg">
-                <div className="p-8 text-center">
-                  <Users className="text-primary mx-auto mb-4 h-20 w-20" />
-                  <p className="text-lg font-medium">Nuestro Equipo</p>
-                </div>
-              </div>
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">
+              ¿Cómo surge Veta?
+            </h2>
+            <div className="text-muted-foreground mt-6 space-y-4">
+              <p>
+                <strong>Veta</strong> surge de la iniciativa de un novio
+                programador buscando la forma de apoyar a su novia arquitecta de
+                diseño interior desde la tecnología. La herramienta nace de la
+                observación de los desafíos a los que arquitectas y diseñadores
+                de interiores se enfrentaban en la gestión de proyectos de
+                diseño de interior: hojas de cálculo dispersas, presupuestos
+                difíciles de rastrear, catálogo sin organización, registros
+                difíciles de buscar y comunicación fragmentada con proveedores
+                como problemas constantes.
+              </p>
+              <p>
+                Después de arduo trabajo, pruebas y validación con diseñadores y
+                arquitectos reales, se crea <strong>Veta</strong>, una
+                plataforma que aborda las principales necesidades específicas
+                del sector de la arquitectura de diseño interior. Desde la
+                gestión de espacios hasta el control de costes, cada
+                característica fue diseñada pensando en el flujo de trabajo real
+                de un profesional de la arquitectura de diseño interior.
+              </p>
+              <p>
+                Hoy, <strong>Veta</strong> ayuda a estudios de diseño a ahorrar
+                tiempo, reducir errores y ofrecer un mejor servicio a sus
+                clientes.
+              </p>
             </div>
           </div>
         </div>
@@ -143,16 +144,48 @@ export default function AboutPage() {
       </section>
 
       {/* Mission Section */}
-      <section className="bg-primary/5 py-20">
+      <section className="from-primary/20 via-primary/10 border-border border-y bg-gradient-to-br to-transparent py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Nuestra Misión
             </h2>
             <p className="text-muted-foreground mt-6 text-xl">
-              Empoderar a los profesionales del diseño interior con herramientas
-              que simplifiquen su trabajo, para que puedan dedicar más tiempo a
-              lo que realmente importa: crear espacios que transforman vidas.
+              Veta quiere empoderar a los profesionales y estudios de
+              arquitectura y diseño interior con herramientas que simplifiquen
+              su trabajo, para que puedan dedicar más tiempo a lo que realmente
+              importa: crear espacios que transforman vidas.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Creator Section - full width, same gradient background */}
+      <section className="bg-primary/5 py-20">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="mx-auto flex max-w-2xl flex-col items-center justify-center text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              ¿Quién crea Veta?
+            </h2>
+            <h3 className="text-foreground mt-2 font-semibold">
+              Marco Gonzalo Gómez Pérez
+            </h3>
+            <Link
+              href="https://es.linkedin.com/in/marcogonzalo/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Perfil de Linkedin"
+              className="text-primary mt-2 inline-flex items-center gap-2 text-sm font-medium hover:underline"
+            >
+              <Linkedin className="h-5 w-5" />
+            </Link>
+            <p className="text-muted-foreground mt-4">
+              Desarrollador full-stack con experiencia en productos digitales,
+              APIs y aplicaciones web. Ha trabajado en equipos de producto y
+              tecnología en distintos sectores, desde startups hasta empresas
+              consolidadas. Cuenta con historia emprendedora en Venezuela y en
+              España, con reconocimientos de premios de emprendimiento y
+              excelencia en ambos países.
             </p>
           </div>
         </div>

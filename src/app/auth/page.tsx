@@ -34,7 +34,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
 
 const formSchema = z.object({
@@ -257,23 +257,16 @@ function AuthContent() {
               <VetaLogo height={28} />
             </Link>
           </div>
-          <CardTitle>{isLogin ? "Iniciar Sesión" : "Registrarse"}</CardTitle>
+          <CardTitle>
+            {isLogin ? "Ingresa a tu cuenta" : "Regístrate"}
+          </CardTitle>
           <CardDescription>
             {redirectTo
               ? "Tu sesión ha caducado. Por favor, inicia sesión para continuar."
               : isLogin
                 ? "Ingresa tu correo para enviarte el enlace de inicio de sesión"
-                : "Ingresa tu correo y te enviaremos un enlace para crear tu cuenta"}
+                : "Ingresa tu correo y te enviaremos un enlace para crear tu cuenta."}
           </CardDescription>
-          {!isLogin && selectedPlan && (
-            <p className="text-muted-foreground mt-2 text-sm">
-              Te registrarás con el plan{" "}
-              <span className="text-foreground font-medium">
-                {PLAN_DISPLAY_NAMES[selectedPlan]}
-              </span>
-              .
-            </p>
-          )}
           {!isLogin && !selectedPlan && (
             <p className="text-muted-foreground mt-2 text-sm">
               Se te asignará el plan{" "}
@@ -321,25 +314,34 @@ function AuthContent() {
                 <div className="text-muted-foreground space-y-1 text-sm">
                   <p className="flex flex-wrap items-center gap-1.5">
                     Te registrarás con el plan{" "}
-                    <Select
-                      value={selectedPlan}
-                      onValueChange={handlePlanChange}
-                    >
-                      <SelectTrigger
-                        aria-label="Cambiar plan"
-                        className="text-foreground hover:bg-muted/50 inline-flex h-8 w-auto min-w-0 border-0 bg-transparent px-1.5 py-0 shadow-none focus:ring-1 focus:ring-offset-0 [&>svg]:h-3.5 [&>svg]:w-3.5"
+                    <span className="inline-flex items-center gap-0.5">
+                      <Select
+                        value={selectedPlan}
+                        onValueChange={handlePlanChange}
                       >
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent align="start">
-                        {VALID_PLAN_CODES.map((code) => (
-                          <SelectItem key={code} value={code}>
-                            {PLAN_DISPLAY_NAMES[code]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    .
+                        <SelectTrigger
+                          aria-label="Cambiar plan"
+                          className="text-foreground hover:bg-muted/50 inline-flex h-8 w-auto min-w-0 border-0 bg-transparent px-1.5 py-0 shadow-none focus:ring-1 focus:ring-offset-0 [&>svg]:h-3.5 [&>svg]:w-3.5"
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent align="start">
+                          {VALID_PLAN_CODES.map((code) => (
+                            <SelectItem key={code} value={code}>
+                              {PLAN_DISPLAY_NAMES[code]}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Link
+                        href="/pricing"
+                        title="Ver detalle de los planes"
+                        className="text-muted-foreground hover:text-foreground inline-flex shrink-0"
+                        aria-label="Ver detalle de los planes"
+                      >
+                        <Info className="h-4 w-4" />
+                      </Link>
+                    </span>
                   </p>
                   {selectedPlan !== "BASE" && (
                     <p>Tendrás 30 días para disfrutarlo sin coste.</p>
