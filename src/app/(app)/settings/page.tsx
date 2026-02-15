@@ -52,7 +52,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function SettingsPage() {
   const { user } = useAuth();
   const supabase = getSupabaseClient();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const form = useForm<FormValues>({
@@ -95,6 +95,7 @@ export default function SettingsPage() {
     } else {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when user?.id changes only
   }, [user?.id]);
 
   async function onSubmit(values: FormValues) {

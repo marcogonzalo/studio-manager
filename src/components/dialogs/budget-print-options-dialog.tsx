@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,8 @@ interface BudgetPrintOptionsDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: (option: BudgetPrintOption) => void;
   isGenerating?: boolean;
+  /** Si false (plan base), solo se permite "Presupuesto completo". "Solo productos" y "Solo partidas" quedan deshabilitados. */
+  pdfExportFull?: boolean;
 }
 
 export function BudgetPrintOptionsDialog({
@@ -47,11 +49,18 @@ export function BudgetPrintOptionsDialog({
   onOpenChange,
   onConfirm,
   isGenerating = false,
+  pdfExportFull = true,
 }: BudgetPrintOptionsDialogProps) {
   const [selected, setSelected] = useState<BudgetPrintOption>("full");
 
+  useEffect(() => {
+    if (open && !pdfExportFull) setSelected("full");
+  }, [open, pdfExportFull]);
+
   const handleConfirm = () => {
-    onConfirm(selected);
+    const valueToSend =
+      !pdfExportFull && selected !== "full" ? "full" : selected;
+    onConfirm(valueToSend);
     onOpenChange(false);
   };
 
@@ -62,27 +71,41 @@ export function BudgetPrintOptionsDialog({
           <DialogTitle>Opciones al exportar presupuesto</DialogTitle>
         </DialogHeader>
         <div className="space-y-3 py-2">
-          {OPTIONS.map((opt) => (
-            <label
-              key={opt.value}
-              className="hover:bg-accent/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5 flex cursor-pointer items-start gap-3 rounded-lg border p-3"
-            >
-              <input
-                type="radio"
-                name="print-option"
-                value={opt.value}
-                checked={selected === opt.value}
-                onChange={() => setSelected(opt.value)}
-                className="mt-1 h-4 w-4"
-              />
-              <div>
-                <span className="font-medium">{opt.label}</span>
-                <p className="text-muted-foreground text-sm">
-                  {opt.description}
-                </p>
-              </div>
-            </label>
-          ))}
+          {OPTIONS.map((opt) => {
+            const isDisabled =
+              !pdfExportFull && (opt.value === "products" || opt.value === "lines");
+            return (
+              <label
+                key={opt.value}
+                className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 ${
+                  isDisabled
+                    ? "cursor-not-allowed opacity-60"
+                    : "hover:bg-accent/50 has-[:checked]:border-primary has-[:checked]:bg-primary/5"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="print-option"
+                  value={opt.value}
+                  checked={selected === opt.value}
+                  onChange={() => !isDisabled && setSelected(opt.value)}
+                  disabled={isDisabled}
+                  className="mt-1 h-4 w-4"
+                />
+                <div className="min-w-0 flex-1">
+                  <span className="font-medium">{opt.label}</span>
+                  <p className="text-muted-foreground text-sm">
+                    {opt.description}
+                  </p>
+                  {isDisabled && (
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      Mejora tu plan para exportar por productos o partidas.
+                    </p>
+                  )}
+                </div>
+              </label>
+            );
+          })}
         </div>
         <DialogFooter>
           <Button

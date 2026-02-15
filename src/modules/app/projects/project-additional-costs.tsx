@@ -69,6 +69,7 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
 
   useEffect(() => {
     fetchCosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
   const handleDelete = async (id: string) => {

@@ -118,7 +118,7 @@ export function PaymentDialog({
       .order("created_at", { ascending: false });
 
     if (data) setPurchaseOrders(data);
-  }, [projectId]);
+  }, [projectId, supabase]);
 
   const fetchAdditionalCosts = useCallback(async () => {
     const { data } = await supabase
@@ -128,7 +128,7 @@ export function PaymentDialog({
       .order("created_at", { ascending: false });
 
     if (data) setAdditionalCosts(data);
-  }, [projectId]);
+  }, [projectId, supabase]);
 
   useEffect(() => {
     if (open) {

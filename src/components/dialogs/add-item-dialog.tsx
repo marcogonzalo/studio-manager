@@ -31,9 +31,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useEffect, useState, useMemo } from "react";
 import { Plus, Search } from "lucide-react";
+import Image from "next/image";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ProductImageUpload } from "@/components/product-image-upload";
 import type { Product, ProjectItem, Space, Supplier } from "@/types";
+import Link from "next/link";
 import { reportError } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { SupplierDialog } from "./supplier-dialog";
@@ -80,7 +82,9 @@ export function AddItemDialog({
   item,
   spaceId,
 }: AddItemDialogProps) {
-  const { user } = useAuth();
+  const { user, effectivePlan } = useAuth();
+  // Excluir del proyecto y opciones de presupuesto: solo disponible con plan budget_mode full
+  const budgetModeFull = effectivePlan?.config?.budget_mode === "full";
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -101,6 +105,7 @@ export function AddItemDialog({
     if (item?.product_id) return item.product_id;
     if (open && !item) return crypto.randomUUID();
     return "";
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only open and product_id affect result
   }, [open, item?.product_id]);
 
   type FormValues = z.input<typeof formSchema>;
@@ -240,7 +245,7 @@ export function AddItemDialog({
       }
     }
     if (open) loadData();
-  }, [open, projectId, item, spaceId, form]);
+  }, [open, projectId, item, spaceId, form, supabase]);
 
   const handleProductSelect = (productId: string) => {
     const prod = products.find((p) => p.id === productId);
@@ -371,7 +376,7 @@ export function AddItemDialog({
         unit_price: values.unit_price,
         image_url: values.image_url,
         internal_reference: values.internal_reference || null,
-        is_excluded: values.is_excluded || false,
+        is_excluded: budgetModeFull ? (values.is_excluded || false) : false,
         ...(isEditing ? {} : { status: "pending" }),
       };
 
@@ -426,7 +431,7 @@ export function AddItemDialog({
 
       form.reset();
       onSuccess();
-    } catch (error) {
+    } catch {
       toast.error("Error al guardar");
     }
   }
@@ -519,10 +524,12 @@ export function AddItemDialog({
                                   <div className="bg-secondary/30 dark:bg-muted relative aspect-square">
                                     {product.image_url ? (
                                       <div className="group relative h-full w-full">
-                                        <img
+                                        <Image
                                           src={product.image_url}
                                           alt={product.name}
-                                          className="h-full w-full object-cover"
+                                          fill
+                                          className="object-cover"
+                                          sizes="120px"
                                         />
                                         <button
                                           type="button"
@@ -878,11 +885,16 @@ export function AddItemDialog({
                 control={form.control}
                 name="is_excluded"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
+                  <FormItem
+                    className={`flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
+                      !budgetModeFull ? "opacity-60" : ""
+                    }`}
+                  >
                     <FormControl>
                       <Checkbox
-                        checked={field.value}
+                        checked={budgetModeFull ? field.value : false}
                         onCheckedChange={(checked) => {
+                          if (!budgetModeFull) return;
                           field.onChange(checked);
                           // Validar si está asociado a PO no cancelada
                           if (checked && item?.purchase_order_id) {
@@ -901,6 +913,7 @@ export function AddItemDialog({
                               });
                           }
                         }}
+                        disabled={!budgetModeFull}
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
@@ -911,7 +924,15 @@ export function AddItemDialog({
                         Si está marcado, el producto no se incluirá en el
                         presupuesto ni en los cálculos de costos.
                       </p>
-                      {item?.purchase_order_id && (
+                      {!budgetModeFull && (
+                        <p className="text-muted-foreground mt-1 text-xs">
+                          <Link href="/pricing" className="underline">
+                            Mejora tu plan
+                          </Link>{" "}
+                          para excluir ítems del presupuesto.
+                        </p>
+                      )}
+                      {item?.purchase_order_id && budgetModeFull && (
                         <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
                           ⚠ No se puede excluir si está asociado a una orden de
                           compra activa.

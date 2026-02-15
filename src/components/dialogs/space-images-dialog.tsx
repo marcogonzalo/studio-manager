@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpaceImageUpload } from "@/components/space-image-upload";
+import Image from "next/image";
+import Link from "next/link";
 import { toast } from "sonner";
 import type { Space } from "@/types";
 import { Trash2 } from "lucide-react";
@@ -26,11 +28,14 @@ export function SpaceImagesDialog({
   onOpenChange,
   space,
   projectId,
+  canAddRenders = true,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
   space: Space;
   projectId: string;
+  /** Si false (plan sin subida de renders), el botón Añadir y el input se deshabilitan y se muestra mensaje. */
+  canAddRenders?: boolean;
 }) {
   const supabase = getSupabaseClient();
   const [images, setImages] = useState<Image[]>([]);
@@ -51,6 +56,7 @@ export function SpaceImagesDialog({
 
   useEffect(() => {
     if (open) fetchImages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when open or space.id changes only
   }, [open, space.id]);
 
   const insertImage = async (url: string) => {
@@ -141,6 +147,31 @@ export function SpaceImagesDialog({
             </TabsContent>
           </Tabs>
         </div>
+        <div className="mb-4 flex flex-col gap-2">
+          <div className="flex gap-2">
+            <Input
+              placeholder="URL de la imagen (http://...)"
+              value={newImageUrl}
+              onChange={(e) => setNewImageUrl(e.target.value)}
+              disabled={!canAddRenders}
+            />
+            <Button
+              onClick={handleAddByUrl}
+              disabled={loading || !canAddRenders || !newImageUrl?.trim()}
+            >
+              Añadir
+            </Button>
+          </div>
+          {!canAddRenders && (
+            <p className="text-muted-foreground text-xs">
+              No disponible en tu plan.{" "}
+              <Link href="/pricing" className="underline">
+                Mejora tu plan
+              </Link>{" "}
+              para subir renders.
+            </p>
+          )}
+        </div>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           {images.map((img) => (
@@ -148,10 +179,12 @@ export function SpaceImagesDialog({
               key={img.id}
               className="group relative aspect-video overflow-hidden rounded-md border"
             >
-              <img
+              <Image
                 src={img.url}
                 alt={img.description}
-                className="h-full w-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 50vw, 33vw"
               />
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button

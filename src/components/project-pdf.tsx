@@ -590,6 +590,7 @@ export function ProjectPDF({
                       <View key={item.id} style={styles.tableRow}>
                         <View style={styles.colImage}>
                           {item.image_url ? (
+                            // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image has no alt prop
                             <Image
                               src={item.image_url}
                               style={styles.itemImage}

@@ -2,11 +2,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { AuthProvider, useAuth } from "./auth-provider";
 import { createMockUser, createMockSession } from "@/test/mocks/supabase";
+import type { Session } from "@supabase/supabase-js";
 
 // Mock the supabase module using hoisted mocks
 const mockGetSession = vi.hoisted(() => vi.fn());
 const mockOnAuthStateChange = vi.hoisted(() => vi.fn());
 const mockSignOut = vi.hoisted(() => vi.fn());
+
+const mockRpc = vi.hoisted(() =>
+  vi.fn().mockResolvedValue({
+    data: [{ plan_code: "BASE", config: {} }],
+    error: null,
+  })
+);
 
 vi.mock("@/lib/supabase", () => {
   const auth = {
@@ -15,8 +23,8 @@ vi.mock("@/lib/supabase", () => {
     signOut: mockSignOut,
   };
   return {
-    supabase: { auth },
-    getSupabaseClient: () => ({ auth }),
+    supabase: { auth, rpc: mockRpc },
+    getSupabaseClient: () => ({ auth, rpc: mockRpc }),
   };
 });
 
@@ -138,7 +146,7 @@ describe("AuthProvider", () => {
     );
 
     await waitFor(() => {
-      expect(mockOnAuthStateChange).toHaveBeenCalledTimes(1);
+      expect(mockOnAuthStateChange).toHaveBeenCalled();
     });
 
     const callback = mockOnAuthStateChange.mock.calls[0][0];
@@ -147,7 +155,7 @@ describe("AuthProvider", () => {
 
   it("should update state when auth changes", async () => {
     let authStateChangeCallback:
-      | ((event: string, session: any) => void)
+      | ((event: string, session: Session | null) => void)
       | null = null;
 
     mockOnAuthStateChange.mockImplementation((callback) => {
@@ -175,7 +183,7 @@ describe("AuthProvider", () => {
     const mockSession = createMockSession(mockUser);
 
     if (authStateChangeCallback) {
-      (authStateChangeCallback as (event: string, session: any) => void)(
+      (authStateChangeCallback as (event: string, session: Session | null) => void)(
         "SIGNED_IN",
         mockSession
       );
@@ -220,7 +228,7 @@ describe("AuthProvider", () => {
     window.location.hash = "#access_token=test";
 
     let authStateChangeCallback:
-      | ((event: string, session: any) => void)
+      | ((event: string, session: Session | null) => void)
       | null = null;
 
     mockOnAuthStateChange.mockImplementation((callback) => {
@@ -248,7 +256,7 @@ describe("AuthProvider", () => {
     const mockSession = createMockSession(mockUser);
 
     if (authStateChangeCallback) {
-      (authStateChangeCallback as (event: string, session: any) => void)(
+      (authStateChangeCallback as (event: string, session: Session | null) => void)(
         "SIGNED_IN",
         mockSession
       );

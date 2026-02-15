@@ -36,6 +36,7 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
 
   useEffect(() => {
     fetchDocs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
   const handleDelete = async (id: string) => {

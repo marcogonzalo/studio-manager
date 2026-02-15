@@ -22,7 +22,8 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
-// Mock IntersectionObserver
+// Mock IntersectionObserver (globalThis + class cast needed for test env)
+/* eslint-disable @typescript-eslint/no-explicit-any */
 (globalThis as any).IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
@@ -32,3 +33,4 @@ Object.defineProperty(window, "matchMedia", {
   }
   unobserve() {}
 } as any;
+/* eslint-enable @typescript-eslint/no-explicit-any */

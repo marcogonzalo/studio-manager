@@ -109,7 +109,7 @@ export default function HomePage() {
             </div>
 
             <p className="text-muted-foreground mt-4 text-sm">
-              El período de pruebas es de 30 días.
+              30 días de prueba gratis. Sin tarjeta, sin compromiso. Cancela cuando quieras.
             </p>
           </div>
         </div>

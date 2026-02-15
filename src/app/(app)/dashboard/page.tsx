@@ -53,6 +53,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchDashboardStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
   }, []);
 
   const fetchDashboardStats = async () => {

@@ -4,11 +4,15 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import type { EffectivePlan } from "@/types";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  /** Effective plan (from latest valid assignment or BASE). Loaded after user is set. */
+  effectivePlan: EffectivePlan | null;
+  planLoading: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -16,6 +20,8 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  effectivePlan: null,
+  planLoading: true,
   signOut: async () => {},
 });
 
@@ -25,18 +31,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [effectivePlan, setEffectivePlan] = useState<EffectivePlan | null>(null);
+  const [planLoading, setPlanLoading] = useState(true);
   const router = useRouter();
   const supabase = getSupabaseClient();
 
   useEffect(() => {
-    // Check active sessions and sets the user
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for changes on auth state (logged in, signed out, etc.)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
@@ -44,7 +50,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Clean up URL hash after magic link authentication
       if (event === "SIGNED_IN" && window.location.hash) {
         window.history.replaceState(null, "", window.location.pathname);
       }
@@ -53,13 +58,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [supabase]);
 
+  useEffect(() => {
+    if (!user?.id) {
+      setEffectivePlan(null);
+      setPlanLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setPlanLoading(true);
+    void Promise.resolve(
+      supabase.rpc("get_effective_plan", { p_user_id: user.id })
+    )
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          setEffectivePlan(null);
+          return;
+        }
+        const row = Array.isArray(data) ? data[0] : data;
+        if (row?.plan_code && row?.config) {
+          setEffectivePlan({
+            plan_code: row.plan_code as EffectivePlan["plan_code"],
+            config: row.config as EffectivePlan["config"],
+          });
+        } else {
+          setEffectivePlan(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setEffectivePlan(null);
+      })
+      .then(() => {
+        if (!cancelled) setPlanLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, supabase]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     router.push("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        loading,
+        effectivePlan,
+        planLoading,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

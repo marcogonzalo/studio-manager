@@ -50,6 +50,7 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
 
   useEffect(() => {
     fetchNotes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
   const handleAddNote = async () => {

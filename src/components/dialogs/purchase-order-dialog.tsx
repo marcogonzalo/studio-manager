@@ -53,7 +53,7 @@ interface ProjectItem {
   unit_cost: number;
   status: string;
   purchase_order_id: string | null;
-  product?: { supplier_id: string | null };
+  product?: { supplier_id: string | null; supplier?: Supplier };
 }
 
 interface PurchaseOrder {
@@ -240,7 +240,8 @@ export function PurchaseOrderDialog({
         setLoadingItems(false);
       }
     },
-    [projectId, isEditing, order?.id]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- order.project_items excluded to avoid refetch on every order change
+    [projectId, isEditing, order?.id, supabase]
   );
 
   // Fetch suppliers that have products in the project budget
@@ -261,7 +262,7 @@ export function PurchaseOrderDialog({
           // Extract unique suppliers from project items
           const supplierMap = new Map<string, Supplier>();
 
-          items?.forEach((item: any) => {
+          items?.forEach((item: ProjectItem) => {
             const supplier = item.product?.supplier;
             if (supplier && supplier.id) {
               supplierMap.set(supplier.id, supplier);
@@ -290,7 +291,7 @@ export function PurchaseOrderDialog({
           setSuppliers(uniqueSuppliers);
         });
     }
-  }, [open, projectId, isEditing, order?.supplier_id]);
+  }, [open, projectId, isEditing, order?.supplier_id, supabase]);
 
   // Reset form and load data when dialog opens
   useEffect(() => {
@@ -378,6 +379,7 @@ export function PurchaseOrderDialog({
       setAvailableItems([]);
       setSelectedItemIds(new Set());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- order intentionally excluded to avoid reset loops
   }, [
     open,
     selectedSupplierId,
