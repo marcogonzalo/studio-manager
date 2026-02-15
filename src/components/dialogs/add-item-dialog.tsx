@@ -376,7 +376,7 @@ export function AddItemDialog({
         unit_price: values.unit_price,
         image_url: values.image_url,
         internal_reference: values.internal_reference || null,
-        is_excluded: budgetModeFull ? (values.is_excluded || false) : false,
+        is_excluded: budgetModeFull ? values.is_excluded || false : false,
         ...(isEditing ? {} : { status: "pending" }),
       };
 

@@ -567,7 +567,11 @@ export function ProjectDialog({
                     <FormLabel>Moneda</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={currencyDisabled ? defaultCurrency : (field.value ?? "EUR")}
+                      value={
+                        currencyDisabled
+                          ? defaultCurrency
+                          : (field.value ?? "EUR")
+                      }
                       disabled={currencyDisabled}
                     >
                       <FormControl>
@@ -602,7 +606,11 @@ export function ProjectDialog({
                         step="0.01"
                         placeholder="Ej: 21"
                         {...field}
-                        value={taxRateDisabled ? defaultTaxRateStr : (field.value || "")}
+                        value={
+                          taxRateDisabled
+                            ? defaultTaxRateStr
+                            : field.value || ""
+                        }
                         disabled={taxRateDisabled}
                       />
                     </FormControl>

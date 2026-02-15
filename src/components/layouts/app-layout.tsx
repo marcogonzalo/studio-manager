@@ -262,7 +262,8 @@ function SidebarContent({
                   Mi Cuenta
                   {effectivePlan?.plan_code && (
                     <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-                      {PLAN_DISPLAY_NAMES[effectivePlan.plan_code] ?? effectivePlan.plan_code}
+                      {PLAN_DISPLAY_NAMES[effectivePlan.plan_code] ??
+                        effectivePlan.plan_code}
                     </span>
                   )}
                 </DropdownMenuLabel>

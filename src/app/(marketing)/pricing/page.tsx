@@ -10,11 +10,38 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  JsonLd,
+  faqPageJsonLd,
+  softwareApplicationPricingJsonLd,
+} from "@/components/json-ld";
+import { formatCurrency } from "@/lib/utils";
+
+const baseUrl =
+  process.env.NEXT_PUBLIC_APP_URL ??
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://veta.pro");
+
+const PRICING_CURRENCY = "EUR";
 
 export const metadata: Metadata = {
   title: "Precios",
   description:
-    "Planes flexibles para estudios de diseño interior de todos los tamaños. Comienza gratis y escala según tus necesidades.",
+    "Planes flexibles para estudios de diseño interior. Prueba gratis, Pro y Studio. Sin sorpresas ni costos ocultos.",
+  alternates: { canonical: "/pricing" },
+  openGraph: {
+    title: "Precios | Veta",
+    description:
+      "Planes flexibles para estudios de diseño interior. Comienza gratis.",
+    url: "/pricing",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Precios | Veta",
+    description:
+      "Planes flexibles para estudios de diseño interior. Comienza gratis.",
+  },
 };
 
 const plans = [
@@ -24,6 +51,9 @@ const plans = [
     description: "Plan de prueba con límites básicos",
     price: "Gratis",
     priceNote: "/siempre",
+    annualPrice: null as string | null,
+    annualNote: null as string | null,
+    currency: null as string | null,
     features: [
       "Hasta 3 proyectos",
       "10 clientes",
@@ -44,8 +74,11 @@ const plans = [
     name: "Pro",
     planCode: "PRO" as const,
     description: "Plan profesional con más recursos y funcionalidades",
-    price: "€25",
+    price: "25",
     priceNote: "/mes",
+    annualPrice: "275",
+    annualNote: "1 mes gratis",
+    currency: PRICING_CURRENCY,
     features: [
       "Hasta 10 proyectos",
       "50 clientes",
@@ -66,8 +99,11 @@ const plans = [
     name: "Studio",
     planCode: "STUDIO" as const,
     description: "Plan ilimitado para estudios",
-    price: "€75",
+    price: "75",
     priceNote: "/mes",
+    annualPrice: "750",
+    annualNote: "2 meses gratis",
+    currency: PRICING_CURRENCY,
     features: [
       "Todas las funcionalidades Pro",
       "Proyectos ilimitados",
@@ -105,8 +141,11 @@ const faqs = [
 ];
 
 export default function PricingPage() {
+  const pricingUrl = `${baseUrl}/pricing`;
   return (
     <>
+      <JsonLd data={faqPageJsonLd(faqs, pricingUrl)} />
+      <JsonLd data={softwareApplicationPricingJsonLd(pricingUrl)} />
       {/* Hero Section */}
       <section className="py-20 md:py-32">
         <div className="container mx-auto max-w-7xl px-4">
@@ -149,10 +188,31 @@ export default function PricingPage() {
                 </CardHeader>
                 <CardContent className="flex-1">
                   <div className="mb-6 text-center">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground">
-                      {plan.priceNote}
-                    </span>
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-4xl font-bold">
+                        {plan.price === "Gratis"
+                          ? plan.price
+                          : formatCurrency(
+                              Number(plan.price),
+                              plan.currency ?? PRICING_CURRENCY,
+                              { maxFractionDigits: 0 }
+                            )}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {plan.priceNote}
+                      </span>
+                    </div>
+                    {plan.annualPrice && plan.currency && (
+                      <p className="text-muted-foreground mt-1 text-sm">
+                        o{" "}
+                        {formatCurrency(
+                          Number(plan.annualPrice),
+                          plan.currency,
+                          { maxFractionDigits: 0 }
+                        )}
+                        /año ({plan.annualNote})
+                      </p>
+                    )}
                   </div>
                   <ul className="space-y-3">
                     {plan.features.map((feature) => {
@@ -172,9 +232,7 @@ export default function PricingPage() {
                 </CardContent>
                 <CardFooter>
                   <Button className="w-full" variant={plan.ctaVariant} asChild>
-                    <Link
-                      href={`/auth?mode=signup&plan=${plan.planCode}`}
-                    >
+                    <Link href={`/auth?mode=signup&plan=${plan.planCode}`}>
                       {plan.cta}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>

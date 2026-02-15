@@ -5,7 +5,18 @@ import { ArrowLeft, Shield, FileText, Scale } from "lucide-react";
 export const metadata: Metadata = {
   title: "Términos de Uso y Política de Privacidad",
   description:
-    "Términos de uso, política de privacidad y información sobre el cumplimiento del RGPD de Veta.",
+    "Términos de uso, política de privacidad y derechos RGPD de Veta.",
+  alternates: { canonical: "/legal" },
+  openGraph: {
+    title: "Términos y Privacidad | Veta",
+    description: "Términos de uso, política de privacidad y cumplimiento RGPD.",
+    url: "/legal",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Términos y Privacidad | Veta",
+    description: "Términos de uso y política de privacidad de Veta.",
+  },
 };
 
 const sections = [
@@ -13,6 +24,7 @@ const sections = [
     id: "terminos",
     icon: FileText,
     title: "Términos de Uso",
+    lastUpdated: "11 de febrero de 2025",
     content: (
       <>
         <p>
@@ -50,6 +62,7 @@ const sections = [
     id: "privacidad",
     icon: Shield,
     title: "Política de Privacidad",
+    lastUpdated: "11 de febrero de 2025",
     content: (
       <>
         <p>
@@ -86,6 +99,7 @@ const sections = [
     id: "rgpd",
     icon: Scale,
     title: "Tus Derechos según el RGPD",
+    lastUpdated: "11 de febrero de 2025",
     content: (
       <>
         <p>
@@ -191,6 +205,9 @@ export default function LegalPage() {
                   </div>
                   <h2 className="text-2xl font-bold">{section.title}</h2>
                 </div>
+                <p className="text-muted-foreground mt-2 text-sm">
+                  Última actualización: {section.lastUpdated}
+                </p>
                 <div className="text-muted-foreground mt-6 space-y-4 leading-relaxed">
                   {section.content}
                 </div>

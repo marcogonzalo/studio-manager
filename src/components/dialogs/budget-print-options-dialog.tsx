@@ -73,7 +73,8 @@ export function BudgetPrintOptionsDialog({
         <div className="space-y-3 py-2">
           {OPTIONS.map((opt) => {
             const isDisabled =
-              !pdfExportFull && (opt.value === "products" || opt.value === "lines");
+              !pdfExportFull &&
+              (opt.value === "products" || opt.value === "lines");
             return (
               <label
                 key={opt.value}

@@ -112,7 +112,8 @@ function AuthContent() {
   const watchedEmail = form.watch("email");
   const emailTrimmed = watchedEmail?.trim() ?? "";
   const isEmailValid =
-    emailTrimmed.length > 0 && z.string().email().safeParse(emailTrimmed).success;
+    emailTrimmed.length > 0 &&
+    z.string().email().safeParse(emailTrimmed).success;
 
   // Al cambiar entre login/signup, actualizar acceptTerms para que la validación sea correcta
   useEffect(() => {
@@ -264,6 +265,22 @@ function AuthContent() {
                 ? "Ingresa tu correo para enviarte el enlace de inicio de sesión"
                 : "Ingresa tu correo y te enviaremos un enlace para crear tu cuenta"}
           </CardDescription>
+          {!isLogin && selectedPlan && (
+            <p className="text-muted-foreground mt-2 text-sm">
+              Te registrarás con el plan{" "}
+              <span className="text-foreground font-medium">
+                {PLAN_DISPLAY_NAMES[selectedPlan]}
+              </span>
+              .
+            </p>
+          )}
+          {!isLogin && !selectedPlan && (
+            <p className="text-muted-foreground mt-2 text-sm">
+              Se te asignará el plan{" "}
+              <span className="text-foreground font-medium">Prueba</span> por
+              defecto.
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -310,7 +327,7 @@ function AuthContent() {
                     >
                       <SelectTrigger
                         aria-label="Cambiar plan"
-                        className="text-foreground inline-flex h-8 w-auto min-w-0 border-0 bg-transparent px-1.5 py-0 shadow-none hover:bg-muted/50 focus:ring-1 focus:ring-offset-0 [&>svg]:h-3.5 [&>svg]:w-3.5"
+                        className="text-foreground hover:bg-muted/50 inline-flex h-8 w-auto min-w-0 border-0 bg-transparent px-1.5 py-0 shadow-none focus:ring-1 focus:ring-offset-0 [&>svg]:h-3.5 [&>svg]:w-3.5"
                       >
                         <SelectValue />
                       </SelectTrigger>
