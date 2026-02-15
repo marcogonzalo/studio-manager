@@ -113,3 +113,5 @@
 - [x] **Marketing Fase 1 (SEO y conversión):** Menú móvil con Sheet en marketing layout; formulario de contacto funcional (Resend); email coherente con Veta (`hola@veta.pro`); `sitemap.ts` y `robots.ts`; metadata y Open Graph por página; imagen OG dinámica; Twitter Cards; `metadataBase` en root layout. Ver `docs/marketing-seo-analysis.md`.
 
 - [x] **Dominio y pricing:** Dominio veta.pro en URLs, metadata, sitemap, robots y documentación. JSON-LD SoftwareApplication con AggregateOffer y UnitPriceSpecification (Pro 25/275 €, Studio 75/750 € mensual/anual). Vista de precios con opción anual y formatCurrency sin decimales.
+
+- [x] **Plantillas de email Supabase (Veta):** Plantillas de correo de Auth personalizadas en español con marca Veta (verde #759b6d, cream, Montserrat). Incluyen: confirmación, invitación, recuperación de contraseña, magic link, cambio de email, reautenticación (OTP), y notificaciones de contraseña/email cambiados. Config en `supabase/config.toml`; archivos en `supabase/templates/`. Documentación en `docs/supabase-email-templates.md` (variables, uso local con Inbucket, pasos para copiar en Dashboard en producción).
