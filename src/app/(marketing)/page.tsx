@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -18,6 +19,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "Inicio",
+  description:
+    "Gestiona tus proyectos de diseño interior sin complicaciones. Plataforma todo-en-uno: clientes, proveedores, catálogos y presupuestos.",
+  openGraph: {
+    title: "Veta - Gestión de Proyectos de Diseño Interior",
+    description:
+      "Gestiona tus proyectos de diseño interior sin complicaciones. Plataforma todo-en-uno.",
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Veta - Gestión de Proyectos de Diseño Interior",
+    description:
+      "Gestiona tus proyectos de diseño interior sin complicaciones.",
+  },
+};
 
 const features = [
   {

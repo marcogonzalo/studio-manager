@@ -5,7 +5,18 @@ import { ArrowLeft, Shield, FileText, Scale } from "lucide-react";
 export const metadata: Metadata = {
   title: "Términos de Uso y Política de Privacidad",
   description:
-    "Términos de uso, política de privacidad y información sobre el cumplimiento del RGPD de Veta.",
+    "Términos de uso, política de privacidad y derechos RGPD de Veta.",
+  openGraph: {
+    title: "Términos y Privacidad | Veta",
+    description:
+      "Términos de uso, política de privacidad y cumplimiento RGPD.",
+    url: "/legal",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Términos y Privacidad | Veta",
+    description: "Términos de uso y política de privacidad de Veta.",
+  },
 };
 
 const sections = [

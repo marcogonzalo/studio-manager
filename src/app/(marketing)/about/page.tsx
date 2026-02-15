@@ -5,7 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export const metadata: Metadata = {
   title: "Sobre Nosotros",
   description:
-    "Conoce al equipo detrás de Veta, la plataforma diseñada para profesionales del diseño interior.",
+    "Conoce al equipo detrás de Veta. Plataforma diseñada por diseñadores, para profesionales del diseño interior.",
+  openGraph: {
+    title: "Sobre Nosotros | Veta",
+    description:
+      "Conoce al equipo detrás de Veta. Diseñado por diseñadores, para diseñadores.",
+    url: "/about",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Sobre Nosotros | Veta",
+    description:
+      "Conoce al equipo detrás de Veta. Plataforma para profesionales del diseño interior.",
+  },
 };
 
 const values = [
