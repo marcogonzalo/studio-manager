@@ -106,12 +106,12 @@ A modern, full-stack web application designed to streamline the workflow of inte
    # Formulario de contacto (opcional)
    # Sin RESEND_API_KEY el formulario mostrará un mensaje para contactar por email
    RESEND_API_KEY=re_xxxxxxxx
-   CONTACT_EMAIL_TO=hola@veta.app
+   CONTACT_EMAIL_TO=hola@veta.pro
    # CONTACT_EMAIL_FROM es opcional; por defecto usa onboarding@resend.dev (dev)
-   # CONTACT_EMAIL_FROM=Veta Web <hola@veta.app>
+   # CONTACT_EMAIL_FROM=Veta Web <hola@veta.pro>
 
    # URL base para sitemap, robots y metadata (opcional)
-   # Por defecto usa VERCEL_URL en Vercel o https://veta.app
+   # Por defecto usa VERCEL_URL en Vercel o https://veta.pro
    # NEXT_PUBLIC_APP_URL=https://tudominio.com
    ```
 

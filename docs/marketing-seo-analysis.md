@@ -98,7 +98,7 @@ Las IA y motores generativos (ChatGPT, Perplexity, Bing, etc.) priorizan:
 | --- | -------------------------- | -------- | ------------------------------------------------------------------------------------------------- |
 | 1   | **Menú móvil**             | Medio    | Añadir Sheet/Burger para navegación en móvil en `(marketing)/layout.tsx`.                         |
 | 2   | **Formulario de contacto** | Alto     | Conectar formulario a API/Server Action (ej. Resend, Supabase Edge Function). Validación con Zod. |
-| 3   | **Email de contacto**      | Bajo     | Sustituir `hola@studiomanager.app` por email de dominio Veta o genérico (ej. `hola@veta.app`).    |
+| 3   | **Email de contacto**      | Bajo     | Sustituir `hola@studiomanager.app` por email de dominio Veta o genérico (ej. `hola@veta.pro`).    |
 | 4   | **Sitemap y robots**       | Bajo     | Crear `app/sitemap.ts` y `app/robots.ts` con rutas públicas.                                      |
 | 5   | **Metadata por página**    | Medio    | Metadata específica en Home; revisar longitud de descripciones (≈155–160 caracteres).             |
 | 6   | **Open Graph completo**    | Medio    | Añadir `url`, `image` (1200×630), `image:alt`; Twitter Cards.                                     |
@@ -143,10 +143,10 @@ Las IA y motores generativos (ChatGPT, Perplexity, Bing, etc.) priorizan:
 
 ## Fase 3 – Contenido y branding (continuo)
 
-- [ ] Imágenes reales
-- [ ] Prueba social
-- [ ] Revisión de placeholders (chat, oficina)
-- [ ] Fechas en Legal
+- [ ] Imágenes reales (ver [Propuesta de imágenes](phase3-images-proposal.md))
+- [x] Prueba social (testimonios FH Interiorismo, EM Estilo Creativo)
+- [x] Revisión de placeholders (solo formulario + email en Contact)
+- [x] Fechas en Legal
 ```
 
 ---

@@ -36,7 +36,7 @@ export async function submitContactForm(
   const { name, email, subject, message } = parsed.data;
 
   const apiKey = process.env.RESEND_API_KEY;
-  const toEmail = process.env.CONTACT_EMAIL_TO ?? "hola@veta.app";
+  const toEmail = process.env.CONTACT_EMAIL_TO ?? "hola@veta.pro";
   const fromEmail =
     process.env.CONTACT_EMAIL_FROM ?? "Veta Web <onboarding@resend.dev>";
 

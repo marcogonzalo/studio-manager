@@ -2,14 +2,25 @@ import type { MetadataRoute } from "next";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_URL ??
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://veta.app");
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "https://veta.pro");
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/dashboard", "/projects", "/clients", "/catalog", "/suppliers", "/account", "/settings", "/auth/callback"],
+      disallow: [
+        "/dashboard",
+        "/projects",
+        "/clients",
+        "/catalog",
+        "/suppliers",
+        "/account",
+        "/settings",
+        "/auth/callback",
+      ],
     },
     sitemap: `${BASE_URL}/sitemap.xml`,
   };

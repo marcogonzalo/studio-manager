@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Mail, MessageSquare, Send } from "lucide-react";
+import { Mail, Send } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
 };
 
-const CONTACT_EMAIL = "hola@veta.app";
+const CONTACT_EMAIL = "hola@veta.pro";
 
 const contactMethods = [
   {
@@ -37,15 +37,6 @@ const contactMethods = [
       "Completa el formulario y te respondemos en menos de 24 horas.",
     value: "Ir al formulario",
     href: "#contacto-formulario",
-    disabled: false,
-  },
-  {
-    icon: MessageSquare,
-    title: "Chat en Vivo",
-    description: "Habla con nuestro equipo de soporte en tiempo real.",
-    value: "Disponible L-V, 9am-6pm",
-    href: "#chat",
-    disabled: true,
   },
   {
     icon: Mail,
@@ -53,7 +44,6 @@ const contactMethods = [
     description: "Envíanos un correo y te respondemos en menos de 24 horas.",
     value: CONTACT_EMAIL,
     href: `mailto:${CONTACT_EMAIL}`,
-    disabled: false,
   },
 ];
 
@@ -78,48 +68,26 @@ export default function ContactPage() {
       {/* Contact Methods */}
       <section className="pb-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="mx-auto grid max-w-2xl gap-8 md:grid-cols-2">
             {contactMethods.map((method) => (
               <Card
                 key={method.title}
-                className={
-                  method.disabled
-                    ? "pointer-events-none border-none text-center opacity-60"
-                    : "border-none text-center shadow-md transition-shadow hover:shadow-lg"
-                }
+                className="border-none text-center shadow-md transition-shadow hover:shadow-lg"
               >
                 <CardHeader>
-                  <div
-                    className={
-                      method.disabled
-                        ? "bg-muted mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
-                        : "bg-primary/10 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full"
-                    }
-                  >
-                    <method.icon
-                      className={
-                        method.disabled
-                          ? "text-muted-foreground h-7 w-7"
-                          : "text-primary h-7 w-7"
-                      }
-                    />
+                  <div className="bg-primary/10 mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full">
+                    <method.icon className="text-primary h-7 w-7" />
                   </div>
                   <CardTitle>{method.title}</CardTitle>
                   <CardDescription>{method.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {method.disabled ? (
-                    <span className="text-muted-foreground text-lg">
-                      {method.value}
-                    </span>
-                  ) : (
-                    <a
-                      href={method.href}
-                      className="text-primary text-lg font-medium hover:underline"
-                    >
-                      {method.value}
-                    </a>
-                  )}
+                  <a
+                    href={method.href}
+                    className="text-primary text-lg font-medium hover:underline"
+                  >
+                    {method.value}
+                  </a>
                 </CardContent>
               </Card>
             ))}

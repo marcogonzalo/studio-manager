@@ -51,7 +51,7 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
    - Componente `VetaLogo` en `src/components/veta-logo.tsx` que alterna según tema (clases CSS `dark:hidden` / `hidden dark:block`).
    - Uso del logo en: sidebar (app layout), auth, cabecera y pie del marketing layout.
    - Metadatos (layout raíz, next.config `NEXT_PUBLIC_APP_NAME`), README y todas las páginas de marketing (legal, about, contact, home) actualizados a "Veta".
-   - Email de contacto de ejemplo en página Contact: `hola@veta.app`.
+   - Email de contacto de ejemplo en página Contact: `hola@veta.pro`.
 
 2. **Documents & Renders Feature Branch:**
    - Documentos: modal con URL + subida de archivos (PDFs, docs, hojas de cálculo, presentaciones, texto, máx. 10MB). Auto-nombre desde fichero. Limpieza de huérfanos si no se completa el registro.

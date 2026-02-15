@@ -4,12 +4,13 @@ import {
   ArrowRight,
   CheckCircle2,
   FolderKanban,
-  Users,
+  Quote,
   ShoppingBag,
   Truck,
   BarChart3,
   FileText,
   Leaf,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,7 +93,7 @@ const baseUrl =
   process.env.NEXT_PUBLIC_APP_URL ??
   (process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : "https://veta.app");
+    : "https://veta.pro");
 
 const homeFaqs = [
   {
@@ -114,6 +115,21 @@ const homeFaqs = [
     question: "¿Mis datos están seguros?",
     answer:
       "Sí. Tus datos se almacenan de forma segura y el acceso está protegido. Cumplimos con la normativa de protección de datos (RGPD).",
+  },
+];
+
+const testimonials = [
+  {
+    quote:
+      "La gestión de clientes, proveedores y catálogo en un solo sitio ha simplificado mucho el trabajo en los proyectos de diseño interior. Recomendable para independientes o estudios que quieren profesionalizar la parte de gestión.",
+    author: "FH Interiorismo",
+    role: "Estudio de arquitectura interior",
+  },
+  {
+    quote:
+      "Con Veta hemos dejado de perder horas en hojas de cálculo. Los presupuestos por espacios y el control de costes nos permiten organizarnos y enfocarnos en el diseño.",
+    author: "EM Estilo Creativo",
+    role: "Diseño de interiores y estilismo",
   },
 ];
 
@@ -245,6 +261,38 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="bg-muted/30 py-20">
+        <div className="container mx-auto max-w-7xl px-4">
+          <div className="mx-auto mb-12 max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Lo que dicen de Veta
+            </h2>
+            <p className="text-muted-foreground mt-4 text-lg">
+              Estudios de diseño que ya confían en Veta para gestionar sus
+              proyectos.
+            </p>
+          </div>
+          <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+            {testimonials.map((t) => (
+              <Card
+                key={t.author}
+                className="border-none shadow-md transition-shadow hover:shadow-lg"
+              >
+                <CardContent className="pt-6">
+                  <Quote className="text-primary/60 mb-4 h-8 w-8" />
+                  <p className="text-foreground mb-6 italic">
+                    &ldquo;{t.quote}&rdquo;
+                  </p>
+                  <p className="font-semibold">{t.author}</p>
+                  <p className="text-muted-foreground text-sm">{t.role}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>

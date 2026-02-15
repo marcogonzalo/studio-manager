@@ -15,21 +15,32 @@ export const CURRENCIES: Record<string, string> = {
   CLP: "CLP - $",
 } as const;
 
+export interface FormatCurrencyOptions {
+  /** Máximo de decimales. 0 para ocultar decimales en precios enteros. */
+  maxFractionDigits?: number;
+}
+
 /** Formatea un importe con la moneda. Si moneda es undefined o no reconocida, usa "??" como símbolo. */
-export function formatCurrency(amount: number, currencyCode?: string): string {
+export function formatCurrency(
+  amount: number,
+  currencyCode?: string,
+  options?: FormatCurrencyOptions
+): string {
+  const maxFrac = options?.maxFractionDigits ?? 2;
+  const minFrac = Math.min(maxFrac, 2);
   const hasValidCurrency =
     currencyCode && currencyCode.trim() && CURRENCIES[currencyCode];
   if (!hasValidCurrency) {
     return `${amount.toLocaleString("es-ES", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      minimumFractionDigits: minFrac,
+      maximumFractionDigits: maxFrac,
     })} ??`;
   }
   return new Intl.NumberFormat("es-ES", {
     style: "currency",
     currency: currencyCode,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: minFrac,
+    maximumFractionDigits: maxFrac,
   }).format(amount);
 }
 
