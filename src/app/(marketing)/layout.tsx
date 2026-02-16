@@ -20,7 +20,8 @@ function Footer() {
               <VetaLogo height={28} />
             </Link>
             <p className="text-muted-foreground text-sm">
-              La plataforma para gestión de proyectos de diseño interior.
+              La plataforma para gestión de proyectos de arquitectura de diseño
+              interior.
             </p>
           </div>
 
