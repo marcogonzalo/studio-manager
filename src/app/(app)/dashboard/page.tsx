@@ -119,13 +119,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user?.id) return;
-    supabase
+    void supabase
       .from("profiles")
       .select("full_name")
       .eq("id", user.id)
       .single()
-      .then(({ data }) => setProfile(data ?? null))
-      .catch(() => setProfile(null));
+      .then(
+        ({ data }) => setProfile(data ?? null),
+        () => setProfile(null)
+      );
   }, [user?.id]);
 
   const fetchDashboardStats = async () => {
