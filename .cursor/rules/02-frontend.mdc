@@ -15,9 +15,30 @@ globs: src/**/*.tsx, src/**/*.ts
 ## Tailwind CSS
 
 - **Utility First:** Use standard Tailwind classes.
-- **Theme:** Use CSS variables defined in `index.css` (e.g., `bg-background`, `text-primary`).
+- **Theme:** Use CSS variables defined in `globals.css` (e.g., `bg-background`, `text-primary`).
 - **Responsive:** Mobile-first approach. `w-full md:w-1/2`.
 - **Classes:** Use `clsx` or `cn` helper for conditional classes.
+
+## Animations & Interactions
+
+- **Scroll Animations:** Use `AnimatedSection`, `StaggerContainer`, and `StaggerItem` from `@/components/ui/animated-section` for scroll-triggered reveal animations in marketing pages and app views.
+- **Animated Counters:** Use `AnimatedCounter` from `@/components/ui/animated-counter` for number animations (stats, metrics).
+- **Animation Timing:** Use consistent easing `cubic-bezier(0.25, 0.4, 0.25, 1)` and durations:
+  - Fast: 200ms (overlays, quick transitions)
+  - Standard: 300ms (cards, dialogs, general interactions)
+  - Slow: 500-600ms (page transitions, complex animations)
+- **Stagger Delays:** Use 0.1-0.15s delays between items in staggered animations.
+- **Dialog/Modal Animations:** Dialogs and Sheets use smooth fade + zoom + slide animations (300ms duration). Already configured in `dialog.tsx` and `sheet.tsx`.
+- **Hover Effects:** Use `hover:-translate-y-1`, `hover:shadow-lg`, `group-hover:scale-110` for interactive elements.
+- **Glow Effects:** Use `animate-glow` class for primary CTAs and important buttons.
+- **Skeleton Loading:** Use `Skeleton` component from `@/components/ui/skeleton` for loading states instead of text placeholders.
+
+## Visual Enhancements
+
+- **Gradients:** Use radial/mesh gradients (`bg-gradient-to-br`, `from-primary/10 via-primary/5`) for CTAs and hero sections.
+- **Blur Effects:** Use `blur-2xl` or `blur-3xl` for decorative background orbs.
+- **Card Heights:** Use `h-full` with `flex flex-col` and `flex-1` on content areas to ensure equal heights in grids.
+- **Fixed Widths:** Use fixed widths (e.g., `w-[125px]`) when specific sizing is required instead of responsive classes.
 
 ## Supabase Client
 
@@ -65,7 +86,7 @@ globs: src/**/*.tsx, src/**/*.ts
 ## Directory Structure
 
 - `src/app`: Routes/Views (Next.js App Router).
-- `src/components/ui`: Shadcn primitives.
+- `src/components/ui`: Shadcn primitives and animation components.
 - `src/components`: Domain components.
 - `src/lib`: Utilities and configs.
 - `src/types`: Shared TypeScript definitions.
