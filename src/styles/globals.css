@@ -173,4 +173,59 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
   }
+
+  /* Float animation for decorative elements */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Subtle glow pulse for CTA buttons */
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  /* Shimmer effect for skeleton loading */
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--muted) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 5px oklch(0.65 0.08 140 / 0.3),
+      0 0 20px oklch(0.65 0.08 140 / 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 10px oklch(0.65 0.08 140 / 0.5),
+      0 0 40px oklch(0.65 0.08 140 / 0.2);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

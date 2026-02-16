@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check, X, ArrowRight } from "lucide-react";
+import { Check, X, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +16,11 @@ import {
   softwareApplicationPricingJsonLd,
 } from "@/components/json-ld";
 import { formatCurrency } from "@/lib/utils";
+import {
+  AnimatedSection,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/ui/animated-section";
 
 const baseUrl =
   process.env.NEXT_PUBLIC_APP_URL ??
@@ -146,10 +151,14 @@ export default function PricingPage() {
     <>
       <JsonLd data={faqPageJsonLd(faqs, pricingUrl)} />
       <JsonLd data={softwareApplicationPricingJsonLd(pricingUrl)} />
+
       {/* Hero Section */}
-      <section className="py-20 md:py-32">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto max-w-3xl text-center">
+      <section className="relative overflow-hidden py-20 md:py-32">
+        <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
+        <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
+
+        <div className="relative container mx-auto max-w-7xl px-4">
+          <AnimatedSection className="mx-auto max-w-3xl text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
               Planes simples,{" "}
               <span className="text-primary">precios transparentes</span>
@@ -158,108 +167,121 @@ export default function PricingPage() {
               Elige el plan que mejor se adapte a tu estudio. Sin sorpresas, sin
               costos ocultos.
             </p>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
       {/* Pricing Cards */}
       <section className="pb-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="grid gap-8 md:grid-cols-3">
+          <StaggerContainer
+            className="grid gap-8 md:grid-cols-3 md:items-stretch"
+            staggerDelay={0.15}
+          >
             {plans.map((plan) => (
-              <Card
-                key={plan.name}
-                className={`relative flex flex-col ${
-                  plan.popular
-                    ? "border-primary scale-105 shadow-lg"
-                    : "border-border shadow-md"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-semibold">
-                      Recomendado
-                    </span>
-                  </div>
-                )}
-                <CardHeader className="pb-2 text-center">
-                  <CardTitle className="text-xl">{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <div className="mb-6 text-center">
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-bold">
-                        {plan.price === "Gratis"
-                          ? plan.price
-                          : formatCurrency(
-                              Number(plan.price),
-                              plan.currency ?? PRICING_CURRENCY,
-                              { maxFractionDigits: 0 }
-                            )}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {plan.priceNote}
+              <StaggerItem key={plan.name} className="h-full">
+                <Card
+                  className={`relative flex h-full flex-col transition-all duration-300 hover:-translate-y-1 ${
+                    plan.popular
+                      ? "border-primary scale-105 shadow-lg hover:shadow-xl"
+                      : "border-border scale-100 shadow-md hover:shadow-lg"
+                  }`}
+                >
+                  {plan.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="bg-primary text-primary-foreground shadow-primary/25 rounded-full px-3 py-1 text-xs font-semibold shadow-lg">
+                        Recomendado
                       </span>
                     </div>
-                    {plan.annualPrice && plan.currency && (
-                      <p className="text-muted-foreground mt-1 text-sm">
-                        o{" "}
-                        {formatCurrency(
-                          Number(plan.annualPrice),
-                          plan.currency,
-                          { maxFractionDigits: 0 }
-                        )}
-                        /año ({plan.annualNote})
-                      </p>
-                    )}
-                  </div>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature) => {
-                      const isRestriction = feature.startsWith("Sin ");
-                      return (
-                        <li key={feature} className="flex items-start gap-3">
-                          {isRestriction ? (
-                            <X className="text-destructive mt-0.5 h-5 w-5 flex-shrink-0" />
-                          ) : (
-                            <Check className="text-primary mt-0.5 h-5 w-5 flex-shrink-0" />
+                  )}
+                  <CardHeader className="pb-2 text-center">
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    <CardDescription>{plan.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1">
+                    <div className="mb-6 text-center">
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-4xl font-bold">
+                          {plan.price === "Gratis"
+                            ? plan.price
+                            : formatCurrency(
+                                Number(plan.price),
+                                plan.currency ?? PRICING_CURRENCY,
+                                { maxFractionDigits: 0 }
+                              )}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {plan.priceNote}
+                        </span>
+                      </div>
+                      {plan.annualPrice && plan.currency && (
+                        <p className="text-muted-foreground mt-1 text-sm">
+                          o{" "}
+                          {formatCurrency(
+                            Number(plan.annualPrice),
+                            plan.currency,
+                            { maxFractionDigits: 0 }
                           )}
-                          <span className="text-sm">{feature}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button className="w-full" variant={plan.ctaVariant} asChild>
-                    <Link href={`/auth?mode=signup&plan=${plan.planCode}`}>
-                      {plan.cta}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+                          /año ({plan.annualNote})
+                        </p>
+                      )}
+                    </div>
+                    <ul className="space-y-3">
+                      {plan.features.map((feature) => {
+                        const isRestriction = feature.startsWith("Sin ");
+                        return (
+                          <li key={feature} className="flex items-start gap-3">
+                            {isRestriction ? (
+                              <X className="text-destructive mt-0.5 h-5 w-5 flex-shrink-0" />
+                            ) : (
+                              <Check className="text-primary mt-0.5 h-5 w-5 flex-shrink-0" />
+                            )}
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button
+                      className={`w-full transition-all ${
+                        plan.popular ? "animate-glow" : ""
+                      }`}
+                      variant={plan.ctaVariant}
+                      asChild
+                    >
+                      <Link href={`/auth?mode=signup&plan=${plan.planCode}`}>
+                        {plan.cta}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
       {/* FAQ Section */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
+          <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Preguntas Frecuentes
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
               ¿Tienes dudas? Aquí respondemos las más comunes.
             </p>
-          </div>
+          </AnimatedSection>
 
-          <div className="mx-auto max-w-3xl">
-            <div className="space-y-6">
-              {faqs.map((faq) => (
-                <Card key={faq.question} className="border-none shadow-sm">
+          <StaggerContainer
+            className="mx-auto max-w-3xl space-y-6"
+            staggerDelay={0.1}
+          >
+            {faqs.map((faq) => (
+              <StaggerItem key={faq.question}>
+                <Card className="border-none shadow-sm transition-all duration-300 hover:shadow-md">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg font-medium">
                       {faq.question}
@@ -269,28 +291,41 @@ export default function PricingPage() {
                     <p className="text-muted-foreground">{faq.answer}</p>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          </div>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight">
+      <section className="relative overflow-hidden py-20">
+        <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent" />
+        <div className="bg-primary/10 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
+        <div className="bg-primary/5 absolute bottom-0 left-0 h-72 w-72 -translate-x-1/4 translate-y-1/3 rounded-full blur-3xl" />
+
+        <div className="relative container mx-auto max-w-7xl px-4">
+          <AnimatedSection className="mx-auto max-w-2xl text-center">
+            <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
+              <Sparkles className="h-4 w-4" />
+              <span>¿Necesitas algo personalizado?</span>
+            </div>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               ¿Necesitas algo personalizado?
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
               Contáctanos para crear un plan a medida para tu estudio.
             </p>
             <div className="mt-8">
-              <Button size="lg" variant="outline" asChild>
+              <Button
+                size="lg"
+                variant="outline"
+                asChild
+                className="animate-glow"
+              >
                 <Link href="/contact">Hablar con Ventas</Link>
               </Button>
             </div>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
     </>

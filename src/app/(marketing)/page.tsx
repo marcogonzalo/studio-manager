@@ -11,6 +11,9 @@ import {
   FileText,
   Leaf,
   Users,
+  Sparkles,
+  Clock,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +24,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { JsonLd, faqPageJsonLd } from "@/components/json-ld";
+import {
+  AnimatedSection,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/ui/animated-section";
+import { AnimatedCounter } from "@/components/ui/animated-counter";
+import { ProductMockup } from "@/components/product-mockup";
 
 export const metadata: Metadata = {
   title: "Inicio",
@@ -89,6 +99,27 @@ const benefits = [
   "Planes con precio fijo, sin comisiones por uso",
 ];
 
+const stats = [
+  {
+    value: Infinity,
+    suffix: "",
+    label: "Proyectos gestionables",
+    icon: FolderKanban,
+  },
+  {
+    value: 60,
+    suffix: "%",
+    label: "Tiempo ahorrado en gestión",
+    icon: Clock,
+  },
+  {
+    value: 100,
+    suffix: "%",
+    label: "En un solo lugar",
+    icon: Shield,
+  },
+];
+
 const baseUrl =
   process.env.NEXT_PUBLIC_APP_URL ??
   (process.env.VERCEL_URL
@@ -137,56 +168,115 @@ export default function HomePage() {
   return (
     <>
       <JsonLd data={faqPageJsonLd(homeFaqs, baseUrl)} />
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32">
+      <section className="relative overflow-hidden py-20 md:py-28">
+        {/* Background effects */}
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
+        <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
+
         <div className="relative container mx-auto max-w-7xl px-4">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
-              <Leaf className="h-4 w-4" />
-              <span>Diseñado para profesionales del diseño interior</span>
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            {/* Left: Copy */}
+            <div className="text-center lg:text-left">
+              <AnimatedSection delay={0} duration={0.5}>
+                <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
+                  <Leaf className="h-4 w-4" />
+                  <span>Diseñado para profesionales del diseño interior</span>
+                </div>
+              </AnimatedSection>
+
+              <AnimatedSection delay={0.1} duration={0.6}>
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                  Gestiona tus proyectos de interiorismo{" "}
+                  <span className="text-primary">sin complicaciones</span>
+                </h1>
+              </AnimatedSection>
+
+              <AnimatedSection delay={0.2} duration={0.6}>
+                <p className="text-muted-foreground mt-6 text-lg md:text-xl">
+                  La plataforma todo-en-uno para arquitectos y diseñadores.
+                  Administra proyectos, clientes, proveedores y presupuestos
+                  desde un solo lugar y toma el control.
+                </p>
+              </AnimatedSection>
+
+              <AnimatedSection delay={0.3} duration={0.5}>
+                <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
+                  <Button
+                    size="lg"
+                    asChild
+                    className="animate-glow w-full sm:w-auto"
+                  >
+                    <Link href="/auth?mode=signup">
+                      Comenzar Gratis
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    asChild
+                    className="w-full sm:w-auto"
+                  >
+                    <Link href="#features">Ver Características</Link>
+                  </Button>
+                </div>
+
+                <p className="text-muted-foreground mt-4 text-sm">
+                  30 días de prueba gratis. Sin tarjeta, sin compromiso. Cancela
+                  cuando quieras.
+                </p>
+              </AnimatedSection>
             </div>
 
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              Gestiona tus proyectos de interiorismo{" "}
-              <span className="text-primary">sin complicaciones</span>
-            </h1>
-
-            <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              La plataforma todo-en-uno para arquitectos y diseñadores.
-              Administra proyectos, clientes, proveedores y presupuestos desde
-              un solo lugar y toma el control.
-            </p>
-
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg" asChild className="w-full sm:w-auto">
-                <Link href="/auth?mode=signup">
-                  Comenzar Gratis
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="w-full sm:w-auto"
-              >
-                <Link href="#features">Ver Características</Link>
-              </Button>
-            </div>
-
-            <p className="text-muted-foreground mt-4 text-sm">
-              30 días de prueba gratis. Sin tarjeta, sin compromiso. Cancela
-              cuando quieras.
-            </p>
+            {/* Right: Product Mockup */}
+            <AnimatedSection
+              direction="right"
+              delay={0.4}
+              duration={0.8}
+              className="hidden lg:block"
+            >
+              <ProductMockup />
+            </AnimatedSection>
           </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="border-border/40 bg-muted/20 border-y py-16">
+        <div className="container mx-auto max-w-7xl px-4">
+          <StaggerContainer
+            className="grid gap-8 md:grid-cols-3"
+            staggerDelay={0.15}
+          >
+            {stats.map((stat) => (
+              <StaggerItem key={stat.label}>
+                <div className="text-center">
+                  <div className="bg-primary/10 text-primary mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
+                    <stat.icon className="h-6 w-6" />
+                  </div>
+                  <div className="text-3xl font-bold tracking-tight sm:text-4xl">
+                    <AnimatedCounter
+                      target={stat.value}
+                      suffix={stat.suffix}
+                      duration={2.5}
+                    />
+                  </div>
+                  <p className="text-muted-foreground mt-2 text-sm font-medium">
+                    {stat.label}
+                  </p>
+                </div>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
         </div>
       </section>
 
       {/* Features Section */}
       <section id="features" className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
+          <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Todo lo que necesitas para tu estudio
             </h2>
@@ -194,28 +284,30 @@ export default function HomePage() {
               Herramientas diseñadas específicamente para profesionales del
               diseño interior.
             </p>
-          </div>
+          </AnimatedSection>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <StaggerContainer
+            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+            staggerDelay={0.1}
+          >
             {features.map((feature) => (
-              <Card
-                key={feature.title}
-                className="border-none shadow-md transition-shadow hover:shadow-lg"
-              >
-                <CardHeader>
-                  <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
-                    <feature.icon className="text-primary h-6 w-6" />
-                  </div>
-                  <CardTitle>{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">
-                    {feature.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
+              <StaggerItem key={feature.title}>
+                <Card className="border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                  <CardHeader>
+                    <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110">
+                      <feature.icon className="text-primary h-6 w-6" />
+                    </div>
+                    <CardTitle>{feature.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-base">
+                      {feature.description}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
@@ -223,7 +315,7 @@ export default function HomePage() {
       <section className="py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
+            <AnimatedSection direction="left">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                 ¿Por qué elegir Veta?
               </h2>
@@ -233,35 +325,30 @@ export default function HomePage() {
                 increíbles.
               </p>
 
-              <ul className="mt-8 space-y-4">
+              <StaggerContainer className="mt-8 space-y-4" staggerDelay={0.08}>
                 {benefits.map((benefit) => (
-                  <li key={benefit} className="flex items-center gap-3">
-                    <CheckCircle2 className="text-primary h-5 w-5 flex-shrink-0" />
-                    <span>{benefit}</span>
-                  </li>
+                  <StaggerItem key={benefit} direction="left" distance={15}>
+                    <li className="flex list-none items-center gap-3">
+                      <CheckCircle2 className="text-primary h-5 w-5 flex-shrink-0" />
+                      <span>{benefit}</span>
+                    </li>
+                  </StaggerItem>
                 ))}
-              </ul>
+              </StaggerContainer>
 
               <div className="mt-10">
-                <Button size="lg" asChild>
+                <Button size="lg" asChild className="animate-glow">
                   <Link href="/auth?mode=signup">
                     Prueba Gratis
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </div>
-            </div>
+            </AnimatedSection>
 
-            <div className="relative">
-              <div className="from-primary/20 via-primary/10 border-border flex aspect-video items-center justify-center rounded-xl border bg-gradient-to-br to-transparent shadow-2xl">
-                <div className="p-8 text-center">
-                  <FolderKanban className="text-primary mx-auto mb-4 h-16 w-16" />
-                  <p className="text-muted-foreground text-lg font-medium">
-                    Vista previa del dashboard
-                  </p>
-                </div>
-              </div>
-            </div>
+            <AnimatedSection direction="right" delay={0.2}>
+              <ProductMockup />
+            </AnimatedSection>
           </div>
         </div>
       </section>
@@ -269,7 +356,7 @@ export default function HomePage() {
       {/* Testimonials Section */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
+          <AnimatedSection className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Lo que dicen de Veta
             </h2>
@@ -277,31 +364,51 @@ export default function HomePage() {
               Estudios y profesionales de arquitectura y diseño interior que ya
               confían en Veta.
             </p>
-          </div>
-          <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+          </AnimatedSection>
+
+          <StaggerContainer
+            className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2 md:items-stretch"
+            staggerDelay={0.2}
+          >
             {testimonials.map((t) => (
-              <Card
-                key={t.author}
-                className="border-none shadow-md transition-shadow hover:shadow-lg"
-              >
-                <CardContent className="pt-6">
-                  <Quote className="text-primary/60 mb-4 h-8 w-8" />
-                  <p className="text-foreground mb-6 italic">
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-                  <p className="font-semibold">{t.author}</p>
-                  <p className="text-muted-foreground text-sm">{t.role}</p>
-                </CardContent>
-              </Card>
+              <StaggerItem key={t.author} className="h-full">
+                <Card className="flex h-full flex-col border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                  <CardContent className="flex flex-1 flex-col pt-6">
+                    <Quote className="text-primary/60 mb-4 h-8 w-8 flex-shrink-0" />
+                    <p className="text-foreground mb-6 flex-1 italic">
+                      &ldquo;{t.quote}&rdquo;
+                    </p>
+                    <div className="flex flex-shrink-0 items-center gap-3">
+                      <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold">
+                        {t.author.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="font-semibold">{t.author}</p>
+                        <p className="text-muted-foreground text-sm">
+                          {t.role}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
       {/* CTA Section - before FAQ */}
-      <section className="bg-primary/5 py-20">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto max-w-2xl text-center">
+      <section className="relative overflow-hidden py-20">
+        <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent" />
+        <div className="bg-primary/10 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
+        <div className="bg-primary/5 absolute bottom-0 left-0 h-72 w-72 -translate-x-1/4 translate-y-1/3 rounded-full blur-3xl" />
+
+        <div className="relative container mx-auto max-w-7xl px-4">
+          <AnimatedSection className="mx-auto max-w-2xl text-center">
+            <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
+              <Sparkles className="h-4 w-4" />
+              <span>Empieza hoy mismo</span>
+            </div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Comienza a gestionar tu estudio hoy
             </h2>
@@ -310,7 +417,7 @@ export default function HomePage() {
               proyectos.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg" asChild>
+              <Button size="lg" asChild className="animate-glow">
                 <Link href="/auth?mode=signup">
                   Crear Cuenta Gratis
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -320,42 +427,51 @@ export default function HomePage() {
                 <Link href="/pricing">Ver planes</Link>
               </Button>
             </div>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
       {/* FAQ Section */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto mb-12 max-w-2xl text-center">
+          <AnimatedSection className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Preguntas Frecuentes
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
               Resolvemos las dudas más habituales sobre Veta.
             </p>
-          </div>
-          <div className="mx-auto max-w-3xl space-y-4">
+          </AnimatedSection>
+
+          <StaggerContainer
+            className="mx-auto max-w-3xl space-y-4"
+            staggerDelay={0.1}
+          >
             {homeFaqs.map((faq) => (
-              <Card key={faq.question} className="border-none shadow-sm">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg font-medium">
-                    {faq.question}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{faq.answer}</p>
-                </CardContent>
-              </Card>
+              <StaggerItem key={faq.question}>
+                <Card className="border-none shadow-sm transition-all duration-300 hover:shadow-md">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-lg font-medium">
+                      {faq.question}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{faq.answer}</p>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerContainer>
         </div>
       </section>
 
       {/* CTA Section - interiorismo */}
-      <section className="bg-primary/5 py-20">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="mx-auto max-w-2xl text-center">
+      <section className="relative overflow-hidden py-20">
+        <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-tl to-transparent" />
+        <div className="bg-primary/8 absolute right-0 bottom-0 h-80 w-80 translate-x-1/4 translate-y-1/4 rounded-full blur-3xl" />
+
+        <div className="relative container mx-auto max-w-7xl px-4">
+          <AnimatedSection className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               ¿Quieres empezar a mejorar la experiencia en tus proyectos de
               interiorismo?
@@ -365,7 +481,7 @@ export default function HomePage() {
               gestión de tus proyectos en un solo lugar.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg" asChild>
+              <Button size="lg" asChild className="animate-glow">
                 <Link href="/auth?mode=signup">
                   Crear Cuenta Gratis
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -375,7 +491,7 @@ export default function HomePage() {
                 <Link href="/pricing">Ver planes</Link>
               </Button>
             </div>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
     </>
