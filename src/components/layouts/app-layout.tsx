@@ -54,7 +54,7 @@ const navItems = [
 ];
 
 const PLAN_DISPLAY_NAMES: Record<string, string> = {
-  BASE: "Prueba",
+  BASE: "Base",
   PRO: "Pro",
   STUDIO: "Studio",
 };

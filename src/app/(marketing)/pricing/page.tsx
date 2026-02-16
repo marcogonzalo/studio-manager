@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check, X, ArrowRight, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -15,7 +13,7 @@ import {
   faqPageJsonLd,
   softwareApplicationPricingJsonLd,
 } from "@/components/json-ld";
-import { formatCurrency } from "@/lib/utils";
+import { PricingCardsClient } from "@/app/(marketing)/pricing/pricing-cards-client";
 import {
   AnimatedSection,
   StaggerContainer,
@@ -33,7 +31,7 @@ const PRICING_CURRENCY = "EUR";
 export const metadata: Metadata = {
   title: "Precios",
   description:
-    "Planes flexibles para estudios de diseño interior. Prueba gratis, Pro y Studio. Sin sorpresas ni costos ocultos.",
+    "Planes flexibles para estudios de diseño interior. Base, Pro y Studio. Sin sorpresas ni costos ocultos.",
   alternates: { canonical: "/pricing" },
   openGraph: {
     title: "Precios | Veta",
@@ -51,9 +49,9 @@ export const metadata: Metadata = {
 
 const plans = [
   {
-    name: "Prueba",
+    name: "Base",
     planCode: "BASE" as const,
-    description: "Plan de prueba con límites básicos",
+    description: "Plan limitado y con funcionalidades básicas",
     price: "Gratis",
     priceNote: "/siempre",
     annualPrice: null as string | null,
@@ -66,7 +64,7 @@ const plans = [
       "50 productos en catálogo",
       "Exportación PDF básica",
       "Notas y resumen",
-      "Solo una moneda por defecto",
+      "Sin selección de moneda",
       "Sin órdenes de compra",
       "Sin control de costes ni pagos",
       "Sin subida de renders ni documentos",
@@ -81,16 +79,17 @@ const plans = [
     description: "Plan profesional con más recursos y funcionalidades",
     price: "25",
     priceNote: "/mes",
-    annualPrice: "275",
-    annualNote: "1 mes gratis",
+    annualPrice: "250",
+    annualNote: "2 meses gratis",
     currency: PRICING_CURRENCY,
     features: [
+      "Todas las características base",
       "Hasta 10 proyectos",
       "50 clientes",
       "50 proveedores",
       "500 productos en catálogo",
       "Exportación PDF personalizada",
-      "Cambio de moneda por proyecto",
+      "Selección de moneda por proyecto",
       "Órdenes de compra",
       "Control de costes",
       "Gestión de pagos",
@@ -116,7 +115,7 @@ const plans = [
       "Proveedores ilimitados",
       "Catálogo ilimitado",
     ],
-    cta: "Contratar",
+    cta: "Prueba 30 días gratis",
     ctaVariant: "outline" as const,
     popular: false,
   },
@@ -172,96 +171,7 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards */}
-      <section className="pb-20">
-        <div className="container mx-auto max-w-7xl px-4">
-          <StaggerContainer
-            className="grid gap-8 md:grid-cols-3 md:items-stretch"
-            staggerDelay={0.15}
-          >
-            {plans.map((plan) => (
-              <StaggerItem key={plan.name} className="h-full">
-                <Card
-                  className={`relative flex h-full flex-col transition-all duration-300 hover:-translate-y-1 ${
-                    plan.popular
-                      ? "border-primary scale-105 shadow-lg hover:shadow-xl"
-                      : "border-border scale-100 shadow-md hover:shadow-lg"
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="bg-primary text-primary-foreground shadow-primary/25 rounded-full px-3 py-1 text-xs font-semibold shadow-lg">
-                        Recomendado
-                      </span>
-                    </div>
-                  )}
-                  <CardHeader className="pb-2 text-center">
-                    <CardTitle className="text-xl">{plan.name}</CardTitle>
-                    <CardDescription>{plan.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1">
-                    <div className="mb-6 text-center">
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-4xl font-bold">
-                          {plan.price === "Gratis"
-                            ? plan.price
-                            : formatCurrency(
-                                Number(plan.price),
-                                plan.currency ?? PRICING_CURRENCY,
-                                { maxFractionDigits: 0 }
-                              )}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {plan.priceNote}
-                        </span>
-                      </div>
-                      {plan.annualPrice && plan.currency && (
-                        <p className="text-muted-foreground mt-1 text-sm">
-                          o{" "}
-                          {formatCurrency(
-                            Number(plan.annualPrice),
-                            plan.currency,
-                            { maxFractionDigits: 0 }
-                          )}
-                          /año ({plan.annualNote})
-                        </p>
-                      )}
-                    </div>
-                    <ul className="space-y-3">
-                      {plan.features.map((feature) => {
-                        const isRestriction = feature.startsWith("Sin ");
-                        return (
-                          <li key={feature} className="flex items-start gap-3">
-                            {isRestriction ? (
-                              <X className="text-destructive mt-0.5 h-5 w-5 flex-shrink-0" />
-                            ) : (
-                              <Check className="text-primary mt-0.5 h-5 w-5 flex-shrink-0" />
-                            )}
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      className={`w-full transition-all ${
-                        plan.popular ? "animate-glow" : ""
-                      }`}
-                      variant={plan.ctaVariant}
-                      asChild
-                    >
-                      <Link href={`/auth?mode=signup&plan=${plan.planCode}`}>
-                        {plan.cta}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </div>
-      </section>
+      <PricingCardsClient plans={plans} />
 
       {/* FAQ Section */}
       <section className="bg-muted/30 py-20">

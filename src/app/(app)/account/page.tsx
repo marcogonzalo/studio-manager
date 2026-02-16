@@ -126,7 +126,7 @@ export default function AccountPage() {
           {effectivePlan?.plan_code && (
             <span className="bg-muted text-muted-foreground rounded-full px-3 py-1 text-sm font-medium">
               {effectivePlan.plan_code === "BASE"
-                ? "Prueba"
+                ? "Base"
                 : effectivePlan.plan_code === "PRO"
                   ? "Pro"
                   : "Studio"}

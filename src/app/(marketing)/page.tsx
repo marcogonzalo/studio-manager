@@ -107,7 +107,7 @@ const stats = [
     icon: FolderKanban,
   },
   {
-    value: 60,
+    value: 65,
     suffix: "%",
     label: "Tiempo ahorrado en gestión",
     icon: Clock,
@@ -115,7 +115,7 @@ const stats = [
   {
     value: 100,
     suffix: "%",
-    label: "En un solo lugar",
+    label: "De tu proyecto en un solo lugar",
     icon: Shield,
   },
 ];
@@ -188,8 +188,8 @@ export default function HomePage() {
 
               <AnimatedSection delay={0.1} duration={0.6}>
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                  Gestiona tus proyectos de interiorismo{" "}
-                  <span className="text-primary">sin complicaciones</span>
+                  Tus proyectos de interiorismo{" "}
+                  <strong className="text-primary">sin complicaciones</strong>
                 </h1>
               </AnimatedSection>
 
@@ -230,13 +230,8 @@ export default function HomePage() {
               </AnimatedSection>
             </div>
 
-            {/* Right: Product Mockup */}
-            <AnimatedSection
-              direction="right"
-              delay={0.4}
-              duration={0.8}
-              className="hidden lg:block"
-            >
+            {/* Product Mockup: below on small screens, right on lg+ */}
+            <AnimatedSection direction="right" delay={0.4} duration={0.8}>
               <ProductMockup />
             </AnimatedSection>
           </div>
@@ -278,7 +273,8 @@ export default function HomePage() {
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Todo lo que necesitas para tu estudio
+              Todo lo que necesitas{" "}
+              <strong className="text-primary">para tu estudio</strong>
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
               Herramientas diseñadas específicamente para profesionales del
@@ -317,7 +313,7 @@ export default function HomePage() {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <AnimatedSection direction="left">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                ¿Por qué elegir Veta?
+                ¿Por qué <strong className="text-primary">elegir Veta</strong>?
               </h2>
               <p className="text-muted-foreground mt-4 text-lg">
                 Simplificamos la gestión de tu estudio de interiorismo para que
@@ -358,7 +354,7 @@ export default function HomePage() {
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-12 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Lo que dicen de Veta
+              Lo que dicen de <strong className="text-primary">Veta</strong>
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
               Estudios y profesionales de arquitectura y diseño interior que ya
@@ -410,7 +406,8 @@ export default function HomePage() {
               <span>Empieza hoy mismo</span>
             </div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Comienza a gestionar tu estudio hoy
+              Comienza a{" "}
+              <strong className="text-primary">gestionar tu estudio</strong> hoy
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
               Únete a diseñadores que ya confían en Veta para gestionar sus
@@ -439,7 +436,7 @@ export default function HomePage() {
               Preguntas Frecuentes
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Resolvemos las dudas más habituales sobre Veta.
+              Resolvemos las dudas más habituales sobre <strong>Veta</strong>.
             </p>
           </AnimatedSection>
 
@@ -473,12 +470,15 @@ export default function HomePage() {
         <div className="relative container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              ¿Quieres empezar a mejorar la experiencia en tus proyectos de
-              interiorismo?
+              ¿Quieres empezar a mejorar la experiencia en tus{" "}
+              <strong className="text-primary">
+                proyectos de interiorismo
+              </strong>
+              ?
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Prueba Veta sin compromiso y descubre cómo centralizar toda la
-              gestión de tus proyectos en un solo lugar.
+              Prueba <strong>Veta</strong> sin compromiso y descubre cómo
+              centralizar toda la gestión de tus proyectos en un solo lugar.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" asChild className="animate-glow">
