@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,15 +26,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Info } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
 
 const formSchema = z.object({
@@ -46,16 +39,9 @@ const formSchema = z.object({
 });
 
 const VALID_PLAN_CODES = ["BASE", "PRO", "STUDIO"] as const;
-const PLAN_DISPLAY_NAMES: Record<(typeof VALID_PLAN_CODES)[number], string> = {
-  BASE: "Prueba",
-  PRO: "Pro",
-  STUDIO: "Studio",
-};
-
 type PlanCode = (typeof VALID_PLAN_CODES)[number];
 
 function AuthContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const mode = searchParams.get("mode");
   const redirectTo = searchParams.get("redirect");
@@ -73,7 +59,7 @@ function AuthContent() {
     planFromUrl ?? "BASE"
   );
 
-  // "Prueba" (BASE) si no hay query param `plan` o el valor no coincide con BASE/PRO/STUDIO
+  // "Base" (BASE) si no hay query param `plan` o el valor no coincide con BASE/PRO/STUDIO
   useEffect(() => {
     if (planFromUrl) {
       setSelectedPlan(planFromUrl);
@@ -81,14 +67,6 @@ function AuthContent() {
       setSelectedPlan("BASE");
     }
   }, [planFromUrl]);
-
-  const handlePlanChange = (value: string) => {
-    const plan = value as PlanCode;
-    setSelectedPlan(plan);
-    const next = new URLSearchParams(searchParams.toString());
-    next.set("plan", plan);
-    router.replace(`/auth?${next.toString()}`, { scroll: false });
-  };
 
   const supabase = getSupabaseClient();
 
@@ -137,12 +115,17 @@ function AuthContent() {
         });
         if (error) throw error;
       } else {
+        const billingParam = searchParams.get("billing");
         const { error } = await supabase.auth.signInWithOtp({
           email: values.email,
           options: {
             emailRedirectTo: callbackUrl,
             data: {
               full_name: values.fullName,
+              signup_plan: selectedPlan,
+              ...(billingParam && {
+                signup_billing: billingParam,
+              }),
             },
           },
         });
@@ -267,13 +250,6 @@ function AuthContent() {
                 ? "Ingresa tu correo para enviarte el enlace de inicio de sesión"
                 : "Ingresa tu correo y te enviaremos un enlace para crear tu cuenta."}
           </CardDescription>
-          {!isLogin && !selectedPlan && (
-            <p className="text-muted-foreground mt-2 text-sm">
-              Se te asignará el plan{" "}
-              <span className="text-foreground font-medium">Prueba</span> por
-              defecto.
-            </p>
-          )}
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -310,44 +286,6 @@ function AuthContent() {
                   </FormItem>
                 )}
               />
-              {!isLogin && (
-                <div className="text-muted-foreground space-y-1 text-sm">
-                  <p className="flex flex-wrap items-center gap-1.5">
-                    Te registrarás con el plan{" "}
-                    <span className="inline-flex items-center gap-0.5">
-                      <Select
-                        value={selectedPlan}
-                        onValueChange={handlePlanChange}
-                      >
-                        <SelectTrigger
-                          aria-label="Cambiar plan"
-                          className="text-foreground hover:bg-muted/50 inline-flex h-8 w-auto min-w-0 border-0 bg-transparent px-1.5 py-0 shadow-none focus:ring-1 focus:ring-offset-0 [&>svg]:h-3.5 [&>svg]:w-3.5"
-                        >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent align="start">
-                          {VALID_PLAN_CODES.map((code) => (
-                            <SelectItem key={code} value={code}>
-                              {PLAN_DISPLAY_NAMES[code]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Link
-                        href="/pricing"
-                        title="Ver detalle de los planes"
-                        className="text-muted-foreground hover:text-foreground inline-flex shrink-0"
-                        aria-label="Ver detalle de los planes"
-                      >
-                        <Info className="h-4 w-4" />
-                      </Link>
-                    </span>
-                  </p>
-                  {selectedPlan !== "BASE" && (
-                    <p>Tendrás 30 días para disfrutarlo sin coste.</p>
-                  )}
-                </div>
-              )}
               <FormField
                 control={form.control}
                 name="acceptTerms"
