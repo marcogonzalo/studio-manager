@@ -29,11 +29,12 @@ import {
   ShoppingBag,
   LayoutDashboard,
 } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
 import { getSupabaseClient } from "@/lib/supabase";
 import { reportError } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import type { Project } from "@/types";
+import type { Project, Profile } from "@/types";
 
 interface DashboardStats {
   activeProjects: number;
@@ -90,7 +91,15 @@ function QuickActionSkeleton() {
   );
 }
 
+function getFirstName(fullName: string | null | undefined): string {
+  if (!fullName?.trim()) return "Bienvenido";
+  const first = fullName.trim().split(/\s+/)[0];
+  return first || "Bienvenido";
+}
+
 export default function DashboardPage() {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     activeProjects: 0,
     activeProjectsChange: 0,
@@ -107,6 +116,19 @@ export default function DashboardPage() {
     fetchDashboardStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
   }, []);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    void supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single()
+      .then(
+        ({ data }) => setProfile(data ?? null),
+        () => setProfile(null)
+      );
+  }, [user?.id]);
 
   const fetchDashboardStats = async () => {
     try {
@@ -236,7 +258,11 @@ export default function DashboardPage() {
             <LayoutDashboard className="text-primary mt-1 h-8 w-8" />
             <div>
               <h2 className="text-foreground text-3xl font-bold tracking-tight">
-                Hola, Bienvenido
+                Hola,{" "}
+                {getFirstName(
+                  profile?.full_name ??
+                    (user?.user_metadata?.full_name as string | undefined)
+                )}
               </h2>
               <p className="text-muted-foreground mt-1">
                 Aquí tienes un resumen de tu estudio de diseño.
@@ -462,7 +488,10 @@ export default function DashboardPage() {
                   <QuickActionSkeleton />
                 </>
               ) : (
-                <StaggerContainer staggerDelay={0.12}>
+                <StaggerContainer
+                  className="flex flex-col gap-5"
+                  staggerDelay={0.12}
+                >
                   <StaggerItem direction="right" distance={15}>
                     <Link
                       href="/clients"

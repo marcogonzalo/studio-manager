@@ -25,6 +25,8 @@ import {
   PanelLeft,
   User,
   SlidersHorizontal,
+  Palette,
+  Rocket,
 } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
 import {
@@ -35,7 +37,6 @@ import {
   SheetDescription,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ThemeToggleSimple } from "@/components/theme-toggle-simple";
 import {
   Tooltip,
   TooltipContent,
@@ -43,6 +44,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useState } from "react";
+import { ThemeToggleSimple } from "@/components/theme-toggle-simple";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -54,7 +56,7 @@ const navItems = [
 ];
 
 const PLAN_DISPLAY_NAMES: Record<string, string> = {
-  BASE: "Prueba",
+  BASE: "Base",
   PRO: "Pro",
   STUDIO: "Studio",
 };
@@ -165,15 +167,17 @@ function SidebarContent({
           collapsed ? "p-2" : "space-y-3 p-4"
         )}
       >
-        {collapsed ? (
-          <div className="flex justify-center">
-            <ThemeToggleSimple />
-          </div>
-        ) : (
-          <div className="flex items-center justify-between px-2">
-            <span className="text-muted-foreground text-sm">Apariencia</span>
-            <ThemeToggleSimple />
-          </div>
+        {effectivePlan?.plan_code === "BASE" && (
+          <Link
+            href="/pricing"
+            className={cn(
+              "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
+              collapsed ? "py-2" : "mb-2"
+            )}
+          >
+            <Rocket className="h-4 w-4 shrink-0" />
+            {!collapsed && <span>Mejora tu plan</span>}
+          </Link>
         )}
         {collapsed ? (
           <Tooltip delayDuration={0}>
@@ -216,6 +220,17 @@ function SidebarContent({
                       <SlidersHorizontal className="mr-2 h-4 w-4" />
                       Configuración
                     </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    className="flex cursor-default items-center justify-between gap-2"
+                  >
+                    <span className="flex items-center">
+                      <Palette className="mr-2 h-4 w-4" />
+                      Tema
+                    </span>
+                    <ThemeToggleSimple />
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={signOut}
@@ -279,6 +294,17 @@ function SidebarContent({
                     <SlidersHorizontal className="mr-2 h-4 w-4" />
                     Configuración
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  className="flex cursor-default items-center justify-between gap-2"
+                >
+                  <span className="flex items-center">
+                    <Palette className="mr-2 h-4 w-4" />
+                    Tema
+                  </span>
+                  <ThemeToggleSimple />
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={signOut}

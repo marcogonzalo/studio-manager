@@ -47,7 +47,7 @@ export const softwareApplicationJsonLd = {
 
 /**
  * SoftwareApplication con AggregateOffer para la página de precios.
- * Incluye: Prueba (gratis), Pro y Studio en suscripción mensual y anual.
+ * Incluye: Base (gratis), Pro y Studio en suscripción mensual y anual.
  * Suscripción anual = precio de 11 meses (1 mes gratis).
  * @see https://aubreyyung.com/software-application-schema/
  */
@@ -73,9 +73,9 @@ export function softwareApplicationPricingJsonLd(pageUrl: string) {
           "@type": "UnitPriceSpecification",
           price: "0",
           priceCurrency: "EUR",
-          name: "Prueba",
+          name: "Base",
           description:
-            "Plan de prueba con límites básicos. Gratis para siempre.",
+            "Plan limitado y con funcionalidades básicas. Gratis para siempre.",
         },
         {
           "@type": "UnitPriceSpecification",
