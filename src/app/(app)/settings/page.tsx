@@ -164,12 +164,12 @@ export default function SettingsPage() {
                 <legend className="text-muted-foreground text-sm font-medium">
                   Valores sugeridos para nuevos proyectos y productos
                 </legend>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                <div className="flex flex-wrap gap-4">
                   <FormField
                     control={form.control}
                     name="default_currency"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-[125px]">
                         <FormLabel>Moneda</FormLabel>
                         <Select
                           onValueChange={field.onChange}
@@ -198,7 +198,7 @@ export default function SettingsPage() {
                     control={form.control}
                     name="default_tax_rate"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-[125px]">
                         <FormLabel>Impuesto (%)</FormLabel>
                         <FormControl>
                           <Input
