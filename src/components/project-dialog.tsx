@@ -428,6 +428,7 @@ export function ProjectDialog({
                       size="icon"
                       onClick={() => setIsClientDialogOpen(true)}
                       title="Agregar nuevo cliente"
+                      aria-label="Agregar nuevo cliente"
                     >
                       <Plus className="h-4 w-4" />
                     </Button>

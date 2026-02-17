@@ -191,6 +191,7 @@ export function SpaceImagesDialog({
                   variant="destructive"
                   size="icon"
                   onClick={() => handleDelete(img.id)}
+                  aria-label="Eliminar imagen"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
