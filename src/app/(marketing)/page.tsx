@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
-  CheckCircle2,
   FolderKanban,
   Quote,
   ShoppingBag,
@@ -29,6 +28,7 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/ui/animated-section";
+import { BenefitsList } from "./benefits-list";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import { ProductMockup } from "@/components/product-mockup";
 
@@ -271,7 +271,10 @@ export default function HomePage() {
       {/* Features Section */}
       <section id="features" className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
+          <AnimatedSection
+            className="mx-auto mb-16 max-w-2xl text-center"
+            triggerOnMount={false}
+          >
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Todo lo que necesitas{" "}
               <strong className="text-primary">para tu estudio</strong>
@@ -285,6 +288,7 @@ export default function HomePage() {
           <StaggerContainer
             className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
             staggerDelay={0.1}
+            triggerOnMount={false}
           >
             {features.map((feature) => (
               <StaggerItem key={feature.title}>
@@ -311,7 +315,7 @@ export default function HomePage() {
       <section className="py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
-            <AnimatedSection direction="left">
+            <AnimatedSection direction="left" triggerOnMount={false}>
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
                 ¿Por qué <strong className="text-primary">elegir Veta</strong>?
               </h2>
@@ -321,16 +325,7 @@ export default function HomePage() {
                 increíbles.
               </p>
 
-              <StaggerContainer className="mt-8 space-y-4" staggerDelay={0.08}>
-                {benefits.map((benefit) => (
-                  <StaggerItem key={benefit} direction="left" distance={15}>
-                    <li className="flex list-none items-center gap-3">
-                      <CheckCircle2 className="text-primary h-5 w-5 flex-shrink-0" />
-                      <span>{benefit}</span>
-                    </li>
-                  </StaggerItem>
-                ))}
-              </StaggerContainer>
+              <BenefitsList benefits={benefits} />
 
               <div className="mt-10">
                 <Button size="lg" asChild className="animate-glow">
@@ -342,7 +337,11 @@ export default function HomePage() {
               </div>
             </AnimatedSection>
 
-            <AnimatedSection direction="right" delay={0.2}>
+            <AnimatedSection
+              direction="right"
+              delay={0.2}
+              triggerOnMount={false}
+            >
               <ProductMockup />
             </AnimatedSection>
           </div>
@@ -352,7 +351,10 @@ export default function HomePage() {
       {/* Testimonials Section */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <AnimatedSection className="mx-auto mb-12 max-w-2xl text-center">
+          <AnimatedSection
+            className="mx-auto mb-12 max-w-2xl text-center"
+            triggerOnMount={false}
+          >
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Lo que dicen de <strong className="text-primary">Veta</strong>
             </h2>
@@ -365,6 +367,7 @@ export default function HomePage() {
           <StaggerContainer
             className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2 md:items-stretch"
             staggerDelay={0.2}
+            triggerOnMount={false}
           >
             {testimonials.map((t) => (
               <StaggerItem key={t.author} className="h-full">
@@ -400,7 +403,10 @@ export default function HomePage() {
         <div className="bg-primary/5 absolute bottom-0 left-0 h-72 w-72 -translate-x-1/4 translate-y-1/3 rounded-full blur-3xl" />
 
         <div className="relative container mx-auto max-w-7xl px-4">
-          <AnimatedSection className="mx-auto max-w-2xl text-center">
+          <AnimatedSection
+            className="mx-auto max-w-2xl text-center"
+            triggerOnMount={false}
+          >
             <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
               <Sparkles className="h-4 w-4" />
               <span>Empieza hoy mismo</span>
@@ -431,7 +437,10 @@ export default function HomePage() {
       {/* FAQ Section */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
-          <AnimatedSection className="mx-auto mb-12 max-w-2xl text-center">
+          <AnimatedSection
+            className="mx-auto mb-12 max-w-2xl text-center"
+            triggerOnMount={false}
+          >
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               Preguntas Frecuentes
             </h2>
@@ -443,6 +452,7 @@ export default function HomePage() {
           <StaggerContainer
             className="mx-auto max-w-3xl space-y-4"
             staggerDelay={0.1}
+            triggerOnMount={false}
           >
             {homeFaqs.map((faq) => (
               <StaggerItem key={faq.question}>
@@ -468,7 +478,10 @@ export default function HomePage() {
         <div className="bg-primary/8 absolute right-0 bottom-0 h-80 w-80 translate-x-1/4 translate-y-1/4 rounded-full blur-3xl" />
 
         <div className="relative container mx-auto max-w-7xl px-4">
-          <AnimatedSection className="mx-auto max-w-2xl text-center">
+          <AnimatedSection
+            className="mx-auto max-w-2xl text-center"
+            triggerOnMount={false}
+          >
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               ¿Quieres empezar a mejorar la experiencia en tus{" "}
               <strong className="text-primary">
