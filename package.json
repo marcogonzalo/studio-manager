@@ -76,5 +76,11 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vitest": "^4.0.16"
-  }
+  },
+  "browserslist": [
+    "chrome >= 111",
+    "edge >= 111",
+    "firefox >= 111",
+    "safari >= 16.4"
+  ]
 }
