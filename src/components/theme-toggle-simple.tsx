@@ -15,7 +15,12 @@ export function ThemeToggleSimple() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 cursor-pointer"
+        aria-label="Cambiar tema"
+      >
         <Sun className="h-4 w-4" />
       </Button>
     );

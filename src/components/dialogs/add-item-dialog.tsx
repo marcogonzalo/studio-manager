@@ -626,6 +626,7 @@ export function AddItemDialog({
                               size="icon"
                               onClick={() => setIsSupplierDialogOpen(true)}
                               title="Agregar nuevo proveedor"
+                              aria-label="Agregar nuevo proveedor"
                             >
                               <Plus className="h-4 w-4" />
                             </Button>

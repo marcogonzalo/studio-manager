@@ -268,6 +268,7 @@ function SidebarContent({
                   variant="ghost"
                   size="icon"
                   className="hover:bg-background text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer"
+                  aria-label="Cuenta y configuración"
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
@@ -395,7 +396,8 @@ export default function AppLayoutClient({
         </Sheet>
 
         {/* Main Content */}
-        <div
+        <main
+          id="main-content"
           className={cn(
             "flex-1 overflow-x-hidden p-4 transition-all duration-300 md:p-5 print:ml-0 print:p-0",
             isCollapsed ? "md:ml-16" : "md:ml-64"
@@ -404,7 +406,7 @@ export default function AppLayoutClient({
           <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500">
             {children}
           </div>
-        </div>
+        </main>
       </div>
     </TooltipProvider>
   );

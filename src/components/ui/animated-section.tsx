@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -19,9 +19,24 @@ interface AnimatedSectionProps {
   threshold?: number;
   /** Whether to animate only once or every time it enters view */
   once?: boolean;
+  /** When true (default), animate on mount so content always shows. When false, animate only when scrolling into view. */
+  triggerOnMount?: boolean;
   /** HTML tag to render */
   as?: "div" | "section" | "article" | "aside" | "header" | "footer" | "span";
 }
+
+const motionByTag = {
+  div: motion.div,
+  section: motion.section,
+  article: motion.article,
+  aside: motion.aside,
+  header: motion.header,
+  footer: motion.footer,
+  span: motion.span,
+} as const satisfies Record<
+  NonNullable<AnimatedSectionProps["as"]>,
+  typeof motion.div
+>;
 
 export function AnimatedSection({
   children,
@@ -30,12 +45,23 @@ export function AnimatedSection({
   delay = 0,
   duration = 0.6,
   distance = 30,
-  threshold = 0.15,
+  threshold = 0.05,
   once = true,
+  triggerOnMount = true,
   as = "div",
 }: AnimatedSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once, amount: threshold });
+  const isInViewObserver = useInView(ref, {
+    once,
+    amount: threshold,
+    margin: "0px 0px 80px 0px",
+    initial: !triggerOnMount,
+  });
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const isInView = triggerOnMount ? mounted : isInViewObserver;
 
   const directionOffset = {
     up: { x: 0, y: distance },
@@ -45,7 +71,7 @@ export function AnimatedSection({
     none: { x: 0, y: 0 },
   };
 
-  const MotionComponent = motion.create(as);
+  const MotionComponent = motionByTag[as];
 
   return (
     <MotionComponent
@@ -84,17 +110,30 @@ interface StaggerContainerProps {
   /** How much of the container must be visible to trigger */
   threshold?: number;
   once?: boolean;
+  /** When true (default), animate on mount so content always shows. When false, animate only when scrolling into view. */
+  triggerOnMount?: boolean;
 }
 
 export function StaggerContainer({
   children,
   className,
   staggerDelay = 0.1,
-  threshold = 0.1,
+  threshold = 0.05,
   once = true,
+  triggerOnMount = true,
 }: StaggerContainerProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once, amount: threshold });
+  const isInViewObserver = useInView(ref, {
+    once,
+    amount: threshold,
+    margin: "0px 0px 80px 0px",
+    initial: !triggerOnMount,
+  });
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const isInView = triggerOnMount ? mounted : isInViewObserver;
 
   return (
     <motion.div

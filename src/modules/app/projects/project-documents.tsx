@@ -84,13 +84,18 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
                       href={doc.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
+                      aria-label="Descargar documento"
                     >
                       <Download className="h-4 w-4" />
                     </a>
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Acciones del documento"
+                      >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
