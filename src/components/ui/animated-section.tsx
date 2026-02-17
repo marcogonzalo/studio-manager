@@ -33,7 +33,10 @@ const motionByTag = {
   header: motion.header,
   footer: motion.footer,
   span: motion.span,
-} as const satisfies Record<NonNullable<AnimatedSectionProps["as"]>, typeof motion.div>;
+} as const satisfies Record<
+  NonNullable<AnimatedSectionProps["as"]>,
+  typeof motion.div
+>;
 
 export function AnimatedSection({
   children,
