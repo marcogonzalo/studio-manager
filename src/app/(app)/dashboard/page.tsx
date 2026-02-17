@@ -252,7 +252,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <AnimatedSection duration={0.4} triggerOnMount>
+      <AnimatedSection duration={0.4}>
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div className="flex items-start gap-3">
             <LayoutDashboard className="text-primary mt-1 h-8 w-8" />
@@ -291,7 +291,6 @@ export default function DashboardPage() {
         <StaggerContainer
           className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
           staggerDelay={0.1}
-          triggerOnMount
         >
           <StaggerItem>
             <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
@@ -306,7 +305,6 @@ export default function DashboardPage() {
                   <AnimatedCounter
                     target={stats.activeProjects}
                     duration={1.5}
-                    triggerOnMount
                   />
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
@@ -326,11 +324,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-foreground text-2xl font-bold">
-                  <AnimatedCounter
-                    target={stats.totalClients}
-                    duration={1.5}
-                    triggerOnMount
-                  />
+                  <AnimatedCounter target={stats.totalClients} duration={1.5} />
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
                   +{stats.newClientsThisMonth} nuevos este mes
@@ -354,7 +348,6 @@ export default function DashboardPage() {
                     duration={1.5}
                     prefix="€"
                     decimals={2}
-                    triggerOnMount
                   />
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">Este mes</p>
@@ -377,7 +370,6 @@ export default function DashboardPage() {
                     duration={1.5}
                     prefix="€"
                     decimals={2}
-                    triggerOnMount
                   />
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
@@ -390,7 +382,7 @@ export default function DashboardPage() {
       )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <AnimatedSection delay={0.2} className="col-span-4" triggerOnMount>
+        <AnimatedSection delay={0.2} className="col-span-4">
           <Card className="border-none shadow-md">
             <CardHeader>
               <CardTitle>Proyectos Recientes</CardTitle>
@@ -410,11 +402,7 @@ export default function DashboardPage() {
                   <ProjectRowSkeleton />
                 </div>
               ) : stats.recentProjects.length > 0 ? (
-                <StaggerContainer
-                  className="space-y-4"
-                  staggerDelay={0.08}
-                  triggerOnMount
-                >
+                <StaggerContainer className="space-y-4" staggerDelay={0.08}>
                   {stats.recentProjects.map((project) => (
                     <StaggerItem
                       key={project.id}
@@ -487,7 +475,7 @@ export default function DashboardPage() {
           </Card>
         </AnimatedSection>
 
-        <AnimatedSection delay={0.3} className="col-span-3" triggerOnMount>
+        <AnimatedSection delay={0.3} className="col-span-3">
           <Card className="bg-primary/5 border-none shadow-md">
             <CardHeader>
               <CardTitle>Accesos Rápidos</CardTitle>
@@ -503,7 +491,6 @@ export default function DashboardPage() {
                 <StaggerContainer
                   className="flex flex-col gap-5"
                   staggerDelay={0.12}
-                  triggerOnMount
                 >
                   <StaggerItem direction="right" distance={15}>
                     <Link

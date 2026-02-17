@@ -25,7 +25,7 @@ interface AnimatedCounterProps {
   className?: string;
   /** Whether to animate only once */
   once?: boolean;
-  /** If true, animate on mount instead of when scrolling into view */
+  /** When true (default), animate on mount so content always shows. When false, animate only when scrolling into view. */
   triggerOnMount?: boolean;
 }
 
@@ -37,13 +37,14 @@ export function AnimatedCounter({
   decimals = 0,
   className,
   once = true,
-  triggerOnMount = false,
+  triggerOnMount = true,
 }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const isInViewObserver = useInView(ref, {
     once,
     amount: 0.1,
     margin: "0px 0px 80px 0px",
+    initial: !triggerOnMount,
   });
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
