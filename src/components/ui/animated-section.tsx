@@ -25,6 +25,16 @@ interface AnimatedSectionProps {
   as?: "div" | "section" | "article" | "aside" | "header" | "footer" | "span";
 }
 
+const motionByTag = {
+  div: motion.div,
+  section: motion.section,
+  article: motion.article,
+  aside: motion.aside,
+  header: motion.header,
+  footer: motion.footer,
+  span: motion.span,
+} as const satisfies Record<NonNullable<AnimatedSectionProps["as"]>, typeof motion.div>;
+
 export function AnimatedSection({
   children,
   className,
@@ -58,7 +68,7 @@ export function AnimatedSection({
     none: { x: 0, y: 0 },
   };
 
-  const MotionComponent = motion.create(as);
+  const MotionComponent = motionByTag[as];
 
   return (
     <MotionComponent

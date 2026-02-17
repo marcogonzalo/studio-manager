@@ -1,13 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import {
-  useInView,
-  motion,
-  useMotionValue,
-  useTransform,
-  animate,
-} from "framer-motion";
+import { useInView, motion, useMotionValue, animate } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface AnimatedCounterProps {
@@ -54,7 +48,28 @@ export function AnimatedCounter({
   const motionValue = useMotionValue(0);
   const [displayValue, setDisplayValue] = useState("0");
 
-  // Handle Infinity case - show ∞ symbol directly
+  useEffect(() => {
+    if (target === Infinity || !isInView) return;
+    const controls = animate(motionValue, target, {
+      duration,
+      ease: [0.25, 0.4, 0.25, 1],
+    });
+
+    const unsubscribe = motionValue.on("change", (latest) => {
+      setDisplayValue(
+        latest.toLocaleString("es-ES", {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        })
+      );
+    });
+
+    return () => {
+      controls.stop();
+      unsubscribe();
+    };
+  }, [isInView, target, duration, decimals, motionValue]);
+
   if (target === Infinity) {
     return (
       <motion.span
@@ -68,29 +83,6 @@ export function AnimatedCounter({
       </motion.span>
     );
   }
-
-  useEffect(() => {
-    if (isInView) {
-      const controls = animate(motionValue, target, {
-        duration,
-        ease: [0.25, 0.4, 0.25, 1],
-      });
-
-      const unsubscribe = motionValue.on("change", (latest) => {
-        setDisplayValue(
-          latest.toLocaleString("es-ES", {
-            minimumFractionDigits: decimals,
-            maximumFractionDigits: decimals,
-          })
-        );
-      });
-
-      return () => {
-        controls.stop();
-        unsubscribe();
-      };
-    }
-  }, [isInView, target, duration, decimals, motionValue]);
 
   return (
     <motion.span

@@ -128,6 +128,7 @@ export default function DashboardPage() {
         ({ data }) => setProfile(data ?? null),
         () => setProfile(null)
       );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase from getSupabaseClient() is stable
   }, [user?.id]);
 
   const fetchDashboardStats = async () => {
