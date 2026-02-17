@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +19,8 @@ interface AnimatedSectionProps {
   threshold?: number;
   /** Whether to animate only once or every time it enters view */
   once?: boolean;
+  /** If true, animate on mount instead of when scrolling into view */
+  triggerOnMount?: boolean;
   /** HTML tag to render */
   as?: "div" | "section" | "article" | "aside" | "header" | "footer" | "span";
 }
@@ -32,14 +34,20 @@ export function AnimatedSection({
   distance = 30,
   threshold = 0.05,
   once = true,
+  triggerOnMount = false,
   as = "div",
 }: AnimatedSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, {
+  const isInViewObserver = useInView(ref, {
     once,
     amount: threshold,
     margin: "0px 0px 80px 0px",
   });
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const isInView = triggerOnMount ? mounted : isInViewObserver;
 
   const directionOffset = {
     up: { x: 0, y: distance },
@@ -88,6 +96,8 @@ interface StaggerContainerProps {
   /** How much of the container must be visible to trigger */
   threshold?: number;
   once?: boolean;
+  /** If true, animate on mount instead of when scrolling into view */
+  triggerOnMount?: boolean;
 }
 
 export function StaggerContainer({
@@ -96,13 +106,19 @@ export function StaggerContainer({
   staggerDelay = 0.1,
   threshold = 0.05,
   once = true,
+  triggerOnMount = false,
 }: StaggerContainerProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, {
+  const isInViewObserver = useInView(ref, {
     once,
     amount: threshold,
     margin: "0px 0px 80px 0px",
   });
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const isInView = triggerOnMount ? mounted : isInViewObserver;
 
   return (
     <motion.div
