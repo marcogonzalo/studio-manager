@@ -30,12 +30,16 @@ export function AnimatedSection({
   delay = 0,
   duration = 0.6,
   distance = 30,
-  threshold = 0.15,
+  threshold = 0.05,
   once = true,
   as = "div",
 }: AnimatedSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once, amount: threshold });
+  const isInView = useInView(ref, {
+    once,
+    amount: threshold,
+    margin: "0px 0px 80px 0px",
+  });
 
   const directionOffset = {
     up: { x: 0, y: distance },
@@ -90,11 +94,15 @@ export function StaggerContainer({
   children,
   className,
   staggerDelay = 0.1,
-  threshold = 0.1,
+  threshold = 0.05,
   once = true,
 }: StaggerContainerProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once, amount: threshold });
+  const isInView = useInView(ref, {
+    once,
+    amount: threshold,
+    margin: "0px 0px 80px 0px",
+  });
 
   return (
     <motion.div

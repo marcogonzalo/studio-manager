@@ -37,7 +37,11 @@ export function AnimatedCounter({
   once = true,
 }: AnimatedCounterProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once, amount: 0.5 });
+  const isInView = useInView(ref, {
+    once,
+    amount: 0.1,
+    margin: "0px 0px 80px 0px",
+  });
   const motionValue = useMotionValue(0);
   const [displayValue, setDisplayValue] = useState("0");
 
