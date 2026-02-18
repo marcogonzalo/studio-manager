@@ -8,6 +8,7 @@ import {
   getExtensionFromMime,
   getExtensionFromFileName,
 } from "@/lib/document-validation";
+import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -20,10 +21,10 @@ interface CookieToSet {
 export async function DELETE(request: Request) {
   try {
     const cookieStore = await cookies();
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseUrl = getSupabaseUrl();
+    const supabaseServerKey = getSupabaseServerKey();
 
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    const supabase = createServerClient(supabaseUrl, supabaseServerKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll();
@@ -68,10 +69,10 @@ export async function DELETE(request: Request) {
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseUrl = getSupabaseUrl();
+    const supabaseServerKey = getSupabaseServerKey();
 
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    const supabase = createServerClient(supabaseUrl, supabaseServerKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll();

@@ -5,6 +5,7 @@ import type { CookieOptions } from "@supabase/ssr";
 import sharp from "sharp";
 import { uploadProductImage } from "@/lib/backblaze";
 import { validateImageFile } from "@/lib/image-validation";
+import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_DIMENSION = 1200;
@@ -12,10 +13,10 @@ const MAX_DIMENSION = 1200;
 export async function DELETE(request: Request) {
   try {
     const cookieStore = await cookies();
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseUrl = getSupabaseUrl();
+    const supabaseServerKey = getSupabaseServerKey();
 
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    const supabase = createServerClient(supabaseUrl, supabaseServerKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll();
@@ -67,10 +68,10 @@ interface CookieToSet {
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseUrl = getSupabaseUrl();
+    const supabaseServerKey = getSupabaseServerKey();
 
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    const supabase = createServerClient(supabaseUrl, supabaseServerKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll();

@@ -1,16 +1,20 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
+import { getSupabaseUrl, getSupabaseClientKey } from "./keys";
 
 /**
  * Creates a Supabase client for the browser
  * Uses automatic document.cookie handling - no custom implementation needed
  * This is the recommended approach from @supabase/ssr documentation
+ *
+ * Production: Uses Publishable Key (safe with RLS)
+ * Local: Uses Anon Key
  */
 export function createClient() {
   return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    getSupabaseUrl(),
+    getSupabaseClientKey()
     // No cookies config needed - createBrowserClient automatically uses document.cookie
   );
 }
