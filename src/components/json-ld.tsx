@@ -22,7 +22,7 @@ export const organizationJsonLd = {
     "Plataforma integral para gestionar proyectos de diseño interior. Administra clientes, proveedores, catálogos y presupuestos.",
   contactPoint: {
     "@type": "ContactPoint",
-    email: "hola@veta.pro",
+    email: "hey@veta.pro",
     contactType: "customer service",
     availableLanguage: "Spanish",
     areaServed: "ES",

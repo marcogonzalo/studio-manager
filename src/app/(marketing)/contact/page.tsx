@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
 };
 
-const CONTACT_EMAIL = "hola@veta.pro";
+const CONTACT_EMAIL = "hey@veta.pro";
 
 const contactMethods = [
   {
