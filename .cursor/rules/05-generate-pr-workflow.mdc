@@ -3,9 +3,15 @@ description: Workflow when user asks to generate the PR (generate the PR, create
 alwaysApply: true
 ---
 
-# Workflow: Generate the PR
+# Workflow: Generate the PR / Push Changes
 
-When the user asks to **generate the PR** (or equivalent: "generate the PR", "create the PR", "open the PR", "prepare the PR"), run **in this order**:
+## Two scenarios
+
+1. **Generate PR** (or equivalent: "generate the PR", "create the PR", "open the PR", "prepare the PR"): Run all steps including creating the PR.
+
+2. **Push changes** (or equivalent: "sube los cambios", "push changes", "commit and push", "subir cambios"): Run all steps **except** creating the PR (stop after pushing to remote).
+
+When either scenario is triggered, run **in this order**:
 
 ## 1. Clean
 
@@ -38,9 +44,14 @@ When the user asks to **generate the PR** (or equivalent: "generate the PR", "cr
 - Clear, descriptive messages per logical set of changes.
 - Optional: a final commit `docs: update progress and release notes` if documentation was updated in step 4.
 
-## 6. Create the PR
+## 6. Push to remote
 
 - Push the branch to the remote.
+
+## 7. Create the PR (only if user asked to "generate PR")
+
+- **Only execute this step if the user explicitly asked to generate/create the PR.**
+- **If the user only asked to "push changes" or "subir cambios", skip this step.**
 - Create the Pull Request with:
   - Descriptive title.
   - Description: summary of changes, modified/new files, build and test status, coverage.
@@ -49,4 +60,9 @@ When the user asks to **generate the PR** (or equivalent: "generate the PR", "cr
 
 ---
 
-**Summary:** Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push → PR. Do not skip steps; if something fails, fix it before continuing.
+**Summary:**
+
+- **Generate PR:** Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push → PR
+- **Push changes:** Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push (stop here)
+
+Do not skip steps; if something fails, fix it before continuing.
