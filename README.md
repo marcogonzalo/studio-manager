@@ -89,31 +89,20 @@ A modern, full-stack web application designed to streamline the workflow of inte
 
 3. **Configure environment variables**
 
-   Create a `.env` file in the root directory:
+   Copy the example file and fill in your values:
 
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-   # Backblaze B2 - Imágenes de productos (opcional)
-   # Crear Application Key en: https://secure.backblaze.com/app_keys.htm
-   # El bucket debe ser público para que las imágenes se muestren
-   B2_APPLICATION_KEY_ID=your_application_key_id
-   B2_APPLICATION_KEY=your_application_key
-   B2_BUCKET_ID=your_bucket_id
-   B2_BUCKET_NAME=your_bucket_name
-
-   # Formulario de contacto (opcional)
-   # Sin RESEND_API_KEY el formulario mostrará un mensaje para contactar por email
-   RESEND_API_KEY=re_xxxxxxxx
-   CONTACT_EMAIL_TO=hola@veta.pro
-   # CONTACT_EMAIL_FROM es opcional; por defecto usa onboarding@resend.dev (dev)
-   # CONTACT_EMAIL_FROM=Veta Web <hola@veta.pro>
-
-   # URL base para sitemap, robots y metadata (opcional)
-   # Por defecto usa VERCEL_URL en Vercel o https://veta.pro
-   # NEXT_PUBLIC_APP_URL=https://tudominio.com
+   ```bash
+   cp .env.example .env.local
    ```
+
+   Edit `.env.local` with your real credentials. The application uses different Supabase keys based on the environment:
+
+   **Local Development:**
+   - Uses `NEXT_PUBLIC_SUPABASE_ANON_KEY` for both client and server
+
+   **Production:**
+   - Uses `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for client-side (browser-safe with RLS)
+   - Uses `SUPABASE_SECRET_KEY` for server-side (privileged backend access)
 
 4. **Run database migrations**
 

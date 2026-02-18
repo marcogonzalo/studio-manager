@@ -106,11 +106,11 @@
 
 - [x] **Legal Page (Términos y Privacidad):** Vista `/legal` con términos de uso, política de privacidad y derechos RGPD. Checkbox obligatorio en formulario de registro: "He leído y estoy conforme con los términos de uso y privacidad" con enlace a `/legal`. Enlace en footer actualizado.
 
-- [x] **Brand Rename to Veta:** Marca unificada bajo el nombre **Veta**. Logos en `public/img/veta-light.webp` y `public/img/veta-dark.webp`; componente `VetaLogo` con alternancia por tema. Actualizados: metadata (layout, next.config `NEXT_PUBLIC_APP_NAME`), sidebar, auth, marketing header/footer, README, y páginas legal, about, contact y home. Email de contacto de ejemplo: `hola@veta.pro`.
+- [x] **Brand Rename to Veta:** Marca unificada bajo el nombre **Veta**. Logos en `public/img/veta-light.webp` y `public/img/veta-dark.webp`; componente `VetaLogo` con alternancia por tema. Actualizados: metadata (layout, next.config `NEXT_PUBLIC_APP_NAME`), sidebar, auth, marketing header/footer, README, y páginas legal, about, contact y home. Email de contacto de ejemplo: `hey@veta.pro`.
 
 - [x] **Brand Typography & Visual Refinement:** Refinamiento de tipografía y efectos visuales de marca. **Tipografía del logo:** Montserrat, 16px, peso 300 (light), line-height 20px, alineación vertical middle, alineación texto left. **Efectos visuales:** Brillo blanco sutil en modo oscuro (`drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]`) para mejorar visibilidad del logo sobre fondos oscuros. **Copy de marketing actualizado:** Hero headline "Gestiona tus proyectos de diseño sin complicaciones", descripción hero con "y toma el control", período de prueba actualizado a 30 días, footer tagline "La plataforma para gestión de proyectos de diseño interior."
 
-- [x] **Marketing Fase 1 (SEO y conversión):** Menú móvil con Sheet en marketing layout; formulario de contacto funcional (Resend); email coherente con Veta (`hola@veta.pro`); `sitemap.ts` y `robots.ts`; metadata y Open Graph por página; imagen OG dinámica; Twitter Cards; `metadataBase` en root layout. Ver `docs/marketing-seo-analysis.md`.
+- [x] **Marketing Fase 1 (SEO y conversión):** Menú móvil con Sheet en marketing layout; formulario de contacto funcional (Resend); email coherente con Veta (`hey@veta.pro`); `sitemap.ts` y `robots.ts`; metadata y Open Graph por página; imagen OG dinámica; Twitter Cards; `metadataBase` en root layout. Ver `docs/marketing-seo-analysis.md`.
 
 - [x] **Dominio y pricing:** Dominio veta.pro en URLs, metadata, sitemap, robots y documentación. JSON-LD SoftwareApplication con AggregateOffer y UnitPriceSpecification (Pro 25/275 €, Studio 75/750 € mensual/anual). Vista de precios con opción anual y formatCurrency sin decimales.
 
@@ -123,3 +123,5 @@
 - [x] **Accesibilidad lista beneficios (fixes #28):** Lista de beneficios de la home con estructura semántica correcta: componente `BenefitsList` con `ul`/`li` y animación con `motion.ul`/`motion.li`.
 
 - [x] **Loading por rutas de app con variantes:** Componente `PageLoading` con variantes (default, dashboard, table, cards, form, detail) y `loading.tsx` en (app), dashboard, clients, projects, catalog, suppliers, account, settings y projects/[id], cada uno con la variante que mejor refleja la vista.
+
+- [x] **Sistema de conexiones Supabase mejorado:** Implementado sistema de keys diferenciado por entorno. **Producción:** Usa `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (cliente, seguro con RLS) y `SUPABASE_SECRET_KEY` (servidor, acceso privilegiado). **Local:** Usa `NEXT_PUBLIC_SUPABASE_ANON_KEY` para ambos. Helper `src/lib/supabase/keys.ts` detecta automáticamente el entorno. Actualizados todos los clientes Supabase (client.ts, server.ts, middleware.ts, callback route, API upload routes) para usar las funciones helper. `.env.example` actualizado con documentación de las nuevas variables. README actualizado con tabla de variables y explicación del sistema.
