@@ -2,37 +2,40 @@
 
 ## Migration Management
 
-**CRITICAL**: Always use `supabase db push --local` to apply migrations during development. This applies only pending migrations without deleting existing data.
+**CRITICAL**: In development, only apply migrations with `supabase db push --local` (or `npm run db:push`). Never use `supabase db push` without `--local` unless you are intentionally deploying to production.
 
-### Commands to Use
+### Commands
 
-- **`supabase db push --local`**: Apply pending migrations without data loss (PREFERRED)
-  - Use this for normal development workflow
-  - Only applies migrations that haven't been executed yet
-  - Preserves all existing data in the database
+- **`supabase db push --local`** (or **`npm run db:push`**): Applies pending migrations without data loss. Preserves existing data. Use for normal development.
+- **`supabase db reset`**: Full database reset; deletes data in `public`. Use only when explicitly authorized by the user (e.g. major problem or explicit request).
 
-- **`supabase db reset`**: Full database reset (USE ONLY WHEN EXPLICITLY AUTHORIZED)
-  - Only use when there's a major problem or when explicitly requested by the user
-  - Recreates the entire database from scratch
-  - Deletes all data in the `public` schema (but preserves `auth.users`)
-  - Requires explicit user authorization before use
+### Workflow
 
-### Migration Workflow
-
-1. Create new migration: `supabase migration new migration_name`
+1. Create migration: `supabase migration new migration_name`
 2. Write SQL in the migration file
-3. Apply locally: `supabase db push --local` (NOT `db reset`)
-4. Check status: `supabase migration list`
+3. Apply: `npm run db:push` or `supabase db push --local`
+4. Check status: `supabase migration list` or `supabase migration list --local`
 
-### Rollback Migrations
+### Rollback
 
-- Use `supabase migration repair` if needed to fix migration state
-- Individual migration rollback may require manual SQL if needed
-- Always preserve data when possible
+- `supabase migration repair` to fix migration state; manual SQL if you need to roll back a single migration. Preserve data when possible.
 
 ### Best Practices
 
-- Never use `db reset` without explicit user authorization
-- Always check migration status before applying
-- Test migrations on local before pushing to remote
-- Document breaking changes in migration files
+- Never use `db reset` without explicit user authorization.
+- Check migration status before applying; test on local before any remote deploy.
+- Document breaking changes in migration files.
+
+## Protection Against Accidental Production Changes
+
+**Goal:** No migration or destructive command must run against the production database by mistake.
+
+1. **Do not link production.** Do not run `supabase link` with your production project on your dev machine. Use a staging project or a separate profile for types/diff if needed; never use it for `db push`/`db reset`.
+
+2. **Use the safeguard script.** Prefer `npm run db:push` to apply migrations: it only runs `supabase db push --local` and refuses to run if `.env.local` points to production (supabase.co).
+
+3. **Production migrations only via controlled process.** Apply migrations to production only via:
+   - **CI/CD:** e.g. GitHub Action on main/production branch with approval and secrets (`SUPABASE_ACCESS_TOKEN`, project ref); no production link on dev machines.
+   - **Manual deploy:** Only when intentionally deploying, with checklist and explicit confirmation or env (e.g. `DEPLOY_MIGRATIONS_TO=production`).
+
+4. **Reset is local only.** `supabase db reset` affects only the local instance. The risk is losing local data; always require explicit user authorization (see Best Practices).

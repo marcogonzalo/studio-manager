@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
+    "db:push": "supabase db push --local",
+    "db:reset": "supabase db reset",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest",
