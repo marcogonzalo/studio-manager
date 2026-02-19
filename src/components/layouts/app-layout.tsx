@@ -46,6 +46,7 @@ import {
 import { useState } from "react";
 import { ThemeToggleSimple } from "@/components/theme-toggle-simple";
 import { cn } from "@/lib/utils";
+import { getDisplayName } from "@/lib/display-name";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -60,19 +61,6 @@ const PLAN_DISPLAY_NAMES: Record<string, string> = {
   PRO: "Pro",
   STUDIO: "Studio",
 };
-
-function getDisplayName(
-  user: { user_metadata?: { full_name?: string }; email?: string } | null,
-  profileFullName: string | null
-): string {
-  const fullName =
-    (profileFullName?.trim() || user?.user_metadata?.full_name?.trim()) ?? "";
-  const first = fullName.split(/\s+/)[0];
-  if (first) return first;
-  const beforeAt = (user?.email ?? "").trim().split("@")[0];
-  if (beforeAt) return beforeAt;
-  return "Usuario";
-}
 
 function SidebarContent({
   collapsed = false,
