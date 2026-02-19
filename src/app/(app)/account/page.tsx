@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -16,6 +17,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Form,
   FormControl,
   FormField,
@@ -24,7 +38,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Link from "next/link";
-import { User, Building2 } from "lucide-react";
+import { User, Building2, ChevronDown, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage, reportError } from "@/lib/utils";
 import type { Profile } from "@/types";
@@ -35,14 +49,22 @@ const formSchema = z.object({
   public_name: z.string().optional(),
 });
 
+const deleteAccountSchema = z.object({
+  email: z.string().min(1, "Introduce tu correo electrónico"),
+});
+
 type FormValues = z.infer<typeof formSchema>;
+type DeleteAccountValues = z.infer<typeof deleteAccountSchema>;
 
 export default function AccountPage() {
-  const { user, effectivePlan } = useAuth();
+  const router = useRouter();
+  const { user, effectivePlan, signOut } = useAuth();
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const supabase = getSupabaseClient();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [dangerZoneOpen, setDangerZoneOpen] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -52,6 +74,34 @@ export default function AccountPage() {
       public_name: "",
     },
   });
+
+  const deleteForm = useForm<DeleteAccountValues>({
+    resolver: zodResolver(deleteAccountSchema),
+    defaultValues: { email: "" },
+  });
+
+  async function onDeleteAccount(values: DeleteAccountValues) {
+    try {
+      const res = await fetch("/api/account/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: values.email.trim() }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        toast.error(data.error ?? "Error al eliminar la cuenta");
+        return;
+      }
+      setDeleteDialogOpen(false);
+      deleteForm.reset();
+      toast.success("Cuenta eliminada");
+      await signOut();
+      router.push("/auth");
+    } catch (err) {
+      reportError(err, "Delete account:");
+      toast.error("Error al eliminar la cuenta");
+    }
+  }
 
   const fetchProfile = async () => {
     if (!user?.id) return;
@@ -258,6 +308,130 @@ export default function AccountPage() {
           </CardContent>
         </Card>
       )}
+
+      <Collapsible open={dangerZoneOpen} onOpenChange={setDangerZoneOpen}>
+        <Card className="border-destructive/50">
+          <CollapsibleTrigger asChild>
+            <CardHeader className="hover:bg-muted/50 cursor-pointer transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="text-destructive h-5 w-5" />
+                  <CardTitle className="text-destructive">
+                    Zona de peligro
+                  </CardTitle>
+                </div>
+                <ChevronDown
+                  className={`text-muted-foreground h-5 w-5 transition-transform ${dangerZoneOpen ? "rotate-180" : ""}`}
+                />
+              </div>
+              <CardDescription>
+                Acciones irreversibles sobre tu cuenta
+              </CardDescription>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="border-destructive/20 border-t pt-6">
+              <p className="text-muted-foreground mb-4 text-sm">
+                Si eliminas tu cuenta se borrarán de forma permanente todos tus
+                datos: perfil, proyectos, clientes, catálogo, imágenes y
+                documentos.
+              </p>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setDeleteDialogOpen(true)}
+              >
+                Eliminar cuenta
+              </Button>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) deleteForm.reset();
+        }}
+      >
+        <DialogContent
+          className="sm:max-w-md"
+          onPointerDownOutside={(e) =>
+            deleteForm.formState.isSubmitting && e.preventDefault()
+          }
+        >
+          <DialogHeader>
+            <DialogTitle className="text-destructive">
+              Eliminar cuenta
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="text-muted-foreground space-y-2 text-sm">
+                <p>
+                  Si eliminas tu cuenta se borrarán de forma permanente todos
+                  tus datos: perfil, proyectos, clientes, catálogo, imágenes y
+                  documentos.{" "}
+                  <span className="font-semibold">
+                    Esta acción no se puede deshacer.
+                  </span>
+                </p>
+                <p>
+                  Escribe tu correo electrónico{" "}
+                  <span className="text-foreground font-semibold">
+                    {profile?.email ?? ""}
+                  </span>{" "}
+                  para confirmar la eliminación.
+                </p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...deleteForm}>
+            <form
+              onSubmit={deleteForm.handleSubmit(onDeleteAccount)}
+              className="space-y-4"
+            >
+              <FormField
+                control={deleteForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Correo electrónico</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="tu@email.com"
+                        autoComplete="email"
+                        disabled={deleteForm.formState.isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDeleteDialogOpen(false)}
+                  disabled={deleteForm.formState.isSubmitting}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  variant="destructive"
+                  disabled={deleteForm.formState.isSubmitting}
+                >
+                  {deleteForm.formState.isSubmitting
+                    ? "Eliminando..."
+                    : "Eliminar cuenta"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

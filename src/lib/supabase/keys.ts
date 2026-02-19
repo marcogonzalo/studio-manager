@@ -48,3 +48,11 @@ export function getSupabaseServerKey(): string {
   }
   return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 }
+
+/**
+ * Gets the Supabase Service Role key (server only, for admin operations like auth.admin.deleteUser).
+ * Required for account deletion. Do not expose to the client.
+ */
+export function getSupabaseServiceRoleKey(): string | undefined {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY;
+}
