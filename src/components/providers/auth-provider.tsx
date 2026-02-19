@@ -10,6 +10,8 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  /** Full name from profiles table (synced when user updates profile). */
+  profileFullName: string | null;
   /** Effective plan (from latest valid assignment or BASE). Loaded after user is set. */
   effectivePlan: EffectivePlan | null;
   planLoading: boolean;
@@ -20,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  profileFullName: null,
   effectivePlan: null,
   planLoading: true,
   signOut: async () => {},
@@ -31,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileFullName, setProfileFullName] = useState<string | null>(null);
   const [effectivePlan, setEffectivePlan] = useState<EffectivePlan | null>(
     null
   );
@@ -62,12 +66,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!user?.id) {
+      setProfileFullName(null);
       setEffectivePlan(null);
       setPlanLoading(false);
       return;
     }
     let cancelled = false;
     setPlanLoading(true);
+    void void Promise.resolve(
+      supabase.from("profiles").select("full_name").eq("id", user.id).single()
+    )
+      .then(({ data }) => {
+        if (!cancelled && data?.full_name != null) {
+          setProfileFullName(data.full_name.trim() || null);
+        } else if (!cancelled) {
+          setProfileFullName(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setProfileFullName(null);
+      });
     void Promise.resolve(
       supabase.rpc("get_effective_plan", { p_user_id: user.id })
     )
@@ -109,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         session,
         loading,
+        profileFullName,
         effectivePlan,
         planLoading,
         signOut,
