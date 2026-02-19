@@ -71,7 +71,6 @@ type ChangeEmailValues = z.infer<typeof changeEmailSchema>;
 export default function AccountPage() {
   const router = useRouter();
   const { user, effectivePlan, signOut } = useAuth();
-  const isBasePlan = effectivePlan?.plan_code === "BASE";
   const supabase = getSupabaseClient();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
