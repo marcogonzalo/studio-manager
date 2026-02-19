@@ -46,12 +46,25 @@ vi.mock("next/navigation", () => ({
 
 // Test component that uses the auth context
 const TestComponent = () => {
-  const { user, session, loading, signOut } = useAuth();
+  const {
+    user,
+    session,
+    loading,
+    signOut,
+    profileFullName,
+    effectivePlan,
+  } = useAuth();
   return (
     <div>
       <div data-testid="loading">{loading ? "loading" : "not-loading"}</div>
       <div data-testid="user-email">{user?.email || "no-user"}</div>
       <div data-testid="session">{session ? "has-session" : "no-session"}</div>
+      <div data-testid="profile-full-name">
+        {profileFullName ?? "no-profile-name"}
+      </div>
+      <div data-testid="effective-plan">
+        {effectivePlan?.plan_code ?? "no-plan"}
+      </div>
       <button onClick={signOut} data-testid="sign-out-button">
         Sign Out
       </button>
@@ -284,5 +297,67 @@ describe("AuthProvider", () => {
 
     replaceStateSpy.mockRestore();
     window.location.hash = originalHash;
+  });
+
+  it("should set profileFullName from profiles when user is signed in", async () => {
+    const mockUser = createMockUser({ email: "u@test.com" });
+    const mockSession = createMockSession(mockUser);
+    mockGetSession.mockResolvedValue({
+      data: { session: mockSession },
+      error: null,
+    });
+    mockFrom.mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({
+            data: { full_name: "María García" },
+            error: null,
+          }),
+        }),
+      }),
+    });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("loading")).toHaveTextContent("not-loading");
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("profile-full-name")).toHaveTextContent(
+        "María García"
+      );
+    });
+  });
+
+  it("should set effectivePlan from get_effective_plan rpc when user is signed in", async () => {
+    const mockUser = createMockUser({ email: "u@test.com" });
+    const mockSession = createMockSession(mockUser);
+    mockGetSession.mockResolvedValue({
+      data: { session: mockSession },
+      error: null,
+    });
+    mockRpc.mockResolvedValue({
+      data: [{ plan_code: "PRO", config: { budget_mode: "full" } }],
+      error: null,
+    });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("loading")).toHaveTextContent("not-loading");
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("effective-plan")).toHaveTextContent("PRO");
+    });
   });
 });
