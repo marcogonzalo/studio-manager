@@ -30,7 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
+import { FileSpreadsheet, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage, reportError, CURRENCIES } from "@/lib/utils";
 import type { Profile } from "@/types";
@@ -45,14 +46,22 @@ const formSchema = z.object({
       return !isNaN(num) && num >= 0;
     }, "Debe ser mayor o igual a 0"),
   default_currency: z.string().optional(),
+  public_name: z.string().optional(),
+  email: z
+    .string()
+    .optional()
+    .refine((val) => !val || z.string().email().safeParse(val).success, {
+      message: "Correo no válido",
+    }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function SettingsPage() {
-  const { user } = useAuth();
+export default function CustomizationPage() {
+  const { user, effectivePlan } = useAuth();
+  const isBasePlan = effectivePlan?.plan_code === "BASE";
   const supabase = getSupabaseClient();
-  const [, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
   const form = useForm<FormValues>({
@@ -60,6 +69,8 @@ export default function SettingsPage() {
     defaultValues: {
       default_tax_rate: "",
       default_currency: "EUR",
+      public_name: "",
+      email: "",
     },
   });
 
@@ -68,7 +79,9 @@ export default function SettingsPage() {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("default_tax_rate, default_currency")
+        .select(
+          "default_tax_rate, default_currency, public_name, full_name, email"
+        )
         .eq("id", user.id)
         .single();
 
@@ -80,10 +93,12 @@ export default function SettingsPage() {
             ? data.default_tax_rate.toString()
             : "",
         default_currency: data?.default_currency ?? "EUR",
+        public_name: data?.public_name ?? "",
+        email: data?.email ?? "",
       });
     } catch (err) {
-      reportError(err, "Error fetching settings:");
-      toast.error("Error al cargar la configuración");
+      reportError(err, "Error fetching personalization:");
+      toast.error("Error al cargar la personalización");
     } finally {
       setLoading(false);
     }
@@ -112,15 +127,17 @@ export default function SettingsPage() {
         .update({
           default_tax_rate: validTax,
           default_currency: values.default_currency ?? "EUR",
+          public_name: values.public_name?.trim() || null,
+          email: values.email?.trim() || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
 
       if (error) throw error;
-      toast.success("Configuración guardada");
+      toast.success("Personalización guardada");
       fetchProfile();
     } catch (err) {
-      reportError(err, "Error saving settings:");
+      reportError(err, "Error saving personalization:");
       toast.error("Error al guardar: " + getErrorMessage(err));
     }
   }
@@ -129,7 +146,7 @@ export default function SettingsPage() {
     return (
       <div className="flex items-center justify-center py-12">
         <p className="text-muted-foreground animate-pulse">
-          Cargando configuración...
+          Cargando personalización...
         </p>
       </div>
     );
@@ -139,27 +156,117 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-foreground text-3xl font-bold tracking-tight">
-          Configuración
+          Personalización
         </h1>
         <p className="text-muted-foreground mt-1">
-          Valores por defecto para nuevos proyectos y productos
+          Valores por defecto para adaptar tu espacio de trabajo
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="text-primary h-5 w-5" />
-            <CardTitle>Valores por defecto</CardTitle>
-          </div>
-          <CardDescription>
-            Se aplicarán al crear nuevos proyectos o productos. Los elementos
-            existentes con valores definidos no se modifican.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-8"
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="text-primary h-5 w-5" />
+                <CardTitle>Presupuesto</CardTitle>
+              </div>
+              <CardDescription>
+                Personaliza la apariencia del PDF de presupuestos
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <FormField
+                control={form.control}
+                name="public_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre público</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Ej. Estudio García Interiorismo"
+                        className="h-9 text-sm"
+                        {...field}
+                        value={field.value ?? ""}
+                        disabled={isBasePlan}
+                        onFocus={() => {
+                          if (isBasePlan) return;
+                          const current = (field.value ?? "").trim();
+                          if (!current && profile?.full_name?.trim()) {
+                            field.onChange(profile.full_name.trim());
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    {!isBasePlan && (
+                      <p className="text-muted-foreground text-xs">
+                        Este nombre aparecerá como &quot;Arquitecto/a&quot; en
+                        los PDF de presupuestos
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Correo</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="correo@ejemplo.com"
+                        className="h-9 text-sm"
+                        {...field}
+                        value={field.value ?? ""}
+                        disabled={isBasePlan}
+                      />
+                    </FormControl>
+                    {!isBasePlan && (
+                      <p className="text-muted-foreground text-xs">
+                        Se mostrará en los PDF de presupuestos
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting || isBasePlan}
+              >
+                {form.formState.isSubmitting
+                  ? "Guardando..."
+                  : "Guardar cambios"}
+              </Button>
+              {isBasePlan && (
+                <p className="text-muted-foreground text-xs">
+                  Mejora tu plan para poder personalizar tus presupuestos.{" "}
+                  <Link href="/pricing" className="font-medium underline">
+                    Mejora tu plan
+                  </Link>
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="text-primary h-5 w-5" />
+                <CardTitle>Valores por defecto</CardTitle>
+              </div>
+              <CardDescription>
+                Se aplicarán al crear nuevos proyectos o productos. Los
+                elementos existentes con valores definidos no se modifican.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <fieldset className="space-y-3">
                 <legend className="text-muted-foreground text-sm font-medium">
                   Valores sugeridos para nuevos proyectos y productos
@@ -225,12 +332,12 @@ export default function SettingsPage() {
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting
                   ? "Guardando..."
-                  : "Guardar configuración"}
+                  : "Guardar cambios"}
               </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
     </div>
   );
 }

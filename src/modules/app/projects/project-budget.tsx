@@ -212,13 +212,15 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
     try {
       const { generateProjectPDF } = await import("@/lib/pdf-generator");
       let architectName: string | undefined;
+      let architectEmail: string | undefined;
       if (user?.id) {
         const { data: profile } = await supabase
           .from("profiles")
-          .select("public_name")
+          .select("public_name, email")
           .eq("id", user.id)
           .single();
         architectName = profile?.public_name?.trim() || undefined;
+        architectEmail = profile?.email?.trim() || undefined;
       }
       const taxRate =
         project.tax_rate !== null && project.tax_rate !== undefined
@@ -233,7 +235,8 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         itemsToPdf,
         linesToPdf,
         taxRate,
-        architectName
+        architectName,
+        architectEmail
       );
       const blob = await asPdf.toBlob();
       const url = URL.createObjectURL(blob);
