@@ -35,27 +35,12 @@ import { FileSpreadsheet, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage, reportError, CURRENCIES } from "@/lib/utils";
 import type { Profile } from "@/types";
+import {
+  customizationFormSchema,
+  type CustomizationFormValues,
+} from "./schema";
 
-const formSchema = z.object({
-  default_tax_rate: z
-    .string()
-    .optional()
-    .refine((val) => {
-      if (!val || val.trim() === "") return true;
-      const num = parseFloat(val);
-      return !isNaN(num) && num >= 0;
-    }, "Debe ser mayor o igual a 0"),
-  default_currency: z.string().optional(),
-  public_name: z.string().optional(),
-  email: z
-    .string()
-    .optional()
-    .refine((val) => !val || z.string().email().safeParse(val).success, {
-      message: "Correo no válido",
-    }),
-});
-
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = CustomizationFormValues;
 
 export default function CustomizationPage() {
   const { user, effectivePlan } = useAuth();
@@ -65,7 +50,7 @@ export default function CustomizationPage() {
   const [loading, setLoading] = useState(true);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(customizationFormSchema),
     defaultValues: {
       default_tax_rate: "",
       default_currency: "EUR",
