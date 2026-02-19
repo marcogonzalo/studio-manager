@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { VetaLogo } from "@/components/veta-logo";
 import { MarketingHeader } from "@/components/layouts/marketing-header";
+import { RedirectAuthenticatedToDashboard } from "@/components/redirect-authenticated-to-dashboard";
 
 export const metadata: Metadata = {
   robots: {
@@ -102,6 +103,7 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
+      <RedirectAuthenticatedToDashboard />
       <MarketingHeader />
       <main id="main-content" className="flex-1">
         {children}

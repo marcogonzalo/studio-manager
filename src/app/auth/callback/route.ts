@@ -45,13 +45,17 @@ export async function GET(request: NextRequest) {
       return supabaseResponse;
     }
 
-    return NextResponse.redirect(
-      `${origin}/auth?error=${encodeURIComponent(error.message || "Could not authenticate user")}`
+    const authUrl = new URL("/auth", origin);
+    authUrl.searchParams.set(
+      "error",
+      error.message || "Could not authenticate user"
     );
+    authUrl.searchParams.set("redirect", redirectPath);
+    return NextResponse.redirect(authUrl.toString());
   }
 
-  // Return the user to an error page with instructions
-  return NextResponse.redirect(
-    `${origin}/auth?error=${encodeURIComponent("No authentication code provided")}`
-  );
+  const authUrl = new URL("/auth", origin);
+  authUrl.searchParams.set("error", "No authentication code provided");
+  authUrl.searchParams.set("redirect", "/dashboard");
+  return NextResponse.redirect(authUrl.toString());
 }

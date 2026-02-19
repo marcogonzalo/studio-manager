@@ -49,20 +49,33 @@ export async function updateSession(request: NextRequest) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (user && pathname === "/auth") {
-        const url = request.nextUrl.clone();
-        const redirectTo = request.nextUrl.searchParams.get("redirect");
-        url.pathname = redirectTo
-          ? decodeURIComponent(redirectTo)
-          : "/dashboard";
-        url.searchParams.delete("redirect");
-        const redirectRes = NextResponse.redirect(url);
-        res.cookies
-          .getAll()
-          .forEach((cookie) =>
-            redirectRes.cookies.set(cookie.name, cookie.value, cookie)
-          );
-        return redirectRes;
+      if (user) {
+        if (pathname === "/auth") {
+          const url = request.nextUrl.clone();
+          const redirectTo = request.nextUrl.searchParams.get("redirect");
+          url.pathname = redirectTo
+            ? decodeURIComponent(redirectTo)
+            : "/dashboard";
+          url.searchParams.delete("redirect");
+          const redirectRes = NextResponse.redirect(url);
+          res.cookies
+            .getAll()
+            .forEach((cookie) =>
+              redirectRes.cookies.set(cookie.name, cookie.value, cookie)
+            );
+          return redirectRes;
+        }
+        if (pathname === "/") {
+          const url = request.nextUrl.clone();
+          url.pathname = "/dashboard";
+          const redirectRes = NextResponse.redirect(url);
+          res.cookies
+            .getAll()
+            .forEach((cookie) =>
+              redirectRes.cookies.set(cookie.name, cookie.value, cookie)
+            );
+          return redirectRes;
+        }
       }
     } catch {
       // Ignore auth errors on public routes
