@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     let cancelled = false;
     setPlanLoading(true);
-    void void Promise.resolve(
+    void Promise.resolve(
       supabase.from("profiles").select("full_name").eq("id", user.id).single()
     )
       .then(({ data }) => {
