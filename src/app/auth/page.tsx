@@ -46,6 +46,7 @@ function AuthContent() {
   const mode = searchParams.get("mode");
   const redirectTo = searchParams.get("redirect");
   const errorParam = searchParams.get("error");
+  const emailUpdated = searchParams.get("email_updated");
   const planParam = searchParams.get("plan");
   const planFromUrl: PlanCode | null =
     planParam && VALID_PLAN_CODES.includes(planParam as PlanCode)
@@ -76,6 +77,16 @@ function AuthContent() {
       toast.error(decodeURIComponent(errorParam));
     }
   }, [errorParam]);
+  // After email change confirmation: sign out so they must log in with the new email (security)
+  useEffect(() => {
+    if (emailUpdated === "1") {
+      supabase.auth.signOut().then(() => {
+        toast.success(
+          "El cambio de correo se ha realizado. Ya puedes iniciar sesión con tu nueva dirección."
+        );
+      });
+    }
+  }, [emailUpdated]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

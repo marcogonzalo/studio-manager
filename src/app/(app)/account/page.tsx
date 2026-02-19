@@ -37,8 +37,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import Link from "next/link";
-import { User, Building2, ChevronDown, AlertTriangle } from "lucide-react";
+import {
+  User,
+  Building2,
+  ChevronDown,
+  AlertTriangle,
+  Mail,
+} from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage, reportError } from "@/lib/utils";
 import type { Profile } from "@/types";
@@ -46,15 +51,22 @@ import type { Profile } from "@/types";
 const formSchema = z.object({
   full_name: z.string().optional(),
   company: z.string().optional(),
-  public_name: z.string().optional(),
 });
 
 const deleteAccountSchema = z.object({
   email: z.string().min(1, "Introduce tu correo electrónico"),
 });
 
+const changeEmailSchema = z.object({
+  new_email: z
+    .string()
+    .min(1, "Introduce el nuevo correo")
+    .email("Correo no válido"),
+});
+
 type FormValues = z.infer<typeof formSchema>;
 type DeleteAccountValues = z.infer<typeof deleteAccountSchema>;
+type ChangeEmailValues = z.infer<typeof changeEmailSchema>;
 
 export default function AccountPage() {
   const router = useRouter();
@@ -64,6 +76,7 @@ export default function AccountPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [changeEmailDialogOpen, setChangeEmailDialogOpen] = useState(false);
   const [dangerZoneOpen, setDangerZoneOpen] = useState(false);
 
   const form = useForm<FormValues>({
@@ -71,7 +84,6 @@ export default function AccountPage() {
     defaultValues: {
       full_name: "",
       company: "",
-      public_name: "",
     },
   });
 
@@ -79,6 +91,34 @@ export default function AccountPage() {
     resolver: zodResolver(deleteAccountSchema),
     defaultValues: { email: "" },
   });
+
+  const changeEmailForm = useForm<ChangeEmailValues>({
+    resolver: zodResolver(changeEmailSchema),
+    defaultValues: { new_email: "" },
+  });
+
+  async function onChangeEmail(values: ChangeEmailValues) {
+    try {
+      const redirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth?email_updated=1`
+          : undefined;
+      const { error } = await supabase.auth.updateUser(
+        { email: values.new_email.trim().toLowerCase() },
+        redirectTo ? { emailRedirectTo: redirectTo } : undefined
+      );
+      if (error) throw error;
+      setChangeEmailDialogOpen(false);
+      changeEmailForm.reset();
+      toast.success(
+        "Revisa tu nuevo correo y haz clic en el enlace para confirmar el cambio."
+      );
+      fetchProfile();
+    } catch (err) {
+      reportError(err, "Change email:");
+      toast.error("Error al cambiar el correo: " + getErrorMessage(err));
+    }
+  }
 
   async function onDeleteAccount(values: DeleteAccountValues) {
     try {
@@ -117,7 +157,6 @@ export default function AccountPage() {
       form.reset({
         full_name: data?.full_name ?? "",
         company: data?.company ?? "",
-        public_name: data?.public_name ?? "",
       });
     } catch (err) {
       reportError(err, "Error fetching profile:");
@@ -144,7 +183,6 @@ export default function AccountPage() {
         .update({
           full_name: values.full_name?.trim() || null,
           company: values.company?.trim() || null,
-          public_name: values.public_name?.trim() || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
@@ -194,9 +232,7 @@ export default function AccountPage() {
             <User className="text-primary h-5 w-5" />
             <CardTitle>Mi perfil</CardTitle>
           </div>
-          <CardDescription>
-            Nombre, empresa y nombre público (visible en presupuestos)
-          </CardDescription>
+          <CardDescription>Nombre y empresa</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -243,48 +279,6 @@ export default function AccountPage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="public_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre público (en presupuestos)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ej. Estudio García Interiorismo"
-                        {...field}
-                        value={field.value ?? ""}
-                        disabled={isBasePlan}
-                        onFocus={() => {
-                          if (isBasePlan) return;
-                          const current = (field.value ?? "").trim();
-                          if (!current) {
-                            const suggested =
-                              form.getValues("full_name")?.trim() ?? "";
-                            if (suggested) field.onChange(suggested);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    {isBasePlan && (
-                      <p className="text-muted-foreground text-xs">
-                        Mejora tu plan para poder personalizar tus presupuestos.{" "}
-                        <Link href="/pricing" className="font-medium underline">
-                          Mejora tu plan
-                        </Link>
-                      </p>
-                    )}
-                    {!isBasePlan && (
-                      <p className="text-muted-foreground text-xs">
-                        Este nombre aparecerá como &quot;Arquitecto/a&quot; en
-                        los PDF de presupuestos
-                      </p>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting
                   ? "Guardando..."
@@ -295,16 +289,31 @@ export default function AccountPage() {
         </CardContent>
       </Card>
 
-      {profile?.email && (
+      {user?.email && (
         <Card>
           <CardHeader>
-            <CardTitle>Email</CardTitle>
+            <div className="flex items-center gap-2">
+              <Mail className="text-primary h-5 w-5" />
+              <CardTitle>Email</CardTitle>
+            </div>
             <CardDescription>
-              Correo electrónico de la cuenta (no editable desde aquí)
+              Correo electrónico de la cuenta. Con este correo inicias sesión.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground text-sm">{profile.email}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-muted-foreground text-sm">{user.email}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setChangeEmailDialogOpen(true)}
+                className="shrink-0 gap-2"
+              >
+                <Mail className="h-4 w-4" />
+                Cambiar correo electrónico
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -378,7 +387,7 @@ export default function AccountPage() {
                 <p>
                   Escribe tu correo electrónico{" "}
                   <span className="text-foreground font-semibold">
-                    {profile?.email ?? ""}
+                    {user?.email ?? ""}
                   </span>{" "}
                   para confirmar la eliminación.
                 </p>
@@ -426,6 +435,73 @@ export default function AccountPage() {
                   {deleteForm.formState.isSubmitting
                     ? "Eliminando..."
                     : "Eliminar cuenta"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={changeEmailDialogOpen}
+        onOpenChange={(open) => {
+          setChangeEmailDialogOpen(open);
+          if (!open) changeEmailForm.reset();
+        }}
+      >
+        <DialogContent
+          className="sm:max-w-md"
+          onPointerDownOutside={(e) =>
+            changeEmailForm.formState.isSubmitting && e.preventDefault()
+          }
+        >
+          <DialogHeader>
+            <DialogTitle>Cambiar correo electrónico</DialogTitle>
+            <DialogDescription>
+              Introduce el nuevo correo. Recibirás un enlace de confirmación; el
+              cambio se aplicará al hacer clic en él.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...changeEmailForm}>
+            <form
+              onSubmit={changeEmailForm.handleSubmit(onChangeEmail)}
+              className="space-y-4"
+            >
+              <FormField
+                control={changeEmailForm.control}
+                name="new_email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nuevo correo electrónico</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="nuevo@email.com"
+                        autoComplete="email"
+                        disabled={changeEmailForm.formState.isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setChangeEmailDialogOpen(false)}
+                  disabled={changeEmailForm.formState.isSubmitting}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={changeEmailForm.formState.isSubmitting}
+                >
+                  {changeEmailForm.formState.isSubmitting
+                    ? "Enviando..."
+                    : "Enviar enlace de confirmación"}
                 </Button>
               </DialogFooter>
             </form>
