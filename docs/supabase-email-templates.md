@@ -76,6 +76,36 @@ No modificar los nombres de estas variables; solo se puede cambiar el texto y el
 - Tipografía: Montserrat (en cliente de correo puede fallback a system fonts).
 - Pie: “Veta — Gestión de proyectos de diseño interior.” + enlace a `{{ .SiteURL }}`.
 
+## Error 500 "Error sending confirmation email" en producción
+
+Si en producción al pedir el magic link (o cualquier email de Auth) recibes **500** con mensaje **"Error sending confirmation email"**, el fallo está en el **envío de correo** por parte de Supabase, no en tu código.
+
+### Qué hacer
+
+1. **Configurar Custom SMTP** en el proyecto de Supabase:
+   - Dashboard del proyecto → **Authentication** → **SMTP Settings** (o **Project Settings** → **Auth** → **SMTP**).
+   - Activar "Custom SMTP" y rellenar:
+     - **Host / Port**: p. ej. `smtp.resend.com` puerto `465` (o el que indique tu proveedor).
+     - **User**: normalmente tu API key o usuario del proveedor.
+     - **Password**: API key o contraseña de aplicación (en Gmail, contraseña de aplicación, no la contraseña normal).
+     - **Sender email**: debe ser un correo **verificado** en tu proveedor (Resend, SendGrid, Mailgun, SES, etc.).
+     - **Sender name**: p. ej. "Veta".
+
+2. **Comprobar límites del proveedor**:
+   - AWS SES en sandbox solo envía a direcciones verificadas.
+   - Resend/SendGrid requieren dominio o remitente verificados.
+
+3. **URLs de producción**:
+   - **Site URL**: debe ser la URL pública de tu app (p. ej. `https://tu-dominio.com`).
+   - **Redirect URLs**: incluir `https://tu-dominio.com/auth/callback` y variantes con `?*` si las usas.
+
+4. **Errores frecuentes**:
+   - Intercambiar "SMTP admin email" y "SMTP user".
+   - Espacios en blanco en la URL o en la API key.
+   - Usar puerto 25 (suele dar timeout); preferir 587 o 465 según documentación del proveedor.
+
+Referencia: [Configure a Custom SMTP (Supabase)](https://supabase.com/docs/guides/auth/auth-smtp).
+
 ## Referencias
 
 - [Email Templates (Supabase Docs)](https://supabase.com/docs/guides/auth/auth-email-templates)

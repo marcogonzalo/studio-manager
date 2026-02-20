@@ -151,6 +151,26 @@ describe("POST /api/auth/magic-link", () => {
     expect(data.error).toBe("Email rate limit exceeded");
   });
 
+  it("returns 503 and friendly message when Supabase fails with email delivery error", async () => {
+    mockSignInWithOtp.mockResolvedValue({
+      error: {
+        message: "Error sending confirmation email",
+        status: 500,
+      },
+    });
+
+    const request = new NextRequest("http://localhost/api/auth/magic-link", {
+      method: "POST",
+      body: JSON.stringify({ email: "test@example.com" }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(data.error).toContain("No pudimos enviar el correo");
+  });
+
   it("returns 500 on unexpected errors", async () => {
     const request = new NextRequest("http://localhost/api/auth/magic-link", {
       method: "POST",
