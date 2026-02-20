@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -142,7 +143,10 @@ export function SpaceImagesDialog({
                   onUploadError={(msg) => toast.error(msg)}
                 />
               ) : (
-                <p className="text-muted-foreground text-sm">Cargando…</p>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
               )}
             </TabsContent>
           </Tabs>

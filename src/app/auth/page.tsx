@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
@@ -377,8 +378,13 @@ export default function AuthPage() {
   return (
     <Suspense
       fallback={
-        <div className="bg-background flex min-h-screen items-center justify-center">
-          <div className="text-muted-foreground animate-pulse">Cargando...</div>
+        <div className="bg-background flex min-h-screen items-center justify-center p-4">
+          <div className="w-full max-w-sm space-y-4">
+            <Skeleton className="mx-auto h-10 w-32" />
+            <Skeleton className="h-12 w-full rounded-md" />
+            <Skeleton className="h-12 w-full rounded-md" />
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
         </div>
       }
     >

@@ -275,13 +275,13 @@ export default function DashboardPage() {
           <div className="flex items-start gap-3">
             <LayoutDashboard className="text-primary mt-1 h-8 w-8" />
             <div>
-              <h2 className="text-foreground text-3xl font-bold tracking-tight">
+              <h1 className="text-foreground text-3xl font-bold tracking-tight">
                 Hola,{" "}
                 {getFirstName(
                   profile?.full_name ??
                     (user?.user_metadata?.full_name as string | undefined)
                 )}
-              </h2>
+              </h1>
               <p className="text-muted-foreground mt-1">
                 Aquí tienes un resumen de tu estudio de diseño.
               </p>
@@ -404,13 +404,17 @@ export default function DashboardPage() {
           <Card className="border-none shadow-md">
             <CardHeader>
               <CardTitle>Proyectos Recientes</CardTitle>
-              <CardDescription>
-                {loading
-                  ? "Cargando..."
-                  : stats.recentProjects.length > 0
+              {loading ? (
+                <div className="text-muted-foreground text-sm">
+                  <Skeleton className="h-4 w-48" />
+                </div>
+              ) : (
+                <CardDescription>
+                  {stats.recentProjects.length > 0
                     ? `${stats.recentProjects.length} proyectos recientes`
                     : "No tienes proyectos recientes."}
-              </CardDescription>
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent>
               {loading ? (

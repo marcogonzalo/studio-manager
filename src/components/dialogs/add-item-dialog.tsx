@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useEffect, useState, useMemo } from "react";
@@ -786,9 +787,10 @@ export function AddItemDialog({
                                 </p>
                               )
                             ) : (
-                              <p className="text-muted-foreground mt-2 text-sm">
-                                Cargando…
-                              </p>
+                              <div className="mt-2 space-y-2">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-2/3" />
+                              </div>
                             )}
                           </TabsContent>
                         </Tabs>

@@ -45,8 +45,27 @@ import {
 } from "@/components/ui/tooltip";
 import { useState } from "react";
 import { ThemeToggleSimple } from "@/components/theme-toggle-simple";
+import { PageLoading } from "@/components/loaders/page-loading";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getDisplayName } from "@/lib/display-name";
+
+function AppLayoutSkeleton() {
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-8 w-8 rounded-lg" />
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <Skeleton className="h-10 w-10 rounded-full" />
+      </div>
+      <div className="mt-8 flex-1">
+        <PageLoading variant="default" />
+      </div>
+    </>
+  );
+}
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -338,8 +357,8 @@ export default function AppLayoutClient({
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-muted-foreground animate-pulse">Cargando...</div>
+      <div className="flex h-screen flex-col p-6">
+        <AppLayoutSkeleton />
       </div>
     );
   }
@@ -379,7 +398,11 @@ export default function AppLayoutClient({
               <VetaLogo variant="icon" height={20} width={28} />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="border-border w-64 border-r p-0">
+          <SheetContent
+            side="left"
+            className="border-border w-64 border-r p-0"
+            closeLabel="Cerrar menú"
+          >
             <SheetHeader className="sr-only">
               <SheetTitle>Menú de Navegación</SheetTitle>
               <SheetDescription>

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocumentFileUpload } from "@/components/document-file-upload";
 import { toast } from "sonner";
@@ -197,9 +198,10 @@ export function DocumentDialog({
                           className="mt-2"
                         />
                       ) : (
-                        <p className="text-muted-foreground mt-2 text-sm">
-                          Cargando…
-                        </p>
+                        <div className="mt-2 space-y-2">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-2/3" />
+                        </div>
                       )}
                     </TabsContent>
                   </Tabs>
