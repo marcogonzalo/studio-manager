@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { AuthProvider } from "@/components/auth-provider";
 import AppLayoutClient from "@/components/layouts/app-layout";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   robots: {
@@ -9,7 +11,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    redirect("/auth?redirect=" + encodeURIComponent("/dashboard"));
+  }
   return (
     <AuthProvider>
       <AppLayoutClient>{children}</AppLayoutClient>

@@ -61,9 +61,23 @@ const PLAN_DISPLAY_NAMES: Record<string, string> = {
   STUDIO: "Studio",
 };
 
+function getDisplayName(
+  user: { user_metadata?: { full_name?: string }; email?: string } | null,
+  profileFullName: string | null
+): string {
+  const fullName =
+    (profileFullName?.trim() || user?.user_metadata?.full_name?.trim()) ?? "";
+  const first = fullName.split(/\s+/)[0];
+  if (first) return first;
+  const beforeAt = (user?.email ?? "").trim().split("@")[0];
+  if (beforeAt) return beforeAt;
+  return "Usuario";
+}
+
 function SidebarContent({
   collapsed = false,
   user,
+  profileFullName,
   effectivePlan,
   signOut,
   pathname,
@@ -73,6 +87,7 @@ function SidebarContent({
 }: {
   collapsed?: boolean;
   user: ReturnType<typeof useAuth>["user"];
+  profileFullName: ReturnType<typeof useAuth>["profileFullName"];
   effectivePlan: ReturnType<typeof useAuth>["effectivePlan"];
   signOut: () => Promise<void>;
   pathname: string;
@@ -201,7 +216,7 @@ function SidebarContent({
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium">
-                        {user?.user_metadata?.full_name || "Usuario"}
+                        {getDisplayName(user, profileFullName)}
                       </p>
                       <p className="text-muted-foreground text-xs">
                         {user?.email}
@@ -216,9 +231,9 @@ function SidebarContent({
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/settings">
+                    <Link href="/customization">
                       <SlidersHorizontal className="mr-2 h-4 w-4" />
-                      Configuración
+                      Personalización
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -243,7 +258,7 @@ function SidebarContent({
               </DropdownMenu>
             </TooltipTrigger>
             <TooltipContent side="right">
-              {user?.user_metadata?.full_name || "Usuario"}
+              {getDisplayName(user, profileFullName)}
             </TooltipContent>
           </Tooltip>
         ) : (
@@ -256,7 +271,7 @@ function SidebarContent({
             </Avatar>
             <div className="flex-1 overflow-hidden">
               <p className="text-foreground truncate text-sm font-medium">
-                {user?.user_metadata?.full_name || "Usuario"}
+                {getDisplayName(user, profileFullName)}
               </p>
               <p className="text-muted-foreground truncate text-xs">
                 {user?.email}
@@ -268,7 +283,7 @@ function SidebarContent({
                   variant="ghost"
                   size="icon"
                   className="hover:bg-background text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer"
-                  aria-label="Cuenta y configuración"
+                  aria-label="Cuenta y personalización"
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
@@ -291,9 +306,9 @@ function SidebarContent({
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">
+                  <Link href="/customization">
                     <SlidersHorizontal className="mr-2 h-4 w-4" />
-                    Configuración
+                    Personalización
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -328,7 +343,7 @@ export default function AppLayoutClient({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, effectivePlan, signOut, loading } = useAuth();
+  const { user, profileFullName, effectivePlan, signOut, loading } = useAuth();
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -354,6 +369,7 @@ export default function AppLayoutClient({
           <SidebarContent
             collapsed={isCollapsed}
             user={user}
+            profileFullName={profileFullName}
             effectivePlan={effectivePlan}
             signOut={signOut}
             pathname={pathname}
@@ -385,6 +401,7 @@ export default function AppLayoutClient({
             <SidebarContent
               collapsed={false}
               user={user}
+              profileFullName={profileFullName}
               effectivePlan={effectivePlan}
               signOut={signOut}
               pathname={pathname}

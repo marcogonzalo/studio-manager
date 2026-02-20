@@ -379,3 +379,103 @@ export async function deleteProductImage(imageUrl: string): Promise<void> {
     );
   }
 }
+
+/** Max file count per B2 list request */
+const B2_LIST_PAGE_SIZE = 1000;
+
+/**
+ * Lists all file names in B2 under a prefix, with pagination.
+ */
+async function b2ListFileNames(
+  auth: B2AuthResponse,
+  bucketId: string,
+  prefix: string,
+  startFileName: string | null
+): Promise<{
+  files: { fileId: string; fileName: string }[];
+  nextFileName: string | null;
+}> {
+  const { apiUrl } = getApiUrls(auth);
+  const res = await fetch(`${apiUrl}/b2api/v2/b2_list_file_names`, {
+    method: "POST",
+    headers: {
+      Authorization: auth.authorizationToken,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      bucketId,
+      prefix,
+      startFileName,
+      maxFileCount: B2_LIST_PAGE_SIZE,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      (err as { message?: string }).message ||
+        `B2 list file names failed: ${res.status} ${res.statusText}`
+    );
+  }
+
+  const data = (await res.json()) as {
+    files?: { fileId: string; fileName: string }[];
+    nextFileName?: string | null;
+  };
+  return {
+    files: data.files ?? [],
+    nextFileName: data.nextFileName ?? null,
+  };
+}
+
+/**
+ * Deletes all files in B2 under assets/{userId}/ (catalog and project images/documents).
+ * Used when deleting a user account.
+ */
+export async function deleteAllFilesForUser(userId: string): Promise<void> {
+  const auth = await b2Authorize();
+  const bucketId = process.env.B2_BUCKET_ID;
+  if (!bucketId) {
+    throw new Error("B2_BUCKET_ID es requerido");
+  }
+
+  const prefix = `assets/${userId}/`;
+  let startFileName: string | null = null;
+  const { apiUrl } = getApiUrls(auth);
+
+  while (true) {
+    const { files, nextFileName } = await b2ListFileNames(
+      auth,
+      bucketId,
+      prefix,
+      startFileName
+    );
+
+    for (const file of files) {
+      const deleteRes = await fetch(
+        `${apiUrl}/b2api/v2/b2_delete_file_version`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: auth.authorizationToken,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fileId: file.fileId,
+            fileName: file.fileName,
+          }),
+        }
+      );
+      if (!deleteRes.ok) {
+        const err = await deleteRes.json().catch(() => ({}));
+        throw new Error(
+          (err as { message?: string }).message ||
+            `B2 delete file failed: ${deleteRes.status} ${deleteRes.statusText}`
+        );
+      }
+    }
+
+    if (nextFileName == null) break;
+    startFileName = nextFileName;
+  }
+}

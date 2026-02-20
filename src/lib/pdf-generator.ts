@@ -15,7 +15,8 @@ export async function generateProjectPDF(
   items: ProjectItem[],
   budgetLines: ProjectBudgetLine[],
   taxRate: number = 0,
-  architectName?: string
+  architectName?: string,
+  architectEmail?: string
 ) {
   // Dynamic import to avoid Vite resolution issues
   const { pdf } = await import("@react-pdf/renderer");
@@ -29,6 +30,7 @@ export async function generateProjectPDF(
     budgetLines,
     taxRate,
     architectName,
+    architectEmail,
   });
 
   // Type assertion to satisfy react-pdf's type requirements

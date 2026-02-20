@@ -16,6 +16,18 @@ const mockRpc = vi.hoisted(() =>
   })
 );
 
+const mockFrom = vi.hoisted(() =>
+  vi.fn().mockReturnValue({
+    select: vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        single: vi
+          .fn()
+          .mockResolvedValue({ data: { full_name: null }, error: null }),
+      }),
+    }),
+  })
+);
+
 vi.mock("@/lib/supabase", () => {
   const auth = {
     getSession: mockGetSession,
@@ -23,8 +35,8 @@ vi.mock("@/lib/supabase", () => {
     signOut: mockSignOut,
   };
   return {
-    supabase: { auth, rpc: mockRpc },
-    getSupabaseClient: () => ({ auth, rpc: mockRpc }),
+    supabase: { auth, rpc: mockRpc, from: mockFrom },
+    getSupabaseClient: () => ({ auth, rpc: mockRpc, from: mockFrom }),
   };
 });
 

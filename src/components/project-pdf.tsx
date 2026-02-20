@@ -284,6 +284,7 @@ interface ProjectPDFProps {
   budgetLines: ProjectBudgetLine[];
   taxRate?: number;
   architectName?: string;
+  architectEmail?: string;
 }
 
 // Helper function to get category label
@@ -305,6 +306,7 @@ export function ProjectPDF({
   budgetLines,
   taxRate = 0,
   architectName,
+  architectEmail,
 }: ProjectPDFProps) {
   // Filter out excluded items
   const includedItems = items.filter((item) => !item.is_excluded);
@@ -403,7 +405,7 @@ export function ProjectPDF({
             })}
           </Text>
 
-          {architectName && (
+          {(architectName || architectEmail) && (
             <View
               style={{
                 marginTop: 16,
@@ -413,9 +415,16 @@ export function ProjectPDF({
                 borderTopStyle: "solid",
               }}
             >
-              <Text style={[styles.subtitle, { fontWeight: "bold" }]}>
-                Arquitecto/a: {architectName}
-              </Text>
+              {architectName && (
+                <Text style={[styles.subtitle, { fontWeight: "bold" }]}>
+                  Arquitecto/a: {architectName}
+                </Text>
+              )}
+              {architectEmail && (
+                <Text style={[styles.subtitle, { marginTop: 4 }]}>
+                  {architectEmail}
+                </Text>
+              )}
             </View>
           )}
         </View>

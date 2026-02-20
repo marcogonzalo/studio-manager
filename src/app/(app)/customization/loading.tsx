@@ -1,5 +1,5 @@
 import { PageLoading } from "@/components/loaders/page-loading";
 
-export default function SettingsLoading() {
+export default function CustomizationLoading() {
   return <PageLoading variant="form" />;
 }

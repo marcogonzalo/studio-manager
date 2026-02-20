@@ -145,6 +145,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  button,
+  a {
+    @apply cursor-pointer;
+  }
 }
 
 @layer utilities {
@@ -231,4 +235,29 @@
   100% {
     background-position: -200% 0;
   }
+}
+
+/* Collapsible: open/close animation using Radix content height (runs every toggle) */
+@keyframes collapsible-slide-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+}
+@keyframes collapsible-slide-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+.animate-collapsible-content[data-state="open"] {
+  animation: collapsible-slide-down 300ms ease-out;
+}
+.animate-collapsible-content[data-state="closed"] {
+  animation: collapsible-slide-up 300ms ease-out;
 }

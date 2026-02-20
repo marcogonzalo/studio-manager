@@ -1,31 +1,73 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
-import { Home, ArrowLeft } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Home, Construction, ArrowLeft } from "lucide-react";
 
 export default function NotFound() {
+  const { user } = useAuth();
+  const router = useRouter();
+
+  const handleGoHome = () => {
+    router.push(user ? "/dashboard" : "/");
+  };
+
   return (
-    <div className="bg-background flex min-h-screen flex-col items-center justify-center">
-      <div className="mx-auto max-w-md text-center">
-        <h1 className="text-primary text-9xl font-bold">404</h1>
-        <h2 className="mt-4 text-2xl font-semibold">Página no encontrada</h2>
-        <p className="text-muted-foreground mt-2">
-          Lo sentimos, la página que buscas no existe o ha sido movida.
-        </p>
-        <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <Button asChild>
-            <Link href="/">
-              <Home className="mr-2 h-4 w-4" />
-              Ir al Inicio
-            </Link>
+    <div className="bg-background from-primary/5 via-background to-primary/5 flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
+      <Card className="border-border w-full max-w-2xl border-2 border-dashed">
+        <CardHeader className="space-y-4 pb-4 text-center">
+          <div className="bg-primary/10 mx-auto flex h-24 w-24 items-center justify-center rounded-full">
+            <Construction className="text-primary h-12 w-12" />
+          </div>
+          <div>
+            <CardTitle className="text-foreground mb-2 text-6xl font-bold">
+              404
+            </CardTitle>
+            <CardDescription className="text-muted-foreground text-xl font-semibold">
+              Parece que esta vista no estaba en los planos originales. 😅
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4 text-center">
+          <p className="text-muted-foreground text-base">
+            Nuestro arquitecto digital no encontró los planos para construir
+            esta ruta.
+          </p>
+          <p className="text-muted-foreground text-base">
+            Por favor, intenta volver a la página anterior o ir al inicio.
+          </p>
+          <div className="space-y-2 pt-4">
+            <p className="text-muted-foreground text-sm italic">
+              En arquitectura, cada error es una lección. En la vida, una
+              oportunidad de mejorar.
+            </p>
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col justify-center gap-3 pt-4 sm:flex-row">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => router.back()}
+            className="w-full sm:w-auto"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Volver atrás
           </Button>
-          <Button variant="outline" asChild>
-            <Link href="/dashboard">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Dashboard
-            </Link>
+          <Button onClick={handleGoHome} size="lg" className="w-full sm:w-auto">
+            <Home className="mr-2 h-4 w-4" />
+            {user ? "Volver al Dashboard" : "Ir al Inicio"}
           </Button>
-        </div>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
