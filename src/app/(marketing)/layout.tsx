@@ -14,7 +14,12 @@ export const metadata: Metadata = {
 
 function Footer() {
   return (
-    <footer className="border-border bg-muted/30 border-t">
+    <footer className="border-border bg-muted/30 relative border-t">
+      {/* Línea decorativa – acento primary sobre el footer */}
+      <div
+        className="via-primary/40 h-1 w-full bg-gradient-to-r from-transparent to-transparent"
+        aria-hidden
+      />
       <div className="container mx-auto max-w-7xl px-4 py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
