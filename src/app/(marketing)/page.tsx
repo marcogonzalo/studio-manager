@@ -171,10 +171,11 @@ export default function HomePage() {
       <JsonLd data={faqPageJsonLd(homeFaqs, baseUrl)} />
 
       {/* Hero Section – momento hero: badge → título → subtítulo → CTAs con delays escalonados */}
-      <section className="relative overflow-hidden py-20 md:py-28">
+      <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-28">
         {/* Background effects */}
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
         <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
+        <div className="noise-overlay" aria-hidden />
 
         <div className="relative container mx-auto max-w-7xl px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
@@ -245,6 +246,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Franja decorativa (como la del footer) entre hero y contenido */}
+      <div
+        className="via-primary/40 h-1 w-full bg-gradient-to-r from-transparent to-transparent"
+        aria-hidden
+      />
 
       {/* Stats Section */}
       <section className="border-border/40 bg-muted/20 border-y py-16">
@@ -436,6 +443,7 @@ export default function HomePage() {
         <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent" />
         <div className="bg-primary/10 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
         <div className="bg-primary/5 absolute bottom-0 left-0 h-72 w-72 -translate-x-1/4 translate-y-1/3 rounded-full blur-3xl" />
+        <div className="noise-overlay" aria-hidden />
 
         <div className="relative container mx-auto max-w-7xl px-4">
           <AnimatedSection
