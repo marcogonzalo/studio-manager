@@ -57,6 +57,41 @@ export async function POST(request: Request) {
       );
     }
 
+    // ✅ SECURITY: Verify that the project belongs to the user
+    const { data: project, error: projectError } = await supabase
+      .from("projects")
+      .select("id, user_id")
+      .eq("id", projectId.trim())
+      .single();
+
+    if (projectError || !project) {
+      return NextResponse.json(
+        { error: "Proyecto no encontrado" },
+        { status: 404 }
+      );
+    }
+
+    if (project.user_id !== user.id) {
+      return NextResponse.json(
+        { error: "No autorizado para subir imágenes a este proyecto" },
+        { status: 403 }
+      );
+    }
+
+    // ✅ SECURITY: Verify that the space belongs to the project
+    const { data: space, error: spaceError } = await supabase
+      .from("spaces")
+      .select("id, project_id")
+      .eq("id", spaceId.trim())
+      .single();
+
+    if (spaceError || !space || space.project_id !== projectId.trim()) {
+      return NextResponse.json(
+        { error: "Espacio no encontrado o no pertenece al proyecto" },
+        { status: 404 }
+      );
+    }
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: "El archivo no puede superar 5MB" },

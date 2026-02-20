@@ -56,6 +56,35 @@ export async function DELETE(request: Request) {
       );
     }
 
+    // ✅ SECURITY: Verify that the document belongs to the user
+    // Check if document exists in project_documents and belongs to user's project
+    const { data: document, error: docError } = await supabase
+      .from("project_documents")
+      .select("id, project_id, projects!inner(user_id)")
+      .eq("file_url", url.trim())
+      .single();
+
+    if (docError || !document) {
+      return NextResponse.json(
+        { error: "Documento no encontrado" },
+        { status: 404 }
+      );
+    }
+
+    // Get project owner to verify ownership
+    const { data: project, error: projectError } = await supabase
+      .from("projects")
+      .select("user_id")
+      .eq("id", document.project_id)
+      .single();
+
+    if (projectError || !project || project.user_id !== user.id) {
+      return NextResponse.json(
+        { error: "No autorizado para eliminar este documento" },
+        { status: 403 }
+      );
+    }
+
     await deleteProductImage(url);
 
     return NextResponse.json({ ok: true });
@@ -103,6 +132,27 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Faltan archivo, documentId o projectId" },
         { status: 400 }
+      );
+    }
+
+    // ✅ SECURITY: Verify that the project belongs to the user
+    const { data: project, error: projectError } = await supabase
+      .from("projects")
+      .select("id, user_id")
+      .eq("id", projectId.trim())
+      .single();
+
+    if (projectError || !project) {
+      return NextResponse.json(
+        { error: "Proyecto no encontrado" },
+        { status: 404 }
+      );
+    }
+
+    if (project.user_id !== user.id) {
+      return NextResponse.json(
+        { error: "No autorizado para subir documentos a este proyecto" },
+        { status: 403 }
       );
     }
 
