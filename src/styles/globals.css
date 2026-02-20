@@ -89,7 +89,9 @@
     --input: oklch(0.85 0.02 100);
 
     --chart-1: oklch(0.65 0.08 140); /* Primary sage */
-    --chart-2: oklch(0.75 0.055 75); /* Brand secondary – golden tan from logo */
+    --chart-2: oklch(
+      0.75 0.055 75
+    ); /* Brand secondary – golden tan from logo */
     --chart-3: oklch(0.8 0.08 100);
     --chart-4: oklch(0.7 0.08 180);
     --chart-5: oklch(0.85 0.08 50);
@@ -160,6 +162,9 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground;

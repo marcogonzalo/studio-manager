@@ -3,6 +3,7 @@ import Link from "next/link";
 import { VetaLogo } from "@/components/veta-logo";
 import { MarketingHeader } from "@/components/layouts/marketing-header";
 import { RedirectAuthenticatedToDashboard } from "@/components/redirect-authenticated-to-dashboard";
+import { AnchorToHash } from "@/components/smooth-scroll-link";
 
 export const metadata: Metadata = {
   robots: {
@@ -30,12 +31,12 @@ function Footer() {
             <h3 className="mb-3 font-semibold">Producto</h3>
             <ul className="text-muted-foreground space-y-2 text-sm">
               <li>
-                <Link
+                <AnchorToHash
                   href="/#features"
                   className="hover:text-foreground transition-colors"
                 >
                   Características
-                </Link>
+                </AnchorToHash>
               </li>
               <li>
                 <Link

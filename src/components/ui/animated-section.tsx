@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { motion, useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 interface AnimatedSectionProps {
   children: React.ReactNode;
@@ -38,6 +39,26 @@ const motionByTag = {
   typeof motion.div
 >;
 
+function useInViewOnLoad(ref: React.RefObject<HTMLElement | null>) {
+  const [inViewOnLoad, setInViewOnLoad] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => {
+      const rect = el.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      if (rect.top < viewportHeight && rect.bottom > 0) {
+        setInViewOnLoad(true);
+      }
+    };
+    check();
+    requestAnimationFrame(check);
+    const t = setTimeout(check, 100);
+    return () => clearTimeout(t);
+  }, [ref]);
+  return inViewOnLoad;
+}
+
 export function AnimatedSection({
   children,
   className,
@@ -51,6 +72,8 @@ export function AnimatedSection({
   as = "div",
 }: AnimatedSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const inViewOnLoad = useInViewOnLoad(ref);
   const isInViewObserver = useInView(ref, {
     once,
     amount: threshold,
@@ -61,13 +84,16 @@ export function AnimatedSection({
   useEffect(() => {
     setMounted(true);
   }, []);
-  const isInView = triggerOnMount ? mounted : isInViewObserver;
+  const isInView = triggerOnMount ? mounted : isInViewObserver || inViewOnLoad;
+
+  const effectiveDuration = reducedMotion ? 0 : duration;
+  const effectiveDistance = reducedMotion ? 0 : distance;
 
   const directionOffset = {
-    up: { x: 0, y: distance },
-    down: { x: 0, y: -distance },
-    left: { x: distance, y: 0 },
-    right: { x: -distance, y: 0 },
+    up: { x: 0, y: effectiveDistance },
+    down: { x: 0, y: -effectiveDistance },
+    left: { x: effectiveDistance, y: 0 },
+    right: { x: -effectiveDistance, y: 0 },
     none: { x: 0, y: 0 },
   };
 
@@ -92,8 +118,8 @@ export function AnimatedSection({
             }
       }
       transition={{
-        duration,
-        delay,
+        duration: effectiveDuration,
+        delay: reducedMotion ? 0 : delay,
         ease: [0.25, 0.4, 0.25, 1],
       }}
     >
@@ -123,6 +149,8 @@ export function StaggerContainer({
   triggerOnMount = true,
 }: StaggerContainerProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const reducedMotion = useReducedMotion();
+  const inViewOnLoad = useInViewOnLoad(ref);
   const isInViewObserver = useInView(ref, {
     once,
     amount: threshold,
@@ -133,7 +161,8 @@ export function StaggerContainer({
   useEffect(() => {
     setMounted(true);
   }, []);
-  const isInView = triggerOnMount ? mounted : isInViewObserver;
+  const isInView = triggerOnMount ? mounted : isInViewObserver || inViewOnLoad;
+  const effectiveStaggerDelay = reducedMotion ? 0 : staggerDelay;
 
   return (
     <motion.div
@@ -145,7 +174,7 @@ export function StaggerContainer({
         hidden: {},
         visible: {
           transition: {
-            staggerChildren: staggerDelay,
+            staggerChildren: effectiveStaggerDelay,
           },
         },
       }}
@@ -166,11 +195,13 @@ export function StaggerItem({
   direction?: "up" | "down" | "left" | "right";
   distance?: number;
 }) {
+  const reducedMotion = useReducedMotion();
+  const d = reducedMotion ? 0 : distance;
   const directionOffset = {
-    up: { x: 0, y: distance },
-    down: { x: 0, y: -distance },
-    left: { x: distance, y: 0 },
-    right: { x: -distance, y: 0 },
+    up: { x: 0, y: d },
+    down: { x: 0, y: -d },
+    left: { x: d, y: 0 },
+    right: { x: -d, y: 0 },
   };
 
   return (
@@ -187,7 +218,7 @@ export function StaggerItem({
           x: 0,
           y: 0,
           transition: {
-            duration: 0.5,
+            duration: reducedMotion ? 0 : 0.5,
             ease: [0.25, 0.4, 0.25, 1],
           },
         },

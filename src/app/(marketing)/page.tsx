@@ -31,6 +31,7 @@ import {
 import { BenefitsList } from "./benefits-list";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import { ProductMockup } from "@/components/product-mockup";
+import { SmoothScrollLink } from "@/components/smooth-scroll-link";
 
 export const metadata: Metadata = {
   title: "Inicio",
@@ -169,7 +170,7 @@ export default function HomePage() {
     <>
       <JsonLd data={faqPageJsonLd(homeFaqs, baseUrl)} />
 
-      {/* Hero Section */}
+      {/* Hero Section – momento hero: badge → título → subtítulo → CTAs con delays escalonados */}
       <section className="relative overflow-hidden py-20 md:py-28">
         {/* Background effects */}
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
@@ -179,21 +180,21 @@ export default function HomePage() {
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Left: Copy */}
             <div className="text-center lg:text-left">
-              <AnimatedSection delay={0} duration={0.5}>
+              <AnimatedSection delay={0} duration={0.5} triggerOnMount>
                 <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
                   <Leaf className="h-4 w-4" />
                   <span>Diseñado para profesionales del diseño interior</span>
                 </div>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.1} duration={0.6}>
+              <AnimatedSection delay={0.1} duration={0.5} triggerOnMount>
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
                   Tus proyectos de interiorismo{" "}
                   <strong className="text-primary">sin complicaciones</strong>
                 </h1>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.2} duration={0.6}>
+              <AnimatedSection delay={0.2} duration={0.5} triggerOnMount>
                 <p className="text-muted-foreground mt-6 text-lg md:text-xl">
                   La plataforma todo-en-uno para arquitectos y diseñadores.
                   Administra proyectos, clientes, proveedores y presupuestos
@@ -201,7 +202,7 @@ export default function HomePage() {
                 </p>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.3} duration={0.5}>
+              <AnimatedSection delay={0.3} duration={0.5} triggerOnMount>
                 <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
                   <Button
                     size="lg"
@@ -219,7 +220,9 @@ export default function HomePage() {
                     asChild
                     className="w-full sm:w-auto"
                   >
-                    <Link href="#features">Ver Características</Link>
+                    <SmoothScrollLink href="#features">
+                      Ver Características
+                    </SmoothScrollLink>
                   </Button>
                 </div>
 
@@ -231,7 +234,12 @@ export default function HomePage() {
             </div>
 
             {/* Product Mockup: below on small screens, right on lg+ */}
-            <AnimatedSection direction="right" delay={0.4} duration={0.8}>
+            <AnimatedSection
+              direction="right"
+              delay={0.4}
+              duration={0.6}
+              triggerOnMount
+            >
               <ProductMockup />
             </AnimatedSection>
           </div>
@@ -292,10 +300,10 @@ export default function HomePage() {
           >
             {features.map((feature) => (
               <StaggerItem key={feature.title}>
-                <Card className="border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                <Card className="group/card border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                   <CardHeader>
-                    <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110">
-                      <feature.icon className="text-primary h-6 w-6" />
+                    <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover/card:scale-110">
+                      <feature.icon className="text-muted-foreground group-hover/card:text-primary h-6 w-6 transition-colors duration-300" />
                     </div>
                     <CardTitle>{feature.title}</CardTitle>
                   </CardHeader>
