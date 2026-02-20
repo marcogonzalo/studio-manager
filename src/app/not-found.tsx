@@ -22,15 +22,18 @@ export default function NotFound() {
   };
 
   return (
-    <div className="bg-background from-primary/5 via-background to-primary/5 flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
+    <div className="not-found-pattern bg-background from-primary/5 via-background to-primary/5 relative flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
       <Card className="border-border w-full max-w-2xl border-2 border-dashed">
         <CardHeader className="space-y-4 pb-4 text-center">
           <div className="bg-primary/10 mx-auto flex h-24 w-24 items-center justify-center rounded-full">
-            <Construction className="text-primary h-12 w-12" />
+            <Construction className="text-primary h-12 w-12" aria-hidden />
           </div>
           <div>
-            <CardTitle className="text-foreground mb-2 text-6xl font-bold">
-              404
+            <p className="text-muted-foreground mb-1 text-sm font-medium">
+              Página no encontrada
+            </p>
+            <CardTitle className="text-foreground mb-2 pt-8 pb-8 text-6xl font-bold">
+              Error 404
             </CardTitle>
             <CardDescription className="text-muted-foreground text-xl font-semibold">
               Parece que esta vista no estaba en los planos originales. 😅
@@ -38,10 +41,6 @@ export default function NotFound() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4 text-center">
-          <p className="text-muted-foreground text-base">
-            Nuestro arquitecto digital no encontró los planos para construir
-            esta ruta.
-          </p>
           <p className="text-muted-foreground text-base">
             Por favor, intenta volver a la página anterior o ir al inicio.
           </p>
