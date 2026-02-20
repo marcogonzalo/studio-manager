@@ -40,6 +40,11 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  /* Brand accents from logo (sage + golden tan + cream) */
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-secondary-foreground: var(--brand-secondary-foreground);
+  --color-brand-tertiary: var(--brand-tertiary);
+  --color-brand-tertiary-foreground: var(--brand-tertiary-foreground);
 }
 
 /* ============================================
@@ -83,8 +88,8 @@
     --border: oklch(0.85 0.02 100);
     --input: oklch(0.85 0.02 100);
 
-    --chart-1: oklch(0.65 0.08 140);
-    --chart-2: oklch(0.75 0.1 80); /* Terra cottaish */
+    --chart-1: oklch(0.65 0.08 140); /* Primary sage */
+    --chart-2: oklch(0.75 0.055 75); /* Brand secondary – golden tan from logo */
     --chart-3: oklch(0.8 0.08 100);
     --chart-4: oklch(0.7 0.08 180);
     --chart-5: oklch(0.85 0.08 50);
@@ -95,6 +100,13 @@
     --sidebar-accent-foreground: oklch(0.25 0.02 100);
     --sidebar-border: oklch(0.85 0.02 100);
     --sidebar-ring: oklch(0.65 0.08 140);
+
+    /* Brand secondary (golden tan from logo #C7AE88) – CTAs secundarios, acentos */
+    --brand-secondary: oklch(0.75 0.055 75);
+    --brand-secondary-foreground: oklch(0.25 0.02 75);
+    /* Brand tertiary (cream beige from logo #E8DFCD) – fondos sutiles, highlights */
+    --brand-tertiary: oklch(0.89 0.025 85);
+    --brand-tertiary-foreground: oklch(0.28 0.03 85);
   }
 
   /* DARK MODE - overrides via @variant (requires parent selector) */
@@ -123,7 +135,7 @@
       --input: oklch(0.4 0.025 90);
 
       --chart-1: oklch(0.65 0.08 140);
-      --chart-2: oklch(0.75 0.1 80);
+      --chart-2: oklch(0.78 0.06 75); /* Brand secondary dark */
       --chart-3: oklch(0.8 0.08 100);
       --chart-4: oklch(0.7 0.08 180);
       --chart-5: oklch(0.85 0.08 50);
@@ -134,6 +146,13 @@
       --sidebar-accent-foreground: oklch(0.9 0.02 95);
       --sidebar-border: oklch(0.42 0.025 90);
       --sidebar-ring: oklch(0.65 0.08 140);
+
+      /* Brand secondary – algo más claro en dark para contraste */
+      --brand-secondary: oklch(0.78 0.06 75);
+      --brand-secondary-foreground: oklch(0.2 0.02 75);
+      /* Brand tertiary – tono crema que funciona sobre fondo oscuro */
+      --brand-tertiary: oklch(0.45 0.04 85);
+      --brand-tertiary-foreground: oklch(0.92 0.02 85);
     }
   }
 }
