@@ -55,3 +55,8 @@ coverage/
 
 # Gimp
 *.xcf
+
+# Cursor
+.agents/*
+.cursor/skills/*
+skills-lock.json
