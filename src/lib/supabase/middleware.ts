@@ -133,8 +133,12 @@ export async function updateSession(request: NextRequest) {
       return res;
     }
 
-    // Redirect unauthenticated users trying to access protected routes
+    // Redirect unauthenticated users trying to access protected routes (pages only)
+    // For /api/* do not redirect: let the request reach the route (avoids POST → redirect → 405 on /auth)
     if (!user) {
+      if (pathname.startsWith("/api/")) {
+        return supabaseResponse;
+      }
       const url = request.nextUrl.clone();
       const redirectTo = encodeURIComponent(
         request.nextUrl.pathname + request.nextUrl.search
