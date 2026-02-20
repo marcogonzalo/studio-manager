@@ -28,9 +28,9 @@ Lista de aspectos identificados en la revisión OWASP que siguen pendientes de i
 | #   | Aspecto                                        | Descripción                                                                                                                                                                   | Referencia OWASP |
 | --- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
 | 6   | **Sanitización de HTML**                       | Revisar uso de `dangerouslySetInnerHTML` (p. ej. en `json-ld.tsx`); usar sanitización (DOMPurify o similar) o alternativas que eviten XSS si el contenido puede ser dinámico. | A03              |
-| 7   | **Verificación de integridad de dependencias** | Usar `npm ci` en CI y documentar; valorar verificación de checksums/ lockfile en el pipeline.                                                                                 | A08, Prioridad 3 |
-| 8   | **Documentación CI/CD**                        | Documentar proceso de despliegue, pruebas de seguridad en pipeline y variables de entorno.                                                                                    | A08, Prioridad 3 |
-| 9   | **Configuración CORS explícita**               | Definir explícitamente orígenes permitidos si se exponen APIs a otros orígenes (actualmente la app es same-origin).                                                           | A05              |
+| 7   | **Verificación de integridad de dependencias** | ~~Usar `npm ci` en CI y documentar~~ **Implementado:** Workflow CI usa `npm ci`, verifica integridad de `package-lock.json`, y ejecuta `npm audit`. Documentación en `docs/ci-cd.md`. | A08, Prioridad 3 |
+| 8   | **Documentación CI/CD**                        | ~~Documentar proceso de despliegue~~ **Implementado:** `docs/ci-cd.md` documenta pipeline CI/CD, verificación de dependencias, y mejores prácticas.                          | A08, Prioridad 3 |
+| 9   | **Configuración CORS explícita**               | ~~Definir explícitamente orígenes permitidos~~ **Implementado:** CORS configurado en `next.config.ts` via `ALLOWED_CORS_ORIGINS` env var. Por defecto same-origin (sin headers CORS). | A05              |
 
 ---
 
@@ -38,6 +38,6 @@ Lista de aspectos identificados en la revisión OWASP que siguen pendientes de i
 
 - **Críticos:** 1
 - **Medios:** 4 (2 implementados: rate limiting, hostnames imágenes)
-- **Bajos:** 4
+- **Bajos:** 4 (3 implementados: integridad dependencias, CI/CD docs, CORS)
 
 **Ya implementado en esta rama:** headers de seguridad HTTP (incl. CSP con `blob:` para vistas previas), validación de ownership en endpoints de upload y DELETE de documentos/imágenes, flujo de producto que evita imágenes huérfanas (subida condicionada a la existencia del producto), **rate limiting** en auth/upload/account/delete, y **restricción de hostnames** en optimización de imágenes (solo Supabase Storage y B2).

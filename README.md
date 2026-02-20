@@ -437,12 +437,28 @@ docker compose exec app sh
 docker compose down -v
 ```
 
+## 🔄 CI/CD
+
+The project includes a CI/CD pipeline configured in `.github/workflows/ci.yml`:
+
+- **Automated testing**: Runs on every push and PR
+- **Dependency verification**: Uses `npm ci` for reproducible builds
+- **Security audits**: Automated vulnerability scanning
+- **Build verification**: Ensures the application builds successfully
+
+See `docs/ci-cd.md` for detailed documentation on the CI/CD process, including:
+- Pipeline configuration and jobs
+- Dependency integrity verification
+- Local development best practices
+- Troubleshooting guide
+
 ## 🤝 Contributing
 
 1. Follow the coding standards defined in `.cursor/rules/`
 2. Write tests for new features
 3. Ensure all security guidelines are met
 4. Use conventional commits
+5. Run `npm ci` and verify tests pass before pushing
 
 ## 📄 License
 

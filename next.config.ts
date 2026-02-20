@@ -4,16 +4,38 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
-  // Allow cross-origin requests from localhost for development
-  allowedDevOrigins: ["http://127.0.0.1:3000", "http://localhost:3000"],
-
   // Security headers to protect against common attacks
   async headers() {
+    // CORS configuration (A05): Explicitly define allowed origins
+    // Currently same-origin only; add origins via ALLOWED_CORS_ORIGINS env var if needed
+    const corsHeaders = [];
+    const allowedOrigins = process.env.ALLOWED_CORS_ORIGINS?.split(",").filter(Boolean) || [];
+    
+    if (allowedOrigins.length > 0) {
+      corsHeaders.push({
+        key: "Access-Control-Allow-Origin",
+        value: allowedOrigins[0], // CORS spec allows only one origin per response
+      });
+      corsHeaders.push({
+        key: "Access-Control-Allow-Methods",
+        value: "GET, POST, PUT, DELETE, OPTIONS",
+      });
+      corsHeaders.push({
+        key: "Access-Control-Allow-Headers",
+        value: "Content-Type, Authorization",
+      });
+      corsHeaders.push({
+        key: "Access-Control-Max-Age",
+        value: "86400", // 24 hours
+      });
+    }
+
     return [
       {
         // Apply to all routes
         source: "/:path*",
         headers: [
+          ...corsHeaders,
           {
             // Prevent clickjacking - don't allow page to be loaded in iframes
             key: "X-Frame-Options",
