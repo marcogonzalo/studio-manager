@@ -11,9 +11,9 @@ describe("customizationFormSchema", () => {
     expect(
       customizationFormSchema.safeParse({ email: "user@example.com" }).success
     ).toBe(true);
-    expect(
-      customizationFormSchema.safeParse({ email: "a@b.co" }).success
-    ).toBe(true);
+    expect(customizationFormSchema.safeParse({ email: "a@b.co" }).success).toBe(
+      true
+    );
   });
 
   it("rejects invalid email", () => {
@@ -27,9 +27,7 @@ describe("customizationFormSchema", () => {
   });
 
   it("accepts empty string for email (optional)", () => {
-    expect(customizationFormSchema.safeParse({ email: "" }).success).toBe(
-      true
-    );
+    expect(customizationFormSchema.safeParse({ email: "" }).success).toBe(true);
   });
 
   it("accepts default_tax_rate >= 0", () => {
@@ -50,9 +48,7 @@ describe("customizationFormSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe(
-        "Debe ser mayor o igual a 0"
-      );
+      expect(result.error.issues[0].message).toBe("Debe ser mayor o igual a 0");
     }
   });
 

@@ -23,15 +23,15 @@ describe("deleteAllFilesForUser", () => {
   });
 
   it("completes without calling delete when no files", async () => {
-    const fetchMock = vi.fn()
+    const fetchMock = vi
+      .fn()
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(authResponse),
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: () =>
-          Promise.resolve({ files: [], nextFileName: null }),
+        json: () => Promise.resolve({ files: [], nextFileName: null }),
       });
 
     vi.stubGlobal("fetch", fetchMock);
@@ -45,7 +45,8 @@ describe("deleteAllFilesForUser", () => {
   });
 
   it("calls delete for each file returned by list", async () => {
-    const fetchMock = vi.fn()
+    const fetchMock = vi
+      .fn()
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(authResponse),
@@ -56,7 +57,10 @@ describe("deleteAllFilesForUser", () => {
           Promise.resolve({
             files: [
               { fileId: "f1", fileName: "assets/user-2/catalog/x.webp" },
-              { fileId: "f2", fileName: "assets/user-2/projects/p1/img/y.webp" },
+              {
+                fileId: "f2",
+                fileName: "assets/user-2/projects/p1/img/y.webp",
+              },
             ],
             nextFileName: null,
           }),
@@ -84,10 +88,13 @@ describe("deleteAllFilesForUser", () => {
   it("throws when B2_BUCKET_ID is missing", async () => {
     const bucketId = process.env.B2_BUCKET_ID;
     delete process.env.B2_BUCKET_ID;
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve(authResponse),
-    }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(authResponse),
+      })
+    );
 
     await expect(deleteAllFilesForUser("user-1")).rejects.toThrow(
       "B2_BUCKET_ID es requerido"

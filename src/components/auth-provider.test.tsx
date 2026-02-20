@@ -46,14 +46,8 @@ vi.mock("next/navigation", () => ({
 
 // Test component that uses the auth context
 const TestComponent = () => {
-  const {
-    user,
-    session,
-    loading,
-    signOut,
-    profileFullName,
-    effectivePlan,
-  } = useAuth();
+  const { user, session, loading, signOut, profileFullName, effectivePlan } =
+    useAuth();
   return (
     <div>
       <div data-testid="loading">{loading ? "loading" : "not-loading"}</div>
