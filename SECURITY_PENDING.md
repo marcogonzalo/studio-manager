@@ -25,11 +25,11 @@ Lista de aspectos identificados en la revisión OWASP que siguen pendientes de i
 
 ## Bajos
 
-| #   | Aspecto                                        | Descripción                                                                                                                                                                   | Referencia OWASP |
-| --- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| 6   | **Sanitización de HTML**                       | Revisar uso de `dangerouslySetInnerHTML` (p. ej. en `json-ld.tsx`); usar sanitización (DOMPurify o similar) o alternativas que eviten XSS si el contenido puede ser dinámico. | A03              |
+| #   | Aspecto                                        | Descripción                                                                                                                                                                           | Referencia OWASP |
+| --- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| 6   | **Sanitización de HTML**                       | Revisar uso de `dangerouslySetInnerHTML` (p. ej. en `json-ld.tsx`); usar sanitización (DOMPurify o similar) o alternativas que eviten XSS si el contenido puede ser dinámico.         | A03              |
 | 7   | **Verificación de integridad de dependencias** | ~~Usar `npm ci` en CI y documentar~~ **Implementado:** Workflow CI usa `npm ci`, verifica integridad de `package-lock.json`, y ejecuta `npm audit`. Documentación en `docs/ci-cd.md`. | A08, Prioridad 3 |
-| 8   | **Documentación CI/CD**                        | ~~Documentar proceso de despliegue~~ **Implementado:** `docs/ci-cd.md` documenta pipeline CI/CD, verificación de dependencias, y mejores prácticas.                          | A08, Prioridad 3 |
+| 8   | **Documentación CI/CD**                        | ~~Documentar proceso de despliegue~~ **Implementado:** `docs/ci-cd.md` documenta pipeline CI/CD, verificación de dependencias, y mejores prácticas.                                   | A08, Prioridad 3 |
 | 9   | **Configuración CORS explícita**               | ~~Definir explícitamente orígenes permitidos~~ **Implementado:** CORS configurado en `next.config.ts` via `ALLOWED_CORS_ORIGINS` env var. Por defecto same-origin (sin headers CORS). | A05              |
 
 ---

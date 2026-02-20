@@ -4,6 +4,10 @@
  * or Edge; for multi-instance production consider Redis (e.g. @upstash/ratelimit).
  */
 
+/** Mensaje único para el usuario cuando se excede el rate limit (auth, upload, account/delete). */
+export const RATE_LIMIT_MESSAGE =
+  "Has excedido el límite de solicitudes. Por favor, espera 30 segundos e intenta de nuevo.";
+
 const WINDOW_MS = 60_000;
 
 type RouteGroup = "auth" | "upload" | "account-delete";
@@ -19,7 +23,17 @@ interface Entry {
   resetAt: number;
 }
 
-const store = new Map<string, Entry>();
+// Use a global store that persists across requests in the same Edge Runtime instance
+// Note: In production with multiple Edge instances, consider using Redis/Upstash
+declare global {
+  // eslint-disable-next-line no-var
+  var __rateLimitStore: Map<string, Entry> | undefined;
+}
+
+const store = globalThis.__rateLimitStore ?? new Map<string, Entry>();
+
+// Always assign to globalThis to ensure persistence across hot reloads in development
+globalThis.__rateLimitStore = store;
 
 function prune(): void {
   const now = Date.now();
@@ -64,6 +78,7 @@ export function getRouteGroup(pathname: string): RouteGroup | null {
 }
 
 export function getClientIp(request: Request): string {
+  // In Next.js middleware, we need to access headers differently
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     const first = forwarded.split(",")[0]?.trim();
@@ -71,5 +86,14 @@ export function getClientIp(request: Request): string {
   }
   const real = request.headers.get("x-real-ip");
   if (real) return real.trim();
+
+  // For development/localhost, use a consistent identifier
+  // In production behind a proxy, x-forwarded-for should be set
+  const host = request.headers.get("host");
+  if (host?.includes("localhost") || host?.includes("127.0.0.1")) {
+    // Use host as fallback for localhost to ensure consistent rate limiting
+    return `localhost-${host}`;
+  }
+
   return "unknown";
 }

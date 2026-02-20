@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "./route";
 import { NextRequest } from "next/server";
+import { checkRateLimit, RATE_LIMIT_MESSAGE } from "@/lib/rate-limit";
 
 const mockSignInWithOtp = vi.fn();
 
@@ -14,9 +15,23 @@ vi.mock("@/lib/supabase/server", () => ({
   ),
 }));
 
+vi.mock("@/lib/rate-limit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/rate-limit")>();
+  return {
+    ...actual,
+    checkRateLimit: vi.fn(),
+    getClientIp: vi.fn(() => "test-ip"),
+  };
+});
+
 describe("POST /api/auth/magic-link", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(checkRateLimit).mockReturnValue({
+      allowed: true,
+      remaining: 10,
+      resetAt: Date.now() + 60000,
+    });
   });
 
   it("returns 400 if email is missing", async () => {
@@ -147,5 +162,25 @@ describe("POST /api/auth/magic-link", () => {
 
     expect(response.status).toBe(500);
     expect(data.error).toBe("Internal server error");
+  });
+
+  it("returns 429 when rate limit exceeded", async () => {
+    vi.mocked(checkRateLimit).mockReturnValue({
+      allowed: false,
+      remaining: 0,
+      resetAt: Date.now() + 30000,
+    });
+
+    const request = new NextRequest("http://localhost/api/auth/magic-link", {
+      method: "POST",
+      body: JSON.stringify({ email: "test@example.com" }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(data.error).toBe(RATE_LIMIT_MESSAGE);
+    expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 });

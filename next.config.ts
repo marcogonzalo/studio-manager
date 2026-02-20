@@ -9,8 +9,9 @@ const nextConfig: NextConfig = {
     // CORS configuration (A05): Explicitly define allowed origins
     // Currently same-origin only; add origins via ALLOWED_CORS_ORIGINS env var if needed
     const corsHeaders = [];
-    const allowedOrigins = process.env.ALLOWED_CORS_ORIGINS?.split(",").filter(Boolean) || [];
-    
+    const allowedOrigins =
+      process.env.ALLOWED_CORS_ORIGINS?.split(",").filter(Boolean) || [];
+
     if (allowedOrigins.length > 0) {
       corsHeaders.push({
         key: "Access-Control-Allow-Origin",

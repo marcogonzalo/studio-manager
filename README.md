@@ -447,6 +447,7 @@ The project includes a CI/CD pipeline configured in `.github/workflows/ci.yml`:
 - **Build verification**: Ensures the application builds successfully
 
 See `docs/ci-cd.md` for detailed documentation on the CI/CD process, including:
+
 - Pipeline configuration and jobs
 - Dependency integrity verification
 - Local development best practices
