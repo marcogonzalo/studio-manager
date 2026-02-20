@@ -132,13 +132,13 @@ _(Nota: las guidelines de Vercel Labs no se pudieron cargar por timeout; las sig
 ### 3.2 Metadata y OG
 
 - **Root:** `metadataBase`, `title`, `description`, `openGraph`, `twitter` están definidos en `layout.tsx`.
-- **Por ruta:** Home y otras páginas definen `metadata`; mantener y extender a todas las rutas públicas (about, contact, pricing, legal).
+- **Por ruta:** Home y otras páginas definen `metadata`; mantener y extender a todas las rutas públicas (about, contact, pricing, legal). **Hecho:** about, contact, pricing, legal tienen `metadata`.
 - **OG image:** Hay `opengraph-image.tsx`; según metadata está en `/opengraph-image`; correcto.
 
 ### 3.3 Imágenes
 
 - **next/image:** Ya se usa en catalog, dialogs, product-detail-modal, veta-logo, etc. No hay `<img>` crudo; bien.
-- **Revisar:** En componentes que usan imágenes remotas (Supabase Storage), comprobar que el host esté en `next.config` (`images.remotePatterns`).
+- **remotePatterns:** En `next.config` están definidos `**.supabase.co` y `**.backblazeb2.com` para imágenes remotas; correcto.
 - **LCP:** Para hero o imagen principal de marketing, si se añade una imagen real (no solo mockup), usar `priority` y `sizes` adecuados.
 
 ### 3.4 Fuentes
@@ -150,8 +150,7 @@ _(Nota: las guidelines de Vercel Labs no se pudieron cargar por timeout; las sig
 ### 3.5 Manejo de errores
 
 - **not-found:** Existe `app/not-found.tsx` (404 personalizado); bien.
-- **error.tsx:** No existe. Añadir `app/error.tsx` (y opcionalmente `app/(app)/error.tsx`, `app/(marketing)/error.tsx`) para capturar errores en el árbol y mostrar UI con “Reintentar”.
-- **global-error.tsx:** No existe. Añadir `app/global-error.tsx` con `<html>` y `<body>` para errores en root layout (según documentación Next).
+- **error.tsx / global-error.tsx:** Implementados: `app/error.tsx` (ruta) y `app/global-error.tsx` (root layout), con línea visual alineada a 404 y digest mostrado.
 
 **Ejemplo mínimo `app/error.tsx`:**
 
@@ -193,6 +192,7 @@ export default function Error({
 ### 3.8 Redirects y notFound
 
 - En Server Actions que usen `redirect()` o `notFound()`, no envolver esas llamadas en try/catch (o re-lanzar con `unstable_rethrow`) para no tragar el “throw” de Next.
+- **Revisado:** El layout `(app)` usa `redirect()` fuera de try/catch; las Server Actions de contacto no usan `redirect` ni `notFound`.
 
 ---
 
@@ -200,11 +200,11 @@ export default function Error({
 
 | Prioridad | Área     | Acción                                                                  |
 | --------- | -------- | ----------------------------------------------------------------------- |
-| Alta      | Next.js  | Añadir `app/error.tsx` y `app/global-error.tsx`.                        |
+| —         | Next.js  | `error.tsx` y `global-error.tsx` implementados.                         |
 | —         | A11y     | Skip link omitido (superposición con navbar en prueba previa).          |
 | Media     | Frontend | Introducir segunda fuente (display) para títulos y usarla en marketing. |
 | Media     | Frontend | Respetar `prefers-reduced-motion` en animaciones.                       |
-| Media     | Next.js  | Comprobar `images.remotePatterns` para dominios de imágenes (Supabase). |
+| —         | Next.js  | `images.remotePatterns` con Supabase y Backblaze; metadata en rutas públicas. |
 | Baja      | Frontend | Añadir textura sutil (grain) en hero o CTAs.                            |
 | Baja      | Frontend | Una sección con layout asimétrico (testimonios o beneficios).           |
 | Baja      | UX       | Breadcrumbs en rutas profundas de la app (ej. proyecto por id).         |
