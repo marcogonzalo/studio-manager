@@ -117,30 +117,30 @@ function AuthContent() {
       const finalRedirect = redirectTo || "/dashboard";
       const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(finalRedirect)}`;
 
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithOtp({
+      const billingParam = searchParams.get("billing");
+      const response = await fetch("/api/auth/magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           email: values.email,
-          options: {
-            emailRedirectTo: callbackUrl,
-          },
-        });
-        if (error) throw error;
-      } else {
-        const billingParam = searchParams.get("billing");
-        const { error } = await supabase.auth.signInWithOtp({
-          email: values.email,
-          options: {
-            emailRedirectTo: callbackUrl,
-            data: {
-              full_name: values.fullName,
-              signup_plan: selectedPlan,
-              ...(billingParam && {
-                signup_billing: billingParam,
+          emailRedirectTo: callbackUrl,
+          ...(isLogin
+            ? {}
+            : {
+                data: {
+                  full_name: values.fullName,
+                  signup_plan: selectedPlan,
+                  ...(billingParam && {
+                    signup_billing: billingParam,
+                  }),
+                },
               }),
-            },
-          },
-        });
-        if (error) throw error;
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to send magic link");
       }
       setEmailSent(true);
       toast.success(
@@ -167,18 +167,25 @@ function AuthContent() {
       const finalRedirect = redirectTo || "/dashboard";
       const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(finalRedirect)}`;
 
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
+      const response = await fetch("/api/auth/magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
           emailRedirectTo: callbackUrl,
           ...(fullName && {
             data: {
               full_name: fullName,
             },
           }),
-        },
+        }),
       });
-      if (error) throw error;
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to resend magic link");
+      }
+
       toast.success("Enlace reenviado. Revisa tu correo nuevamente.");
     } catch (error: unknown) {
       const message =

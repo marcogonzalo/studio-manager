@@ -16,8 +16,8 @@ Lista de aspectos identificados en la revisión OWASP que siguen pendientes de i
 
 | #   | Aspecto                                  | Descripción                                                                                                                                                                                      | Referencia OWASP   |
 | --- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------ |
-| 2   | **Rate limiting**                        | Limitar peticiones por IP/usuario en endpoints API críticos (auth, upload, account/delete) para mitigar abuso y fuerza bruta.                                                                    | A04, Prioridad 3   |
-| 3   | **Restricción de hostnames en imágenes** | En `next.config.ts` (images.remotePatterns), restringir `hostname: "**"` a dominios concretos (p. ej. Supabase Storage, B2) si la optimización de imágenes se usa con URLs de usuario.           | A05, Prioridad 2   |
+| 2   | **Rate limiting**                        | ~~Limitar peticiones por IP/usuario en endpoints API críticos~~ **Implementado:** middleware limita por IP en `/api/auth`, `/api/upload`, `/api/account/delete` (límites: 10/20/5 por minuto).   | A04, Prioridad 3   |
+| 3   | **Restricción de hostnames en imágenes** | ~~Restringir hostname "\*\*"~~ **Implementado:** `remotePatterns` solo permite `**.supabase.co` (path `/storage/v1/object/public/**`) y `**.backblazeb2.com`.                                    | A05, Prioridad 2   |
 | 4   | **Dependencias vulnerables**             | Revisar y actualizar dependencias con `npm audit`; aplicar `npm audit fix` donde sea seguro; para las que no tengan parche, valorar alternativas o mitigaciones. Configurar Dependabot/Renovate. | A06, Prioridad 2/3 |
 | 5   | **Monitoreo de eventos de seguridad**    | Integrar logs de seguridad con un sistema de monitoreo/alertas (cuando exista el sistema de logging).                                                                                            | A05, Prioridad 2   |
 
@@ -37,7 +37,7 @@ Lista de aspectos identificados en la revisión OWASP que siguen pendientes de i
 ## Resumen
 
 - **Críticos:** 1
-- **Medios:** 4
+- **Medios:** 4 (2 implementados: rate limiting, hostnames imágenes)
 - **Bajos:** 4
 
-**Ya implementado en esta rama:** headers de seguridad HTTP (incl. CSP con `blob:` para vistas previas), validación de ownership en endpoints de upload y DELETE de documentos/imágenes, y flujo de producto que evita imágenes huérfanas (subida condicionada a la existencia del producto).
+**Ya implementado en esta rama:** headers de seguridad HTTP (incl. CSP con `blob:` para vistas previas), validación de ownership en endpoints de upload y DELETE de documentos/imágenes, flujo de producto que evita imágenes huérfanas (subida condicionada a la existencia del producto), **rate limiting** en auth/upload/account/delete, y **restricción de hostnames** en optimización de imágenes (solo Supabase Storage y B2).
