@@ -115,35 +115,46 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
       .eq("project_id", projectId);
 
     if (posData) {
-      const coveragePromises = posData.map(async (po) => {
-        type PoItem = { id: string; quantity: number; unit_cost: number };
-        const totalAmount = (po.project_items || []).reduce(
-          (sum: number, item: PoItem) => sum + item.unit_cost * item.quantity,
-          0
-        );
+      const coveragePromises = posData.map(
+        async (po: {
+          id: string;
+          order_number?: string | null;
+          project_items?: Array<{
+            id: string;
+            quantity: number;
+            unit_cost: number;
+          }>;
+        }) => {
+          type PoItem = { id: string; quantity: number; unit_cost: number };
+          const totalAmount = (po.project_items || []).reduce(
+            (sum: number, item: PoItem) => sum + item.unit_cost * item.quantity,
+            0
+          );
 
-        const { data: paymentsForPO } = await supabase
-          .from("payments")
-          .select("amount")
-          .eq("purchase_order_id", po.id);
+          const { data: paymentsForPO } = await supabase
+            .from("payments")
+            .select("amount")
+            .eq("purchase_order_id", po.id);
 
-        const coveredAmount = (paymentsForPO || []).reduce(
-          (sum, p) => sum + Number(p.amount),
-          0
-        );
+          const coveredAmount = (paymentsForPO || []).reduce(
+            (sum: number, p: { amount?: number | null }) =>
+              sum + Number(p.amount),
+            0
+          );
 
-        let status: "covered" | "partial" | "pending" = "pending";
-        if (coveredAmount >= totalAmount) status = "covered";
-        else if (coveredAmount > 0) status = "partial";
+          let status: "covered" | "partial" | "pending" = "pending";
+          if (coveredAmount >= totalAmount) status = "covered";
+          else if (coveredAmount > 0) status = "partial";
 
-        return {
-          id: po.id,
-          order_number: po.order_number || `PO-${po.id.slice(0, 8)}`,
-          total_amount: totalAmount,
-          covered_amount: coveredAmount,
-          status,
-        };
-      });
+          return {
+            id: po.id,
+            order_number: po.order_number || `PO-${po.id.slice(0, 8)}`,
+            total_amount: totalAmount,
+            covered_amount: coveredAmount,
+            status,
+          };
+        }
+      );
 
       const coverage = await Promise.all(coveragePromises);
       setPoCoverage(coverage);

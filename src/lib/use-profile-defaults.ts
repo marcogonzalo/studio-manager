@@ -21,17 +21,25 @@ export function useProfileDefaults(): ProfileDefaults | null {
       .select("default_tax_rate, default_currency")
       .eq("id", user.id)
       .single()
-      .then(({ data }) => {
-        if (data) {
-          setDefaults({
-            default_tax_rate:
-              data.default_tax_rate != null
-                ? Number(data.default_tax_rate)
-                : null,
-            default_currency: data.default_currency ?? "EUR",
-          });
+      .then(
+        (res: {
+          data: {
+            default_tax_rate?: number | null;
+            default_currency?: string | null;
+          } | null;
+        }) => {
+          const data = res.data;
+          if (data) {
+            setDefaults({
+              default_tax_rate:
+                data.default_tax_rate != null
+                  ? Number(data.default_tax_rate)
+                  : null,
+              default_currency: data.default_currency ?? "EUR",
+            });
+          }
         }
-      });
+      );
   }, [user?.id, supabase]);
 
   return defaults;

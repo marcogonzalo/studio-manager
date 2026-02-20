@@ -19,22 +19,27 @@ export function RedirectAuthenticatedToDashboard() {
     const supabase = getSupabaseClient();
 
     const checkAndRedirect = () => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          router.replace("/dashboard");
-        }
-      });
+      supabase.auth
+        .getSession()
+        .then((res: { data: { session: { user?: unknown } | null } }) => {
+          const session = res.data.session;
+          if (session?.user) {
+            router.replace("/dashboard");
+          }
+        });
     };
 
     checkAndRedirect();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        router.replace("/dashboard");
+    } = supabase.auth.onAuthStateChange(
+      (_event: string, session: { user?: unknown } | null) => {
+        if (session?.user) {
+          router.replace("/dashboard");
+        }
       }
-    });
+    );
 
     return () => subscription.unsubscribe();
   }, [pathname, router]);

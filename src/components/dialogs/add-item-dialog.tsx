@@ -179,7 +179,7 @@ export function AddItemDialog({
           category: "",
         };
         if (item.product_id && pData) {
-          const prod = pData.find((p) => p.id === item.product_id);
+          const prod = pData.find((p: Product) => p.id === item.product_id);
           if (prod) {
             productData = {
               description: prod.description || "",
@@ -209,7 +209,7 @@ export function AddItemDialog({
           is_excluded: item.is_excluded || false,
         });
         if (item.product_id && pData) {
-          const prod = pData.find((p) => p.id === item.product_id);
+          const prod = pData.find((p: Product) => p.id === item.product_id);
           if (prod) {
             setSelectedProduct(prod);
             setActiveTab("catalog");
@@ -948,14 +948,17 @@ export function AddItemDialog({
                               .select("status")
                               .eq("id", item.purchase_order_id)
                               .single()
-                              .then(({ data: poData }) => {
-                                if (poData && poData.status !== "cancelled") {
-                                  toast.error(
-                                    "No se puede excluir un producto asociado a una orden de compra activa. Cancela la orden primero."
-                                  );
-                                  field.onChange(false);
+                              .then(
+                                (res: { data: { status: string } | null }) => {
+                                  const poData = res.data;
+                                  if (poData && poData.status !== "cancelled") {
+                                    toast.error(
+                                      "No se puede excluir un producto asociado a una orden de compra activa. Cancela la orden primero."
+                                    );
+                                    field.onChange(false);
+                                  }
                                 }
-                              });
+                              );
                           }
                         }}
                         disabled={!budgetModeFull}

@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import type { User, Session } from "@supabase/supabase-js";
+import type { AuthChangeEvent, User, Session } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import type { EffectivePlan } from "@/types";
@@ -43,23 +43,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = getSupabaseClient();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then((res: { data: { session: Session | null } }) => {
+        const session = res.data.session;
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    } = supabase.auth.onAuthStateChange(
+      (event: AuthChangeEvent, session: Session | null) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
 
-      if (event === "SIGNED_IN" && window.location.hash) {
-        window.history.replaceState(null, "", window.location.pathname);
+        if (event === "SIGNED_IN" && window.location.hash) {
+          window.history.replaceState(null, "", window.location.pathname);
+        }
       }
-    });
+    );
 
     return () => subscription.unsubscribe();
   }, [supabase]);

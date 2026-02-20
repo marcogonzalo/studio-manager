@@ -27,7 +27,7 @@ vi.mock("@/lib/backblaze", () => ({
 
 const mockGetSupabaseUrl = vi.fn(() => "https://test.supabase.co");
 const mockGetServerKey = vi.fn(() => "server-key");
-const mockGetServiceRoleKey = vi.fn(() => null);
+const mockGetServiceRoleKey = vi.fn(() => "service-role-key" as string | null);
 
 vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseUrl: () => mockGetSupabaseUrl(),

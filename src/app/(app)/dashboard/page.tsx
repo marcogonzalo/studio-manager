@@ -125,7 +125,15 @@ export default function DashboardPage() {
       .eq("id", user.id)
       .single()
       .then(
-        ({ data }) => setProfile(data ?? null),
+        (res: { data: { full_name?: string | null } | null }) =>
+          setProfile(
+            user.id && res.data
+              ? {
+                  id: user.id,
+                  full_name: res.data.full_name ?? undefined,
+                }
+              : null
+          ),
         () => setProfile(null)
       );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase from getSupabaseClient() is stable
@@ -176,24 +184,33 @@ export default function DashboardPage() {
 
       let ordersTotal = 0;
       if (confirmedOrders && confirmedOrders.length > 0) {
-        const orderIds = confirmedOrders.map((order) => order.id);
+        const orderIds = confirmedOrders.map(
+          (order: { id: string }) => order.id
+        );
         const { data: orderItems, error: orderItemsError } = await supabase
           .from("project_items")
           .select("quantity, unit_cost")
           .in("purchase_order_id", orderIds);
 
         if (!orderItemsError && orderItems) {
-          ordersTotal = orderItems.reduce((sum, item) => {
-            return (
-              sum + Number(item.quantity || 0) * Number(item.unit_cost || 0)
-            );
-          }, 0);
+          ordersTotal = orderItems.reduce(
+            (
+              sum: number,
+              item: { quantity?: number | null; unit_cost?: number | null }
+            ) => {
+              return (
+                sum + Number(item.quantity || 0) * Number(item.unit_cost || 0)
+              );
+            },
+            0
+          );
         }
       }
 
       const additionalCostsTotal =
         additionalCosts?.reduce(
-          (sum, cost) => sum + Number(cost.amount || 0),
+          (sum: number, cost: { amount?: number | null }) =>
+            sum + Number(cost.amount || 0),
           0
         ) || 0;
 
