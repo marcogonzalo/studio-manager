@@ -214,8 +214,74 @@ This project follows security best practices:
 - **Input Validation:** Zod schemas for all user inputs
 - **Authentication:** Supabase Auth with secure session management
 - **No Secrets in Code:** Environment variables properly configured
+- **Rate Limiting:** API endpoints protected against abuse and brute force
+- **Image Hostname Restrictions:** Only trusted domains allowed for image optimization
 
 See `.cursor/rules/01-security.mdc` for detailed security guidelines.
+
+### Security Configuration
+
+#### Rate Limiting
+
+API endpoints are protected by rate limiting to prevent abuse and brute force attacks. Limits are configured per route group in `src/lib/rate-limit.ts`:
+
+```typescript
+const LIMITS: Record<RouteGroup, number> = {
+  auth: 10, // Requests per minute for /api/auth/*
+  upload: 20, // Requests per minute for /api/upload/*
+  "account-delete": 5, // Requests per minute for /api/account/delete
+};
+
+const WINDOW_MS = 60_000; // Time window in milliseconds (default: 60 seconds)
+```
+
+**To customize limits:**
+
+1. Edit `LIMITS` in `src/lib/rate-limit.ts` to adjust requests per minute for each route group
+2. Modify `WINDOW_MS` to change the time window (default: 60 seconds)
+
+**Rate limit behavior:**
+
+- Limits are applied per IP address
+- Each route group has independent counters
+- When limit is exceeded, API returns `429 Too Many Requests` with `Retry-After` header
+
+#### Image Hostname Restrictions
+
+Image optimization via `next/image` is restricted to trusted domains for security. Configuration is in `next.config.ts`:
+
+```typescript
+images: {
+  remotePatterns: [
+    {
+      protocol: "https",
+      hostname: "**.supabase.co",
+      pathname: "/storage/v1/object/public/**",
+    },
+    {
+      protocol: "https",
+      hostname: "**.backblazeb2.com",
+      pathname: "/**",
+    },
+  ],
+}
+```
+
+**To add or modify allowed image domains:**
+
+1. Edit `images.remotePatterns` in `next.config.ts`
+2. Add new pattern objects with:
+   - `protocol`: `"https"` or `"http"`
+   - `hostname`: Domain pattern (use `**` for subdomain wildcard, e.g., `**.example.com`)
+   - `pathname`: Path pattern (use `"/**"` for all paths or specific patterns like `"/images/**"`)
+3. Restart the development server or rebuild for changes to take effect
+
+**Current allowed domains:**
+
+- Supabase Storage: `**.supabase.co` (path: `/storage/v1/object/public/**`)
+- Backblaze B2: `**.backblazeb2.com` (all paths)
+
+**Note:** If you need to use `next/image` with other external URLs, add them to `remotePatterns`. The wildcard `hostname: "**"` is not allowed for security reasons.
 
 ## 🎨 Design System
 
@@ -371,12 +437,29 @@ docker compose exec app sh
 docker compose down -v
 ```
 
+## 🔄 CI/CD
+
+The project includes a CI/CD pipeline configured in `.github/workflows/ci.yml`:
+
+- **Automated testing**: Runs on every push and PR
+- **Dependency verification**: Uses `npm ci` for reproducible builds
+- **Security audits**: Automated vulnerability scanning
+- **Build verification**: Ensures the application builds successfully
+
+See `docs/ci-cd.md` for detailed documentation on the CI/CD process, including:
+
+- Pipeline configuration and jobs
+- Dependency integrity verification
+- Local development best practices
+- Troubleshooting guide
+
 ## 🤝 Contributing
 
 1. Follow the coding standards defined in `.cursor/rules/`
 2. Write tests for new features
 3. Ensure all security guidelines are met
 4. Use conventional commits
+5. Run `npm ci` and verify tests pass before pushing
 
 ## 📄 License
 

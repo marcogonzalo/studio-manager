@@ -34,12 +34,15 @@ describe("getDisplayName", () => {
     expect(
       getDisplayName({ email: "juan@example.com", user_metadata: {} }, null)
     ).toBe("juan");
-    expect(getDisplayName({ email: "  base@veta.pro  ", user_metadata: {} }, ""))
-      .toBe("base");
+    expect(
+      getDisplayName({ email: "  base@veta.pro  ", user_metadata: {} }, "")
+    ).toBe("base");
   });
 
   it("returns Usuario when no user or no email and no name", () => {
     expect(getDisplayName(null, null)).toBe("Usuario");
-    expect(getDisplayName({ email: "", user_metadata: {} }, "")).toBe("Usuario");
+    expect(getDisplayName({ email: "", user_metadata: {} }, "")).toBe(
+      "Usuario"
+    );
   });
 });

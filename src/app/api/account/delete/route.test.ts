@@ -27,7 +27,7 @@ vi.mock("@/lib/backblaze", () => ({
 
 const mockGetSupabaseUrl = vi.fn(() => "https://test.supabase.co");
 const mockGetServerKey = vi.fn(() => "server-key");
-const mockGetServiceRoleKey = vi.fn(() => null);
+const mockGetServiceRoleKey = vi.fn(() => "service-role-key" as string | null);
 
 vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseUrl: () => mockGetSupabaseUrl(),
@@ -55,7 +55,10 @@ describe("POST /api/account/delete", () => {
 
   it("returns 401 when no user", async () => {
     const { POST } = await import("./route");
-    mockGetUser.mockResolvedValue({ data: { user: null }, error: new Error("No user") });
+    mockGetUser.mockResolvedValue({
+      data: { user: null },
+      error: new Error("No user"),
+    });
 
     const res = await POST(
       new Request("http://localhost/api/account/delete", {

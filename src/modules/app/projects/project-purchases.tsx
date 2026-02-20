@@ -121,7 +121,8 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
         .neq("id", orderId)
         .neq("status", "cancelled");
 
-      const activeOrderIds = activeOrders?.map((po) => po.id) || [];
+      const activeOrderIds =
+        activeOrders?.map((po: { id: string }) => po.id) || [];
 
       // For each item, check if it's in another active order
       for (const item of itemsInOrder) {

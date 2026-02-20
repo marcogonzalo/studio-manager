@@ -36,6 +36,7 @@
   - `.env.local` (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY).
   - Backblaze B2 para imágenes, documentos y renders: B2_APPLICATION_KEY_ID, B2_APPLICATION_KEY, B2_BUCKET_ID, B2_BUCKET_NAME.
   - Docker uses `extra_hosts: localhost:host-gateway` for Supabase connectivity.
+- **CI/CD:** Pipeline en `.github/workflows/ci.yml` (test + security-audit). Usa `npm ci`, verificación de lockfile, lint, format, tests y build. Documentación detallada: **`docs/ci-cd.md`**.
 
 ## Database Schema (Key Tables)
 

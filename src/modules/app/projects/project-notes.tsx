@@ -42,8 +42,12 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
 
     if (!error) {
       // Separar notas archivadas y no archivadas, mostrar primero las no archivadas
-      const nonArchived = (data || []).filter((n) => !n.archived);
-      const archived = (data || []).filter((n) => n.archived);
+      const nonArchived = (data || []).filter(
+        (n: { archived?: boolean }) => !n.archived
+      );
+      const archived = (data || []).filter(
+        (n: { archived?: boolean }) => n.archived
+      );
       setNotes([...nonArchived, ...archived]);
     }
   };

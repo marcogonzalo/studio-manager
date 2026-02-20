@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { isCostCategory, reportError, reportWarn } from "@/lib/utils";
-import type { ProjectBudgetLine } from "@/types";
+import type { BudgetCategory, ProjectBudgetLine } from "@/types";
 
 export interface UseProjectBudgetLinesOptions {
   /** Si true, solo líneas con is_internal_cost = false (vista cliente). */
@@ -61,7 +61,9 @@ export function useProjectBudgetLines(
       } else {
         let lines = data ?? [];
         if (costOnly) {
-          lines = lines.filter((line) => isCostCategory(line.category));
+          lines = lines.filter((line: ProjectBudgetLine) =>
+            isCostCategory((line.category ?? "construction") as BudgetCategory)
+          );
         }
         setBudgetLines(lines);
       }

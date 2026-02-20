@@ -48,6 +48,65 @@ export async function DELETE(request: Request) {
       );
     }
 
+    // ✅ SECURITY: Verify that the image belongs to the user
+    // Check if image exists in products table and belongs to user
+    const { data: product, error: productError } = await supabase
+      .from("products")
+      .select("id, user_id")
+      .eq("image_url", imageUrl.trim())
+      .single();
+
+    if (productError || !product) {
+      // Also check space_images for space images
+      const { data: spaceImage, error: spaceImageError } = await supabase
+        .from("space_images")
+        .select("id, space_id")
+        .eq("image_url", imageUrl.trim())
+        .single();
+
+      if (spaceImageError || !spaceImage) {
+        return NextResponse.json(
+          { error: "Imagen no encontrada" },
+          { status: 404 }
+        );
+      }
+
+      // Get space and project owner to verify ownership
+      const { data: space, error: spaceError } = await supabase
+        .from("spaces")
+        .select("project_id")
+        .eq("id", spaceImage.space_id)
+        .single();
+
+      if (spaceError || !space) {
+        return NextResponse.json(
+          { error: "Espacio no encontrado" },
+          { status: 404 }
+        );
+      }
+
+      const { data: project, error: projectError } = await supabase
+        .from("projects")
+        .select("user_id")
+        .eq("id", space.project_id)
+        .single();
+
+      if (projectError || !project || project.user_id !== user.id) {
+        return NextResponse.json(
+          { error: "No autorizado para eliminar esta imagen" },
+          { status: 403 }
+        );
+      }
+    } else {
+      // Verify ownership for product image
+      if (product.user_id !== user.id) {
+        return NextResponse.json(
+          { error: "No autorizado para eliminar esta imagen" },
+          { status: 403 }
+        );
+      }
+    }
+
     const { deleteProductImage } = await import("@/lib/backblaze");
     await deleteProductImage(imageUrl);
 
@@ -103,6 +162,50 @@ export async function POST(request: Request) {
         { error: "Faltan archivo o productId" },
         { status: 400 }
       );
+    }
+
+    // ✅ SECURITY: Upload only when product exists (image is uploaded after product creation)
+    const { data: product, error: productError } = await supabase
+      .from("products")
+      .select("id, user_id")
+      .eq("id", productId.trim())
+      .single();
+
+    if (productError || !product) {
+      return NextResponse.json(
+        { error: "Producto no encontrado" },
+        { status: 404 }
+      );
+    }
+
+    if (product.user_id !== user.id) {
+      return NextResponse.json(
+        { error: "No autorizado para subir imágenes a este producto" },
+        { status: 403 }
+      );
+    }
+
+    // ✅ SECURITY: If projectId is provided, verify ownership
+    if (projectId?.trim()) {
+      const { data: project, error: projectError } = await supabase
+        .from("projects")
+        .select("id, user_id")
+        .eq("id", projectId.trim())
+        .single();
+
+      if (projectError || !project) {
+        return NextResponse.json(
+          { error: "Proyecto no encontrado" },
+          { status: 404 }
+        );
+      }
+
+      if (project.user_id !== user.id) {
+        return NextResponse.json(
+          { error: "No autorizado para asociar imágenes a este proyecto" },
+          { status: 403 }
+        );
+      }
     }
 
     if (file.size > MAX_FILE_SIZE) {

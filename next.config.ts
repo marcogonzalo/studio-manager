@@ -4,15 +4,97 @@ const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
 
-  // Allow cross-origin requests from localhost for development
-  allowedDevOrigins: ["http://127.0.0.1:3000", "http://localhost:3000"],
+  // Security headers to protect against common attacks
+  async headers() {
+    // CORS configuration (A05): Explicitly define allowed origins
+    // Currently same-origin only; add origins via ALLOWED_CORS_ORIGINS env var if needed
+    const corsHeaders = [];
+    const allowedOrigins =
+      process.env.ALLOWED_CORS_ORIGINS?.split(",").filter(Boolean) || [];
 
-  // Configure image optimization
+    if (allowedOrigins.length > 0) {
+      corsHeaders.push({
+        key: "Access-Control-Allow-Origin",
+        value: allowedOrigins[0], // CORS spec allows only one origin per response
+      });
+      corsHeaders.push({
+        key: "Access-Control-Allow-Methods",
+        value: "GET, POST, PUT, DELETE, OPTIONS",
+      });
+      corsHeaders.push({
+        key: "Access-Control-Allow-Headers",
+        value: "Content-Type, Authorization",
+      });
+      corsHeaders.push({
+        key: "Access-Control-Max-Age",
+        value: "86400", // 24 hours
+      });
+    }
+
+    return [
+      {
+        // Apply to all routes
+        source: "/:path*",
+        headers: [
+          ...corsHeaders,
+          {
+            // Prevent clickjacking - don't allow page to be loaded in iframes
+            key: "X-Frame-Options",
+            value: "DENY",
+          },
+          {
+            // Prevent MIME type sniffing - browser must respect Content-Type
+            key: "X-Content-Type-Options",
+            value: "nosniff",
+          },
+          {
+            // Control what referrer information is sent
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          {
+            // Content Security Policy - control what resources can be loaded
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-inline/unsafe-eval needed for Next.js
+              "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
+              "img-src 'self' data: https: blob:",
+              "font-src 'self' data:",
+              // Allow HTTPS connections in production, HTTP (localhost) in other environments
+              process.env.NODE_ENV === "production"
+                ? "connect-src 'self' https://*.supabase.co https://*.backblazeb2.com"
+                : "connect-src 'self' http://localhost:54321 http://127.0.0.1:54321 https://*.backblazeb2.com ws://localhost:3000 ws://127.0.0.1:3000", // Supabase local (54321) + Next.js HMR (3000)
+              "frame-ancestors 'none'",
+            ].join("; "),
+          },
+          {
+            // Prevent automatic MIME type detection
+            key: "X-DNS-Prefetch-Control",
+            value: "on",
+          },
+          {
+            // Control which browser features can be used
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+    ];
+  },
+
+  // Restrict image optimization to trusted origins (A05); no hostname: "**"
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.backblazeb2.com",
+        pathname: "/**",
       },
     ],
   },

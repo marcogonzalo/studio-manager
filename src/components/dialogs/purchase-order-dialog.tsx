@@ -53,6 +53,7 @@ interface ProjectItem {
   unit_cost: number;
   status: string;
   purchase_order_id: string | null;
+  is_excluded?: boolean;
   product?: { supplier_id: string | null; supplier?: Supplier };
 }
 
@@ -179,7 +180,7 @@ export function PurchaseOrderDialog({
           .eq("status", "cancelled");
 
         const cancelledOrderIds = new Set(
-          cancelledOrders?.map((po) => po.id) || []
+          cancelledOrders?.map((po: { id: string }) => po.id) || []
         );
 
         // Filter items:
@@ -188,7 +189,7 @@ export function PurchaseOrderDialog({
         // - Items from cancelled orders (they should be available again)
         // - Items that match the supplier
         // - Exclude items marked as excluded (is_excluded === true)
-        const filtered = allProjectItems.filter((item) => {
+        const filtered = allProjectItems.filter((item: ProjectItem) => {
           // Exclude products marked as excluded
           if (item.is_excluded) {
             return false;
@@ -220,11 +221,11 @@ export function PurchaseOrderDialog({
           order.project_items.length > 0
         ) {
           const existingIds = new Set(
-            order.project_items.map((item) => item.id)
+            order.project_items.map((item: { id: string }) => item.id)
           );
           setSelectedItemIds((prev) => {
             const newSet = new Set(prev);
-            filtered.forEach((item) => {
+            filtered.forEach((item: ProjectItem) => {
               if (existingIds.has(item.id)) {
                 newSet.add(item.id);
               }
@@ -252,44 +253,50 @@ export function PurchaseOrderDialog({
         .from("project_items")
         .select("product:products(supplier_id, supplier:suppliers(*))")
         .eq("project_id", projectId)
-        .then(async ({ data: items, error }) => {
-          if (error) {
-            reportError(error, "Error fetching project items:");
-            setSuppliers([]);
-            return;
-          }
-
-          // Extract unique suppliers from project items
-          const supplierMap = new Map<string, Supplier>();
-
-          items?.forEach((item: ProjectItem) => {
-            const supplier = item.product?.supplier;
-            if (supplier && supplier.id) {
-              supplierMap.set(supplier.id, supplier);
+        .then(
+          async (res: {
+            data: Array<{ product?: { supplier?: Supplier } }> | null;
+            error: unknown;
+          }) => {
+            const { data: items, error } = res;
+            if (error) {
+              reportError(error, "Error fetching project items:");
+              setSuppliers([]);
+              return;
             }
-          });
 
-          // If editing, also include the supplier from the current order
-          // (in case they no longer have items in the budget)
-          if (isEditing && order?.supplier_id) {
-            const { data: currentSupplier } = await supabase
-              .from("suppliers")
-              .select("*")
-              .eq("id", order.supplier_id)
-              .single();
+            // Extract unique suppliers from project items
+            const supplierMap = new Map<string, Supplier>();
 
-            if (currentSupplier && !supplierMap.has(currentSupplier.id)) {
-              supplierMap.set(currentSupplier.id, currentSupplier);
+            items?.forEach((item) => {
+              const supplier = item.product?.supplier;
+              if (supplier && supplier.id) {
+                supplierMap.set(supplier.id, supplier);
+              }
+            });
+
+            // If editing, also include the supplier from the current order
+            // (in case they no longer have items in the budget)
+            if (isEditing && order?.supplier_id) {
+              const { data: currentSupplier } = await supabase
+                .from("suppliers")
+                .select("*")
+                .eq("id", order.supplier_id)
+                .single();
+
+              if (currentSupplier && !supplierMap.has(currentSupplier.id)) {
+                supplierMap.set(currentSupplier.id, currentSupplier);
+              }
             }
+
+            // Convert map to array and sort by name
+            const uniqueSuppliers = Array.from(supplierMap.values()).sort(
+              (a, b) => a.name.localeCompare(b.name)
+            );
+
+            setSuppliers(uniqueSuppliers);
           }
-
-          // Convert map to array and sort by name
-          const uniqueSuppliers = Array.from(supplierMap.values()).sort(
-            (a, b) => a.name.localeCompare(b.name)
-          );
-
-          setSuppliers(uniqueSuppliers);
-        });
+        );
     }
   }, [open, projectId, isEditing, order?.supplier_id, supabase]);
 
@@ -477,7 +484,7 @@ export function PurchaseOrderDialog({
           .eq("purchase_order_id", order.id);
 
         const currentItemIds = new Set(
-          (currentItems || []).map((item) => item.id)
+          (currentItems || []).map((item: { id: string }) => item.id)
         );
         const newItemIds = selectedItemIds;
 
@@ -491,7 +498,8 @@ export function PurchaseOrderDialog({
             .neq("id", order.id)
             .neq("status", "cancelled");
 
-          const activeOrderIds = activeOrders?.map((po) => po.id) || [];
+          const activeOrderIds =
+            activeOrders?.map((po: { id: string }) => po.id) || [];
 
           // For each item in this order, check if it's in another non-cancelled order
           for (const itemId of currentItemIds) {
@@ -528,7 +536,7 @@ export function PurchaseOrderDialog({
         }
 
         // Remove items no longer selected
-        const toRemove = Array.from(currentItemIds).filter(
+        const toRemove = (Array.from(currentItemIds) as string[]).filter(
           (id) => !newItemIds.has(id)
         );
         if (toRemove.length > 0) {
@@ -540,7 +548,8 @@ export function PurchaseOrderDialog({
             .neq("id", order.id)
             .neq("status", "cancelled");
 
-          const activeOrderIds = activeOrders?.map((po) => po.id) || [];
+          const activeOrderIds =
+            activeOrders?.map((po: { id: string }) => po.id) || [];
 
           // Check if items are in other non-cancelled orders before setting to pending
           for (const itemId of toRemove) {
