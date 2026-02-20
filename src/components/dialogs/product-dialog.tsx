@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { reportError, CURRENCIES } from "@/lib/utils";
 import type { Product, Supplier } from "@/types";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { SupplierDialog } from "./supplier-dialog";
 import { ProductImageUpload } from "@/components/product-image-upload";
@@ -69,14 +69,10 @@ export function ProductDialog({
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(
     null
   );
+  /** File selected for new product; uploaded only after product is created */
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
 
-  // Para productos nuevos: ID pre-generado para la ruta B2 (UID/product_id.ext)
-  const productIdForUpload = useMemo(() => {
-    if (product) return product.id;
-    if (open) return crypto.randomUUID();
-    return "";
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only open and product id affect result
-  }, [open, product?.id]);
+  const productIdForUpload = product?.id ?? "";
 
   type FormValues = {
     name: string;
@@ -142,6 +138,7 @@ export function ProductDialog({
 
   useEffect(() => {
     if (product) {
+      setPendingImageFile(null);
       form.reset({
         name: product.name,
         reference_code: product.reference_code || "",
@@ -187,6 +184,7 @@ export function ProductDialog({
         }
       })();
     } else if (open) {
+      setPendingImageFile(null);
       form.reset({
         name: "",
         reference_code: "",
@@ -269,11 +267,46 @@ export function ProductDialog({
         if (error) throw error;
         toast.success("Producto actualizado");
       } else {
-        if (productIdForUpload) {
-          data.id = productIdForUpload;
+        // New product: insert first (no image_url if we have a pending file to upload)
+        const insertData = { ...data };
+        if (pendingImageFile) {
+          insertData.image_url = null;
         }
-        const { error } = await supabase.from("products").insert([data]);
-        if (error) throw error;
+        const { data: created, error: insertError } = await supabase
+          .from("products")
+          .insert([insertData])
+          .select("id")
+          .single();
+        if (insertError) throw insertError;
+        const newId = created.id;
+
+        if (pendingImageFile) {
+          const formData = new FormData();
+          formData.append("file", pendingImageFile);
+          formData.append("productId", newId);
+          const res = await fetch("/api/upload/product-image", {
+            method: "POST",
+            body: formData,
+          });
+          const uploadJson = (await res.json()) as {
+            url?: string;
+            error?: string;
+          };
+          if (!res.ok) {
+            reportError(
+              new Error(uploadJson.error ?? "Error al subir la imagen")
+            );
+            toast.error(uploadJson.error ?? "Error al subir la imagen");
+          } else if (uploadJson.url) {
+            const { error: updateError } = await supabase
+              .from("products")
+              .update({ image_url: uploadJson.url })
+              .eq("id", newId);
+            if (updateError)
+              reportError(updateError, "Error updating image_url:");
+          }
+        }
+        setPendingImageFile(null);
         toast.success("Producto creado");
       }
       onSuccess();
@@ -478,17 +511,30 @@ export function ProductDialog({
                       <FormMessage />
                     </TabsContent>
                     <TabsContent value="upload">
-                      {productIdForUpload && user?.id ? (
-                        <ProductImageUpload
-                          productId={productIdForUpload}
-                          currentImageUrl={field.value || undefined}
-                          onUploadSuccess={(url) => {
-                            field.onChange(url);
-                            toast.success("Imagen subida");
-                          }}
-                          onUploadError={(msg) => toast.error(msg)}
-                          className="mt-2"
-                        />
+                      {user?.id ? (
+                        product ? (
+                          <ProductImageUpload
+                            productId={productIdForUpload}
+                            currentImageUrl={field.value || undefined}
+                            onUploadSuccess={(url) => {
+                              field.onChange(url);
+                              toast.success("Imagen subida");
+                            }}
+                            onUploadError={(msg) => toast.error(msg)}
+                            className="mt-2"
+                          />
+                        ) : (
+                          <ProductImageUpload
+                            productId=""
+                            currentImageUrl={field.value || undefined}
+                            deferUpload
+                            onFileSelect={setPendingImageFile}
+                            pendingFile={pendingImageFile}
+                            onUploadSuccess={(url) => field.onChange(url)}
+                            onUploadError={(msg) => toast.error(msg)}
+                            className="mt-2"
+                          />
+                        )
                       ) : (
                         <p className="text-muted-foreground mt-2 text-sm">
                           Cargando…

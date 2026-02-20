@@ -98,15 +98,11 @@ export function AddItemDialog({
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(
     null
   );
+  /** File selected for new custom product; uploaded only after product is created */
+  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const isEditing = !!item;
 
-  // Para productos nuevos: ID pre-generado para la ruta B2 (UID/product_id.ext)
-  const productIdForUpload = useMemo(() => {
-    if (item?.product_id) return item.product_id;
-    if (open && !item) return crypto.randomUUID();
-    return "";
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only open and product_id affect result
-  }, [open, item?.product_id]);
+  const productIdForUpload = item?.product_id ?? "";
 
   type FormValues = z.input<typeof formSchema>;
   const form = useForm<FormValues>({
@@ -194,6 +190,7 @@ export function AddItemDialog({
           }
         }
 
+        setPendingImageFile(null);
         form.reset({
           product_id: item.product_id || "custom",
           space_id: item.space_id || "none",
@@ -223,6 +220,7 @@ export function AddItemDialog({
           setActiveTab("new");
         }
       } else if (open && !item) {
+        setPendingImageFile(null);
         form.reset({
           product_id: "",
           space_id: spaceId || "none",
@@ -266,6 +264,7 @@ export function AddItemDialog({
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setSearchQuery("");
+    setPendingImageFile(null);
     if (value === "new") {
       form.setValue("product_id", "custom");
       setSelectedProduct(null);
@@ -341,16 +340,13 @@ export function AddItemDialog({
           reference_url: values.reference_url || null,
           category: values.category || "",
           cost_price: values.unit_cost,
-          image_url: values.image_url || null,
+          image_url: pendingImageFile ? null : values.image_url || null,
           supplier_id:
             values.supplier_id === "none" || !values.supplier_id
               ? null
               : values.supplier_id,
           user_id: user.id,
         };
-        if (productIdForUpload) {
-          productData.id = productIdForUpload;
-        }
 
         const { data: newProduct, error: productError } = await supabase
           .from("products")
@@ -360,6 +356,29 @@ export function AddItemDialog({
 
         if (productError) throw productError;
         finalProductId = newProduct.id;
+
+        if (pendingImageFile) {
+          const formData = new FormData();
+          formData.append("file", pendingImageFile);
+          formData.append("productId", newProduct.id);
+          formData.append("projectId", projectId);
+          const res = await fetch("/api/upload/product-image", {
+            method: "POST",
+            body: formData,
+          });
+          const uploadJson = (await res.json()) as {
+            url?: string;
+            error?: string;
+          };
+          if (res.ok && uploadJson.url) {
+            await supabase
+              .from("products")
+              .update({ image_url: uploadJson.url })
+              .eq("id", newProduct.id);
+            values = { ...values, image_url: uploadJson.url };
+          }
+          setPendingImageFile(null);
+        }
       }
 
       const data = {
@@ -729,18 +748,43 @@ export function AddItemDialog({
                             <FormMessage />
                           </TabsContent>
                           <TabsContent value="upload">
-                            {productIdForUpload && user?.id ? (
-                              <ProductImageUpload
-                                productId={productIdForUpload}
-                                projectId={projectId}
-                                currentImageUrl={field.value || undefined}
-                                onUploadSuccess={(url) => {
-                                  field.onChange(url);
-                                  toast.success("Imagen subida");
-                                }}
-                                onUploadError={(msg) => toast.error(msg)}
-                                className="mt-2"
-                              />
+                            {user?.id ? (
+                              activeTab === "new" && !isEditing ? (
+                                <ProductImageUpload
+                                  productId=""
+                                  projectId={projectId}
+                                  currentImageUrl={field.value || undefined}
+                                  deferUpload
+                                  onFileSelect={setPendingImageFile}
+                                  pendingFile={pendingImageFile}
+                                  onUploadSuccess={(url) => field.onChange(url)}
+                                  onUploadError={(msg) => toast.error(msg)}
+                                  className="mt-2"
+                                />
+                              ) : productIdForUpload ||
+                                (form.watch("product_id") &&
+                                  form.watch("product_id") !== "custom") ? (
+                                <ProductImageUpload
+                                  productId={
+                                    productIdForUpload ||
+                                    form.watch("product_id") ||
+                                    ""
+                                  }
+                                  projectId={projectId}
+                                  currentImageUrl={field.value || undefined}
+                                  onUploadSuccess={(url) => {
+                                    field.onChange(url);
+                                    toast.success("Imagen subida");
+                                  }}
+                                  onUploadError={(msg) => toast.error(msg)}
+                                  className="mt-2"
+                                />
+                              ) : (
+                                <p className="text-muted-foreground mt-2 text-sm">
+                                  Selecciona un producto del catálogo o crea uno
+                                  nuevo para subir una imagen.
+                                </p>
+                              )
                             ) : (
                               <p className="text-muted-foreground mt-2 text-sm">
                                 Cargando…
