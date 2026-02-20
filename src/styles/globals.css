@@ -173,6 +173,15 @@
   a {
     @apply cursor-pointer;
   }
+  /* 2.1 A11y: enfoque visible en controles (solo :focus-visible para teclado) */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
 }
 
 @layer utilities {
@@ -241,8 +250,18 @@
       linear-gradient(to right, var(--primary) 1px, transparent 1px),
       linear-gradient(to bottom, var(--primary) 1px, transparent 1px);
     background-size: 20px 20px;
-    mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
+    mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 30%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 30%,
+      transparent 100%
+    );
     pointer-events: none;
   }
   .footer-pattern-container > * {
@@ -264,8 +283,18 @@
       linear-gradient(to right, var(--primary) 1px, transparent 1px),
       linear-gradient(to bottom, var(--primary) 1px, transparent 1px);
     background-size: 20px 20px;
-    mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 30%, transparent 100%);
+    mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 30%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      black 0%,
+      black 30%,
+      transparent 100%
+    );
     pointer-events: none;
   }
   .hero-pattern-overlay::after {
@@ -281,11 +310,39 @@
       linear-gradient(to right, var(--primary) 1px, transparent 1px),
       linear-gradient(to bottom, var(--primary) 1px, transparent 1px);
     background-size: 20px 20px;
-    mask-image: linear-gradient(to bottom, transparent 0%, black 70%, black 100%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 70%, black 100%);
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 70%,
+      black 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 70%,
+      black 100%
+    );
     pointer-events: none;
   }
   .hero-pattern-overlay > .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 404: patrón 10% opacidad, visible en todo el fondo */
+  .not-found-pattern::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.1;
+    background-image:
+      linear-gradient(to right, var(--primary) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--primary) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+  }
+  .not-found-pattern > * {
     position: relative;
     z-index: 1;
   }

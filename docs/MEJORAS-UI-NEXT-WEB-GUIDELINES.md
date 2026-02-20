@@ -112,8 +112,8 @@ _(Nota: las guidelines de Vercel Labs no se pudieron cargar por timeout; las sig
 
 ### 2.3 Navegación y wayfinding
 
-- **Skip link:** Añadir “Saltar al contenido” que enlace a `#main-content` para teclado y lectores de pantalla.
-- **Breadcrumbs:** En app (p. ej. Proyectos > [nombre] > Presupuesto) considerar breadcrumbs en páginas profundas para contexto.
+- **Skip link:** Omitido (en una prueba previa el botón se superponía al navbar).
+- **Breadcrumbs:** No añadidos. El contexto ya lo dan la barra lateral (enlace activo «Proyectos»), el h1 con el nombre del proyecto y las pestañas (Resumen, Espacios, Presupuesto, etc.).
 
 ### 2.4 Feedback y estado
 
@@ -175,6 +175,11 @@ export default function Error({
 }
 ```
 
+### 3.5.1 Otras vistas de error (propuestas)
+
+- **`app/error.tsx`** (error en una ruta): Misma línea visual que 404: fondo con `not-found-pattern`, franja decorativa, card centrada con título “Algo ha fallado”, mensaje, botón “Reintentar”. Client component con `error`, `reset`; opcionalmente reutilizar estilos o un layout compartido con `not-found`.
+- **`app/global-error.tsx`** (error en root layout): Debe incluir `<html>` y `<body>` propios. Mantener tono Veta (card, primary, copy breve) y enlace “Ir al inicio” para recuperar la sesión cuando el fallo sea de layout/Shell.
+
 ### 3.6 Suspense y client hooks
 
 - **useSearchParams:** La página `auth` usa `useSearchParams` dentro de `AuthContent` y está envuelta en `<Suspense>` en el export default; correcto.
@@ -196,7 +201,7 @@ export default function Error({
 | Prioridad | Área     | Acción                                                                  |
 | --------- | -------- | ----------------------------------------------------------------------- |
 | Alta      | Next.js  | Añadir `app/error.tsx` y `app/global-error.tsx`.                        |
-| Alta      | A11y     | Añadir skip link “Saltar al contenido” a `#main-content`.               |
+| —         | A11y     | Skip link omitido (superposición con navbar en prueba previa).          |
 | Media     | Frontend | Introducir segunda fuente (display) para títulos y usarla en marketing. |
 | Media     | Frontend | Respetar `prefers-reduced-motion` en animaciones.                       |
 | Media     | Next.js  | Comprobar `images.remotePatterns` para dominios de imágenes (Supabase). |
