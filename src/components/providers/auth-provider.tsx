@@ -87,6 +87,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!cancelled) setProfileFullName(null);
       });
     void Promise.resolve(
+      supabase.from("profiles").select("full_name").eq("id", user.id).single()
+    )
+      .then(({ data }) => {
+        if (!cancelled && data?.full_name != null) {
+          setProfileFullName(data.full_name.trim() || null);
+        } else if (!cancelled) {
+          setProfileFullName(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setProfileFullName(null);
+      });
+    void Promise.resolve(
       supabase.rpc("get_effective_plan", { p_user_id: user.id })
     )
       .then(({ data, error }) => {
