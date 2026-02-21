@@ -156,12 +156,14 @@ const testimonials = [
       "La gestión de clientes, proveedores y catálogo en un solo sitio ha simplificado mucho el trabajo en los proyectos de diseño interior. Recomendable para independientes o estudios que quieren profesionalizar la parte de gestión.",
     author: "FH Interiorismo",
     role: "Estudio de arquitectura interior",
+    url: "https://instagram.com/fh.interiorismo",
   },
   {
     quote:
       "Con Veta hemos dejado de perder horas en hojas de cálculo. Los presupuestos por espacios y el control de costes nos permiten organizarnos y enfocarnos en el diseño.",
     author: "EM Estilo Creativo",
     role: "Diseño de interiores y estilismo",
+    url: "https://emestilocreativo.com/",
   },
 ];
 
@@ -395,12 +397,23 @@ export default function HomePage() {
                     &ldquo;{testimonials[0].quote}&rdquo;
                   </p>
                   <div className="flex flex-shrink-0 items-center gap-3">
-                    <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold md:h-14 md:w-14">
+                    <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold md:h-14 md:w-14 md:text-xl">
                       {testimonials[0].author.charAt(0)}
                     </div>
                     <div>
                       <p className="font-semibold md:text-lg">
-                        {testimonials[0].author}
+                        {"url" in testimonials[0] && testimonials[0].url ? (
+                          <a
+                            href={testimonials[0].url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary underline underline-offset-2 transition-colors"
+                          >
+                            {testimonials[0].author}
+                          </a>
+                        ) : (
+                          testimonials[0].author
+                        )}
                       </p>
                       <p className="text-muted-foreground text-sm">
                         {testimonials[0].role}
@@ -421,11 +434,24 @@ export default function HomePage() {
                     &ldquo;{testimonials[1].quote}&rdquo;
                   </p>
                   <div className="flex flex-shrink-0 items-center gap-3">
-                    <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold">
+                    <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-full text-base font-bold">
                       {testimonials[1].author.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-semibold">{testimonials[1].author}</p>
+                      <p className="font-semibold">
+                        {"url" in testimonials[1] && testimonials[1].url ? (
+                          <a
+                            href={testimonials[1].url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary underline underline-offset-2 transition-colors"
+                          >
+                            {testimonials[1].author}
+                          </a>
+                        ) : (
+                          testimonials[1].author
+                        )}
+                      </p>
                       <p className="text-muted-foreground text-sm">
                         {testimonials[1].role}
                       </p>
