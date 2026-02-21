@@ -12,6 +12,17 @@ export const metadata: Metadata = {
     index: false,
     follow: false,
   },
+  icons: {
+    icon: [
+      { url: "/img/veta-favicon-light.png", type: "image/png" },
+      {
+        url: "/img/veta-favicon-dark.png",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+    apple: "/img/veta-favicon-light.png",
+  },
 };
 
 export default async function AppLayout({

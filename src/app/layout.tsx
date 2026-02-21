@@ -71,14 +71,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/img/veta-light.webp", type: "image/webp" },
+      { url: "/img/veta-favicon-light.png", type: "image/png" },
       {
-        url: "/img/veta-dark.webp",
-        type: "image/webp",
+        url: "/img/veta-favicon-dark.png",
+        type: "image/png",
         media: "(prefers-color-scheme: dark)",
       },
     ],
-    apple: "/img/veta-light.webp",
+    apple: "/img/veta-favicon-light.png",
   },
 };
 
