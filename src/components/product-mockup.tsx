@@ -8,8 +8,19 @@ import {
   ShoppingBag,
   ArrowRight,
 } from "lucide-react";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
+
+const finalState = { opacity: 1, y: 0, x: 0, scale: 1, rotate: -6 };
 
 export function ProductMockup() {
+  const reducedMotion = useReducedMotion();
+  const mainTransition = reducedMotion
+    ? { duration: 0, delay: 0 }
+    : { duration: 0.8, delay: 0.3, ease: [0.25, 0.4, 0.25, 1] as const };
+  const mainInitial = reducedMotion
+    ? finalState
+    : { opacity: 0, y: 20, scale: 0.95 };
+
   return (
     <div className="relative mx-auto w-full max-w-lg">
       {/* Glow background */}
@@ -18,9 +29,9 @@ export function ProductMockup() {
       {/* Main mockup card */}
       <motion.div
         className="bg-card border-border relative overflow-hidden rounded-2xl border shadow-2xl"
-        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.4, 0.25, 1] }}
+        initial={mainInitial}
+        animate={finalState}
+        transition={mainTransition}
       >
         {/* Fake title bar */}
         <div className="bg-muted/50 border-border flex items-center gap-2 border-b px-4 py-3">
@@ -48,6 +59,7 @@ export function ProductMockup() {
               color="text-primary"
               bgColor="bg-primary/10"
               delay={0.5}
+              reducedMotion={reducedMotion}
             />
             <MockStatCard
               icon={Users}
@@ -57,6 +69,7 @@ export function ProductMockup() {
               color="text-chart-2"
               bgColor="bg-chart-2/10"
               delay={0.7}
+              reducedMotion={reducedMotion}
             />
             <MockStatCard
               icon={TrendingUp}
@@ -66,6 +79,7 @@ export function ProductMockup() {
               color="text-chart-4"
               bgColor="bg-chart-4/10"
               delay={0.9}
+              reducedMotion={reducedMotion}
             />
           </div>
 
@@ -79,18 +93,21 @@ export function ProductMockup() {
               client="María García"
               status="Obra y ejecución"
               delay={1.1}
+              reducedMotion={reducedMotion}
             />
             <MockProjectRow
               name="Hotel Boutique Malasaña"
               client="Grupo Hostelero BCN"
               status="Diseño ejecutivo"
               delay={1.3}
+              reducedMotion={reducedMotion}
             />
             <MockProjectRow
               name="Oficinas Coworking"
               client="TechSpace S.L."
               status="Obra y ejecución"
               delay={1.5}
+              reducedMotion={reducedMotion}
             />
           </div>
         </div>
@@ -99,14 +116,22 @@ export function ProductMockup() {
       {/* Floating notification badge */}
       <motion.div
         className="bg-primary text-primary-foreground shadow-primary/25 absolute -top-3 -right-3 rounded-full px-3 py-1.5 text-xs font-medium shadow-lg"
-        initial={{ opacity: 0, scale: 0, rotate: -12 }}
+        initial={
+          reducedMotion
+            ? { opacity: 1, scale: 1, rotate: -6 }
+            : { opacity: 0, scale: 0, rotate: -12 }
+        }
         animate={{ opacity: 1, scale: 1, rotate: -6 }}
-        transition={{
-          duration: 0.5,
-          delay: 1.8,
-          type: "spring",
-          stiffness: 200,
-        }}
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : {
+                duration: 0.5,
+                delay: 1.8,
+                type: "spring",
+                stiffness: 200,
+              }
+        }
       >
         3 nuevos proyectos
       </motion.div>
@@ -114,9 +139,17 @@ export function ProductMockup() {
       {/* Floating catalog card */}
       <motion.div
         className="bg-card border-border absolute -bottom-4 -left-4 flex items-center gap-2 rounded-xl border p-3 shadow-lg"
-        initial={{ opacity: 0, x: -20, y: 10 }}
+        initial={
+          reducedMotion
+            ? { opacity: 1, x: 0, y: 0 }
+            : { opacity: 0, x: -20, y: 10 }
+        }
         animate={{ opacity: 1, x: 0, y: 0 }}
-        transition={{ duration: 0.6, delay: 2.0, ease: [0.25, 0.4, 0.25, 1] }}
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : { duration: 0.6, delay: 2.0, ease: [0.25, 0.4, 0.25, 1] }
+        }
       >
         <div className="bg-chart-5/10 text-chart-5 rounded-lg p-1.5">
           <ShoppingBag className="h-4 w-4" />
@@ -138,6 +171,7 @@ function MockStatCard({
   color,
   bgColor,
   delay,
+  reducedMotion = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
@@ -146,13 +180,14 @@ function MockStatCard({
   color: string;
   bgColor: string;
   delay: number;
+  reducedMotion?: boolean;
 }) {
   return (
     <motion.div
       className="bg-background border-border/50 rounded-xl border p-3"
-      initial={{ opacity: 0, y: 10 }}
+      initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
+      transition={reducedMotion ? { duration: 0 } : { duration: 0.4, delay }}
     >
       <div
         className={`${bgColor} ${color} mb-2 flex h-6 w-6 items-center justify-center rounded-md`}
@@ -173,18 +208,20 @@ function MockProjectRow({
   client,
   status,
   delay,
+  reducedMotion = false,
 }: {
   name: string;
   client: string;
   status: string;
   delay: number;
+  reducedMotion?: boolean;
 }) {
   return (
     <motion.div
       className="bg-background border-border/50 hover:bg-accent/5 flex items-center justify-between rounded-lg border p-2.5 transition-colors"
-      initial={{ opacity: 0, x: -10 }}
+      initial={reducedMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.4, delay }}
+      transition={reducedMotion ? { duration: 0 } : { duration: 0.4, delay }}
     >
       <div className="flex min-w-0 items-center gap-2.5">
         <div className="bg-primary/10 text-primary flex-shrink-0 rounded-md p-1.5">

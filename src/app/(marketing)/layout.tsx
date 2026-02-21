@@ -3,6 +3,7 @@ import Link from "next/link";
 import { VetaLogo } from "@/components/veta-logo";
 import { MarketingHeader } from "@/components/layouts/marketing-header";
 import { RedirectAuthenticatedToDashboard } from "@/components/redirect-authenticated-to-dashboard";
+import { AnchorToHash } from "@/components/smooth-scroll-link";
 
 export const metadata: Metadata = {
   robots: {
@@ -13,8 +14,13 @@ export const metadata: Metadata = {
 
 function Footer() {
   return (
-    <footer className="border-border bg-muted/30 border-t">
-      <div className="container mx-auto max-w-7xl px-4 py-12">
+    <footer className="border-border bg-muted/30 relative border-t">
+      {/* Línea decorativa – acento primary sobre el footer */}
+      <div
+        className="via-primary/40 h-1 w-full bg-gradient-to-r from-transparent to-transparent"
+        aria-hidden
+      />
+      <div className="footer-pattern-container relative container mx-auto max-w-7xl px-4 py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="mb-4 flex items-center gap-2">
@@ -30,12 +36,12 @@ function Footer() {
             <h3 className="mb-3 font-semibold">Producto</h3>
             <ul className="text-muted-foreground space-y-2 text-sm">
               <li>
-                <Link
+                <AnchorToHash
                   href="/#features"
                   className="hover:text-foreground transition-colors"
                 >
                   Características
-                </Link>
+                </AnchorToHash>
               </li>
               <li>
                 <Link

@@ -147,9 +147,10 @@ export default function PricingPage() {
       <JsonLd data={softwareApplicationPricingJsonLd(pricingUrl)} />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-32">
+      <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-32">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
         <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
+        <div className="noise-overlay" aria-hidden />
 
         <div className="relative container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto max-w-3xl text-center">
@@ -164,6 +165,12 @@ export default function PricingPage() {
           </AnimatedSection>
         </div>
       </section>
+
+      {/* Franja decorativa (como la del footer) entre hero y contenido */}
+      <div
+        className="via-primary/40 h-1 w-full bg-gradient-to-r from-transparent to-transparent"
+        aria-hidden
+      />
 
       {/* Pricing Cards */}
       <PricingCardsClient plans={plans} />

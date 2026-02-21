@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AdditionalCostDialog } from "@/components/dialogs/additional-cost-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import type { AdditionalCost } from "@/types";
 
@@ -133,7 +134,11 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground py-8 text-center">Cargando...</p>
+        <div className="space-y-4 py-8">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-20 w-full rounded-md" />
+          ))}
+        </div>
       ) : costs.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">

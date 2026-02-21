@@ -5,6 +5,7 @@ import * as z from "zod";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -837,8 +838,10 @@ export function PurchaseOrderDialog({
                   </div>
 
                   {loadingItems ? (
-                    <div className="text-muted-foreground py-8 text-center">
-                      Cargando ítems...
+                    <div className="space-y-2 py-8">
+                      {[1, 2, 3, 4].map((i) => (
+                        <Skeleton key={i} className="h-12 w-full rounded-md" />
+                      ))}
                     </div>
                   ) : filteredItems.length === 0 ? (
                     <div className="text-muted-foreground py-8 text-center">

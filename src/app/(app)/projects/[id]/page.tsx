@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/components/auth-provider";
+import { PageLoading } from "@/components/loaders/page-loading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -118,7 +119,7 @@ export default function ProjectDetailPage() {
     return () => clearTimeout(timeoutId);
   }, [activeTab]);
 
-  if (loading) return <div className="text-muted-foreground">Cargando...</div>;
+  if (loading) return <PageLoading variant="detail" />;
   if (!project)
     return <div className="text-muted-foreground">Proyecto no encontrado</div>;
 
@@ -129,10 +130,10 @@ export default function ProjectDetailPage() {
           <CollapsibleTrigger className="group flex-1 text-left">
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
+                <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
                   {project.name}
                   <ChevronDown className="text-muted-foreground h-5 w-5 transition-transform group-data-[state=open]:rotate-180" />
-                </h2>
+                </h1>
                 <div className="flex items-center gap-2">
                   <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize">
                     {project.status}

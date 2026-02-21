@@ -26,7 +26,6 @@ interface Entry {
 // Use a global store that persists across requests in the same Edge Runtime instance
 // Note: In production with multiple Edge instances, consider using Redis/Upstash
 declare global {
-  // eslint-disable-next-line no-var
   var __rateLimitStore: Map<string, Entry> | undefined;
 }
 

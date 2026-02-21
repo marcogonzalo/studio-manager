@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -99,8 +100,10 @@ export function SpaceProductsDialog({
 
           <div className="flex-1 overflow-y-auto py-4">
             {loading ? (
-              <div className="text-muted-foreground py-8 text-center">
-                Cargando...
+              <div className="space-y-2 py-8">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-12 w-full rounded-md" />
+                ))}
               </div>
             ) : items.length === 0 ? (
               <div className="rounded-lg border border-dashed py-12 text-center">

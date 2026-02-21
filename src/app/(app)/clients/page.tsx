@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ClientDialog } from "@/components/dialogs/client-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
 import type { Client } from "@/types";
@@ -102,7 +103,7 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Users className="text-primary h-8 w-8" />
-          <h2 className="text-3xl font-bold tracking-tight">Clientes</h2>
+          <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" /> Nuevo Cliente
@@ -133,11 +134,22 @@ export default function ClientsPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={4} className="py-10 text-center">
-                  Cargando...
-                </TableCell>
-              </TableRow>
+              [...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-40" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="ml-auto h-8 w-8 rounded" />
+                  </TableCell>
+                </TableRow>
+              ))
             ) : clients.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="py-10 text-center">

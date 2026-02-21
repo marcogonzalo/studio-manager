@@ -51,14 +51,24 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.status || 400 }
-      );
+      // Log full Supabase error server-side for debugging (Dashboard Logs / Vercel logs)
+      console.error("[magic-link] Supabase auth error", {
+        message: error.message,
+        status: error.status,
+        name: error.name,
+      });
+      const isEmailDeliveryError =
+        error.message?.toLowerCase().includes("sending confirmation email") ||
+        error.message?.toLowerCase().includes("error sending email");
+      const message = isEmailDeliveryError
+        ? "No pudimos enviar el correo. Inténtalo de nuevo en unos minutos o contacta soporte."
+        : error.message;
+      const status = isEmailDeliveryError ? 503 : error.status || 400;
+      return NextResponse.json({ error: message }, { status });
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

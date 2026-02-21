@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Montserrat } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
@@ -70,11 +71,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Solo desarrollo: forzar global-error.tsx con cookie test-global-error=1
+  if (process.env.NODE_ENV === "development") {
+    const cookieStore = await cookies();
+    if (cookieStore.get("test-global-error")?.value === "1") {
+      throw new Error("Error de prueba para comprobar global-error.tsx");
+    }
+  }
+
   return (
     <html lang="es" suppressHydrationWarning className={montserrat.variable}>
       <body className="bg-background min-h-screen font-sans antialiased">

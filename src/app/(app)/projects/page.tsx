@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Plus, Calendar, User as UserIcon, FolderKanban } from "lucide-react";
 import { ProjectDialog } from "@/components/project-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -50,7 +51,7 @@ export default function ProjectsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <FolderKanban className="text-primary h-8 w-8" />
-          <h2 className="text-3xl font-bold tracking-tight">Proyectos</h2>
+          <h1 className="text-3xl font-bold tracking-tight">Proyectos</h1>
         </div>
         <Button onClick={() => setIsDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
@@ -58,7 +59,24 @@ export default function ProjectsPage() {
       </div>
 
       {loading ? (
-        <div className="text-muted-foreground">Cargando...</div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="transition-shadow">
+              <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-1/2" />
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-9 w-24" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (

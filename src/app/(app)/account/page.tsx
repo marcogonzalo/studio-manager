@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/components/auth-provider";
+import { PageLoading } from "@/components/loaders/page-loading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -72,7 +73,7 @@ export default function AccountPage() {
   const router = useRouter();
   const { user, effectivePlan, signOut } = useAuth();
   const supabase = getSupabaseClient();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [changeEmailDialogOpen, setChangeEmailDialogOpen] = useState(false);
@@ -196,13 +197,7 @@ export default function AccountPage() {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-muted-foreground animate-pulse">
-          Cargando perfil...
-        </p>
-      </div>
-    );
+    return <PageLoading variant="form" />;
   }
 
   return (

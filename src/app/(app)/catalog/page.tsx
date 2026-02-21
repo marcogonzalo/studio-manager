@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProductDialog } from "@/components/dialogs/product-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { toast } from "sonner";
 
@@ -144,7 +145,7 @@ export default function CatalogPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ShoppingBag className="text-primary h-8 w-8" />
-          <h2 className="text-3xl font-bold">Catálogo de Productos</h2>
+          <h1 className="text-3xl font-bold">Catálogo de Productos</h1>
         </div>
         <Button
           onClick={() => {
@@ -183,11 +184,31 @@ export default function CatalogPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={7} className="py-10 text-center">
-                  Cargando...
-                </TableCell>
-              </TableRow>
+              [...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className="h-10 w-10 rounded" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-36" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-28" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="ml-auto h-4 w-16" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="ml-auto h-8 w-8 rounded" />
+                  </TableCell>
+                </TableRow>
+              ))
             ) : products.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-10 text-center">

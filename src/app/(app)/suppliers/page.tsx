@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SupplierDialog } from "@/components/dialogs/supplier-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
 import type { Supplier } from "@/types";
@@ -82,7 +83,7 @@ export default function SuppliersPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Truck className="text-primary h-8 w-8" />
-          <h2 className="text-3xl font-bold">Proveedores</h2>
+          <h1 className="text-3xl font-bold">Proveedores</h1>
         </div>
         <Button
           onClick={() => {
@@ -119,11 +120,25 @@ export default function SuppliersPage() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center">
-                  Cargando...
-                </TableCell>
-              </TableRow>
+              [...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-28" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-36" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Skeleton className="ml-auto h-8 w-8 rounded" />
+                  </TableCell>
+                </TableRow>
+              ))
             ) : suppliers.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center">

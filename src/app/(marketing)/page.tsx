@@ -31,6 +31,7 @@ import {
 import { BenefitsList } from "./benefits-list";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import { ProductMockup } from "@/components/product-mockup";
+import { SmoothScrollLink } from "@/components/smooth-scroll-link";
 
 export const metadata: Metadata = {
   title: "Inicio",
@@ -169,31 +170,32 @@ export default function HomePage() {
     <>
       <JsonLd data={faqPageJsonLd(homeFaqs, baseUrl)} />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 md:py-28">
+      {/* Hero Section – momento hero: badge → título → subtítulo → CTAs con delays escalonados */}
+      <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-28">
         {/* Background effects */}
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
         <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
+        <div className="noise-overlay" aria-hidden />
 
         <div className="relative container mx-auto max-w-7xl px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Left: Copy */}
             <div className="text-center lg:text-left">
-              <AnimatedSection delay={0} duration={0.5}>
+              <AnimatedSection delay={0} duration={0.5} triggerOnMount>
                 <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
                   <Leaf className="h-4 w-4" />
                   <span>Diseñado para profesionales del diseño interior</span>
                 </div>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.1} duration={0.6}>
+              <AnimatedSection delay={0.1} duration={0.5} triggerOnMount>
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
                   Tus proyectos de interiorismo{" "}
                   <strong className="text-primary">sin complicaciones</strong>
                 </h1>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.2} duration={0.6}>
+              <AnimatedSection delay={0.2} duration={0.5} triggerOnMount>
                 <p className="text-muted-foreground mt-6 text-lg md:text-xl">
                   La plataforma todo-en-uno para arquitectos y diseñadores.
                   Administra proyectos, clientes, proveedores y presupuestos
@@ -201,7 +203,7 @@ export default function HomePage() {
                 </p>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.3} duration={0.5}>
+              <AnimatedSection delay={0.3} duration={0.5} triggerOnMount>
                 <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
                   <Button
                     size="lg"
@@ -219,7 +221,9 @@ export default function HomePage() {
                     asChild
                     className="w-full sm:w-auto"
                   >
-                    <Link href="#features">Ver Características</Link>
+                    <SmoothScrollLink href="#features">
+                      Ver Características
+                    </SmoothScrollLink>
                   </Button>
                 </div>
 
@@ -231,12 +235,23 @@ export default function HomePage() {
             </div>
 
             {/* Product Mockup: below on small screens, right on lg+ */}
-            <AnimatedSection direction="right" delay={0.4} duration={0.8}>
+            <AnimatedSection
+              direction="right"
+              delay={0.4}
+              duration={0.6}
+              triggerOnMount
+            >
               <ProductMockup />
             </AnimatedSection>
           </div>
         </div>
       </section>
+
+      {/* Franja decorativa (como la del footer) entre hero y contenido */}
+      <div
+        className="via-primary/40 h-1 w-full bg-gradient-to-r from-transparent to-transparent"
+        aria-hidden
+      />
 
       {/* Stats Section */}
       <section className="border-border/40 bg-muted/20 border-y py-16">
@@ -269,7 +284,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="bg-muted/30 py-20">
+      <section id="features" className="bg-muted/30 pt-20 pb-28">
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection
             className="mx-auto mb-16 max-w-2xl text-center"
@@ -292,10 +307,10 @@ export default function HomePage() {
           >
             {features.map((feature) => (
               <StaggerItem key={feature.title}>
-                <Card className="border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                <Card className="group/card border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                   <CardHeader>
-                    <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110">
-                      <feature.icon className="text-primary h-6 w-6" />
+                    <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover/card:scale-110">
+                      <feature.icon className="text-muted-foreground group-hover/card:text-primary h-6 w-6 transition-colors duration-300" />
                     </div>
                     <CardTitle>{feature.title}</CardTitle>
                   </CardHeader>
@@ -312,7 +327,7 @@ export default function HomePage() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20">
+      <section className="py-28">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             <AnimatedSection direction="left" triggerOnMount={false}>
@@ -348,7 +363,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
+      {/* Testimonials Section – layout roto: primera cita destacada, segunda con offset */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection
@@ -369,29 +384,56 @@ export default function HomePage() {
             staggerDelay={0.2}
             triggerOnMount={false}
           >
-            {testimonials.map((t) => (
-              <StaggerItem key={t.author} className="h-full">
-                <Card className="flex h-full flex-col border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                  <CardContent className="flex flex-1 flex-col pt-6">
-                    <Quote className="text-primary/60 mb-4 h-8 w-8 flex-shrink-0" />
-                    <p className="text-foreground mb-6 flex-1 italic">
-                      &ldquo;{t.quote}&rdquo;
-                    </p>
-                    <div className="flex flex-shrink-0 items-center gap-3">
-                      <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold">
-                        {t.author.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{t.author}</p>
-                        <p className="text-muted-foreground text-sm">
-                          {t.role}
-                        </p>
-                      </div>
+            <StaggerItem
+              key={testimonials[0].author}
+              className="h-full md:col-span-2"
+            >
+              <Card className="flex h-full flex-col border-none shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl md:px-10 md:py-8">
+                <CardContent className="flex flex-1 flex-col pt-6 md:pt-8">
+                  <Quote className="text-primary/60 mb-4 h-10 w-10 flex-shrink-0 md:h-12 md:w-12" />
+                  <p className="text-foreground mb-6 flex-1 text-base italic md:text-lg md:leading-relaxed">
+                    &ldquo;{testimonials[0].quote}&rdquo;
+                  </p>
+                  <div className="flex flex-shrink-0 items-center gap-3">
+                    <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold md:h-14 md:w-14">
+                      {testimonials[0].author.charAt(0)}
                     </div>
-                  </CardContent>
-                </Card>
-              </StaggerItem>
-            ))}
+                    <div>
+                      <p className="font-semibold md:text-lg">
+                        {testimonials[0].author}
+                      </p>
+                      <p className="text-muted-foreground text-sm">
+                        {testimonials[0].role}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </StaggerItem>
+            <StaggerItem
+              key={testimonials[1].author}
+              className="h-full md:col-span-2 md:ml-auto md:max-w-[90%]"
+            >
+              <Card className="flex h-full flex-col border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                <CardContent className="flex flex-1 flex-col pt-6">
+                  <Quote className="text-primary/60 mb-4 h-8 w-8 flex-shrink-0" />
+                  <p className="text-foreground mb-6 flex-1 italic">
+                    &ldquo;{testimonials[1].quote}&rdquo;
+                  </p>
+                  <div className="flex flex-shrink-0 items-center gap-3">
+                    <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold">
+                      {testimonials[1].author.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{testimonials[1].author}</p>
+                      <p className="text-muted-foreground text-sm">
+                        {testimonials[1].role}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </StaggerItem>
           </StaggerContainer>
         </div>
       </section>
@@ -401,6 +443,7 @@ export default function HomePage() {
         <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent" />
         <div className="bg-primary/10 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
         <div className="bg-primary/5 absolute bottom-0 left-0 h-72 w-72 -translate-x-1/4 translate-y-1/3 rounded-full blur-3xl" />
+        <div className="noise-overlay" aria-hidden />
 
         <div className="relative container mx-auto max-w-7xl px-4">
           <AnimatedSection
