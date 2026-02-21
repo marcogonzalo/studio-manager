@@ -5,6 +5,9 @@ import AppLayoutClient from "@/components/layouts/app-layout";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
+  title: { template: "%s", default: "App" },
+  description:
+    "Gestiona proyectos de diseño de interiores, clientes, presupuestos y catálogo.",
   robots: {
     index: false,
     follow: false,

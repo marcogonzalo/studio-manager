@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
     default: "Veta - Gestión de Proyectos de Diseño Interior",
-    template: "%s | Veta",
+    template: "Veta > %s",
   },
   description:
     "Plataforma integral para gestionar proyectos de diseño interior. Administra clientes, proveedores, catálogos y presupuestos en un solo lugar.",
@@ -68,6 +68,17 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  icons: {
+    icon: [
+      { url: "/img/veta-light.webp", type: "image/webp" },
+      {
+        url: "/img/veta-dark.webp",
+        type: "image/webp",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+    apple: "/img/veta-light.webp",
   },
 };
 
