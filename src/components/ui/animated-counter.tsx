@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useInView, motion, useMotionValue, animate } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 interface AnimatedCounterProps {
   /** Target number to count to */
@@ -41,17 +42,19 @@ export function AnimatedCounter({
     initial: !triggerOnMount,
   });
   const [mounted, setMounted] = useState(false);
+  const reducedMotion = useReducedMotion();
   useEffect(() => {
     setMounted(true);
   }, []);
   const isInView = triggerOnMount ? mounted : isInViewObserver;
   const motionValue = useMotionValue(0);
   const [displayValue, setDisplayValue] = useState("0");
+  const effectiveDuration = reducedMotion ? 0 : duration;
 
   useEffect(() => {
     if (target === Infinity || !isInView) return;
     const controls = animate(motionValue, target, {
-      duration,
+      duration: effectiveDuration,
       ease: [0.25, 0.4, 0.25, 1],
     });
 
@@ -68,16 +71,21 @@ export function AnimatedCounter({
       controls.stop();
       unsubscribe();
     };
-  }, [isInView, target, duration, decimals, motionValue]);
+  }, [isInView, target, effectiveDuration, decimals, motionValue]);
 
+  const transitionDuration = reducedMotion ? 0 : 0.4;
   if (target === Infinity) {
     return (
       <motion.span
         ref={ref}
         className={cn("tabular-nums", className)}
-        initial={{ opacity: 0, y: 10 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-        transition={{ duration: 0.4 }}
+        initial={{ opacity: 0, y: reducedMotion ? 0 : 10 }}
+        animate={
+          isInView
+            ? { opacity: 1, y: 0 }
+            : { opacity: 0, y: reducedMotion ? 0 : 10 }
+        }
+        transition={{ duration: transitionDuration }}
       >
         {prefix}∞{suffix}
       </motion.span>
@@ -88,9 +96,13 @@ export function AnimatedCounter({
     <motion.span
       ref={ref}
       className={cn("tabular-nums", className)}
-      initial={{ opacity: 0, y: 10 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-      transition={{ duration: 0.4 }}
+      initial={{ opacity: 0, y: reducedMotion ? 0 : 10 }}
+      animate={
+        isInView
+          ? { opacity: 1, y: 0 }
+          : { opacity: 0, y: reducedMotion ? 0 : 10 }
+      }
+      transition={{ duration: transitionDuration }}
     >
       {prefix}
       {displayValue}

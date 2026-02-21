@@ -5,9 +5,23 @@ import AppLayoutClient from "@/components/layouts/app-layout";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
+  title: { template: "%s", default: "App" },
+  description:
+    "Gestiona proyectos de diseño de interiores, clientes, presupuestos y catálogo.",
   robots: {
     index: false,
     follow: false,
+  },
+  icons: {
+    icon: [
+      { url: "/img/veta-favicon-light.png", type: "image/png" },
+      {
+        url: "/img/veta-favicon-dark.png",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
+    apple: "/img/veta-favicon-light.png",
   },
 };
 

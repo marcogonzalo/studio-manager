@@ -274,9 +274,7 @@ export default function AccountPage() {
               />
 
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting
-                  ? "Guardando..."
-                  : "Guardar cambios"}
+                {form.formState.isSubmitting ? "Guardando…" : "Guardar cambios"}
               </Button>
             </form>
           </Form>
@@ -427,7 +425,7 @@ export default function AccountPage() {
                   disabled={deleteForm.formState.isSubmitting}
                 >
                   {deleteForm.formState.isSubmitting
-                    ? "Eliminando..."
+                    ? "Eliminando…"
                     : "Eliminar cuenta"}
                 </Button>
               </DialogFooter>
@@ -494,7 +492,7 @@ export default function AccountPage() {
                   disabled={changeEmailForm.formState.isSubmitting}
                 >
                   {changeEmailForm.formState.isSubmitting
-                    ? "Enviando..."
+                    ? "Enviando…"
                     : "Enviar enlace de confirmación"}
                 </Button>
               </DialogFooter>

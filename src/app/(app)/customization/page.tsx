@@ -201,6 +201,7 @@ export default function CustomizationPage() {
                         type="email"
                         placeholder="correo@ejemplo.com"
                         className="h-9 text-sm"
+                        autoComplete="email"
                         {...field}
                         value={field.value ?? ""}
                         disabled={isBasePlan}
@@ -219,9 +220,7 @@ export default function CustomizationPage() {
                 type="submit"
                 disabled={form.formState.isSubmitting || isBasePlan}
               >
-                {form.formState.isSubmitting
-                  ? "Guardando..."
-                  : "Guardar cambios"}
+                {form.formState.isSubmitting ? "Guardando…" : "Guardar cambios"}
               </Button>
               {isBasePlan && (
                 <p className="text-muted-foreground text-xs">
@@ -309,9 +308,7 @@ export default function CustomizationPage() {
               </fieldset>
 
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting
-                  ? "Guardando..."
-                  : "Guardar cambios"}
+                {form.formState.isSubmitting ? "Guardando…" : "Guardar cambios"}
               </Button>
             </CardContent>
           </Card>

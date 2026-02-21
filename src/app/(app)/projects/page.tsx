@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -12,19 +12,44 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
-import { Plus, Calendar, User as UserIcon, FolderKanban } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Plus,
+  Calendar,
+  User as UserIcon,
+  FolderKanban,
+  Search,
+} from "lucide-react";
 import { ProjectDialog } from "@/components/project-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { formatDate } from "@/lib/utils";
 
 import type { Project } from "@/types";
+
+function matchProject(project: Project, query: string): boolean {
+  if (!query.trim()) return true;
+  const q = query.trim().toLowerCase();
+  const name = project.name?.toLowerCase() ?? "";
+  const description = project.description?.toLowerCase() ?? "";
+  const clientName =
+    (
+      project.client as { full_name?: string } | null
+    )?.full_name?.toLowerCase() ?? "";
+  return name.includes(q) || description.includes(q) || clientName.includes(q);
+}
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const supabase = getSupabaseClient();
+
+  const filteredProjects = useMemo(
+    () => projects.filter((p) => matchProject(p, search)),
+    [projects, search]
+  );
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -48,14 +73,37 @@ export default function ProjectsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <FolderKanban className="text-primary h-8 w-8" />
-          <h1 className="text-3xl font-bold tracking-tight">Proyectos</h1>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <FolderKanban className="text-primary h-8 w-8" />
+            <h1 className="text-3xl font-bold tracking-tight">Proyectos</h1>
+          </div>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
+          </Button>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
-        </Button>
+        <p className="text-muted-foreground text-sm">
+          Crea y gestiona proyectos de diseño con clientes, espacios y
+          presupuestos.
+        </p>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <div className="relative max-w-sm flex-1">
+          <Search
+            className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4"
+            aria-hidden
+          />
+          <Input
+            type="search"
+            placeholder="Buscar proyectos, descripción o cliente…"
+            className="pl-8"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label="Buscar proyectos"
+          />
+        </div>
       </div>
 
       {loading ? (
@@ -79,7 +127,7 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
             <Card
               key={project.id}
               className="transition-shadow hover:shadow-md"
@@ -99,7 +147,7 @@ export default function ProjectsPage() {
                   <div className="flex items-center">
                     <Calendar className="mr-2 h-4 w-4" />
                     {project.start_date
-                      ? format(new Date(project.start_date), "dd/MM/yyyy")
+                      ? formatDate(project.start_date)
                       : "Sin fecha"}
                   </div>
                   <div className="capitalize">
@@ -117,10 +165,41 @@ export default function ProjectsPage() {
               </CardFooter>
             </Card>
           ))}
-          {projects.length === 0 && (
-            <div className="text-muted-foreground col-span-full py-10 text-center">
-              No tienes proyectos activos. Crea uno nuevo.
-            </div>
+          {filteredProjects.length === 0 && (
+            <Card className="border-dashed md:col-span-2 lg:col-span-3">
+              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="bg-muted rounded-full p-4">
+                  <FolderKanban className="text-muted-foreground h-8 w-8" />
+                </div>
+                <h3 className="text-foreground mt-4 font-medium">
+                  {projects.length === 0
+                    ? "No tienes proyectos activos"
+                    : "No hay resultados para la búsqueda"}
+                </h3>
+                <p className="text-muted-foreground mt-1 max-w-sm text-sm">
+                  {projects.length === 0
+                    ? "Crea un proyecto para gestionar clientes, espacios y presupuestos."
+                    : "Prueba con otros términos o borra el filtro."}
+                </p>
+                {projects.length === 0 && (
+                  <Button
+                    onClick={() => setIsDialogOpen(true)}
+                    className="mt-4"
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
+                  </Button>
+                )}
+                {projects.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setSearch("")}
+                    className="mt-4"
+                  >
+                    Limpiar búsqueda
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
           )}
         </div>
       )}

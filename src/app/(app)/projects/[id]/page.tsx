@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useParams } from "next/navigation";
+import { Suspense, useEffect, useState, useRef } from "react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/components/auth-provider";
@@ -15,7 +15,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type { Project } from "@/types";
-import { getPhaseLabel } from "@/lib/utils";
+import { getPhaseLabel, formatDate } from "@/lib/utils";
 import { ProjectNotes } from "@/modules/app/projects/project-notes";
 import { ProjectPurchases } from "@/modules/app/projects/project-purchases";
 import { ProjectSpaces } from "@/modules/app/projects/project-spaces";
@@ -28,14 +28,32 @@ import { ProjectDialog } from "@/components/project-dialog";
 import { toast } from "sonner";
 import { Pencil, ChevronDown } from "lucide-react";
 
-export default function ProjectDetailPage() {
+const VALID_TABS = [
+  "overview",
+  "spaces",
+  "quotation",
+  "expenses",
+  "purchases",
+  "payments",
+  "documents",
+  "notes",
+] as const;
+
+function ProjectDetailContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const id = params.id as string;
   const { effectivePlan } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("resumen");
+  const tabFromUrl = searchParams.get("tab");
+  const initialTab =
+    tabFromUrl && VALID_TABS.includes(tabFromUrl as (typeof VALID_TABS)[number])
+      ? tabFromUrl
+      : "overview";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const tabsListRef = useRef<HTMLDivElement>(null);
   const supabase = getSupabaseClient();
 
@@ -45,14 +63,36 @@ export default function ProjectDetailPage() {
   const paymentsDisabled = !config?.payments_management;
   const documentsDisabled = !config?.documents;
 
+  const setActiveTabAndUrl = (tab: string) => {
+    setActiveTab(tab);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("tab", tab);
+      router.replace(url.pathname + url.search, { scroll: false });
+    }
+  };
+
+  // Sync tab from URL on mount / navigation (e.g. back/forward)
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && VALID_TABS.includes(tab as (typeof VALID_TABS)[number])) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (
-      (activeTab === "control" && costsDisabled) ||
-      (activeTab === "compras" && purchasesDisabled) ||
-      (activeTab === "pagos" && paymentsDisabled) ||
-      (activeTab === "documentos" && documentsDisabled)
+      (activeTab === "expenses" && costsDisabled) ||
+      (activeTab === "purchases" && purchasesDisabled) ||
+      (activeTab === "payments" && paymentsDisabled) ||
+      (activeTab === "documents" && documentsDisabled)
     ) {
-      setActiveTab("resumen");
+      setActiveTab("overview");
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", "overview");
+        router.replace(url.pathname + url.search, { scroll: false });
+      }
     }
   }, [
     activeTab,
@@ -60,6 +100,7 @@ export default function ProjectDetailPage() {
     purchasesDisabled,
     paymentsDisabled,
     documentsDisabled,
+    router,
   ]);
 
   async function fetchProject() {
@@ -176,7 +217,7 @@ export default function ProjectDetailPage() {
                 <p className="text-muted-foreground text-sm">Fecha Inicio</p>
                 <p className="font-medium">
                   {project.start_date
-                    ? new Date(project.start_date).toLocaleDateString("es-ES")
+                    ? formatDate(project.start_date)
                     : "No definida"}
                 </p>
               </div>
@@ -186,7 +227,7 @@ export default function ProjectDetailPage() {
                 </p>
                 <p className="font-medium">
                   {project.end_date
-                    ? new Date(project.end_date).toLocaleDateString("es-ES")
+                    ? formatDate(project.end_date)
                     : "No definida"}
                 </p>
               </div>
@@ -201,25 +242,25 @@ export default function ProjectDetailPage() {
         </CollapsibleContent>
       </Collapsible>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTabAndUrl}>
         <div className="scrollbar-hide -mx-4 overflow-x-auto px-4">
           <TabsList ref={tabsListRef} className="inline-flex w-max min-w-full">
-            <TabsTrigger value="resumen">Resumen</TabsTrigger>
-            <TabsTrigger value="espacios">Espacios</TabsTrigger>
-            <TabsTrigger value="presupuesto">Presupuesto</TabsTrigger>
-            <TabsTrigger value="control" disabled={costsDisabled}>
+            <TabsTrigger value="overview">Resumen</TabsTrigger>
+            <TabsTrigger value="spaces">Espacios</TabsTrigger>
+            <TabsTrigger value="quotation">Presupuesto</TabsTrigger>
+            <TabsTrigger value="expenses" disabled={costsDisabled}>
               Control Costos
             </TabsTrigger>
-            <TabsTrigger value="compras" disabled={purchasesDisabled}>
+            <TabsTrigger value="purchases" disabled={purchasesDisabled}>
               Compras
             </TabsTrigger>
-            <TabsTrigger value="pagos" disabled={paymentsDisabled}>
+            <TabsTrigger value="payments" disabled={paymentsDisabled}>
               Pagos
             </TabsTrigger>
-            <TabsTrigger value="documentos" disabled={documentsDisabled}>
+            <TabsTrigger value="documents" disabled={documentsDisabled}>
               Documentos
             </TabsTrigger>
-            <TabsTrigger value="notas">Notas</TabsTrigger>
+            <TabsTrigger value="notes">Notas</TabsTrigger>
           </TabsList>
         </div>
         {(costsDisabled ||
@@ -234,35 +275,35 @@ export default function ProjectDetailPage() {
           </p>
         )}
 
-        <TabsContent value="resumen">
+        <TabsContent value="overview">
           <ProjectDashboard projectId={id} />
         </TabsContent>
 
-        <TabsContent value="espacios">
+        <TabsContent value="spaces">
           <ProjectSpaces projectId={id} />
         </TabsContent>
 
-        <TabsContent value="presupuesto">
+        <TabsContent value="quotation">
           <ProjectBudget projectId={id} />
         </TabsContent>
 
-        <TabsContent value="control">
+        <TabsContent value="expenses">
           <ProjectCostControl projectId={id} />
         </TabsContent>
 
-        <TabsContent value="compras">
+        <TabsContent value="purchases">
           <ProjectPurchases projectId={id} />
         </TabsContent>
 
-        <TabsContent value="pagos">
+        <TabsContent value="payments">
           <ProjectPayments projectId={id} />
         </TabsContent>
 
-        <TabsContent value="documentos">
+        <TabsContent value="documents">
           <ProjectDocuments projectId={id} />
         </TabsContent>
 
-        <TabsContent value="notas">
+        <TabsContent value="notes">
           <ProjectNotes projectId={id} />
         </TabsContent>
       </Tabs>
@@ -277,5 +318,13 @@ export default function ProjectDetailPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function ProjectDetailPage() {
+  return (
+    <Suspense fallback={<PageLoading variant="detail" />}>
+      <ProjectDetailContent />
+    </Suspense>
   );
 }

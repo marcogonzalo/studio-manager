@@ -44,6 +44,30 @@ export function formatCurrency(
   }).format(amount);
 }
 
+/**
+ * Formatea una fecha según el locale del navegador (o es-ES por defecto).
+ * Usa Intl.DateTimeFormat para i18n y consistencia.
+ */
+export function formatDate(
+  date: Date | string | number,
+  options?: Intl.DateTimeFormatOptions & { locale?: string }
+): string {
+  const d =
+    typeof date === "object" && "getTime" in date ? date : new Date(date);
+  const locale =
+    options?.locale ??
+    (typeof navigator !== "undefined" ? navigator.language : "es-ES");
+  const opts = options
+    ? Object.fromEntries(
+        Object.entries(options).filter(([key]) => key !== "locale")
+      )
+    : {};
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "short",
+    ...opts,
+  }).format(d);
+}
+
 /** Devuelve solo el símbolo de la moneda. Si es undefined o no reconocida, devuelve "??". */
 export function getCurrencySymbol(currencyCode?: string): string {
   const hasValidCurrency =
