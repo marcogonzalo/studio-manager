@@ -15,20 +15,21 @@ import {
 import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
-  title: "Contacto",
+  title: "Contacto. Respuesta en menos de 24h",
   description:
-    "Ponte en contacto con el equipo de Veta. Respuesta en menos de 24 horas.",
+    "Ponte en contacto con el equipo de Veta. Resolvemos dudas sobre la plataforma de gestión de proyectos de diseño interior. Respuesta en menos de 24 horas.",
   alternates: { canonical: "/contact" },
   openGraph: {
-    title: "Contacto | Veta",
+    title: "Contacto - Equipo Veta | Respuesta en menos de 24h",
     description:
-      "Ponte en contacto con el equipo de Veta. Estamos aquí para ayudarte.",
+      "Ponte en contacto con el equipo de Veta. Estamos aquí para ayudarte con tu gestión de proyectos de diseño interior.",
     url: "/contact",
   },
   twitter: {
     card: "summary_large_image",
     title: "Contacto | Veta",
-    description: "Ponte en contacto con el equipo de Veta.",
+    description:
+      "Ponte en contacto con el equipo de Veta. Respuesta en menos de 24h.",
   },
 };
 

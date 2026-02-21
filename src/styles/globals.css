@@ -77,8 +77,8 @@
     --secondary: oklch(0.94 0.03 95); /* Sand/Beige */
     --secondary-foreground: oklch(0.35 0.04 100);
     --muted: oklch(0.94 0.03 95);
-    /* Darker for WCAG AA: was 0.55, now 0.38 for better contrast on light bg */
-    --muted-foreground: oklch(0.38 0.04 100);
+    /* Darker for WCAG AA and audit contrast: improved for light mode readability */
+    --muted-foreground: oklch(0.34 0.04 100);
 
     --accent: oklch(0.92 0.04 140); /* Lighter Sage for hovers */
     --accent-foreground: oklch(0.25 0.02 100);
@@ -126,8 +126,8 @@
       --secondary: oklch(0.35 0.03 85);
       --secondary-foreground: oklch(0.88 0.03 90);
       --muted: oklch(0.34 0.025 95);
-      /* Lighter for WCAG AA: was 0.68, now 0.76 for better contrast on dark bg */
-      --muted-foreground: oklch(0.76 0.03 95);
+      /* Slightly lighter for WCAG AA and audit contrast on dark bg */
+      --muted-foreground: oklch(0.78 0.03 95);
 
       --accent: oklch(0.38 0.035 110);
       --accent-foreground: oklch(0.9 0.02 95);
@@ -188,6 +188,11 @@
   textarea:focus-visible,
   [role="button"]:focus-visible {
     @apply ring-ring ring-offset-background ring-2 ring-offset-2 outline-none;
+  }
+
+  /* Skip link: visible on focus for keyboard users */
+  .skip-link {
+    @apply bg-primary text-primary-foreground ring-ring fixed top-4 left-4 z-[100] -translate-y-[200%] rounded-md px-4 py-2 text-sm font-medium shadow-lg transition-transform focus:translate-y-0 focus:ring-2 focus:ring-offset-2;
   }
 }
 

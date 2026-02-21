@@ -10,6 +10,20 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  openGraph: {
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Veta - Gestión de proyectos de diseño interior",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/opengraph-image"],
+  },
 };
 
 function Footer() {
@@ -109,6 +123,9 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
+      <a href="#main-content" className="skip-link">
+        Saltar al contenido
+      </a>
       <RedirectAuthenticatedToDashboard />
       <MarketingHeader />
       <main id="main-content" className="flex-1">

@@ -9,19 +9,19 @@ import {
 } from "@/components/ui/animated-section";
 
 export const metadata: Metadata = {
-  title: "Sobre Nosotros",
+  title: "Sobre nosotros y el equipo",
   description:
-    "Conoce al equipo detrás de Veta. Plataforma diseñada por diseñadores, para profesionales del diseño interior.",
+    "Conoce al equipo detrás de Veta: plataforma de gestión de proyectos de diseño interior creada para profesionales del interiorismo. Nuestra historia y valores.",
   alternates: { canonical: "/about" },
   openGraph: {
-    title: "Sobre Nosotros | Veta",
+    title: "Sobre nosotros - Equipo e historia | Veta",
     description:
-      "Conoce al equipo detrás de Veta. Diseñado por diseñadores, para diseñadores.",
+      "Conoce al equipo detrás de Veta. Plataforma diseñada por y para profesionales del diseño interior.",
     url: "/about",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sobre Nosotros | Veta",
+    title: "Sobre nosotros - Equipo e historia | Veta",
     description:
       "Conoce al equipo detrás de Veta. Plataforma para profesionales del diseño interior.",
   },
@@ -100,8 +100,8 @@ export default function AboutPage() {
                 programador buscando la forma de apoyar a su novia arquitecta de
                 diseño interior desde la tecnología. La herramienta nace de la
                 observación de los desafíos a los que arquitectas y diseñadores
-                de interiores se enfrentan en la gestión de proyectos de diseño
-                de interior: hojas de cálculo dispersas, presupuestos difíciles
+                de interiores se enfrentan en la gestión de proyectos de
+                interiorismo: hojas de cálculo dispersas, presupuestos difíciles
                 de rastrear, catálogo sin organización, registros difíciles de
                 buscar y comunicación fragmentada con proveedores como problemas
                 constantes.
@@ -113,7 +113,7 @@ export default function AboutPage() {
                 del sector de la arquitectura de diseño interior. Desde la
                 gestión de espacios hasta el control de costes, cada
                 característica fue diseñada pensando en el flujo de trabajo real
-                de un profesional de la arquitectura de diseño interior.
+                de un profesional del interiorismo.
               </p>
               <p>
                 Hoy, <strong>Veta</strong> ayuda a estudios de diseño a ahorrar
@@ -199,10 +199,10 @@ export default function AboutPage() {
               Marco Gonzalo Gómez Pérez
             </h3>
             <Link
-              href="https://es.linkedin.com/in/marcogonzalo/"
+              href="https://www.linkedin.com/in/marcogonzalo"
               target="_blank"
               rel="noopener noreferrer"
-              title="Perfil de Linkedin"
+              title="Perfil de Marco Gonzalo Gómez Pérez, creador de Veta, en Linkedin"
               className="text-primary mt-2 inline-flex items-center gap-2 text-sm font-medium transition-colors hover:underline"
             >
               <Linkedin className="h-5 w-5" />

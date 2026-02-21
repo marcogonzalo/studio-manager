@@ -24,19 +24,19 @@ const baseUrl =
 const PRICING_CURRENCY = "EUR";
 
 export const metadata: Metadata = {
-  title: "Precios",
+  title: "Precios y planes Base, Pro y Studio",
   description:
-    "Planes flexibles para estudios de diseño interior. Base, Pro y Studio. Sin sorpresas ni costos ocultos.",
+    "Planes flexibles para estudios de diseño interior: Base gratis, Pro y Studio con más capacidad. Precio fijo, sin costes ocultos. Prueba 30 días gratis.",
   alternates: { canonical: "/pricing" },
   openGraph: {
-    title: "Precios | Veta",
+    title: "Precios - Planes Base, Pro y Studio | Veta",
     description:
-      "Planes flexibles para estudios de diseño interior. Comienza gratis.",
+      "Planes flexibles para estudios de diseño interior. Comienza gratis, escala cuando lo necesites.",
     url: "/pricing",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Precios | Veta",
+    title: "Precios - Planes para diseño interior | Veta",
     description:
       "Planes flexibles para estudios de diseño interior. Comienza gratis.",
   },
@@ -135,7 +135,7 @@ const faqs = [
   {
     question: "¿Qué pasa con mis datos si cancelo?",
     answer:
-      "Tu plan se mantiene hasta el final del período. Al finalizar el plan, tus datos permanecen accesibles pero tu actividad queda limitada a lo estipulado en el plan base.",
+      "Los planes se mantienen hasta el final del período. Al finalizar el plan, tus datos permanecen accesibles pero tu actividad queda limitada a lo estipulado en el plan base.",
   },
 ];
 
@@ -225,7 +225,7 @@ export default function PricingPage() {
               ¿Necesitas algo personalizado?
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Contáctanos para crear un plan a medida para tu estudio.
+              Contáctanos para crear planes a medida para tu estudio.
             </p>
             <div className="mt-8">
               <Button

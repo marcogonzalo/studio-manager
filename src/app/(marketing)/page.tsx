@@ -34,21 +34,23 @@ import { ProductMockup } from "@/components/product-mockup";
 import { SmoothScrollLink } from "@/components/smooth-scroll-link";
 
 export const metadata: Metadata = {
-  title: "Inicio",
+  title: {
+    absolute: "Veta - Gestión de proyectos de diseño interior",
+  },
   description:
-    "Gestiona tus proyectos de diseño interior sin complicaciones. Plataforma todo-en-uno: clientes, proveedores, catálogos y presupuestos.",
+    "Plataforma todo-en-uno para estudios de diseño interior: gestiona proyectos, clientes, proveedores, catálogos y presupuestos desde un solo lugar. Prueba gratis.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Veta - Gestión de Proyectos de Diseño Interior",
+    title: "Veta - Gestión de proyectos de diseño interior",
     description:
-      "Gestiona tus proyectos de diseño interior sin complicaciones. Plataforma todo-en-uno.",
+      "Plataforma todo-en-uno para estudios de diseño interior: proyectos, clientes, proveedores y presupuestos. Prueba gratis.",
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Veta - Gestión de Proyectos de Diseño Interior",
+    title: "Veta - Gestión de proyectos de diseño interior",
     description:
-      "Gestiona tus proyectos de diseño interior sin complicaciones.",
+      "Plataforma todo-en-uno para estudios de diseño interior. Prueba gratis.",
   },
 };
 

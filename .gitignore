@@ -57,6 +57,9 @@ coverage/
 *.xcf
 
 # Cursor
-.agents/*
 .cursor/skills/*
+
+# Others
+.agents/*
+squirrel.toml
 skills-lock.json
