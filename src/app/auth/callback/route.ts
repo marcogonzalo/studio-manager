@@ -40,13 +40,30 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    let error: { message?: string; code?: string } | null = null;
+    try {
+      const result = await supabase.auth.exchangeCodeForSession(code);
+      error = result.error;
+    } catch (err) {
+      error = {
+        message: err instanceof Error ? err.message : String(err),
+        code: (err as { code?: string })?.code,
+      };
+    }
 
     if (!error) {
       return supabaseResponse;
     }
 
-    const friendlyMessage = getFriendlyAuthErrorMessage(error.message);
+    const friendlyMessage = getFriendlyAuthErrorMessage(
+      error.message,
+      error.code
+    );
+    // Log original error for debugging; UI shows only friendlyMessage
+    console.log("originalAuthError", {
+      message: error.message,
+      code: error.code,
+    });
     const authUrl = new URL("/auth", origin);
     authUrl.searchParams.set("error", friendlyMessage);
     authUrl.searchParams.set("redirect", redirectPath);
