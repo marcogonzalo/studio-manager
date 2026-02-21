@@ -111,8 +111,8 @@ function SidebarContent({
         )}
       >
         <Link
-          href="/dashboard"
-          aria-label={collapsed ? "Veta - Ir al inicio" : undefined}
+          href="/dashboard#main-content"
+          aria-label="Veta - Ir al contenido principal"
           className={cn(
             "flex items-center gap-2",
             collapsed && "justify-center"
@@ -426,6 +426,7 @@ export default function AppLayoutClient({
         {/* Main Content */}
         <main
           id="main-content"
+          tabIndex={-1}
           className={cn(
             "flex-1 overflow-x-hidden p-4 transition-all duration-300 md:p-5 print:ml-0 print:p-0",
             isCollapsed ? "md:ml-16" : "md:ml-64"
