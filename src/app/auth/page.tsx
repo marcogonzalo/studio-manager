@@ -87,6 +87,7 @@ function AuthContent() {
         );
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run only when emailUpdated changes
   }, [emailUpdated]);
 
   const form = useForm<z.infer<typeof formSchema>>({

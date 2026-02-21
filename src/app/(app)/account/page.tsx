@@ -73,7 +73,7 @@ export default function AccountPage() {
   const router = useRouter();
   const { user, effectivePlan, signOut } = useAuth();
   const supabase = getSupabaseClient();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [changeEmailDialogOpen, setChangeEmailDialogOpen] = useState(false);

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 /**
  * Captura errores en el root layout. Incluye <html> y <body> propios
  * porque reemplaza todo el layout. Estilos autocontenidos (sin depender del layout).
@@ -111,9 +113,9 @@ export default function GlobalError({
               >
                 Reintentar
               </button>
-              <a href="/" className="g-error-btn g-error-link">
+              <Link href="/" className="g-error-btn g-error-link">
                 Ir al inicio
-              </a>
+              </Link>
             </div>
           </div>
         </div>

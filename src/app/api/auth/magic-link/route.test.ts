@@ -115,7 +115,7 @@ describe("POST /api/auth/magic-link", () => {
     });
 
     const response = await POST(request);
-    const data = await response.json();
+    await response.json();
 
     expect(response.status).toBe(200);
     expect(mockSignInWithOtp).toHaveBeenCalledWith({
