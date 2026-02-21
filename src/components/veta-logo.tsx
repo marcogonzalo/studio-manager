@@ -33,8 +33,7 @@ function LogoLight({
   return (
     <Image
       src={LOGO_LIGHT_SRC}
-      alt=""
-      role="presentation"
+      alt="Veta"
       width={width}
       height={height}
       className={cn("h-auto w-auto flex-shrink-0 dark:hidden", className)}
@@ -56,8 +55,7 @@ function LogoDark({
   return (
     <Image
       src={LOGO_DARK_SRC}
-      alt=""
-      role="presentation"
+      alt="Veta"
       width={width}
       height={height}
       className={cn("hidden h-auto w-auto flex-shrink-0 dark:block", className)}

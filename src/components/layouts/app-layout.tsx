@@ -111,8 +111,7 @@ function SidebarContent({
         )}
       >
         <Link
-          href="/dashboard#main-content"
-          aria-label="Veta - Ir al contenido principal"
+          href="/dashboard"
           className={cn(
             "flex items-center gap-2",
             collapsed && "justify-center"
@@ -365,6 +364,9 @@ export default function AppLayoutClient({
 
   return (
     <TooltipProvider>
+      <a href="#main-content" className="skip-link">
+        Saltar al contenido
+      </a>
       <div className="bg-background text-foreground flex min-h-screen">
         {/* Desktop Sidebar */}
         <div
