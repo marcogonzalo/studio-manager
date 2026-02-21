@@ -1,7 +1,11 @@
 "use server";
 
-import { Resend } from "resend";
 import { z } from "zod";
+import {
+  sendTransactionalEmail,
+  getContactFormToEmail,
+  getDefaultFrom,
+} from "@/lib/email/mailersend";
 
 const contactSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -34,41 +38,33 @@ export async function submitContactForm(
   }
 
   const { name, email, subject, message } = parsed.data;
+  const from = getDefaultFrom();
+  const toEmail = getContactFormToEmail();
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const toEmail = process.env.CONTACT_EMAIL_TO ?? "veta.pro.pm@gmail.com";
-  const fromEmail =
-    process.env.CONTACT_EMAIL_FROM ?? "Veta Web <onboarding@resend.dev>";
+  const text = `Nombre: ${name}\nEmail: ${email}\n\nMensaje:\n${message}`;
+  const html = `
+    <h2>Nuevo mensaje de contacto</h2>
+    <p><strong>Nombre:</strong> ${escapeHtml(name)}</p>
+    <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+    <p><strong>Asunto:</strong> ${escapeHtml(subject)}</p>
+    <hr>
+    <p>${escapeHtml(message).replace(/\n/g, "<br>")}</p>
+  `;
 
-  if (!apiKey) {
-    return {
-      error:
-        "El envío de correos no está configurado. Contacta por email directamente.",
-    };
-  }
-
-  const resend = new Resend(apiKey);
-
-  const { error } = await resend.emails.send({
-    from: fromEmail,
+  const result = await sendTransactionalEmail({
     to: toEmail,
-    replyTo: email,
+    from: from.email,
+    fromName: from.name,
+    replyTo: { email, name },
     subject: `[Veta Contacto] ${subject}`,
-    text: `Nombre: ${name}\nEmail: ${email}\n\nMensaje:\n${message}`,
-    html: `
-      <h2>Nuevo mensaje de contacto</h2>
-      <p><strong>Nombre:</strong> ${escapeHtml(name)}</p>
-      <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-      <p><strong>Asunto:</strong> ${escapeHtml(subject)}</p>
-      <hr>
-      <p>${escapeHtml(message).replace(/\n/g, "<br>")}</p>
-    `,
+    text,
+    html,
   });
 
-  if (error) {
+  if (!result.success) {
     return {
       error:
-        error.message || "No se pudo enviar el mensaje. Inténtalo de nuevo.",
+        result.error || "No se pudo enviar el mensaje. Inténtalo de nuevo.",
     };
   }
 
