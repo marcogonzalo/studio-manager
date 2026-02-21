@@ -3,13 +3,14 @@ import Link from "next/link";
 import { ArrowLeft, Shield, FileText, Scale } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Términos de Uso y Política de Privacidad",
+  title: "Términos de uso y privacidad",
   description:
-    "Términos de uso, política de privacidad y derechos RGPD de Veta.",
+    "Términos de uso, política de privacidad y derechos RGPD de Veta. Cómo tratamos tus datos en la plataforma de gestión de proyectos de diseño interior.",
   alternates: { canonical: "/legal" },
   openGraph: {
     title: "Términos y Privacidad | Veta",
-    description: "Términos de uso, política de privacidad y cumplimiento RGPD.",
+    description:
+      "Términos de uso, política de privacidad y cumplimiento RGPD de Veta.",
     url: "/legal",
   },
   twitter: {
