@@ -1,6 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { CookieOptions } from "@supabase/ssr";
+import { getFriendlyAuthErrorMessage } from "@/lib/auth-error-messages";
 import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
 
 interface CookieToSet {
@@ -39,23 +40,41 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    let error: { message?: string; code?: string } | null = null;
+    try {
+      const result = await supabase.auth.exchangeCodeForSession(code);
+      error = result.error;
+    } catch (err) {
+      error = {
+        message: err instanceof Error ? err.message : String(err),
+        code: (err as { code?: string })?.code,
+      };
+    }
 
     if (!error) {
       return supabaseResponse;
     }
 
-    const authUrl = new URL("/auth", origin);
-    authUrl.searchParams.set(
-      "error",
-      error.message || "Could not authenticate user"
+    const friendlyMessage = getFriendlyAuthErrorMessage(
+      error.message,
+      error.code
     );
+    // Log original error for debugging; UI shows only friendlyMessage
+    console.log("originalAuthError", {
+      message: error.message,
+      code: error.code,
+    });
+    const authUrl = new URL("/auth", origin);
+    authUrl.searchParams.set("error", friendlyMessage);
     authUrl.searchParams.set("redirect", redirectPath);
     return NextResponse.redirect(authUrl.toString());
   }
 
   const authUrl = new URL("/auth", origin);
-  authUrl.searchParams.set("error", "No authentication code provided");
+  authUrl.searchParams.set(
+    "error",
+    "No se recibió el código de acceso. Por favor, intenta acceder nuevamente."
+  );
   authUrl.searchParams.set("redirect", "/dashboard");
   return NextResponse.redirect(authUrl.toString());
 }

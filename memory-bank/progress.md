@@ -130,6 +130,8 @@
 
 - [x] **Accesibilidad lista beneficios (fixes #28):** Lista de beneficios de la home con estructura semántica correcta: componente `BenefitsList` con `ul`/`li` y animación con `motion.ul`/`motion.li`.
 
+- [x] **Mensajes de autenticación amigables (fixes #36):** Los errores del callback de auth se traducen a mensajes claros y accionables: sin código → "No se recibió el código de acceso. Por favor, intenta acceder nuevamente."; errores PKCE (mismo navegador) → "Intenta iniciar sesión con el mismo navegador en el que solicitaste tu enlace de ingreso."; enlace caducado/inválido → mensaje para solicitar nuevo enlace. Helper `getFriendlyAuthErrorMessage` en `src/lib/auth-error-messages.ts` con tests.
+
 - [x] **Loading por rutas de app con variantes:** Componente `PageLoading` con variantes (default, dashboard, table, cards, form, detail) y `loading.tsx` en (app), dashboard, clients, projects, catalog, suppliers, account, settings y projects/[id], cada uno con la variante que mejor refleja la vista.
 
 - [x] **Sistema de conexiones Supabase mejorado:** Implementado sistema de keys diferenciado por entorno. **Producción:** Usa `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (cliente, seguro con RLS) y `SUPABASE_SECRET_KEY` (servidor, acceso privilegiado). **Local:** Usa `NEXT_PUBLIC_SUPABASE_ANON_KEY` para ambos. Helper `src/lib/supabase/keys.ts` detecta automáticamente el entorno. Actualizados todos los clientes Supabase (client.ts, server.ts, middleware.ts, callback route, API upload routes) para usar las funciones helper. `.env.example` actualizado con documentación de las nuevas variables. README actualizado con tabla de variables y explicación del sistema.
