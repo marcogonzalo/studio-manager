@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,21 +38,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  User,
-  Building2,
-  ChevronDown,
-  AlertTriangle,
-  Mail,
-} from "lucide-react";
+import { AlertTriangle, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { getErrorMessage, reportError } from "@/lib/utils";
-import type { Profile } from "@/types";
-
-const formSchema = z.object({
-  full_name: z.string().optional(),
-  company: z.string().optional(),
-});
+import { ChevronDown } from "lucide-react";
 
 const deleteAccountSchema = z.object({
   email: z.string().min(1, "Introduce tu correo electrónico"),
@@ -65,27 +54,16 @@ const changeEmailSchema = z.object({
     .email("Correo no válido"),
 });
 
-type FormValues = z.infer<typeof formSchema>;
 type DeleteAccountValues = z.infer<typeof deleteAccountSchema>;
 type ChangeEmailValues = z.infer<typeof changeEmailSchema>;
 
-export default function AccountPage() {
+export default function SettingsAccountPage() {
   const router = useRouter();
-  const { user, effectivePlan, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const supabase = getSupabaseClient();
-  const [, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [changeEmailDialogOpen, setChangeEmailDialogOpen] = useState(false);
   const [dangerZoneOpen, setDangerZoneOpen] = useState(false);
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      full_name: "",
-      company: "",
-    },
-  });
 
   const deleteForm = useForm<DeleteAccountValues>({
     resolver: zodResolver(deleteAccountSchema),
@@ -113,7 +91,6 @@ export default function AccountPage() {
       toast.success(
         "Revisa tu nuevo correo y haz clic en el enlace para confirmar el cambio."
       );
-      fetchProfile();
     } catch (err) {
       reportError(err, "Change email:");
       toast.error("Error al cambiar el correo: " + getErrorMessage(err));
@@ -143,60 +120,7 @@ export default function AccountPage() {
     }
   }
 
-  const fetchProfile = async () => {
-    if (!user?.id) return;
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (error) throw error;
-      setProfile(data);
-      form.reset({
-        full_name: data?.full_name ?? "",
-        company: data?.company ?? "",
-      });
-    } catch (err) {
-      reportError(err, "Error fetching profile:");
-      toast.error("Error al cargar el perfil");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.id) {
-      fetchProfile();
-    } else {
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when user?.id changes only
-  }, [user?.id]);
-
-  async function onSubmit(values: FormValues) {
-    if (!user?.id) return;
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          full_name: values.full_name?.trim() || null,
-          company: values.company?.trim() || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
-
-      if (error) throw error;
-      toast.success("Perfil actualizado correctamente");
-      fetchProfile();
-    } catch (err) {
-      reportError(err, "Error updating profile:");
-      toast.error("Error al guardar: " + getErrorMessage(err));
-    }
-  }
-
-  if (loading) {
+  if (!user) {
     return <PageLoading variant="form" />;
   }
 
@@ -204,82 +128,12 @@ export default function AccountPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-foreground flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight">
-          Mi Cuenta
-          {effectivePlan?.plan_code && (
-            <span className="bg-muted text-muted-foreground rounded-full px-3 py-1 text-sm font-medium">
-              {effectivePlan.plan_code === "BASE"
-                ? "Base"
-                : effectivePlan.plan_code === "PRO"
-                  ? "Pro"
-                  : "Studio"}
-            </span>
-          )}
+          Cuenta
         </h1>
         <p className="text-muted-foreground mt-1">
-          Gestiona tu perfil y la información que aparece en los presupuestos
+          Correo de acceso y acciones sobre tu cuenta
         </p>
       </div>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <User className="text-primary h-5 w-5" />
-            <CardTitle>Mi perfil</CardTitle>
-          </div>
-          <CardDescription>Nombre y empresa</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="max-w-xl space-y-6"
-            >
-              <FormField
-                control={form.control}
-                name="full_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre completo</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Tu nombre"
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="company"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
-                      Empresa
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nombre de tu empresa o estudio"
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Guardando…" : "Guardar cambios"}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
 
       {user?.email && (
         <Card>

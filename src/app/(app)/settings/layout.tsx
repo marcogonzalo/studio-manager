@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mi cuenta",
+  title: "Configuración",
 };
 
-export default function AccountLayout({
+export default function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;

@@ -62,10 +62,13 @@ export function formatDate(
         Object.entries(options).filter(([key]) => key !== "locale")
       )
     : {};
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: "short",
-    ...opts,
-  }).format(d);
+  const hasGranularOptions = Object.keys(opts).some((k) =>
+    ["day", "month", "year", "weekday", "hour", "minute", "second"].includes(k)
+  );
+  const formatOpts = hasGranularOptions
+    ? opts
+    : { dateStyle: "short", ...opts };
+  return new Intl.DateTimeFormat(locale, formatOpts).format(d);
 }
 
 /** Devuelve solo el símbolo de la moneda. Si es undefined o no reconocida, devuelve "??". */
@@ -92,6 +95,11 @@ export function cn(...inputs: ClassValue[]) {
 export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
+  const obj = error as { message?: string; details?: string } | null;
+  if (obj && typeof obj.message === "string" && obj.message.trim())
+    return obj.message.trim();
+  if (obj && typeof obj.details === "string" && obj.details.trim())
+    return obj.details.trim();
   return "Error desconocido";
 }
 

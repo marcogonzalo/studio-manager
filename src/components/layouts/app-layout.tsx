@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -27,6 +28,8 @@ import {
   SlidersHorizontal,
   Palette,
   Rocket,
+  ArrowLeft,
+  CreditCard,
 } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
 import {
@@ -75,6 +78,12 @@ const navItems = [
   { name: "Proveedores", href: "/suppliers", icon: Truck },
 ];
 
+const settingsNavItems = [
+  { name: "Volver atrás", href: "/dashboard", icon: ArrowLeft },
+  { name: "Cuenta", href: "/settings/account", icon: User },
+  { name: "Tu plan", href: "/settings/plan", icon: CreditCard },
+];
+
 const PLAN_DISPLAY_NAMES: Record<string, string> = {
   BASE: "Base",
   PRO: "Pro",
@@ -102,6 +111,70 @@ function SidebarContent({
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
 }) {
+  const isInSettings = pathname.startsWith("/settings");
+  const navSource = isInSettings ? settingsNavItems : navItems;
+
+  const renderNavLink = (
+    item: (typeof navItems)[number] | (typeof settingsNavItems)[number],
+    isActive: boolean,
+    animationDelayMs?: number
+  ) => {
+    const linkContent = (
+      <Link
+        href={item.href}
+        onClick={() => setIsMobileOpen(false)}
+        className={cn(
+          "group flex items-center rounded-xl text-sm font-medium transition-all duration-200",
+          collapsed ? "justify-center px-2 py-2.5" : "px-4 py-2.5",
+          isActive
+            ? "bg-primary text-primary-foreground shadow-primary/20 shadow-md"
+            : "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground"
+        )}
+        style={
+          animationDelayMs != null
+            ? { animationDelay: `${animationDelayMs}ms` }
+            : undefined
+        }
+      >
+        <item.icon
+          className={cn(
+            "h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110",
+            !collapsed && "mr-3",
+            isActive
+              ? "text-primary-foreground"
+              : "text-muted-foreground group-hover:text-secondary-foreground"
+          )}
+        />
+        {!collapsed && item.name}
+      </Link>
+    );
+    const wrapped = (
+      <span
+        className={cn(
+          "block",
+          isInSettings &&
+            "animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards duration-300"
+        )}
+        style={
+          isInSettings && animationDelayMs != null
+            ? { animationDelay: `${animationDelayMs}ms` }
+            : undefined
+        }
+      >
+        {linkContent}
+      </span>
+    );
+    if (collapsed) {
+      return (
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>{wrapped}</TooltipTrigger>
+          <TooltipContent side="right">{item.name}</TooltipContent>
+        </Tooltip>
+      );
+    }
+    return wrapped;
+  };
+
   return (
     <div className="bg-sidebar border-border relative flex h-full flex-col border-r">
       <div
@@ -111,7 +184,7 @@ function SidebarContent({
         )}
       >
         <Link
-          href="/dashboard"
+          href={isInSettings ? "/settings" : "/dashboard"}
           className={cn(
             "flex items-center gap-2",
             collapsed && "justify-center"
@@ -141,45 +214,18 @@ function SidebarContent({
       </button>
 
       <nav className={cn("flex-1 space-y-1.5", collapsed ? "px-2" : "px-4")}>
-        {navItems.map((item) => {
+        {navSource.map((item, index) => {
           const isActive =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
-          const linkContent = (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setIsMobileOpen(false)}
-              className={cn(
-                "group flex items-center rounded-xl text-sm font-medium transition-all duration-200",
-                collapsed ? "justify-center px-2 py-2.5" : "px-4 py-2.5",
-                isActive
-                  ? "bg-primary text-primary-foreground shadow-primary/20 shadow-md"
-                  : "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground"
+          return (
+            <Fragment key={item.href}>
+              {renderNavLink(
+                item,
+                isActive,
+                isInSettings ? index * 80 : undefined
               )}
-            >
-              <item.icon
-                className={cn(
-                  "h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110",
-                  !collapsed && "mr-3",
-                  isActive
-                    ? "text-primary-foreground"
-                    : "text-muted-foreground group-hover:text-secondary-foreground"
-                )}
-              />
-              {!collapsed && item.name}
-            </Link>
+            </Fragment>
           );
-
-          if (collapsed) {
-            return (
-              <Tooltip key={item.href} delayDuration={0}>
-                <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-                <TooltipContent side="right">{item.name}</TooltipContent>
-              </Tooltip>
-            );
-          }
-
-          return linkContent;
         })}
       </nav>
       <div
@@ -190,7 +236,7 @@ function SidebarContent({
       >
         {effectivePlan?.plan_code === "BASE" && (
           <Link
-            href="/pricing"
+            href="/settings/plan/change"
             className={cn(
               "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
               collapsed ? "py-2" : "mb-2"
@@ -231,7 +277,7 @@ function SidebarContent({
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/account">
+                    <Link href="/profile">
                       <User className="mr-2 h-4 w-4" />
                       Mi perfil
                     </Link>
@@ -240,6 +286,12 @@ function SidebarContent({
                     <Link href="/customization">
                       <SlidersHorizontal className="mr-2 h-4 w-4" />
                       Personalización
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Configuración
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
@@ -306,7 +358,7 @@ function SidebarContent({
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/account">
+                  <Link href="/profile">
                     <User className="mr-2 h-4 w-4" />
                     Mi perfil
                   </Link>
@@ -315,6 +367,12 @@ function SidebarContent({
                   <Link href="/customization">
                     <SlidersHorizontal className="mr-2 h-4 w-4" />
                     Personalización
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Configuración
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
