@@ -27,8 +27,8 @@ const baseUrl =
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Veta - Gestión de Proyectos de Diseño Interior",
-    template: "Veta > %s",
+    default: "Gestión de Proyectos de Diseño Interior",
+    template: "%s | Veta",
   },
   description:
     "Plataforma integral para gestionar proyectos de diseño interior. Administra clientes, proveedores, catálogos y presupuestos en un solo lugar.",
