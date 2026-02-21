@@ -166,6 +166,13 @@
   html {
     scroll-behavior: smooth;
   }
+  /* Native form controls and scrollbars follow theme (next-themes adds .dark to html) */
+  html.dark {
+    color-scheme: dark;
+  }
+  html:not(.dark) {
+    color-scheme: light;
+  }
   body {
     @apply bg-background text-foreground;
   }

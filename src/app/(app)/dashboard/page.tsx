@@ -32,7 +32,7 @@ import {
 import { useAuth } from "@/components/auth-provider";
 import { getSupabaseClient } from "@/lib/supabase";
 import { reportError } from "@/lib/utils";
-import { format } from "date-fns";
+import { formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Project, Profile } from "@/types";
 
@@ -316,7 +316,10 @@ export default function DashboardPage() {
                 <CardTitle className="text-muted-foreground text-sm font-medium">
                   Proyectos Activos
                 </CardTitle>
-                <FolderKanban className="text-primary h-4 w-4 transition-transform group-hover:scale-110" />
+                <FolderKanban
+                  className="text-primary h-4 w-4 transition-transform group-hover:scale-110"
+                  aria-hidden
+                />
               </CardHeader>
               <CardContent>
                 <div className="text-foreground text-2xl font-bold">
@@ -338,7 +341,10 @@ export default function DashboardPage() {
                 <CardTitle className="text-muted-foreground text-sm font-medium">
                   Clientes Totales
                 </CardTitle>
-                <Users className="text-chart-2 h-4 w-4 transition-transform group-hover:scale-110" />
+                <Users
+                  className="text-chart-2 h-4 w-4 transition-transform group-hover:scale-110"
+                  aria-hidden
+                />
               </CardHeader>
               <CardContent>
                 <div className="text-foreground text-2xl font-bold">
@@ -357,7 +363,10 @@ export default function DashboardPage() {
                 <CardTitle className="text-muted-foreground text-sm font-medium">
                   Total de Gastos
                 </CardTitle>
-                <TrendingDown className="text-destructive h-4 w-4 transition-transform group-hover:scale-110" />
+                <TrendingDown
+                  className="text-destructive h-4 w-4 transition-transform group-hover:scale-110"
+                  aria-hidden
+                />
               </CardHeader>
               <CardContent>
                 <div className="text-foreground text-2xl font-bold">
@@ -379,7 +388,10 @@ export default function DashboardPage() {
                 <CardTitle className="text-muted-foreground text-sm font-medium">
                   Total de Ingresos
                 </CardTitle>
-                <TrendingUp className="text-primary h-4 w-4 transition-transform group-hover:scale-110" />
+                <TrendingUp
+                  className="text-primary h-4 w-4 transition-transform group-hover:scale-110"
+                  aria-hidden
+                />
               </CardHeader>
               <CardContent>
                 <div className="text-foreground text-2xl font-bold">
@@ -455,12 +467,7 @@ export default function DashboardPage() {
                               {project.start_date && (
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-3 w-3" />
-                                  <span>
-                                    {format(
-                                      new Date(project.start_date),
-                                      "dd/MM/yyyy"
-                                    )}
-                                  </span>
+                                  <span>{formatDate(project.start_date)}</span>
                                 </div>
                               )}
                               <span className="capitalize">
