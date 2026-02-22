@@ -38,13 +38,15 @@ interface UsageCounts {
   clients: number;
   suppliers: number;
   products: number;
+  storage: number; // in bytes
 }
 
 const CONSUMABLE_LABELS: Record<keyof UsageCounts, string> = {
-  projects: "Proyectos",
+  projects: "Proyectos activos",
   clients: "Clientes",
   suppliers: "Proveedores",
   products: "Productos en catálogo",
+  storage: "Almacenamiento",
 };
 
 const CONSUMABLE_ICONS: Record<
@@ -55,10 +57,11 @@ const CONSUMABLE_ICONS: Record<
   clients: Users,
   suppliers: Truck,
   products: ShoppingBag,
+  storage: ShoppingBag, // TODO: use a better icon for storage
 };
 
 const CONFIG_LIMIT_KEYS: Record<
-  keyof UsageCounts,
+  Exclude<keyof UsageCounts, "storage">,
   keyof Pick<
     PlanConfig,
     | "projects_limit"
@@ -73,6 +76,16 @@ const CONFIG_LIMIT_KEYS: Record<
   products: "catalog_products_limit",
 };
 
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 MB";
+  const mb = bytes / (1024 * 1024);
+  if (mb < 1024) {
+    return `${mb.toFixed(mb < 10 ? 1 : 0)} MB`;
+  }
+  const gb = mb / 1024;
+  return `${gb.toFixed(gb < 10 ? 1 : 0)} GB`;
+}
+
 export default function SettingsPlanPage() {
   const { user, effectivePlan, planLoading } = useAuth();
   const supabase = getSupabaseClient();
@@ -83,6 +96,7 @@ export default function SettingsPlanPage() {
     clients: 0,
     suppliers: 0,
     products: 0,
+    storage: 0,
   });
   const [usageLoading, setUsageLoading] = useState(true);
 
@@ -115,18 +129,20 @@ export default function SettingsPlanPage() {
       return;
     }
     void (async () => {
-      const [projectsRes, clientsRes, suppliersRes, productsRes] =
+      const [projectsRes, clientsRes, suppliersRes, productsRes, storageRes] =
         await Promise.all([
-          supabase.from("projects").select("id").eq("user_id", user.id),
+          supabase.from("projects").select("id").eq("user_id", user.id).eq("status", "active"),
           supabase.from("clients").select("id").eq("user_id", user.id),
           supabase.from("suppliers").select("id").eq("user_id", user.id),
           supabase.from("products").select("id").eq("user_id", user.id),
+          supabase.from("user_storage_usage").select("bytes_used").eq("user_id", user.id).single(),
         ]);
       setUsage({
         projects: projectsRes.data?.length ?? 0,
         clients: clientsRes.data?.length ?? 0,
         suppliers: suppliersRes.data?.length ?? 0,
         products: productsRes.data?.length ?? 0,
+        storage: storageRes.data?.bytes_used ?? 0,
       });
       setUsageLoading(false);
     })();
@@ -211,12 +227,45 @@ export default function SettingsPlanPage() {
             ) : (
               <div className="space-y-4">
                 {(
-                  ["projects", "clients", "suppliers", "products"] as const
+                  ["projects", "clients", "suppliers", "products", "storage"] as const
                 ).map((key) => {
+                  if (key === "storage") {
+                    const usedBytes = usage.storage;
+                    const limitMB = effectivePlan?.config?.storage_limit_mb ?? 500;
+                    const limitBytes = limitMB * 1024 * 1024;
+                    const isUnlimited = limitMB === -1;
+                    const percent = isUnlimited
+                      ? 5
+                      : limitMB === 0
+                        ? 0
+                        : Math.min(100, (usedBytes / limitBytes) * 100);
+                    const label = CONSUMABLE_LABELS.storage;
+                    const Icon = CONSUMABLE_ICONS.storage;
+                    return (
+                      <div key={key}>
+                        <div className="mb-1 flex justify-between text-sm">
+                          <span className="text-foreground flex items-center gap-2 font-medium">
+                            <Icon className="h-4 w-4 shrink-0" />
+                            {label}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {isUnlimited ? `${formatBytes(usedBytes)} / ∞` : `${formatBytes(usedBytes)} / ${formatBytes(limitBytes)}`}
+                          </span>
+                        </div>
+                        <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
+                          <div
+                            className="bg-primary h-full rounded-full transition-[width] duration-300"
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  }
+                  
                   const used = usage[key];
                   const limit =
                     effectivePlan?.config?.[CONFIG_LIMIT_KEYS[key]] ??
-                    (key === "projects" ? 3 : key === "products" ? 50 : 10);
+                    (key === "projects" ? 1 : key === "products" ? 50 : 10);
                   const isUnlimited = limit === -1;
                   const percent = isUnlimited
                     ? 5
