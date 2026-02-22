@@ -45,7 +45,7 @@ export default function ClientsPage() {
     let query = supabase
       .from("clients")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("full_name", { ascending: true });
 
     if (searchDebounced) {
       query = query.ilike("full_name", `%${searchDebounced}%`);

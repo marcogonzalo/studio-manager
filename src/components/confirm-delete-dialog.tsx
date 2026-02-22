@@ -58,7 +58,7 @@ export function ConfirmDeleteDialog({
               void handleConfirm();
             }}
             disabled={loading}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="bg-destructive hover:bg-destructive/90 text-white"
           >
             {loading ? "Eliminando…" : confirmLabel}
           </AlertDialogAction>
