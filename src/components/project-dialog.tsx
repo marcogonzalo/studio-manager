@@ -98,7 +98,7 @@ export function ProjectDialog({
   const [pendingClientId, setPendingClientId] = useState<string | null>(null);
   const [showStatusConfirmation, setShowStatusConfirmation] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<ProjectStatus | null>(null);
-  const [pendingFormValues, setPendingFormValues] = useState<z.infer<typeof formSchema> | null>(null);
+  const [pendingFormValues, setPendingFormValues] = useState<z.input<typeof formSchema> | null>(null);
 
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const currencyDisabled = isBasePlan;
@@ -115,7 +115,7 @@ export function ProjectDialog({
       name: "",
       description: "",
       client_id: "",
-      status: "draft",
+      status: "active",
       start_date: new Date().toISOString().split("T")[0],
       end_date: "",
       address: "",
@@ -196,7 +196,7 @@ export function ProjectDialog({
         name: project.name || "",
         description: project.description || "",
         client_id: project.client_id || "",
-        status: project.status || "draft",
+        status: project.status || "active",
         start_date: startDate,
         end_date: endDate,
         address: project.address || "",
@@ -213,7 +213,7 @@ export function ProjectDialog({
           name: "",
           description: "",
           client_id: "",
-          status: "draft",
+          status: "active",
           start_date: new Date().toISOString().split("T")[0],
           end_date: "",
           address: "",
@@ -234,7 +234,7 @@ export function ProjectDialog({
             name: "",
             description: "",
             client_id: "",
-            status: "draft",
+            status: "active",
             start_date: new Date().toISOString().split("T")[0],
             end_date: "",
             address: "",
@@ -250,7 +250,7 @@ export function ProjectDialog({
             name: "",
             description: "",
             client_id: "",
-            status: "draft",
+            status: "active",
             start_date: new Date().toISOString().split("T")[0],
             end_date: "",
             address: "",
