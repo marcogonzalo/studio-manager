@@ -13,6 +13,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Form,
   FormControl,
   FormField,
@@ -34,7 +44,7 @@ import { useAuth } from "@/components/auth-provider";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import type { Client, Project } from "@/types";
+import type { Client, Project, ProjectStatus } from "@/types";
 import { ClientDialog } from "@/components/dialogs/client-dialog";
 import { CURRENCIES, isPlanLimitExceeded } from "@/lib/utils";
 
@@ -42,7 +52,7 @@ const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   description: z.string().optional(),
   client_id: z.string().min(1, "Cliente requerido"),
-  status: z.string().default("draft").optional(),
+  status: z.enum(["active", "completed", "cancelled"]).default("active"),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
   address: z.string().optional(),
@@ -86,6 +96,9 @@ export function ProjectDialog({
   const [clients, setClients] = useState<Client[]>([]);
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
   const [pendingClientId, setPendingClientId] = useState<string | null>(null);
+  const [showStatusConfirmation, setShowStatusConfirmation] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<ProjectStatus | null>(null);
+  const [pendingFormValues, setPendingFormValues] = useState<z.infer<typeof formSchema> | null>(null);
 
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const currencyDisabled = isBasePlan;
@@ -251,6 +264,18 @@ export function ProjectDialog({
   }, [project, open, form, user?.id, supabase]);
 
   async function onSubmit(values: z.input<typeof formSchema>) {
+    // Check if status is changing to completed or cancelled and needs confirmation
+    const isChangingToCompleted = project && project.status !== "completed" && values.status === "completed";
+    const isChangingToCancelled = project && project.status !== "cancelled" && values.status === "cancelled";
+
+    if ((isChangingToCompleted || isChangingToCancelled) && !pendingFormValues) {
+      // Show confirmation dialog
+      setPendingStatus(values.status as ProjectStatus);
+      setPendingFormValues(values);
+      setShowStatusConfirmation(true);
+      return;
+    }
+
     try {
       // Transform tax_rate from string to number
       const taxRateTransformed = values.tax_rate
@@ -285,7 +310,7 @@ export function ProjectDialog({
       const updateData: Record<string, unknown> = {
         name: values.name,
         client_id: values.client_id,
-        status: values.status || "draft",
+        status: values.status || "active",
         end_date: values.end_date || null,
         tax_rate: taxRateValue,
         currency: values.currency ?? "EUR",
@@ -353,6 +378,11 @@ export function ProjectDialog({
         toast.success("Proyecto creado");
         form.reset();
       }
+      
+      // Reset pending state
+      setPendingFormValues(null);
+      setPendingStatus(null);
+      
       onSuccess();
     } catch (error: unknown) {
       if (isPlanLimitExceeded(error)) {
@@ -372,8 +402,54 @@ export function ProjectDialog({
     }
   }
 
+  function handleConfirmStatusChange() {
+    setShowStatusConfirmation(false);
+    if (pendingFormValues) {
+      void onSubmit(pendingFormValues);
+    }
+  }
+
+  function handleCancelStatusChange() {
+    setShowStatusConfirmation(false);
+    setPendingFormValues(null);
+    setPendingStatus(null);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <AlertDialog open={showStatusConfirmation} onOpenChange={setShowStatusConfirmation}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {pendingStatus === "completed" ? "Marcar proyecto como completado" : "Cancelar proyecto"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingStatus === "completed" ? (
+                <>
+                  Vas a marcar el proyecto como completado y pasará a modo de solo lectura. 
+                  Asegúrate de que has registrado todos los cambios antes para garantizar que tu 
+                  proyecto ha quedado a punto por si necesitas consultarlo en el futuro.
+                </>
+              ) : (
+                <>
+                  Vas a cancelar un proyecto. Esta acción es irreversible y hará que el proyecto 
+                  pase a modo lectura y no podrás editarlo. ¿Es lo que quieres hacer?
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelStatusChange}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmStatusChange}>
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{project ? "Editar" : "Nuevo"} Proyecto</DialogTitle>
@@ -516,9 +592,9 @@ export function ProjectDialog({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="draft">Borrador</SelectItem>
                         <SelectItem value="active">Activo</SelectItem>
                         <SelectItem value="completed">Completado</SelectItem>
+                        <SelectItem value="cancelled">Cancelado</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -661,5 +737,6 @@ export function ProjectDialog({
         }}
       />
     </Dialog>
+    </>
   );
 }

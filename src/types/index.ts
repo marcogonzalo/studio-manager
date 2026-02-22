@@ -1,10 +1,12 @@
-export type PlanFeatureModality = "basic" | "full" | null;
+export type PlanFeatureModality = "none" | "basic" | "full";
 
 export interface PlanConfig {
   projects_limit: number;
   clients_limit: number;
   suppliers_limit: number;
   catalog_products_limit: number;
+  storage_limit_mb: number;
+  support_level: PlanFeatureModality;
   budget_mode: PlanFeatureModality;
   multi_currency_per_project: PlanFeatureModality;
   purchase_orders: PlanFeatureModality;
@@ -13,6 +15,10 @@ export interface PlanConfig {
   documents: PlanFeatureModality;
   notes: PlanFeatureModality;
   summary: PlanFeatureModality;
+  extra_active_projects?: number;
+  extra_storage_mb?: number;
+  effective_active_projects_limit?: number;
+  effective_storage_limit_mb?: number;
 }
 
 export type PlanCode = "BASE" | "PRO" | "STUDIO";
@@ -28,6 +34,11 @@ export interface Profile {
   full_name?: string;
   avatar_url?: string;
   company?: string;
+  updated_at?: string;
+}
+
+export interface AccountSettings {
+  user_id: string;
   public_name?: string;
   default_tax_rate?: number;
   default_currency?: string;
@@ -50,11 +61,13 @@ export type ProjectPhase =
   | "construction" // Obra
   | "delivery"; // Entrega
 
+export type ProjectStatus = "active" | "completed" | "cancelled";
+
 export interface Project {
   id: string;
   name: string;
   description: string;
-  status: string;
+  status: ProjectStatus;
   start_date: string;
   end_date: string | null;
   completed_date: string | null;
