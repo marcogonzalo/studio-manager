@@ -61,7 +61,7 @@ const plans = [
       "Notas ilimitadas",
       "Control de gastos básico (sin margen)",
       "Exportación de presupuesto sin personalización",
-      "Moneda e impuesto desde configuración de cuenta",
+      "Sin moneda e impuesto por proyecto",
       "Sin soporte",
     ],
     cta: "Comenzar Gratis",
