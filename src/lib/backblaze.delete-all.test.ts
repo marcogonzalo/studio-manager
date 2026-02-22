@@ -41,7 +41,7 @@ describe("deleteAllFilesForUser", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2); // authorize + list
     const listCall = fetchMock.mock.calls[1];
     expect(listCall[0]).toContain("b2_list_file_names");
-    expect(JSON.parse(listCall[1].body).prefix).toBe("assets/user-1/");
+    expect(JSON.parse(listCall[1].body).prefix).toBe("test-assets/user-1/");
   });
 
   it("calls delete for each file returned by list", async () => {
@@ -56,10 +56,10 @@ describe("deleteAllFilesForUser", () => {
         json: () =>
           Promise.resolve({
             files: [
-              { fileId: "f1", fileName: "assets/user-2/catalog/x.webp" },
+              { fileId: "f1", fileName: "test-assets/user-2/catalog/x.webp" },
               {
                 fileId: "f2",
-                fileName: "assets/user-2/projects/p1/img/y.webp",
+                fileName: "test-assets/user-2/projects/p1/img/y.webp",
               },
             ],
             nextFileName: null,
@@ -77,11 +77,11 @@ describe("deleteAllFilesForUser", () => {
     expect(deleteCalls[0][0]).toContain("b2_delete_file_version");
     expect(JSON.parse(deleteCalls[0][1].body)).toEqual({
       fileId: "f1",
-      fileName: "assets/user-2/catalog/x.webp",
+      fileName: "test-assets/user-2/catalog/x.webp",
     });
     expect(JSON.parse(deleteCalls[1][1].body)).toEqual({
       fileId: "f2",
-      fileName: "assets/user-2/projects/p1/img/y.webp",
+      fileName: "test-assets/user-2/projects/p1/img/y.webp",
     });
   });
 

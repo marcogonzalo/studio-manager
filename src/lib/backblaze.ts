@@ -1,6 +1,9 @@
 /**
  * Backblaze B2 Native API client for product image uploads.
  * Server-side only - never expose B2 keys to the client.
+ *
+ * Cuando no es producción, el prefijo del bucket es test-assets en lugar de assets
+ * para no mezclar archivos de desarrollo/pruebas con los de producción.
  */
 
 import {
@@ -10,6 +13,9 @@ import {
 } from "./image-validation";
 
 export { validateImageFile };
+
+const BUCKET_ASSETS_PREFIX =
+  process.env.NODE_ENV === "production" ? "assets" : "test-assets";
 
 interface B2AuthResponse {
   authorizationToken: string;
@@ -119,8 +125,8 @@ export async function uploadProductImage(params: {
 
   const ext = getExtensionFromMime(mimeType);
   const fileName = projectId
-    ? `assets/${userId}/projects/${projectId}/img/${productId}${ext}`
-    : `assets/${userId}/catalog/${productId}${ext}`;
+    ? `${BUCKET_ASSETS_PREFIX}/${userId}/projects/${projectId}/img/${productId}${ext}`
+    : `${BUCKET_ASSETS_PREFIX}/${userId}/catalog/${productId}${ext}`;
   const encodedFileName = encodeURIComponent(fileName);
 
   const auth = await b2Authorize();
@@ -181,7 +187,7 @@ export async function uploadSpaceImage(params: {
   }
 
   const ext = getExtensionFromMime(mimeType);
-  const fileName = `assets/${userId}/projects/${projectId}/img/${imageId}${ext}`;
+  const fileName = `${BUCKET_ASSETS_PREFIX}/${userId}/projects/${projectId}/img/${imageId}${ext}`;
   const encodedFileName = encodeURIComponent(fileName);
 
   const auth = await b2Authorize();
@@ -238,7 +244,7 @@ export async function uploadDocument(params: {
   const { buffer, mimeType, userId, projectId, documentId, extension } = params;
 
   const ext = extension.startsWith(".") ? extension : `.${extension}`;
-  const fileName = `assets/${userId}/projects/${projectId}/doc/${documentId}${ext}`;
+  const fileName = `${BUCKET_ASSETS_PREFIX}/${userId}/projects/${projectId}/doc/${documentId}${ext}`;
   const encodedFileName = encodeURIComponent(fileName);
 
   const auth = await b2Authorize();
@@ -439,7 +445,7 @@ export async function deleteAllFilesForUser(userId: string): Promise<void> {
     throw new Error("B2_BUCKET_ID es requerido");
   }
 
-  const prefix = `assets/${userId}/`;
+  const prefix = `${BUCKET_ASSETS_PREFIX}/${userId}/`;
   let startFileName: string | null = null;
   const { apiUrl } = getApiUrls(auth);
 
