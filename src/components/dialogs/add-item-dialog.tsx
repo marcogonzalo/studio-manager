@@ -1014,10 +1014,7 @@ export function AddItemDialog({
         onOpenChange={setIsSupplierDialogOpen}
         supplier={null}
         onSuccess={async (supplierId) => {
-          if (supplierId) {
-            await handleSupplierCreated(supplierId);
-            toast.success("Proveedor creado y seleccionado");
-          }
+          if (supplierId) await handleSupplierCreated(supplierId);
         }}
       />
     </Dialog>

@@ -33,6 +33,7 @@ import { reportError, CURRENCIES } from "@/lib/utils";
 import type { Product, Supplier } from "@/types";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { SupplierDialog } from "./supplier-dialog";
 import { ProductImageUpload } from "@/components/product-image-upload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -63,8 +64,12 @@ export function ProductDialog({
   product,
   onSuccess,
 }: ProductDialogProps) {
-  const { user } = useAuth();
+  const { user, effectivePlan } = useAuth();
+  const profileDefaults = useProfileDefaults();
   const supabase = getSupabaseClient();
+  const isBasePlan = effectivePlan?.plan_code === "BASE";
+  const currencyDisabled = isBasePlan;
+  const defaultCurrency = profileDefaults?.default_currency ?? "EUR";
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(
@@ -146,44 +151,13 @@ export function ProductDialog({
         reference_url: product.reference_url || "",
         description: product.description || "",
         cost_price: product.cost_price?.toString() ?? "0",
-        currency: product.currency ?? "EUR",
+        currency: currencyDisabled
+          ? defaultCurrency
+          : (product.currency ?? "EUR"),
         category: product.category || "",
         supplier_id: product.supplier_id || "",
         image_url: product.image_url || "",
       });
-    } else if (open && user?.id) {
-      void (async () => {
-        try {
-          const { data } = await supabase
-            .from("profiles")
-            .select("default_currency")
-            .eq("id", user.id)
-            .single();
-          form.reset({
-            name: "",
-            reference_code: "",
-            reference_url: "",
-            description: "",
-            cost_price: "0",
-            currency: data?.default_currency ?? "EUR",
-            category: "",
-            supplier_id: "",
-            image_url: "",
-          });
-        } catch {
-          form.reset({
-            name: "",
-            reference_code: "",
-            reference_url: "",
-            description: "",
-            cost_price: "0",
-            currency: "EUR",
-            category: "",
-            supplier_id: "",
-            image_url: "",
-          });
-        }
-      })();
     } else if (open) {
       setPendingImageFile(null);
       form.reset({
@@ -192,13 +166,13 @@ export function ProductDialog({
         reference_url: "",
         description: "",
         cost_price: "0",
-        currency: "EUR",
+        currency: defaultCurrency,
         category: "",
         supplier_id: "",
         image_url: "",
       });
     }
-  }, [product, open, form, user?.id, supabase]);
+  }, [product, open, form, defaultCurrency, currencyDisabled]);
 
   async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
@@ -422,7 +396,12 @@ export function ProductDialog({
                             <FormControl>
                               <Select
                                 onValueChange={currencyField.onChange}
-                                value={currencyField.value ?? "EUR"}
+                                value={
+                                  currencyDisabled
+                                    ? defaultCurrency
+                                    : (currencyField.value ?? "EUR")
+                                }
+                                disabled={currencyDisabled}
                               >
                                 <SelectTrigger className="bg-muted/30 h-full rounded-none border-0 focus:ring-0 focus:ring-offset-0">
                                   <SelectValue />
@@ -560,10 +539,7 @@ export function ProductDialog({
         onOpenChange={setIsSupplierDialogOpen}
         supplier={null}
         onSuccess={async (supplierId) => {
-          if (supplierId) {
-            await handleSupplierCreated(supplierId);
-            toast.success("Proveedor creado y seleccionado");
-          }
+          if (supplierId) await handleSupplierCreated(supplierId);
         }}
       />
     </Dialog>
