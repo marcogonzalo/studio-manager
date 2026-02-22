@@ -16,6 +16,8 @@ interface AuthContextType {
   effectivePlan: EffectivePlan | null;
   planLoading: boolean;
   signOut: () => Promise<void>;
+  /** Refetch effective plan (e.g. after assigning a new plan). */
+  refetchEffectivePlan: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -26,6 +28,7 @@ const AuthContext = createContext<AuthContextType>({
   effectivePlan: null,
   planLoading: true,
   signOut: async () => {},
+  refetchEffectivePlan: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -134,6 +137,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user?.id, supabase]);
 
+  const refetchEffectivePlan = async () => {
+    if (!user?.id) return;
+    setPlanLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("get_effective_plan", {
+        p_user_id: user.id,
+      });
+      if (error) {
+        setEffectivePlan(null);
+        return;
+      }
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row?.plan_code && row?.config) {
+        setEffectivePlan({
+          plan_code: row.plan_code as EffectivePlan["plan_code"],
+          config: row.config as EffectivePlan["config"],
+        });
+      } else {
+        setEffectivePlan(null);
+      }
+    } catch {
+      setEffectivePlan(null);
+    } finally {
+      setPlanLoading(false);
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     router.push("/");
@@ -149,6 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         effectivePlan,
         planLoading,
         signOut,
+        refetchEffectivePlan,
       }}
     >
       {children}

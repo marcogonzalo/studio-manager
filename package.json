@@ -10,7 +10,7 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "db:push": "supabase db push --local",
-    "db:reset": "supabase db reset",
+    "db:reset": "supabase db reset --local",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest",

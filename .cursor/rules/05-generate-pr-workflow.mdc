@@ -56,7 +56,7 @@ When either scenario is triggered, run **in this order**:
   - Descriptive title.
   - Description: summary of changes, modified/new files, build and test status, coverage.
   - Review checklist or test plan if applicable.
-- If `gh` (GitHub CLI) is available, use it to create the PR; otherwise provide the content and URL for manual creation.
+- **Use the GitHub MCP** (`user-github` server, tool `create_pull_request`) to create the PR. Required args: `owner`, `repo`, `title`, `head` (branch name), `base` (e.g. `main`), and `body` (description). If MCP is unavailable, provide the PR content and compare URL for manual creation.
 
 ---
 

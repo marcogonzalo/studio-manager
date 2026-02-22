@@ -8,6 +8,7 @@ import {
   getSubcategoryOptions,
   getCategoryOptions,
   isCostCategory,
+  isPlanLimitExceeded,
   reportError,
   reportWarn,
 } from "./utils";
@@ -81,10 +82,60 @@ describe("getErrorMessage", () => {
     expect(getErrorMessage("Custom error")).toBe("Custom error");
   });
 
+  it("should return message from object with message (Supabase-like)", () => {
+    expect(getErrorMessage({ message: "DB constraint failed" })).toBe(
+      "DB constraint failed"
+    );
+  });
+
+  it("should return details from object when message is missing or empty", () => {
+    expect(getErrorMessage({ details: "Duplicate key" })).toBe("Duplicate key");
+    expect(getErrorMessage({ message: "", details: "Fallback" })).toBe(
+      "Fallback"
+    );
+    expect(getErrorMessage({ message: "  ", details: "Detail" })).toBe(
+      "Detail"
+    );
+  });
+
+  it("should prefer message over details when both present", () => {
+    expect(getErrorMessage({ message: "Primary", details: "Secondary" })).toBe(
+      "Primary"
+    );
+  });
+
+  it("should trim message and details", () => {
+    expect(getErrorMessage({ message: "  trimmed  " })).toBe("trimmed");
+    expect(getErrorMessage({ details: "  detail  " })).toBe("detail");
+  });
+
   it("should return fallback for unknown error", () => {
     expect(getErrorMessage(null)).toBe("Error desconocido");
     expect(getErrorMessage(42)).toBe("Error desconocido");
     expect(getErrorMessage({})).toBe("Error desconocido");
+    expect(getErrorMessage({ message: "", details: "" })).toBe(
+      "Error desconocido"
+    );
+  });
+});
+
+describe("isPlanLimitExceeded", () => {
+  it("should return true when Error message contains PLAN_LIMIT_EXCEEDED", () => {
+    expect(
+      isPlanLimitExceeded(new Error("Something PLAN_LIMIT_EXCEEDED happened"))
+    ).toBe(true);
+  });
+
+  it("should return true when object message contains PLAN_LIMIT_EXCEEDED", () => {
+    expect(
+      isPlanLimitExceeded({ message: "PLAN_LIMIT_EXCEEDED: projects" })
+    ).toBe(true);
+  });
+
+  it("should return false when message does not contain PLAN_LIMIT_EXCEEDED", () => {
+    expect(isPlanLimitExceeded(new Error("Other error"))).toBe(false);
+    expect(isPlanLimitExceeded({ message: "Other" })).toBe(false);
+    expect(isPlanLimitExceeded(null)).toBe(false);
   });
 });
 
