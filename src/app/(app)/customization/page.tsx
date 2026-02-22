@@ -62,24 +62,43 @@ export default function CustomizationPage() {
   const fetchProfile = async () => {
     if (!user?.id) return;
     try {
-      const { data, error } = await supabase
+      // Fetch profile for full_name and email
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .select(
-          "default_tax_rate, default_currency, public_name, full_name, email"
-        )
+        .select("full_name, email")
         .eq("id", user.id)
         .single();
 
-      if (error) throw error;
-      setProfile(data);
+      if (profileError) throw profileError;
+      setProfile(profileData);
+
+      // Fetch account settings for customization fields
+      const { data: settingsData, error: settingsError } = await supabase
+        .from("account_settings")
+        .select("default_tax_rate, default_currency, public_name")
+        .eq("user_id", user.id)
+        .single();
+
+      // If no settings exist yet, create them
+      if (settingsError && settingsError.code === "PGRST116") {
+        await supabase.from("account_settings").insert({
+          user_id: user.id,
+          default_tax_rate: null,
+          default_currency: "EUR",
+          public_name: null,
+        });
+      } else if (settingsError) {
+        throw settingsError;
+      }
+
       form.reset({
         default_tax_rate:
-          data?.default_tax_rate != null
-            ? data.default_tax_rate.toString()
+          settingsData?.default_tax_rate != null
+            ? settingsData.default_tax_rate.toString()
             : "",
-        default_currency: data?.default_currency ?? "EUR",
-        public_name: data?.public_name ?? "",
-        email: data?.email ?? "",
+        default_currency: settingsData?.default_currency ?? "EUR",
+        public_name: settingsData?.public_name ?? "",
+        email: profileData?.email ?? "",
       });
     } catch (err) {
       reportError(err, "Error fetching personalization:");
@@ -107,18 +126,32 @@ export default function CustomizationPage() {
           : null;
       const validTax = taxRate !== null && !isNaN(taxRate) ? taxRate : null;
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({
+      // Update account_settings
+      const { error: settingsError } = await supabase
+        .from("account_settings")
+        .upsert({
+          user_id: user.id,
           default_tax_rate: validTax,
           default_currency: values.default_currency ?? "EUR",
           public_name: values.public_name?.trim() || null,
-          email: values.email?.trim() || null,
           updated_at: new Date().toISOString(),
-        })
-        .eq("id", user.id);
+        });
 
-      if (error) throw error;
+      if (settingsError) throw settingsError;
+
+      // Update email in profiles if changed
+      if (values.email?.trim() !== profile?.email) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            email: values.email?.trim() || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", user.id);
+
+        if (profileError) throw profileError;
+      }
+
       toast.success("Personalización guardada");
       fetchProfile();
     } catch (err) {

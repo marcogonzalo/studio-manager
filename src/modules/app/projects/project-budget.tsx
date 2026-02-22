@@ -215,12 +215,17 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
       let architectName: string | undefined;
       let architectEmail: string | undefined;
       if (user?.id) {
+        const { data: settings } = await supabase
+          .from("account_settings")
+          .select("public_name")
+          .eq("user_id", user.id)
+          .single();
         const { data: profile } = await supabase
           .from("profiles")
-          .select("public_name, email")
+          .select("email")
           .eq("id", user.id)
           .single();
-        architectName = profile?.public_name?.trim() || undefined;
+        architectName = settings?.public_name?.trim() || undefined;
         architectEmail = profile?.email?.trim() || undefined;
       }
       const taxRate =
