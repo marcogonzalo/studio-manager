@@ -9,6 +9,10 @@ import {
   getCategoryOptions,
   isCostCategory,
   isPlanLimitExceeded,
+  isPlanFeatureUnavailable,
+  getPlanErrorType,
+  getPlanErrorMessage,
+  PLAN_ERROR_MESSAGES,
   reportError,
   reportWarn,
 } from "./utils";
@@ -136,6 +140,60 @@ describe("isPlanLimitExceeded", () => {
     expect(isPlanLimitExceeded(new Error("Other error"))).toBe(false);
     expect(isPlanLimitExceeded({ message: "Other" })).toBe(false);
     expect(isPlanLimitExceeded(null)).toBe(false);
+  });
+});
+
+describe("isPlanFeatureUnavailable", () => {
+  it("should return true when message contains PLAN_FEATURE_UNAVAILABLE", () => {
+    expect(
+      isPlanFeatureUnavailable(
+        new Error("PLAN_FEATURE_UNAVAILABLE: purchase_orders")
+      )
+    ).toBe(true);
+  });
+
+  it("should return false when message does not contain PLAN_FEATURE_UNAVAILABLE", () => {
+    expect(isPlanFeatureUnavailable(new Error("Other error"))).toBe(false);
+    expect(isPlanFeatureUnavailable(null)).toBe(false);
+  });
+});
+
+describe("getPlanErrorType", () => {
+  it("should return limit_exceeded when message contains PLAN_LIMIT_EXCEEDED", () => {
+    expect(
+      getPlanErrorType(new Error("PLAN_LIMIT_EXCEEDED: projects"))
+    ).toBe("limit_exceeded");
+  });
+
+  it("should return feature_unavailable when message contains PLAN_FEATURE_UNAVAILABLE", () => {
+    expect(
+      getPlanErrorType(new Error("PLAN_FEATURE_UNAVAILABLE: documents"))
+    ).toBe("feature_unavailable");
+  });
+
+  it("should return null for non-plan errors", () => {
+    expect(getPlanErrorType(new Error("Other"))).toBe(null);
+    expect(getPlanErrorType(null)).toBe(null);
+  });
+});
+
+describe("getPlanErrorMessage", () => {
+  it("should return limitExceeded message for PLAN_LIMIT_EXCEEDED", () => {
+    const result = getPlanErrorMessage(
+      new Error("PLAN_LIMIT_EXCEEDED: active projects")
+    );
+    expect(result).toEqual(PLAN_ERROR_MESSAGES.limitExceeded);
+  });
+
+  it("should return featureUnavailable message for PLAN_FEATURE_UNAVAILABLE", () => {
+    const result = getPlanErrorMessage(
+      new Error("PLAN_FEATURE_UNAVAILABLE: purchase_orders")
+    );
+    expect(result).toEqual(PLAN_ERROR_MESSAGES.featureUnavailable);
+  });
+
+  it("should return null for non-plan errors", () => {
+    expect(getPlanErrorMessage(new Error("Other"))).toBe(null);
   });
 });
 

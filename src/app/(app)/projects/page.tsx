@@ -23,7 +23,7 @@ import {
 import { ProjectDialog } from "@/components/project-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { formatDate } from "@/lib/utils";
+import { formatDate, getProjectStatusLabel } from "@/lib/utils";
 
 import type { Project } from "@/types";
 
@@ -127,44 +127,62 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProjects.map((project) => (
-            <Card
-              key={project.id}
-              className="transition-shadow hover:shadow-md"
-            >
-              <CardHeader>
-                <CardTitle>{project.name}</CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {project.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-muted-foreground space-y-2 text-sm">
-                  <div className="flex items-center">
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    {project.client?.full_name || "Sin cliente"}
+          {filteredProjects.map((project) => {
+            const isMuted =
+              project.status === "completed" || project.status === "cancelled";
+            return (
+              <Card
+                key={project.id}
+                className={
+                  isMuted
+                    ? "border-muted bg-muted/20 transition-shadow hover:shadow-md"
+                    : "transition-shadow hover:shadow-md"
+                }
+              >
+                <CardHeader>
+                  <CardTitle
+                    className={isMuted ? "text-muted-foreground" : undefined}
+                  >
+                    {project.name}
+                  </CardTitle>
+                  <CardDescription className="line-clamp-2">
+                    {project.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-muted-foreground space-y-2 text-sm">
+                    <div className="flex items-center">
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      {project.client?.full_name || "Sin cliente"}
+                    </div>
+                    <div className="flex items-center">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {project.start_date
+                        ? formatDate(project.start_date)
+                        : "Sin fecha"}
+                    </div>
+                    <div className="capitalize">
+                      Estado:{" "}
+                      <span
+                        className={
+                          isMuted
+                            ? "text-muted-foreground font-medium"
+                            : "text-foreground font-medium"
+                        }
+                      >
+                        {getProjectStatusLabel(project.status)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {project.start_date
-                      ? formatDate(project.start_date)
-                      : "Sin fecha"}
-                  </div>
-                  <div className="capitalize">
-                    Estado:{" "}
-                    <span className="text-foreground font-medium">
-                      {project.status}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button asChild className="w-full" variant="outline">
-                  <Link href={`/projects/${project.id}`}>Ver Detalles</Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                </CardContent>
+                <CardFooter>
+                  <Button asChild className="w-full" variant="outline">
+                    <Link href={`/projects/${project.id}`}>Ver Detalles</Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            );
+          })}
           {filteredProjects.length === 0 && (
             <Card className="border-dashed md:col-span-2 lg:col-span-3">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">

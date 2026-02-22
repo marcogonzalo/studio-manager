@@ -31,8 +31,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { getSupabaseClient } from "@/lib/supabase";
-import { reportError } from "@/lib/utils";
-import { formatDate } from "@/lib/utils";
+import { reportError, formatDate, getProjectStatusLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Project, Profile } from "@/types";
 
@@ -437,49 +436,72 @@ export default function DashboardPage() {
                 </div>
               ) : stats.recentProjects.length > 0 ? (
                 <StaggerContainer className="space-y-4" staggerDelay={0.08}>
-                  {stats.recentProjects.map((project) => (
-                    <StaggerItem
-                      key={project.id}
-                      direction="left"
-                      distance={15}
-                    >
-                      <Link
-                        href={`/projects/${project.id}`}
-                        className="bg-background hover:bg-accent/10 group border-border/50 flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
+                  {stats.recentProjects.map((project) => {
+                    const isMuted =
+                      project.status === "completed" ||
+                      project.status === "cancelled";
+                    return (
+                      <StaggerItem
+                        key={project.id}
+                        direction="left"
+                        distance={15}
                       >
-                        <div className="flex flex-1 items-center space-x-4">
-                          <div className="bg-primary/10 text-primary rounded-full p-2">
-                            <FolderKanban className="h-5 w-5" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-foreground truncate text-sm leading-none font-medium">
-                              {project.name}
-                            </p>
-                            <div className="text-muted-foreground mt-2 flex items-center gap-4 text-xs">
-                              {project.client?.full_name && (
-                                <div className="flex items-center gap-1">
-                                  <UserIcon className="h-3 w-3" />
-                                  <span className="truncate">
-                                    {project.client.full_name}
-                                  </span>
-                                </div>
-                              )}
-                              {project.start_date && (
-                                <div className="flex items-center gap-1">
-                                  <Calendar className="h-3 w-3" />
-                                  <span>{formatDate(project.start_date)}</span>
-                                </div>
-                              )}
-                              <span className="capitalize">
-                                {project.status}
-                              </span>
+                        <Link
+                          href={`/projects/${project.id}`}
+                          className={
+                            isMuted
+                              ? "bg-muted/20 hover:bg-muted/30 group border-muted flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all"
+                              : "bg-background hover:bg-accent/10 group border-border/50 flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
+                          }
+                        >
+                          <div className="flex flex-1 items-center space-x-4">
+                            <div
+                              className={
+                                isMuted
+                                  ? "bg-muted text-muted-foreground rounded-full p-2"
+                                  : "bg-primary/10 text-primary rounded-full p-2"
+                              }
+                            >
+                              <FolderKanban className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p
+                                className={
+                                  isMuted
+                                    ? "text-muted-foreground truncate text-sm leading-none font-medium"
+                                    : "text-foreground truncate text-sm leading-none font-medium"
+                                }
+                              >
+                                {project.name}
+                              </p>
+                              <div className="text-muted-foreground mt-2 flex items-center gap-4 text-xs">
+                                {project.client?.full_name && (
+                                  <div className="flex items-center gap-1">
+                                    <UserIcon className="h-3 w-3" />
+                                    <span className="truncate">
+                                      {project.client.full_name}
+                                    </span>
+                                  </div>
+                                )}
+                                {project.start_date && (
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    <span>
+                                      {formatDate(project.start_date)}
+                                    </span>
+                                  </div>
+                                )}
+                                <span className="capitalize">
+                                  {getProjectStatusLabel(project.status)}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <ArrowRight className="text-muted-foreground ml-4 h-4 w-4 flex-shrink-0 transition-transform group-hover:translate-x-1" />
-                      </Link>
-                    </StaggerItem>
-                  ))}
+                          <ArrowRight className="text-muted-foreground ml-4 h-4 w-4 flex-shrink-0 transition-transform group-hover:translate-x-1" />
+                        </Link>
+                      </StaggerItem>
+                    );
+                  })}
                 </StaggerContainer>
               ) : (
                 <div className="bg-secondary/10 border-border flex flex-col items-center justify-center space-y-4 rounded-xl border border-dashed py-10 text-center">

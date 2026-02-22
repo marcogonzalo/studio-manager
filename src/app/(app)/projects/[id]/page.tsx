@@ -15,7 +15,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type { Project } from "@/types";
-import { getPhaseLabel, formatDate } from "@/lib/utils";
+import { getPhaseLabel, formatDate, getProjectStatusLabel } from "@/lib/utils";
 import { ProjectNotes } from "@/modules/app/projects/project-notes";
 import { ProjectPurchases } from "@/modules/app/projects/project-purchases";
 import { ProjectSpaces } from "@/modules/app/projects/project-spaces";
@@ -169,7 +169,13 @@ function ProjectDetailContent() {
       <Collapsible>
         <div className="flex items-center justify-between">
           <CollapsibleTrigger className="group flex-1 text-left">
-            <div>
+            <div
+              className={
+                project.status === "completed" || project.status === "cancelled"
+                  ? "text-muted-foreground"
+                  : undefined
+              }
+            >
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
                   {project.name}
@@ -177,7 +183,7 @@ function ProjectDetailContent() {
                 </h1>
                 <div className="flex items-center gap-2">
                   <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize">
-                    {project.status}
+                    {getProjectStatusLabel(project.status)}
                   </span>
                   {project.phase && (
                     <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">

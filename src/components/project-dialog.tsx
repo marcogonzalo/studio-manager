@@ -46,7 +46,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import type { Client, Project, ProjectStatus } from "@/types";
 import { ClientDialog } from "@/components/dialogs/client-dialog";
-import { CURRENCIES, isPlanLimitExceeded } from "@/lib/utils";
+import { CURRENCIES, getPlanErrorMessage } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
@@ -97,8 +97,12 @@ export function ProjectDialog({
   const [isClientDialogOpen, setIsClientDialogOpen] = useState(false);
   const [pendingClientId, setPendingClientId] = useState<string | null>(null);
   const [showStatusConfirmation, setShowStatusConfirmation] = useState(false);
-  const [pendingStatus, setPendingStatus] = useState<ProjectStatus | null>(null);
-  const [pendingFormValues, setPendingFormValues] = useState<z.input<typeof formSchema> | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<ProjectStatus | null>(
+    null
+  );
+  const [pendingFormValues, setPendingFormValues] = useState<z.input<
+    typeof formSchema
+  > | null>(null);
 
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const currencyDisabled = isBasePlan;
@@ -265,10 +269,19 @@ export function ProjectDialog({
 
   async function onSubmit(values: z.input<typeof formSchema>) {
     // Check if status is changing to completed or cancelled and needs confirmation
-    const isChangingToCompleted = project && project.status !== "completed" && values.status === "completed";
-    const isChangingToCancelled = project && project.status !== "cancelled" && values.status === "cancelled";
+    const isChangingToCompleted =
+      project &&
+      project.status !== "completed" &&
+      values.status === "completed";
+    const isChangingToCancelled =
+      project &&
+      project.status !== "cancelled" &&
+      values.status === "cancelled";
 
-    if ((isChangingToCompleted || isChangingToCancelled) && !pendingFormValues) {
+    if (
+      (isChangingToCompleted || isChangingToCancelled) &&
+      !pendingFormValues
+    ) {
       // Show confirmation dialog
       setPendingStatus(values.status as ProjectStatus);
       setPendingFormValues(values);
@@ -378,18 +391,18 @@ export function ProjectDialog({
         toast.success("Proyecto creado");
         form.reset();
       }
-      
+
       // Reset pending state
       setPendingFormValues(null);
       setPendingStatus(null);
-      
+
       onSuccess();
     } catch (error: unknown) {
-      if (isPlanLimitExceeded(error)) {
-        toast.error(
-          "El plan actual no permite realizar esa acción. Mejora tu plan para continuar.",
-          { duration: 5000 }
-        );
+      const planError = getPlanErrorMessage(error);
+      if (planError) {
+        toast.error(`${planError.title}. ${planError.description}`, {
+          duration: 5000,
+        });
         return;
       }
       const errorMessage =
@@ -417,23 +430,30 @@ export function ProjectDialog({
 
   return (
     <>
-      <AlertDialog open={showStatusConfirmation} onOpenChange={setShowStatusConfirmation}>
+      <AlertDialog
+        open={showStatusConfirmation}
+        onOpenChange={setShowStatusConfirmation}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {pendingStatus === "completed" ? "Marcar proyecto como completado" : "Cancelar proyecto"}
+              {pendingStatus === "completed"
+                ? "Marcar proyecto como completado"
+                : "Cancelar proyecto"}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingStatus === "completed" ? (
                 <>
-                  Vas a marcar el proyecto como completado y pasará a modo de solo lectura. 
-                  Asegúrate de que has registrado todos los cambios antes para garantizar que tu 
-                  proyecto ha quedado a punto por si necesitas consultarlo en el futuro.
+                  Vas a marcar el proyecto como completado y pasará a modo de
+                  solo lectura. Asegúrate de que has registrado todos los
+                  cambios antes para garantizar que tu proyecto ha quedado a
+                  punto por si necesitas consultarlo en el futuro.
                 </>
               ) : (
                 <>
-                  Vas a cancelar un proyecto. Esta acción es irreversible y hará que el proyecto 
-                  pase a modo lectura y no podrás editarlo. ¿Es lo que quieres hacer?
+                  Vas a cancelar un proyecto. Esta acción es irreversible y hará
+                  que el proyecto pase a modo lectura y no podrás editarlo. ¿Es
+                  lo que quieres hacer?
                 </>
               )}
             </AlertDialogDescription>
@@ -450,293 +470,311 @@ export function ProjectDialog({
       </AlertDialog>
 
       <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>{project ? "Editar" : "Nuevo"} Proyecto</DialogTitle>
-          <DialogDescription>
-            {project
-              ? "Edita la información del proyecto."
-              : "Crea un nuevo proyecto de diseño."}
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Primera línea: Nombre */}
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>Nombre del Proyecto</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Reforma Sala Principal" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Segunda línea: Cliente */}
-            <FormField
-              control={form.control}
-              name="client_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel required>Cliente</FormLabel>
-                  <div className="flex gap-2">
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="flex-1">
-                          <SelectValue placeholder="Selecciona un cliente" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {clients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.full_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setIsClientDialogOpen(true)}
-                      title="Agregar nuevo cliente"
-                      aria-label="Agregar nuevo cliente"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Tercera línea: Dirección */}
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dirección</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Dirección del proyecto" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Cuarta línea: Descripción */}
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Detalles del proyecto..."
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Quinta línea: Fase y Estado */}
-            <div className="grid grid-cols-2 gap-4">
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{project ? "Editar" : "Nuevo"} Proyecto</DialogTitle>
+            <DialogDescription>
+              {project
+                ? "Edita la información del proyecto."
+                : "Crea un nuevo proyecto de diseño."}
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Primera línea: Nombre */}
               <FormField
                 control={form.control}
-                name="phase"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fase del Proyecto</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona una fase" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="diagnosis">
-                          1. Diagnóstico
-                        </SelectItem>
-                        <SelectItem value="design">2. Diseño</SelectItem>
-                        <SelectItem value="executive">
-                          3. Proyecto Ejecutivo
-                        </SelectItem>
-                        <SelectItem value="budget">4. Presupuestos</SelectItem>
-                        <SelectItem value="construction">5. Obra</SelectItem>
-                        <SelectItem value="delivery">6. Entrega</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estado</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Estado" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Activo</SelectItem>
-                        <SelectItem value="completed">Completado</SelectItem>
-                        <SelectItem value="cancelled">Cancelado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Quinta línea: Fechas */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="start_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fecha Inicio</FormLabel>
+                    <FormLabel required>Nombre del Proyecto</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} value={field.value || ""} />
+                      <Input placeholder="Reforma Sala Principal" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+              {/* Segunda línea: Cliente */}
               <FormField
                 control={form.control}
-                name="end_date"
+                name="client_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fecha Estimada de Entrega</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} value={field.value || ""} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Moneda e Impuesto (deshabilitados en plan BASE: solo perfil) */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="currency"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Moneda</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={
-                        currencyDisabled
-                          ? defaultCurrency
-                          : (field.value ?? "EUR")
-                      }
-                      disabled={currencyDisabled}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Moneda" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.entries(CURRENCIES)
-                          .sort(([a], [b]) => a.localeCompare(b))
-                          .map(([code, label]) => (
-                            <SelectItem key={code} value={code}>
-                              {label}
+                    <FormLabel required>Cliente</FormLabel>
+                    <div className="flex gap-2">
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Selecciona un cliente" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {clients.map((client) => (
+                            <SelectItem key={client.id} value={client.id}>
+                              {client.full_name}
                             </SelectItem>
                           ))}
-                      </SelectContent>
-                    </Select>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setIsClientDialogOpen(true)}
+                        title="Agregar nuevo cliente"
+                        aria-label="Agregar nuevo cliente"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Tercera línea: Dirección */}
               <FormField
                 control={form.control}
-                name="tax_rate"
+                name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Impuesto (%)</FormLabel>
+                    <FormLabel>Dirección</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        placeholder="Ej: 21"
+                      <Input placeholder="Dirección del proyecto" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Cuarta línea: Descripción */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descripción</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Detalles del proyecto..."
                         {...field}
-                        value={
-                          taxRateDisabled
-                            ? defaultTaxRateStr
-                            : field.value || ""
-                        }
-                        disabled={taxRateDisabled}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              {(currencyDisabled || taxRateDisabled) && (
-                <p className="text-muted-foreground col-span-2 text-xs">
-                  Moneda e impuesto definidos por tu perfil.{" "}
-                  <Link href="/pricing" className="underline">
-                    Mejora tu plan
-                  </Link>{" "}
-                  para definirlos por proyecto.
-                </p>
-              )}
-            </div>
 
-            <DialogFooter>
-              <Button type="submit">
-                {project ? "Guardar Cambios" : "Crear Proyecto"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
+              {/* Quinta línea: Fase y Estado */}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="phase"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fase del Proyecto</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona una fase" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="diagnosis">
+                            1. Diagnóstico
+                          </SelectItem>
+                          <SelectItem value="design">2. Diseño</SelectItem>
+                          <SelectItem value="executive">
+                            3. Proyecto Ejecutivo
+                          </SelectItem>
+                          <SelectItem value="budget">
+                            4. Presupuestos
+                          </SelectItem>
+                          <SelectItem value="construction">5. Obra</SelectItem>
+                          <SelectItem value="delivery">6. Entrega</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-      <ClientDialog
-        open={isClientDialogOpen}
-        onOpenChange={setIsClientDialogOpen}
-        client={null}
-        onSuccess={async (clientId) => {
-          if (clientId) {
-            // Recargar la lista de clientes
-            const { data } = await supabase
-              .from("clients")
-              .select("*")
-              .order("full_name");
-            if (data) {
-              setClients(data);
-              // Establecer el cliente pendiente para que se seleccione cuando la lista se actualice
-              setPendingClientId(clientId);
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Estado</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Estado" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="active">Activo</SelectItem>
+                          <SelectItem value="completed">Completado</SelectItem>
+                          <SelectItem value="cancelled">Cancelado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Quinta línea: Fechas */}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="start_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fecha Inicio</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="end_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fecha Estimada de Entrega</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          {...field}
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Moneda e Impuesto (deshabilitados en plan BASE: solo perfil) */}
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="currency"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Moneda</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={
+                          currencyDisabled
+                            ? defaultCurrency
+                            : (field.value ?? "EUR")
+                        }
+                        disabled={currencyDisabled}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Moneda" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Object.entries(CURRENCIES)
+                            .sort(([a], [b]) => a.localeCompare(b))
+                            .map(([code, label]) => (
+                              <SelectItem key={code} value={code}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tax_rate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Impuesto (%)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="Ej: 21"
+                          {...field}
+                          value={
+                            taxRateDisabled
+                              ? defaultTaxRateStr
+                              : field.value || ""
+                          }
+                          disabled={taxRateDisabled}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {(currencyDisabled || taxRateDisabled) && (
+                  <p className="text-muted-foreground col-span-2 text-xs">
+                    Moneda e impuesto definidos por tu perfil.{" "}
+                    <Link href="/pricing" className="underline">
+                      Mejora tu plan
+                    </Link>{" "}
+                    para definirlos por proyecto.
+                  </p>
+                )}
+              </div>
+
+              <DialogFooter>
+                <Button type="submit">
+                  {project ? "Guardar Cambios" : "Crear Proyecto"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+
+        <ClientDialog
+          open={isClientDialogOpen}
+          onOpenChange={setIsClientDialogOpen}
+          client={null}
+          onSuccess={async (clientId) => {
+            if (clientId) {
+              // Recargar la lista de clientes y seleccionar el nuevo
+              const { data } = await supabase
+                .from("clients")
+                .select("*")
+                .order("full_name");
+              if (data) {
+                setClients(data);
+                setPendingClientId(clientId);
+              }
+              setIsClientDialogOpen(false);
+              // La creación ya se confirma con un toast en ClientDialog
             }
-            setIsClientDialogOpen(false);
-            toast.success("Cliente creado y seleccionado");
-          }
-        }}
-      />
-    </Dialog>
+          }}
+        />
+      </Dialog>
     </>
   );
 }

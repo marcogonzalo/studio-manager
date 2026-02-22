@@ -103,15 +103,70 @@ export function getErrorMessage(error: unknown): string {
   return "Error desconocido";
 }
 
+/** Códigos que el backend puede incluir en el mensaje de error para identificar tipo de restricción por plan. */
+export const PLAN_ERROR_CODES = {
+  /** Se superó un cupo o límite (proyectos activos, almacenamiento, etc.). */
+  LIMIT_EXCEEDED: "PLAN_LIMIT_EXCEEDED",
+  /** La acción o funcionalidad no está disponible en el plan actual. */
+  FEATURE_UNAVAILABLE: "PLAN_FEATURE_UNAVAILABLE",
+} as const;
+
+/** Mensajes de error por plan para mostrar al usuario. Mejora la comunicación al diferenciar límite excedido vs acción no disponible. */
+export const PLAN_ERROR_MESSAGES = {
+  limitExceeded: {
+    title: "Límite excedido",
+    description:
+      "Has alcanzado el límite de tu plan. Mejora tu plan para ampliar cupos y continuar.",
+  },
+  featureUnavailable: {
+    title: "Acción no disponible en tu plan",
+    description:
+      "Esta funcionalidad no está incluida en tu plan actual. Mejora tu plan para acceder.",
+  },
+} as const;
+
+function getErrorMessageString(error: unknown): string {
+  return error instanceof Error
+    ? error.message
+    : typeof (error as { message?: string })?.message === "string"
+      ? (error as { message: string }).message
+      : "";
+}
+
 /** True when the error is from plan limit (backend rejected with PLAN_LIMIT_EXCEEDED). */
 export function isPlanLimitExceeded(error: unknown): boolean {
-  const msg =
-    error instanceof Error
-      ? error.message
-      : typeof (error as { message?: string })?.message === "string"
-        ? (error as { message: string }).message
-        : "";
-  return msg.includes("PLAN_LIMIT_EXCEEDED");
+  return getErrorMessageString(error).includes(PLAN_ERROR_CODES.LIMIT_EXCEEDED);
+}
+
+/** True when the error is from plan feature not available (backend rejected with PLAN_FEATURE_UNAVAILABLE). */
+export function isPlanFeatureUnavailable(error: unknown): boolean {
+  return getErrorMessageString(error).includes(
+    PLAN_ERROR_CODES.FEATURE_UNAVAILABLE
+  );
+}
+
+/** Tipo de error por plan, si aplica. */
+export type PlanErrorType = "limit_exceeded" | "feature_unavailable";
+
+/** Detecta si el error es por restricción de plan y devuelve el tipo. */
+export function getPlanErrorType(error: unknown): PlanErrorType | null {
+  const msg = getErrorMessageString(error);
+  if (msg.includes(PLAN_ERROR_CODES.LIMIT_EXCEEDED)) return "limit_exceeded";
+  if (msg.includes(PLAN_ERROR_CODES.FEATURE_UNAVAILABLE))
+    return "feature_unavailable";
+  return null;
+}
+
+/** Devuelve el mensaje de error por plan para mostrar al usuario (title + description), o null si no es error de plan. */
+export function getPlanErrorMessage(error: unknown): {
+  title: string;
+  description: string;
+} | null {
+  const type = getPlanErrorType(error);
+  if (type === "limit_exceeded") return PLAN_ERROR_MESSAGES.limitExceeded;
+  if (type === "feature_unavailable")
+    return PLAN_ERROR_MESSAGES.featureUnavailable;
+  return null;
 }
 
 /**
@@ -146,6 +201,18 @@ export function getPhaseLabel(phase?: ProjectPhase): string {
   };
 
   return labels[phase];
+}
+
+/** Etiqueta en español del estado del proyecto (active, completed, cancelled). */
+export function getProjectStatusLabel(status?: string | null): string {
+  if (!status || !status.trim()) return "—";
+  const labels: Record<string, string> = {
+    active: "Activo",
+    completed: "Completado",
+    cancelled: "Cancelado",
+    draft: "Borrador",
+  };
+  return labels[status.toLowerCase()] ?? status;
 }
 
 // Budget Categories (value in DB → label in UI)
