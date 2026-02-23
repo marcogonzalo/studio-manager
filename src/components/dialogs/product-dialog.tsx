@@ -79,6 +79,8 @@ export function ProductDialog({
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   /** Size of image just uploaded (edit mode); included in next update so trigger can account for it */
   const uploadedImageSizeBytesRef = useRef<number | null>(null);
+  /** Asset id from last upload (edit mode); linked in products.asset_id */
+  const uploadedAssetIdRef = useRef<string | null>(null);
 
   const productIdForUpload = product?.id ?? "";
 
@@ -222,9 +224,13 @@ export function ProductDialog({
         if (uploadedImageSizeBytesRef.current != null) {
           data.image_size_bytes = uploadedImageSizeBytesRef.current;
         }
+        if (uploadedAssetIdRef.current) {
+          data.asset_id = uploadedAssetIdRef.current;
+        }
       } else {
         data.image_url = null;
         data.image_size_bytes = null;
+        data.asset_id = null;
       }
 
       if (product) {
@@ -247,6 +253,7 @@ export function ProductDialog({
           .eq("id", product.id);
         if (error) throw error;
         uploadedImageSizeBytesRef.current = null;
+        uploadedAssetIdRef.current = null;
         toast.success("Producto actualizado");
       } else {
         // New product: insert first (no image_url if we have a pending file to upload)
@@ -274,18 +281,29 @@ export function ProductDialog({
             url?: string;
             error?: string;
             fileSizeBytes?: number;
+            assetId?: string;
           };
           if (!res.ok) {
+            await supabase.from("products").delete().eq("id", newId);
             reportError(
               new Error(uploadJson.error ?? "Error al subir la imagen")
             );
             toast.error(uploadJson.error ?? "Error al subir la imagen");
-          } else if (uploadJson.url) {
-            const updatePayload: { image_url: string; image_size_bytes?: number } = {
+            setPendingImageFile(null);
+            return;
+          }
+          if (uploadJson.url) {
+            const updatePayload: {
+              image_url: string;
+              image_size_bytes?: number;
+              asset_id?: string | null;
+            } = {
               image_url: uploadJson.url,
             };
             if (uploadJson.fileSizeBytes != null)
               updatePayload.image_size_bytes = uploadJson.fileSizeBytes;
+            if (uploadJson.assetId != null)
+              updatePayload.asset_id = uploadJson.assetId;
             const { error: updateError } = await supabase
               .from("products")
               .update(updatePayload)
@@ -509,10 +527,11 @@ export function ProductDialog({
                           <ProductImageUpload
                             productId={productIdForUpload}
                             currentImageUrl={field.value || undefined}
-                            onUploadSuccess={(url, fileSizeBytes) => {
+                            onUploadSuccess={(url, fileSizeBytes, assetId) => {
                               field.onChange(url);
                               uploadedImageSizeBytesRef.current =
                                 fileSizeBytes ?? null;
+                              uploadedAssetIdRef.current = assetId ?? null;
                               toast.success("Imagen subida");
                             }}
                             onUploadError={(msg) => toast.error(msg)}

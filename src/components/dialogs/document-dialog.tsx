@@ -65,6 +65,7 @@ export function DocumentDialog({
   const [loading, setLoading] = useState(false);
   const uploadedFileUrlRef = useRef<string | null>(null);
   const uploadedFileSizeBytesRef = useRef<number | null>(null);
+  const uploadedAssetIdRef = useRef<string | null>(null);
   const documentIdForUpload = useMemo(() => {
     if (open) return crypto.randomUUID();
     return "";
@@ -78,10 +79,12 @@ export function DocumentDialog({
   const handleUploadSuccess = (
     url: string,
     fileName?: string,
-    fileSizeBytes?: number
+    fileSizeBytes?: number,
+    assetId?: string
   ) => {
     uploadedFileUrlRef.current = url;
     uploadedFileSizeBytesRef.current = fileSizeBytes ?? null;
+    uploadedAssetIdRef.current = assetId ?? null;
     form.setValue("file_url", url, { shouldValidate: true });
     const currentName = form.getValues("name");
     if (fileName && !currentName?.trim()) {
@@ -106,6 +109,7 @@ export function DocumentDialog({
       const { getSupabaseClient } = await import("@/lib/supabase");
       const supabase = getSupabaseClient();
       const row: Record<string, unknown> = {
+        id: documentIdForUpload,
         project_id: projectId,
         name: values.name.trim(),
         file_url: values.file_url.trim(),
@@ -113,6 +117,9 @@ export function DocumentDialog({
       };
       if (uploadedFileSizeBytesRef.current != null) {
         row.file_size_bytes = uploadedFileSizeBytesRef.current;
+      }
+      if (uploadedAssetIdRef.current) {
+        row.asset_id = uploadedAssetIdRef.current;
       }
       const { error } = await supabase.from("project_documents").insert([row]);
 
@@ -127,6 +134,7 @@ export function DocumentDialog({
       }
       uploadedFileUrlRef.current = null;
       uploadedFileSizeBytesRef.current = null;
+      uploadedAssetIdRef.current = null;
 
       toast.success("Documento añadido");
       form.reset({ name: "", file_url: "" });

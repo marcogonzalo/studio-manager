@@ -9,7 +9,11 @@ interface ProductImageUploadProps {
   productId: string;
   projectId?: string;
   currentImageUrl?: string;
-  onUploadSuccess: (url: string, fileSizeBytes?: number) => void;
+  onUploadSuccess: (
+    url: string,
+    fileSizeBytes?: number,
+    assetId?: string
+  ) => void;
   onUploadError?: (error: string) => void;
   /** When true, only select file and call onFileSelect; upload is done by parent (e.g. after product creation) */
   deferUpload?: boolean;
@@ -67,6 +71,7 @@ export function ProductImageUpload({
           url?: string;
           error?: string;
           fileSizeBytes?: number;
+          assetId?: string;
         };
 
         if (!res.ok) {
@@ -77,7 +82,7 @@ export function ProductImageUpload({
         }
 
         if (data.url) {
-          onUploadSuccess(data.url, data.fileSizeBytes);
+          onUploadSuccess(data.url, data.fileSizeBytes, data.assetId);
         }
       } catch (err) {
         const msg =

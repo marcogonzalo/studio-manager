@@ -60,13 +60,19 @@ export function SpaceImagesDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when open or space.id changes only
   }, [open, space.id]);
 
-  const insertImage = async (url: string, fileSizeBytes?: number) => {
+  const insertImage = async (
+    url: string,
+    fileSizeBytes?: number,
+    assetId?: string
+  ) => {
     const row: Record<string, unknown> = {
+      id: imageIdForUpload,
       space_id: space.id,
       url,
       description: "Render",
     };
     if (fileSizeBytes != null) row.file_size_bytes = fileSizeBytes;
+    if (assetId != null) row.asset_id = assetId;
     const { error } = await supabase.from("space_images").insert([row]);
     if (error) {
       toast.error("Error al añadir imagen");
@@ -87,10 +93,14 @@ export function SpaceImagesDialog({
     }
   };
 
-  const handleUploadSuccess = async (url: string, fileSizeBytes?: number) => {
+  const handleUploadSuccess = async (
+    url: string,
+    fileSizeBytes?: number,
+    assetId?: string
+  ) => {
     setLoading(true);
     try {
-      await insertImage(url, fileSizeBytes);
+      await insertImage(url, fileSizeBytes, assetId);
     } finally {
       setLoading(false);
     }

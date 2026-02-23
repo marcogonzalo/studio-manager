@@ -103,6 +103,8 @@ export function AddItemDialog({
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   /** Size of image just uploaded (edit mode); included in product update so trigger can account for it */
   const uploadedImageSizeBytesRef = useRef<number | null>(null);
+  /** Asset id from last upload; linked in products.asset_id */
+  const uploadedAssetIdRef = useRef<string | null>(null);
   const isEditing = !!item;
 
   const productIdForUpload = item?.product_id ?? "";
@@ -373,13 +375,26 @@ export function AddItemDialog({
             url?: string;
             error?: string;
             fileSizeBytes?: number;
+            assetId?: string;
           };
-          if (res.ok && uploadJson.url) {
-            const updatePayload: { image_url: string; image_size_bytes?: number } = {
+          if (!res.ok) {
+            await supabase.from("products").delete().eq("id", newProduct.id);
+            toast.error(uploadJson.error ?? "Error al subir la imagen");
+            setPendingImageFile(null);
+            throw new Error(uploadJson.error ?? "Error al subir la imagen");
+          }
+          if (uploadJson.url) {
+            const updatePayload: {
+              image_url: string;
+              image_size_bytes?: number;
+              asset_id?: string | null;
+            } = {
               image_url: uploadJson.url,
             };
             if (uploadJson.fileSizeBytes != null)
               updatePayload.image_size_bytes = uploadJson.fileSizeBytes;
+            if (uploadJson.assetId != null)
+              updatePayload.asset_id = uploadJson.assetId;
             await supabase
               .from("products")
               .update(updatePayload)
@@ -443,11 +458,18 @@ export function AddItemDialog({
           if (uploadedImageSizeBytesRef.current != null) {
             productUpdate.image_size_bytes = uploadedImageSizeBytesRef.current;
           }
+          if (values.image_url?.trim()) {
+            if (uploadedAssetIdRef.current != null)
+              productUpdate.asset_id = uploadedAssetIdRef.current;
+          } else {
+            productUpdate.asset_id = null;
+          }
           await supabase
             .from("products")
             .update(productUpdate)
             .eq("id", item.product_id);
           uploadedImageSizeBytesRef.current = null;
+          uploadedAssetIdRef.current = null;
         }
 
         const { error } = await supabase
@@ -786,10 +808,16 @@ export function AddItemDialog({
                                   }
                                   projectId={projectId}
                                   currentImageUrl={field.value || undefined}
-                                  onUploadSuccess={(url, fileSizeBytes) => {
+                                  onUploadSuccess={(
+                                    url,
+                                    fileSizeBytes,
+                                    assetId
+                                  ) => {
                                     field.onChange(url);
                                     uploadedImageSizeBytesRef.current =
                                       fileSizeBytes ?? null;
+                                    uploadedAssetIdRef.current =
+                                      assetId ?? null;
                                     toast.success("Imagen subida");
                                   }}
                                   onUploadError={(msg) => toast.error(msg)}

@@ -9,7 +9,12 @@ interface DocumentFileUploadProps {
   documentId: string;
   projectId: string;
   currentFileUrl?: string;
-  onUploadSuccess: (url: string, fileName?: string, fileSizeBytes?: number) => void;
+  onUploadSuccess: (
+    url: string,
+    fileName?: string,
+    fileSizeBytes?: number,
+    assetId?: string
+  ) => void;
   onUploadError?: (error: string) => void;
   disabled?: boolean;
   className?: string;
@@ -54,6 +59,7 @@ export function DocumentFileUpload({
           url?: string;
           error?: string;
           fileSizeBytes?: number;
+          assetId?: string;
         };
 
         if (!res.ok) {
@@ -64,7 +70,12 @@ export function DocumentFileUpload({
         }
 
         if (data.url) {
-          onUploadSuccess(data.url, file.name, data.fileSizeBytes);
+          onUploadSuccess(
+            data.url,
+            file.name,
+            data.fileSizeBytes,
+            data.assetId
+          );
         }
       } catch (err) {
         const msg =

@@ -183,7 +183,9 @@ export function SpaceProductsDialog({
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleEdit(item)}>
+                              <DropdownMenuItem
+                                onClick={() => handleEdit(item)}
+                              >
                                 <Pencil className="mr-2 h-4 w-4" />
                                 Editar
                               </DropdownMenuItem>
