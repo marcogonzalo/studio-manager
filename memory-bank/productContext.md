@@ -43,7 +43,22 @@
   - Trial period: "El período de pruebas es de 30 días."
   - Footer tagline: "La plataforma para gestión de proyectos de diseño interior."
 
-## Design Philosophy
+## SEO & Marketing Copy (Plan Landings)
 
-- **Aesthetic:** Natural, pastel, earthy tones (Sage, Beige, Warm White) reflecting a modern interior design aesthetic.
-- **UX:** Clean, spacious, and visual-first interface.
+**Palabras a posicionar (SEO):** Usar de forma natural en títulos, descripciones y cuerpo de las páginas de marketing (especialmente en las vistas de planes):
+
+- **gestión de proyectos**
+- **arquitectura de diseño interior**
+- **diseño interior**
+- **interiorismo**
+- **gestión de presupuestos**
+
+**Vistas de planes** (`(marketing)/plan/`): Tres landings comerciales, cada una orientada a un perfil y sus pains:
+
+| Plan   | Ruta         | Perfil / contexto                                                                 | Pains principales                                                                 |
+|--------|--------------|------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| **Base**  | `/plan/base`  | Persona curiosa, que no se decide a pagar, o que empieza en solitario sin flujo de proyectos. | No pagar sin probar; empezar en interiorismo; aún no hay flujo constante de proyectos. |
+| **Pro**   | `/plan/pro`   | Profesional con cartera de proyectos al año, varios a la vez o proyectos más grandes; necesita control del flujo de dinero. | Varios proyectos y se escapa el control; no saber si gana o pierde; profesionalizar la gestión del dinero. |
+| **Studio**| `/plan/studio`| Estudio consolidado, posiblemente con equipo; múltiples proyectos, ritmo continuo (cierra uno y empieza otro). | Ritmo que no para; equipo que necesita una sola fuente de verdad; presupuestos con su marca y soporte real. |
+
+Al escribir o revisar copy en estas vistas (y en pricing/about cuando aplique), integrar las palabras clave anteriores de forma natural, sin forzar repeticiones.

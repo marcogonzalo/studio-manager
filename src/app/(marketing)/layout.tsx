@@ -65,6 +65,30 @@ function Footer() {
                   Precios
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/plan/base"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Plan Base
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/plan/pro"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Plan Pro
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/plan/studio"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Plan Studio
+                </Link>
+              </li>
             </ul>
           </div>
 
