@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { getSupabaseClient } from "@/lib/supabase";
+import { appPath } from "@/lib/app-paths";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -128,7 +129,7 @@ function AuthContent() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setLoading(true);
     try {
-      const finalRedirect = redirectTo || "/dashboard";
+      const finalRedirect = redirectTo || appPath("/dashboard");
       const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(finalRedirect)}`;
 
       const billingParam = searchParams.get("billing");
@@ -178,7 +179,7 @@ function AuthContent() {
 
     setLoading(true);
     try {
-      const finalRedirect = redirectTo || "/dashboard";
+      const finalRedirect = redirectTo || appPath("/dashboard");
       const callbackUrl = `${window.location.origin}/auth/callback?next=${encodeURIComponent(finalRedirect)}`;
 
       const response = await fetch("/api/auth/magic-link", {

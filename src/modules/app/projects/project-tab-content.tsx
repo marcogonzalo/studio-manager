@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { appPath } from "@/lib/app-paths";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -35,7 +36,7 @@ export function ProjectTabContent({
             {disabledMessage}
           </p>
           <Button asChild size="sm" variant="secondary">
-            <Link href="/settings/plan/change">Mejora tu plan</Link>
+            <Link href={appPath("/settings/plan/change")}>Mejora tu plan</Link>
           </Button>
         </div>
       </div>

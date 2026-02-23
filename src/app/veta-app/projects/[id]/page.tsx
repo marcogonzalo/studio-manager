@@ -15,6 +15,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type { Project } from "@/types";
+import { appPath } from "@/lib/app-paths";
 import { getPhaseLabel, formatDate, getProjectStatusLabel } from "@/lib/utils";
 import { ProjectNotes } from "@/modules/app/projects/project-notes";
 import { ProjectPurchases } from "@/modules/app/projects/project-purchases";
@@ -340,7 +341,7 @@ function ProjectDetailContent() {
             <span>
               Algunas secciones no están disponibles en tu plan.{" "}
               <Link
-                href="/settings/plan/change"
+                href={appPath("/settings/plan/change")}
                 className="font-medium underline hover:no-underline"
               >
                 Mejora tu plan

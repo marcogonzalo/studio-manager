@@ -19,6 +19,21 @@ const publicRoutes = [
   { path: "/contact", priority: 0.8, changeFrequency: "monthly" as const },
   { path: "/legal", priority: 0.5, changeFrequency: "yearly" as const },
   { path: "/auth", priority: 0.6, changeFrequency: "monthly" as const },
+  {
+    path: "/plan-base-primer-proyecto-interiorismo",
+    priority: 0.7,
+    changeFrequency: "monthly" as const,
+  },
+  {
+    path: "/plan-pro-independientes-diseno-interior",
+    priority: 0.7,
+    changeFrequency: "monthly" as const,
+  },
+  {
+    path: "/plan-studio-empresas-arquitectura-diseno-interior",
+    priority: 0.7,
+    changeFrequency: "monthly" as const,
+  },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

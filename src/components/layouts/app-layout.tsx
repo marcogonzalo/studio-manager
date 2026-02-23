@@ -52,6 +52,7 @@ import { PageLoading } from "@/components/loaders/page-loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getDisplayName } from "@/lib/display-name";
+import { appPath } from "@/lib/app-paths";
 
 function AppLayoutSkeleton() {
   return (
@@ -71,17 +72,17 @@ function AppLayoutSkeleton() {
 }
 
 const navItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Clientes", href: "/clients", icon: Users },
-  { name: "Proyectos", href: "/projects", icon: FolderKanban },
-  { name: "Catálogo", href: "/catalog", icon: ShoppingBag },
-  { name: "Proveedores", href: "/suppliers", icon: Truck },
+  { name: "Dashboard", href: appPath("/dashboard"), icon: LayoutDashboard },
+  { name: "Clientes", href: appPath("/clients"), icon: Users },
+  { name: "Proyectos", href: appPath("/projects"), icon: FolderKanban },
+  { name: "Catálogo", href: appPath("/catalog"), icon: ShoppingBag },
+  { name: "Proveedores", href: appPath("/suppliers"), icon: Truck },
 ];
 
 const settingsNavItems = [
-  { name: "Volver atrás", href: "/dashboard", icon: ArrowLeft },
-  { name: "Cuenta", href: "/settings/account", icon: User },
-  { name: "Tu plan", href: "/settings/plan", icon: CreditCard },
+  { name: "Volver atrás", href: appPath("/dashboard"), icon: ArrowLeft },
+  { name: "Cuenta", href: appPath("/settings/account"), icon: User },
+  { name: "Tu plan", href: appPath("/settings/plan"), icon: CreditCard },
 ];
 
 const PLAN_DISPLAY_NAMES: Record<string, string> = {
@@ -111,7 +112,7 @@ function SidebarContent({
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
 }) {
-  const isInSettings = pathname.startsWith("/settings");
+  const isInSettings = pathname.includes("/settings");
   const navSource = isInSettings ? settingsNavItems : navItems;
 
   const renderNavLink = (
@@ -184,7 +185,7 @@ function SidebarContent({
         )}
       >
         <Link
-          href={isInSettings ? "/settings" : "/dashboard"}
+          href={isInSettings ? appPath("/settings") : appPath("/dashboard")}
           className={cn(
             "flex items-center gap-2",
             collapsed && "justify-center"
@@ -236,7 +237,7 @@ function SidebarContent({
       >
         {effectivePlan?.plan_code === "BASE" && (
           <Link
-            href="/settings/plan/change"
+            href={appPath("/settings/plan/change")}
             className={cn(
               "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
               collapsed ? "py-2" : "mb-2"
@@ -277,19 +278,19 @@ function SidebarContent({
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">
+                    <Link href={appPath("/profile")}>
                       <User className="mr-2 h-4 w-4" />
                       Mi perfil
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/customization">
+                    <Link href={appPath("/customization")}>
                       <SlidersHorizontal className="mr-2 h-4 w-4" />
                       Personalización
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/settings">
+                    <Link href={appPath("/settings")}>
                       <Settings className="mr-2 h-4 w-4" />
                       Configuración
                     </Link>
@@ -358,19 +359,19 @@ function SidebarContent({
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">
+                  <Link href={appPath("/profile")}>
                     <User className="mr-2 h-4 w-4" />
                     Mi perfil
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/customization">
+                  <Link href={appPath("/customization")}>
                     <SlidersHorizontal className="mr-2 h-4 w-4" />
                     Personalización
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">
+                  <Link href={appPath("/settings")}>
                     <Settings className="mr-2 h-4 w-4" />
                     Configuración
                   </Link>

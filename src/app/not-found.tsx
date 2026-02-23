@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
+import { appPath } from "@/lib/app-paths";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,7 +19,7 @@ export default function NotFound() {
   const router = useRouter();
 
   const handleGoHome = () => {
-    router.push(user ? "/dashboard" : "/");
+    router.push(user ? appPath("/dashboard") : "/");
   };
 
   return (

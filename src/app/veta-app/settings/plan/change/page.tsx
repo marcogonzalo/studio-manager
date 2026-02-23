@@ -20,6 +20,7 @@ import {
 import { getSupabaseClient } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import { getErrorMessage, reportError } from "@/lib/utils";
+import { appPath } from "@/lib/app-paths";
 import { toast } from "sonner";
 
 const PRICING_CURRENCY = "EUR";
@@ -86,7 +87,7 @@ export default function ChangePlanPage() {
       if (error) throw error;
       await refetchEffectivePlan();
       toast.success("Plan activado correctamente");
-      router.push("/settings/plan");
+      router.push(appPath("/settings/plan"));
     } catch (err) {
       reportError(err, "assign_plan:");
       toast.error("Error al activar el plan: " + getErrorMessage(err));
@@ -274,7 +275,10 @@ export default function ChangePlanPage() {
       </div>
 
       <p className="text-muted-foreground text-center text-sm">
-        <Link href="/settings/plan" className="underline hover:no-underline">
+        <Link
+          href={appPath("/settings/plan")}
+          className="underline hover:no-underline"
+        >
           Volver a Plan
         </Link>
       </p>

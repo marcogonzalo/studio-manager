@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { CookieOptions } from "@supabase/ssr";
 import { getSupabaseUrl, getSupabaseServerKey } from "./keys";
+import { APP_BASE } from "../app-paths";
 
 interface CookieToSet {
   name: string;
@@ -23,7 +24,8 @@ const PUBLIC_ROUTES = [
 function isPublicPath(pathname: string): boolean {
   return (
     PUBLIC_ROUTES.some((route) => pathname === route) ||
-    pathname.startsWith("/auth")
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/plan-")
   );
 }
 
@@ -55,7 +57,7 @@ export async function updateSession(request: NextRequest) {
           const redirectTo = request.nextUrl.searchParams.get("redirect");
           url.pathname = redirectTo
             ? decodeURIComponent(redirectTo)
-            : "/dashboard";
+            : `${APP_BASE}/dashboard`;
           url.searchParams.delete("redirect");
           const redirectRes = NextResponse.redirect(url);
           res.cookies
@@ -67,7 +69,7 @@ export async function updateSession(request: NextRequest) {
         }
         if (pathname === "/") {
           const url = request.nextUrl.clone();
-          url.pathname = "/dashboard";
+          url.pathname = `${APP_BASE}/dashboard`;
           const redirectRes = NextResponse.redirect(url);
           res.cookies
             .getAll()

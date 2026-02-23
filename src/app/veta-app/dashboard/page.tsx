@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { getSupabaseClient } from "@/lib/supabase";
+import { appPath } from "@/lib/app-paths";
 import { reportError, formatDate, getProjectStatusLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Project, Profile } from "@/types";
@@ -316,7 +317,7 @@ export default function DashboardPage() {
             asChild
             className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 animate-glow shadow-lg transition-all hover:scale-105"
           >
-            <Link href="/projects">
+            <Link href={appPath("/projects")}>
               <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
             </Link>
           </Button>
@@ -473,7 +474,7 @@ export default function DashboardPage() {
                         distance={15}
                       >
                         <Link
-                          href={`/projects/${project.id}`}
+                          href={appPath(`/projects/${project.id}`)}
                           className={
                             isMuted
                               ? "bg-muted/20 hover:bg-muted/30 group border-muted flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all"
@@ -544,7 +545,7 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <Button variant="outline" asChild className="mt-4">
-                    <Link href="/projects">Crear Proyecto</Link>
+                    <Link href={appPath("/projects")}>Crear Proyecto</Link>
                   </Button>
                 </div>
               )}
@@ -571,7 +572,7 @@ export default function DashboardPage() {
                 >
                   <StaggerItem direction="right" distance={15}>
                     <Link
-                      href="/clients"
+                      href={appPath("/clients")}
                       className="bg-background hover:bg-accent/10 group border-border/50 flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
                     >
                       <div className="flex items-center space-x-4">
@@ -593,7 +594,7 @@ export default function DashboardPage() {
 
                   <StaggerItem direction="right" distance={15}>
                     <Link
-                      href="/catalog"
+                      href={appPath("/catalog")}
                       className="bg-background hover:bg-accent/10 group border-border/50 flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
                     >
                       <div className="flex items-center space-x-4">

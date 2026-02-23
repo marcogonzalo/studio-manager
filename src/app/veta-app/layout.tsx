@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { AuthProvider } from "@/components/auth-provider";
 import AppLayoutClient from "@/components/layouts/app-layout";
+import { appPath } from "@/lib/app-paths";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -35,7 +36,7 @@ export default async function AppLayout({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    redirect("/auth?redirect=" + encodeURIComponent("/dashboard"));
+    redirect("/auth?redirect=" + encodeURIComponent(appPath("/dashboard")));
   }
   return (
     <AuthProvider>

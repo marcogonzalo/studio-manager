@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Rocket, FolderKanban, Users, Truck, ShoppingBag } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { PlanConfig } from "@/types";
-import { reportError } from "@/lib/utils";
-import { formatDate } from "@/lib/utils";
+import { appPath } from "@/lib/app-paths";
+import { reportError, formatDate } from "@/lib/utils";
 
 const PLAN_DISPLAY_NAMES: Record<string, string> = {
   BASE: "Base",
@@ -229,7 +229,7 @@ export default function SettingsPlanPage() {
             )}
           </div>
           <Button asChild className="ml-auto shrink-0 gap-2">
-            <Link href="/settings/plan/change">
+            <Link href={appPath("/settings/plan/change")}>
               <Rocket className="h-4 w-4" />
               Mejorar plan
             </Link>

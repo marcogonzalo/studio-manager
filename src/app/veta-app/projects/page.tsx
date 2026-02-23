@@ -30,6 +30,7 @@ import {
 import { ProjectDialog } from "@/components/project-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { appPath } from "@/lib/app-paths";
 import { formatDate, getProjectStatusLabel } from "@/lib/utils";
 
 import type { Project } from "@/types";
@@ -246,7 +247,9 @@ export default function ProjectsPage() {
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full" variant="outline">
-                    <Link href={`/projects/${project.id}`}>Ver Detalles</Link>
+                    <Link href={appPath(`/projects/${project.id}`)}>
+                      Ver Detalles
+                    </Link>
                   </Button>
                 </CardFooter>
               </Card>

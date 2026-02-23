@@ -11,17 +11,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: [
-        "/dashboard",
-        "/projects",
-        "/clients",
-        "/catalog",
-        "/suppliers",
-        "/profile",
-        "/settings",
-        "/customization",
-        "/auth/callback",
-      ],
+      disallow: ["/veta-app", "/auth/callback"],
     },
     sitemap: `${BASE_URL}/sitemap.xml`,
   };

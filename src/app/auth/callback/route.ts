@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { CookieOptions } from "@supabase/ssr";
 import { getFriendlyAuthErrorMessage } from "@/lib/auth-error-messages";
 import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
+import { appPath } from "@/lib/app-paths";
 
 interface CookieToSet {
   name: string;
@@ -14,7 +15,9 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const nextParam = searchParams.get("next");
-  const next = nextParam ? decodeURIComponent(nextParam) : "/dashboard";
+  const next = nextParam
+    ? decodeURIComponent(nextParam)
+    : appPath("/dashboard");
 
   if (code) {
     const redirectPath = next.startsWith("/") ? next : `/${next}`;
@@ -70,6 +73,6 @@ export async function GET(request: NextRequest) {
     "error",
     "No se recibió el código de acceso. Por favor, intenta acceder nuevamente."
   );
-  authUrl.searchParams.set("redirect", "/dashboard");
+  authUrl.searchParams.set("redirect", appPath("/dashboard"));
   return NextResponse.redirect(authUrl.toString());
 }
