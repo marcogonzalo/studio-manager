@@ -160,9 +160,9 @@ describe("isPlanFeatureUnavailable", () => {
 
 describe("getPlanErrorType", () => {
   it("should return limit_exceeded when message contains PLAN_LIMIT_EXCEEDED", () => {
-    expect(
-      getPlanErrorType(new Error("PLAN_LIMIT_EXCEEDED: projects"))
-    ).toBe("limit_exceeded");
+    expect(getPlanErrorType(new Error("PLAN_LIMIT_EXCEEDED: projects"))).toBe(
+      "limit_exceeded"
+    );
   });
 
   it("should return feature_unavailable when message contains PLAN_FEATURE_UNAVAILABLE", () => {

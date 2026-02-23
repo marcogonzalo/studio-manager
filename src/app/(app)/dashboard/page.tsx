@@ -148,16 +148,15 @@ export default function DashboardPage() {
 
       const { data: activeProjects, error: activeError } = await supabase
         .from("projects")
-        .select("id, created_at, completed_date")
-        .or("completed_date.is.null,status.neq.completed");
+        .select("id, created_at")
+        .eq("status", "active");
 
       const { data: activeProjectsLastMonth, error: activeLastMonthError } =
         await supabase
           .from("projects")
-          .select("id, completed_date")
-          .or(
-            `completed_date.is.null,completed_date.gt.${lastDayLastMonth.toISOString()}`
-          );
+          .select("id")
+          .eq("status", "active")
+          .lt("created_at", firstDayThisMonth.toISOString());
 
       const { data: clients, error: clientsError } = await supabase
         .from("clients")
@@ -213,11 +212,38 @@ export default function DashboardPage() {
           0
         ) || 0;
 
-      const { data: recentProjects, error: recentError } = await supabase
+      const { data: activeRecent, error: activeRecentError } = await supabase
         .from("projects")
         .select("*, client:clients(full_name)")
+        .eq("status", "active")
         .order("created_at", { ascending: false })
         .limit(5);
+
+      const { data: inactiveFromLastMonth, error: inactiveRecentError } =
+        await supabase
+          .from("projects")
+          .select("*, client:clients(full_name)")
+          .in("status", ["completed", "cancelled"])
+          .or(
+            `completed_date.gte.${firstDayThisMonth.toISOString()},created_at.gte.${firstDayThisMonth.toISOString()}`
+          )
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+      const recentError = activeRecentError || inactiveRecentError;
+      const recentProjects = [
+        ...(activeRecent ?? []),
+        ...(inactiveFromLastMonth ?? []),
+      ]
+        .sort((a, b) => {
+          const aActive = a.status === "active" ? 1 : 0;
+          const bActive = b.status === "active" ? 1 : 0;
+          if (bActive !== aActive) return bActive - aActive;
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        })
+        .slice(0, 5);
 
       if (
         activeError ||

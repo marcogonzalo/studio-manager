@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DocumentDialog } from "@/components/dialogs/document-dialog";
+import { ProjectTabContent } from "./project-tab-content";
 
 interface Document {
   id: string;
@@ -23,9 +24,11 @@ interface Document {
 export function ProjectDocuments({
   projectId,
   readOnly = false,
+  disabled = false,
 }: {
   projectId: string;
   readOnly?: boolean;
+  disabled?: boolean;
 }) {
   const supabase = getSupabaseClient();
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -52,88 +55,93 @@ export function ProjectDocuments({
   };
 
   return (
-    <div className="space-y-6">
-      {!readOnly && (
-        <div className="flex justify-end">
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Añadir documento
-          </Button>
-        </div>
-      )}
+    <ProjectTabContent
+      disabled={disabled}
+      disabledMessage="Los documentos no están incluidos en tu plan actual."
+    >
+      <div className="space-y-6">
+        {!readOnly && (
+          <div className="flex justify-end">
+            <Button onClick={() => setIsDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Añadir documento
+            </Button>
+          </div>
+        )}
 
-      {documents.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-            <p className="text-muted-foreground mb-4">No hay documentos.</p>
-            {!readOnly && (
-              <Button onClick={() => setIsDialogOpen(true)} variant="outline">
-                <Plus className="mr-2 h-4 w-4" /> Añadir primer documento
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {documents.map((doc) => (
-            <Card key={doc.id}>
-              <CardContent className="flex items-center justify-between pt-6">
-                <div className="flex items-center">
-                  <FileText className="mr-3 h-8 w-8 text-blue-500" />
-                  <div>
-                    <div className="font-medium">{doc.name}</div>
-                    <div className="text-muted-foreground max-w-[200px] truncate text-xs">
-                      {doc.file_url}
+        {documents.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+              <p className="text-muted-foreground mb-4">No hay documentos.</p>
+              {!readOnly && (
+                <Button onClick={() => setIsDialogOpen(true)} variant="outline">
+                  <Plus className="mr-2 h-4 w-4" /> Añadir primer documento
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {documents.map((doc) => (
+              <Card key={doc.id}>
+                <CardContent className="flex items-center justify-between pt-6">
+                  <div className="flex items-center">
+                    <FileText className="mr-3 h-8 w-8 text-blue-500" />
+                    <div>
+                      <div className="font-medium">{doc.name}</div>
+                      <div className="text-muted-foreground max-w-[200px] truncate text-xs">
+                        {doc.file_url}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" asChild>
-                    <a
-                      href={doc.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label="Descargar documento"
-                    >
-                      <Download className="h-4 w-4" />
-                    </a>
-                  </Button>
-                  {!readOnly && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Acciones del documento"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(doc.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                  <div className="flex space-x-2">
+                    <Button variant="ghost" size="icon" asChild>
+                      <a
+                        href={doc.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Descargar documento"
+                      >
+                        <Download className="h-4 w-4" />
+                      </a>
+                    </Button>
+                    {!readOnly && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Acciones del documento"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(doc.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
-      <DocumentDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        projectId={projectId}
-        onSuccess={fetchDocs}
-      />
-    </div>
+        <DocumentDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          projectId={projectId}
+          onSuccess={fetchDocs}
+        />
+      </div>
+    </ProjectTabContent>
   );
 }

@@ -36,6 +36,7 @@ import {
   getPhaseLabel,
   formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
+import { ProjectTabContent } from "./project-tab-content";
 
 const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
   fees: "Honorarios",
@@ -47,9 +48,11 @@ const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
 export function ProjectPayments({
   projectId,
   readOnly = false,
+  disabled = false,
 }: {
   projectId: string;
   readOnly?: boolean;
+  disabled?: boolean;
 }) {
   const supabase = getSupabaseClient();
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -145,148 +148,156 @@ export function ProjectPayments({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <CardTitle>Pagos del Proyecto</CardTitle>
-        <div className="flex gap-2">
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filtrar por tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los tipos</SelectItem>
-              <SelectItem value="fees">Honorarios</SelectItem>
-              <SelectItem value="purchase_provision">
-                Provisión de Compras
-              </SelectItem>
-              <SelectItem value="additional_cost">Coste Adicional</SelectItem>
-              <SelectItem value="other">Otro</SelectItem>
-            </SelectContent>
-          </Select>
-          {!readOnly && (
-            <Button onClick={handleCreateNew}>
-              <Plus className="mr-2 h-4 w-4" /> Nuevo Pago
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {filteredPayments.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Wallet className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-            <p className="text-muted-foreground mb-4">
-              No hay pagos registrados.
-            </p>
+    <ProjectTabContent
+      disabled={disabled}
+      disabledMessage="La gestión de pagos no está incluida en tu plan actual."
+    >
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <CardTitle>Pagos del Proyecto</CardTitle>
+          <div className="flex gap-2">
+            <Select value={filterType} onValueChange={setFilterType}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Filtrar por tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="fees">Honorarios</SelectItem>
+                <SelectItem value="purchase_provision">
+                  Provisión de Compras
+                </SelectItem>
+                <SelectItem value="additional_cost">Coste Adicional</SelectItem>
+                <SelectItem value="other">Otro</SelectItem>
+              </SelectContent>
+            </Select>
             {!readOnly && (
-              <Button onClick={handleCreateNew} variant="outline">
-                <Plus className="mr-2 h-4 w-4" /> Registrar Primer Pago
+              <Button onClick={handleCreateNew}>
+                <Plus className="mr-2 h-4 w-4" /> Nuevo Pago
               </Button>
             )}
-          </CardContent>
-        </Card>
-      ) : (
-        <>
+          </div>
+        </div>
+
+        {filteredPayments.length === 0 ? (
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Historial de Pagos</CardTitle>
-                <div className="text-muted-foreground text-sm">
-                  Total:{" "}
-                  <span className="font-semibold">
-                    {formatCurrencyUtil(totalAmount, projectCurrency)}
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Monto</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Referencia</TableHead>
-                      <TableHead>Fase</TableHead>
-                      <TableHead>Descripción</TableHead>
-                      <TableHead className="text-right">Acciones</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPayments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell>
-                          {format(new Date(payment.payment_date), "dd/MM/yyyy")}
-                        </TableCell>
-                        <TableCell className="font-semibold">
-                          {formatCurrencyUtil(
-                            Number(payment.amount),
-                            projectCurrency
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <span className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs">
-                            {PAYMENT_TYPE_LABELS[payment.payment_type]}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {payment.reference_number || "-"}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {payment.phase ? getPhaseLabel(payment.phase) : "-"}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground max-w-xs truncate">
-                          {payment.description || "-"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {!readOnly && (
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  aria-label="Acciones del pago"
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                  onClick={() => handleEdit(payment)}
-                                >
-                                  <Pencil className="mr-2 h-4 w-4" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleDelete(payment.id)}
-                                  className="text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Eliminar
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+            <CardContent className="py-12 text-center">
+              <Wallet className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+              <p className="text-muted-foreground mb-4">
+                No hay pagos registrados.
+              </p>
+              {!readOnly && (
+                <Button onClick={handleCreateNew} variant="outline">
+                  <Plus className="mr-2 h-4 w-4" /> Registrar Primer Pago
+                </Button>
+              )}
             </CardContent>
           </Card>
-        </>
-      )}
+        ) : (
+          <>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Historial de Pagos</CardTitle>
+                  <div className="text-muted-foreground text-sm">
+                    Total:{" "}
+                    <span className="font-semibold">
+                      {formatCurrencyUtil(totalAmount, projectCurrency)}
+                    </span>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Monto</TableHead>
+                        <TableHead>Tipo</TableHead>
+                        <TableHead>Referencia</TableHead>
+                        <TableHead>Fase</TableHead>
+                        <TableHead>Descripción</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredPayments.map((payment) => (
+                        <TableRow key={payment.id}>
+                          <TableCell>
+                            {format(
+                              new Date(payment.payment_date),
+                              "dd/MM/yyyy"
+                            )}
+                          </TableCell>
+                          <TableCell className="font-semibold">
+                            {formatCurrencyUtil(
+                              Number(payment.amount),
+                              projectCurrency
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <span className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs">
+                              {PAYMENT_TYPE_LABELS[payment.payment_type]}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {payment.reference_number || "-"}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {payment.phase ? getPhaseLabel(payment.phase) : "-"}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground max-w-xs truncate">
+                            {payment.description || "-"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {!readOnly && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label="Acciones del pago"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => handleEdit(payment)}
+                                  >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDelete(payment.id)}
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Eliminar
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
 
-      <PaymentDialog
-        open={isDialogOpen}
-        onOpenChange={handleDialogClose}
-        onSuccess={fetchPayments}
-        projectId={projectId}
-        payment={editingPayment}
-        currency={projectCurrency}
-      />
-    </div>
+        <PaymentDialog
+          open={isDialogOpen}
+          onOpenChange={handleDialogClose}
+          onSuccess={fetchPayments}
+          projectId={projectId}
+          payment={editingPayment}
+          currency={projectCurrency}
+        />
+      </div>
+    </ProjectTabContent>
   );
 }

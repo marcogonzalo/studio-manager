@@ -129,13 +129,31 @@ export default function SettingsPlanPage() {
       return;
     }
     void (async () => {
+      // Backfill product image sizes (HEAD request) so existing images count toward storage
+      try {
+        await fetch("/api/storage/backfill-product-sizes", { method: "POST" });
+      } catch {
+        // Ignore; recalc will still use whatever we have in DB
+      }
+      // Recalc storage from actual data so display matches project_documents + space_images + products
+      await supabase.rpc("recalculate_user_storage_usage", {
+        p_user_id: user.id,
+      });
       const [projectsRes, clientsRes, suppliersRes, productsRes, storageRes] =
         await Promise.all([
-          supabase.from("projects").select("id").eq("user_id", user.id).eq("status", "active"),
+          supabase
+            .from("projects")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("status", "active"),
           supabase.from("clients").select("id").eq("user_id", user.id),
           supabase.from("suppliers").select("id").eq("user_id", user.id),
           supabase.from("products").select("id").eq("user_id", user.id),
-          supabase.from("user_storage_usage").select("bytes_used").eq("user_id", user.id).single(),
+          supabase
+            .from("user_storage_usage")
+            .select("bytes_used")
+            .eq("user_id", user.id)
+            .single(),
         ]);
       setUsage({
         projects: projectsRes.data?.length ?? 0,
@@ -227,11 +245,18 @@ export default function SettingsPlanPage() {
             ) : (
               <div className="space-y-4">
                 {(
-                  ["projects", "clients", "suppliers", "products", "storage"] as const
+                  [
+                    "projects",
+                    "clients",
+                    "suppliers",
+                    "products",
+                    "storage",
+                  ] as const
                 ).map((key) => {
                   if (key === "storage") {
                     const usedBytes = usage.storage;
-                    const limitMB = effectivePlan?.config?.storage_limit_mb ?? 500;
+                    const limitMB =
+                      effectivePlan?.config?.storage_limit_mb ?? 500;
                     const limitBytes = limitMB * 1024 * 1024;
                     const isUnlimited = limitMB === -1;
                     const percent = isUnlimited
@@ -249,7 +274,9 @@ export default function SettingsPlanPage() {
                             {label}
                           </span>
                           <span className="text-muted-foreground">
-                            {isUnlimited ? `${formatBytes(usedBytes)} / ∞` : `${formatBytes(usedBytes)} / ${formatBytes(limitBytes)}`}
+                            {isUnlimited
+                              ? `${formatBytes(usedBytes)} / ∞`
+                              : `${formatBytes(usedBytes)} / ${formatBytes(limitBytes)}`}
                           </span>
                         </div>
                         <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
@@ -261,7 +288,7 @@ export default function SettingsPlanPage() {
                       </div>
                     );
                   }
-                  
+
                   const used = usage[key];
                   const limit =
                     effectivePlan?.config?.[CONFIG_LIMIT_KEYS[key]] ??

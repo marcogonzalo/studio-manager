@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
-import { useAuth } from "@/components/auth-provider";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,18 +49,22 @@ import {
 } from "@/lib/utils";
 
 import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
+import { ProjectTabContent } from "./project-tab-content";
 
 export function ProjectCostControl({
   projectId,
   readOnly = false,
+  disabled = false,
+  costsManagementFull = false,
 }: {
   projectId: string;
   readOnly?: boolean;
+  disabled?: boolean;
+  /** Si false (modalidad basic), se ocultan Precio Venta/Margen y desviación % (solo full) */
+  costsManagementFull?: boolean;
 }) {
-  const { effectivePlan } = useAuth();
-  const costsManagementEnabled =
-    !readOnly && effectivePlan?.config?.costs_management === "full";
   const supabase = getSupabaseClient();
+  const canEdit = !readOnly && !disabled;
   const [project, setProject] = useState<{ currency?: string } | null>(null);
   const {
     budgetLines,
@@ -251,12 +254,11 @@ export function ProjectCostControl({
 
   return (
     <div className="space-y-6">
-      <div className="relative">
-        <div
-          className={
-            !costsManagementEnabled ? "pointer-events-none select-none" : ""
-          }
-        >
+      <ProjectTabContent
+        disabled={disabled}
+        disabledMessage="El control de costes no está incluido en tu plan actual."
+      >
+        <div className="space-y-6">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -266,10 +268,7 @@ export function ProjectCostControl({
               </p>
             </div>
             {!readOnly && (
-              <Button
-                onClick={handleAddBudgetLine}
-                disabled={!costsManagementEnabled}
-              >
+              <Button onClick={handleAddBudgetLine} disabled={!canEdit}>
                 <Plus className="mr-2 h-4 w-4" /> Nueva Partida
               </Button>
             )}
@@ -297,22 +296,24 @@ export function ProjectCostControl({
                   </div>
                 </div>
 
-                {/* Deviation bar with percentage */}
-                <div className="flex items-center gap-3">
-                  <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
-                    <div
-                      className={`h-full ${getDeviationBarColor(deviationPercentage)} transition-all duration-300`}
-                      style={{
-                        width: `${Math.min(deviationPercentage, 100)}%`,
-                      }}
-                    />
+                {/* Deviation bar with percentage (solo modalidad full) */}
+                {costsManagementFull && (
+                  <div className="flex items-center gap-3">
+                    <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
+                      <div
+                        className={`h-full ${getDeviationBarColor(deviationPercentage)} transition-all duration-300`}
+                        style={{
+                          width: `${Math.min(deviationPercentage, 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <span
+                      className={`min-w-[60px] text-right text-sm font-semibold ${getDeviationTextColor(deviationPercentage)}`}
+                    >
+                      {deviationPercentage.toFixed(1)}%
+                    </span>
                   </div>
-                  <span
-                    className={`min-w-[60px] text-right text-sm font-semibold ${getDeviationTextColor(deviationPercentage)}`}
-                  >
-                    {deviationPercentage.toFixed(1)}%
-                  </span>
-                </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -500,25 +501,27 @@ export function ProjectCostControl({
                       />
                       Coste de Productos
                     </CardTitle>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <p className="text-muted-foreground text-sm">
-                          Precio Venta: {formatCurrency(totalProductsPrice)}
-                        </p>
-                        <p className="font-semibold">
-                          Coste: {formatCurrency(totalProductsCost)}
-                        </p>
+                    {costsManagementFull && (
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-muted-foreground text-sm">
+                            Precio Venta: {formatCurrency(totalProductsPrice)}
+                          </p>
+                          <p className="font-semibold">
+                            Coste: {formatCurrency(totalProductsCost)}
+                          </p>
+                        </div>
+                        <div className="text-primary flex items-center gap-1">
+                          <TrendingUp className="h-4 w-4" />
+                          <span className="text-sm font-medium">
+                            Margen:{" "}
+                            {formatCurrency(
+                              totalProductsPrice - totalProductsCost
+                            )}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-primary flex items-center gap-1">
-                        <TrendingUp className="h-4 w-4" />
-                        <span className="text-sm font-medium">
-                          Margen:{" "}
-                          {formatCurrency(
-                            totalProductsPrice - totalProductsCost
-                          )}
-                        </span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </CardHeader>
               </CollapsibleTrigger>
@@ -529,7 +532,13 @@ export function ProjectCostControl({
                     proyecto. El detalle de productos se gestiona en la pestaña
                     "Presupuesto".
                   </p>
-                  <div className="grid grid-cols-3 gap-4 text-center">
+                  <div
+                    className={
+                      costsManagementFull
+                        ? "grid grid-cols-3 gap-4 text-center"
+                        : "grid grid-cols-1 gap-4 text-center"
+                    }
+                  >
                     <div className="bg-secondary/30 rounded-lg p-4">
                       <p className="text-muted-foreground text-sm">
                         Total Coste
@@ -538,27 +547,33 @@ export function ProjectCostControl({
                         {formatCurrency(totalProductsCost)}
                       </p>
                     </div>
-                    <div className="bg-secondary/30 rounded-lg p-4">
-                      <p className="text-muted-foreground text-sm">
-                        Total Venta
-                      </p>
-                      <p className="text-xl font-bold">
-                        {formatCurrency(totalProductsPrice)}
-                      </p>
-                    </div>
-                    <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
-                      <p className="text-muted-foreground text-sm">
-                        Margen Productos
-                      </p>
-                      <p className="text-primary text-xl font-bold">
-                        {formatCurrency(totalProductsPrice - totalProductsCost)}
-                      </p>
-                      <p className="text-muted-foreground text-xs">
-                        {totalProductsPrice > 0
-                          ? `${(((totalProductsPrice - totalProductsCost) / totalProductsPrice) * 100).toFixed(1)}%`
-                          : "0%"}
-                      </p>
-                    </div>
+                    {costsManagementFull && (
+                      <>
+                        <div className="bg-secondary/30 rounded-lg p-4">
+                          <p className="text-muted-foreground text-sm">
+                            Total Venta
+                          </p>
+                          <p className="text-xl font-bold">
+                            {formatCurrency(totalProductsPrice)}
+                          </p>
+                        </div>
+                        <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
+                          <p className="text-muted-foreground text-sm">
+                            Margen Productos
+                          </p>
+                          <p className="text-primary text-xl font-bold">
+                            {formatCurrency(
+                              totalProductsPrice - totalProductsCost
+                            )}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            {totalProductsPrice > 0
+                              ? `${(((totalProductsPrice - totalProductsCost) / totalProductsPrice) * 100).toFixed(1)}%`
+                              : "0%"}
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </CollapsibleContent>
@@ -573,10 +588,7 @@ export function ProjectCostControl({
                   No hay partidas de presupuesto registradas.
                 </p>
                 {!readOnly && (
-                  <Button
-                    onClick={handleAddBudgetLine}
-                    disabled={!costsManagementEnabled}
-                  >
+                  <Button onClick={handleAddBudgetLine} disabled={!canEdit}>
                     <Plus className="mr-2 h-4 w-4" /> Añadir Primera Partida
                   </Button>
                 )}
@@ -584,14 +596,7 @@ export function ProjectCostControl({
             </Card>
           )}
         </div>
-
-        {!costsManagementEnabled && (
-          <div
-            className="bg-background/50 pointer-events-auto absolute inset-0 z-10"
-            aria-hidden="true"
-          />
-        )}
-      </div>
+      </ProjectTabContent>
 
       {/* Dialog */}
       <BudgetLineDialog

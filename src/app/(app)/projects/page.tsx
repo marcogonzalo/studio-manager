@@ -132,7 +132,7 @@ export default function ProjectsPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <div className="relative max-w-sm flex-1 min-w-[200px]">
+        <div className="relative max-w-sm min-w-[200px] flex-1">
           <Search
             className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4"
             aria-hidden
@@ -160,7 +160,10 @@ export default function ProjectsPage() {
             <SelectItem value="cancelled">Cancelados</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+        <Select
+          value={sortBy}
+          onValueChange={(v) => setSortBy(v as SortOption)}
+        >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Ordenar por" />
           </SelectTrigger>
