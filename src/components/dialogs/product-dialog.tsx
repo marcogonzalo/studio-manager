@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { reportError, CURRENCIES } from "@/lib/utils";
 import type { Product, Supplier } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { SupplierDialog } from "./supplier-dialog";
@@ -77,6 +77,8 @@ export function ProductDialog({
   );
   /** File selected for new product; uploaded only after product is created */
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  /** Size of image just uploaded (edit mode); included in next update so trigger can account for it */
+  const uploadedImageSizeBytesRef = useRef<number | null>(null);
 
   const productIdForUpload = product?.id ?? "";
 
@@ -217,8 +219,12 @@ export function ProductDialog({
 
       if (values.image_url && values.image_url.trim()) {
         data.image_url = values.image_url;
+        if (uploadedImageSizeBytesRef.current != null) {
+          data.image_size_bytes = uploadedImageSizeBytesRef.current;
+        }
       } else {
         data.image_url = null;
+        data.image_size_bytes = null;
       }
 
       if (product) {
@@ -240,6 +246,7 @@ export function ProductDialog({
           .update(data)
           .eq("id", product.id);
         if (error) throw error;
+        uploadedImageSizeBytesRef.current = null;
         toast.success("Producto actualizado");
       } else {
         // New product: insert first (no image_url if we have a pending file to upload)
@@ -266,6 +273,7 @@ export function ProductDialog({
           const uploadJson = (await res.json()) as {
             url?: string;
             error?: string;
+            fileSizeBytes?: number;
           };
           if (!res.ok) {
             reportError(
@@ -273,9 +281,14 @@ export function ProductDialog({
             );
             toast.error(uploadJson.error ?? "Error al subir la imagen");
           } else if (uploadJson.url) {
+            const updatePayload: { image_url: string; image_size_bytes?: number } = {
+              image_url: uploadJson.url,
+            };
+            if (uploadJson.fileSizeBytes != null)
+              updatePayload.image_size_bytes = uploadJson.fileSizeBytes;
             const { error: updateError } = await supabase
               .from("products")
-              .update({ image_url: uploadJson.url })
+              .update(updatePayload)
               .eq("id", newId);
             if (updateError)
               reportError(updateError, "Error updating image_url:");
@@ -496,8 +509,10 @@ export function ProductDialog({
                           <ProductImageUpload
                             productId={productIdForUpload}
                             currentImageUrl={field.value || undefined}
-                            onUploadSuccess={(url) => {
+                            onUploadSuccess={(url, fileSizeBytes) => {
                               field.onChange(url);
+                              uploadedImageSizeBytesRef.current =
+                                fileSizeBytes ?? null;
                               toast.success("Imagen subida");
                             }}
                             onUploadError={(msg) => toast.error(msg)}

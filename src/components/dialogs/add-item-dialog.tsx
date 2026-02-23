@@ -30,7 +30,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import Image from "next/image";
 import { ProductDetailModal } from "@/components/product-detail-modal";
@@ -101,6 +101,8 @@ export function AddItemDialog({
   );
   /** File selected for new custom product; uploaded only after product is created */
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  /** Size of image just uploaded (edit mode); included in product update so trigger can account for it */
+  const uploadedImageSizeBytesRef = useRef<number | null>(null);
   const isEditing = !!item;
 
   const productIdForUpload = item?.product_id ?? "";
@@ -370,11 +372,17 @@ export function AddItemDialog({
           const uploadJson = (await res.json()) as {
             url?: string;
             error?: string;
+            fileSizeBytes?: number;
           };
           if (res.ok && uploadJson.url) {
+            const updatePayload: { image_url: string; image_size_bytes?: number } = {
+              image_url: uploadJson.url,
+            };
+            if (uploadJson.fileSizeBytes != null)
+              updatePayload.image_size_bytes = uploadJson.fileSizeBytes;
             await supabase
               .from("products")
-              .update({ image_url: uploadJson.url })
+              .update(updatePayload)
               .eq("id", newProduct.id);
             values = { ...values, image_url: uploadJson.url };
           }
@@ -419,22 +427,27 @@ export function AddItemDialog({
           (values.product_id === "custom" || activeTab === "new") &&
           item.product_id
         ) {
+          const productUpdate: Record<string, unknown> = {
+            name: values.name,
+            description: values.description || "",
+            reference_code: values.reference_code || "",
+            reference_url: values.reference_url || null,
+            category: values.category || "",
+            cost_price: values.unit_cost,
+            image_url: values.image_url || null,
+            supplier_id:
+              values.supplier_id === "none" || !values.supplier_id
+                ? null
+                : values.supplier_id,
+          };
+          if (uploadedImageSizeBytesRef.current != null) {
+            productUpdate.image_size_bytes = uploadedImageSizeBytesRef.current;
+          }
           await supabase
             .from("products")
-            .update({
-              name: values.name,
-              description: values.description || "",
-              reference_code: values.reference_code || "",
-              reference_url: values.reference_url || null,
-              category: values.category || "",
-              cost_price: values.unit_cost,
-              image_url: values.image_url || null,
-              supplier_id:
-                values.supplier_id === "none" || !values.supplier_id
-                  ? null
-                  : values.supplier_id,
-            })
+            .update(productUpdate)
             .eq("id", item.product_id);
+          uploadedImageSizeBytesRef.current = null;
         }
 
         const { error } = await supabase
@@ -773,8 +786,10 @@ export function AddItemDialog({
                                   }
                                   projectId={projectId}
                                   currentImageUrl={field.value || undefined}
-                                  onUploadSuccess={(url) => {
+                                  onUploadSuccess={(url, fileSizeBytes) => {
                                     field.onChange(url);
+                                    uploadedImageSizeBytesRef.current =
+                                      fileSizeBytes ?? null;
                                     toast.success("Imagen subida");
                                   }}
                                   onUploadError={(msg) => toast.error(msg)}

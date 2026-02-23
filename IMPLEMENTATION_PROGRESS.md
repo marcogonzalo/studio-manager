@@ -27,14 +27,18 @@
 - [x] Pricing page actualizada con nuevos límites y características
 - [x] Settings > Plan: proyectos activos + almacenamiento con formatBytes
 
-### 🚧 Pendiente (Fase 2)
+### ✅ Fase 2 (Storage Enforcement) – Completado
 
 #### APIs de Upload y Storage Enforcement
-- [ ] Actualizar `/api/upload/space-image` para comprobar límite y actualizar snapshot
-- [ ] Actualizar `/api/upload/product-image` para comprobar límite y actualizar snapshot
-- [ ] Actualizar `/api/upload/document` para comprobar límite y actualizar snapshot
-- [ ] Actualizar flujos de borrado para decrementar snapshot
-- [ ] Guardar `file_size_bytes` en cada upload
+- [x] Actualizar `/api/upload/space-image` para comprobar límite y actualizar snapshot
+- [x] Actualizar `/api/upload/product-image` para comprobar límite y actualizar snapshot
+- [x] Actualizar `/api/upload/document` para comprobar límite y actualizar snapshot
+- [x] Triggers en BD: `project_documents`, `space_images`, `products` actualizan `user_storage_usage` en insert/delete/update
+- [x] Guardar `file_size_bytes` / `image_size_bytes` en cada upload (documentos, space_images, productos)
+- [x] Helper `checkStorageLimit()` en `src/lib/storage-limit.ts`; respuestas 413 cuando se supera el límite
+- [x] Migración `20260222100008_storage_triggers_and_columns.sql`: columnas en `space_images` y `products`, triggers de sincronización
+
+### 🚧 Pendiente (Fase 2 continuación)
 
 #### Modo Solo Lectura (Completed/Cancelled)
 - [ ] Detectar status en vista de detalle de proyecto
@@ -72,7 +76,7 @@
 
 ### 🔄 Próximos Pasos Sugeridos
 
-1. Implementar enforcement de almacenamiento en APIs de upload
+1. ~~Implementar enforcement de almacenamiento en APIs de upload~~ (hecho)
 2. Implementar modo solo lectura completo en proyectos
 3. Implementar vista de listado con orden y filtros
 4. Testing manual de todos los flujos

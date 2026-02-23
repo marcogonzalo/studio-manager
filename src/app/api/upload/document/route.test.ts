@@ -35,6 +35,10 @@ vi.mock("@/lib/document-validation", () => ({
   getExtensionFromFileName: vi.fn(() => ".pdf"),
 }));
 
+vi.mock("@/lib/storage-limit", () => ({
+  checkStorageLimit: vi.fn(() => Promise.resolve({ allowed: true })),
+}));
+
 const mockGetSupabaseUrl = vi.fn(() => "https://test.supabase.co");
 const mockGetServerKey = vi.fn(() => "server-key");
 

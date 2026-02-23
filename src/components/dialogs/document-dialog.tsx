@@ -64,6 +64,7 @@ export function DocumentDialog({
 }: DocumentDialogProps) {
   const [loading, setLoading] = useState(false);
   const uploadedFileUrlRef = useRef<string | null>(null);
+  const uploadedFileSizeBytesRef = useRef<number | null>(null);
   const documentIdForUpload = useMemo(() => {
     if (open) return crypto.randomUUID();
     return "";
@@ -74,8 +75,13 @@ export function DocumentDialog({
     defaultValues: { name: "", file_url: "" },
   });
 
-  const handleUploadSuccess = (url: string, fileName?: string) => {
+  const handleUploadSuccess = (
+    url: string,
+    fileName?: string,
+    fileSizeBytes?: number
+  ) => {
     uploadedFileUrlRef.current = url;
+    uploadedFileSizeBytesRef.current = fileSizeBytes ?? null;
     form.setValue("file_url", url, { shouldValidate: true });
     const currentName = form.getValues("name");
     if (fileName && !currentName?.trim()) {
@@ -99,14 +105,16 @@ export function DocumentDialog({
     try {
       const { getSupabaseClient } = await import("@/lib/supabase");
       const supabase = getSupabaseClient();
-      const { error } = await supabase.from("project_documents").insert([
-        {
-          project_id: projectId,
-          name: values.name.trim(),
-          file_url: values.file_url.trim(),
-          file_type: "link",
-        },
-      ]);
+      const row: Record<string, unknown> = {
+        project_id: projectId,
+        name: values.name.trim(),
+        file_url: values.file_url.trim(),
+        file_type: "link",
+      };
+      if (uploadedFileSizeBytesRef.current != null) {
+        row.file_size_bytes = uploadedFileSizeBytesRef.current;
+      }
+      const { error } = await supabase.from("project_documents").insert([row]);
 
       if (error) throw error;
 
@@ -118,6 +126,7 @@ export function DocumentDialog({
         await deleteUploadedDocument(uploadedFileUrlRef.current);
       }
       uploadedFileUrlRef.current = null;
+      uploadedFileSizeBytesRef.current = null;
 
       toast.success("Documento añadido");
       form.reset({ name: "", file_url: "" });

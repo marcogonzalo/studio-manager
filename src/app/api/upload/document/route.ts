@@ -8,6 +8,7 @@ import {
   getExtensionFromMime,
   getExtensionFromFileName,
 } from "@/lib/document-validation";
+import { checkStorageLimit } from "@/lib/storage-limit";
 import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -166,6 +167,16 @@ export async function POST(request: Request) {
       );
     }
 
+    const storage = await checkStorageLimit(supabase, user.id, file.size);
+    if (!storage.allowed) {
+      return NextResponse.json(
+        {
+          error: `Límite de almacenamiento alcanzado (${Math.round(storage.currentUsed / 1024 / 1024)} MB / ${storage.limitMb} MB). Mejora tu plan para subir más.`,
+        },
+        { status: 413 }
+      );
+    }
+
     const validation = validateDocumentFile(file);
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
@@ -191,7 +202,7 @@ export async function POST(request: Request) {
       extension: ext,
     });
 
-    return NextResponse.json({ url });
+    return NextResponse.json({ url, fileSizeBytes: file.size });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Error al subir el documento";

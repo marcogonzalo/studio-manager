@@ -10,7 +10,7 @@ interface SpaceImageUploadProps {
   spaceId: string;
   imageId: string;
   currentImageUrl?: string;
-  onUploadSuccess: (url: string) => void;
+  onUploadSuccess: (url: string, fileSizeBytes?: number) => void;
   onUploadError?: (error: string) => void;
   disabled?: boolean;
   className?: string;
@@ -53,7 +53,11 @@ export function SpaceImageUpload({
           body: formData,
         });
 
-        const data = (await res.json()) as { url?: string; error?: string };
+        const data = (await res.json()) as {
+          url?: string;
+          error?: string;
+          fileSizeBytes?: number;
+        };
 
         if (!res.ok) {
           const msg = data.error || "Error al subir la imagen";
@@ -63,7 +67,7 @@ export function SpaceImageUpload({
         }
 
         if (data.url) {
-          onUploadSuccess(data.url);
+          onUploadSuccess(data.url, data.fileSizeBytes);
         }
       } catch (err) {
         const msg =

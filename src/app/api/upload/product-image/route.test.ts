@@ -33,6 +33,10 @@ vi.mock("@/lib/image-validation", () => ({
   validateImageFile: vi.fn(() => ({ valid: true })),
 }));
 
+vi.mock("@/lib/storage-limit", () => ({
+  checkStorageLimit: vi.fn(() => Promise.resolve({ allowed: true })),
+}));
+
 vi.mock("sharp", () => ({
   default: vi.fn(() => ({
     resize: vi.fn().mockReturnThis(),

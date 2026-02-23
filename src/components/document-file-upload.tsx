@@ -9,7 +9,7 @@ interface DocumentFileUploadProps {
   documentId: string;
   projectId: string;
   currentFileUrl?: string;
-  onUploadSuccess: (url: string, fileName?: string) => void;
+  onUploadSuccess: (url: string, fileName?: string, fileSizeBytes?: number) => void;
   onUploadError?: (error: string) => void;
   disabled?: boolean;
   className?: string;
@@ -50,7 +50,11 @@ export function DocumentFileUpload({
           body: formData,
         });
 
-        const data = (await res.json()) as { url?: string; error?: string };
+        const data = (await res.json()) as {
+          url?: string;
+          error?: string;
+          fileSizeBytes?: number;
+        };
 
         if (!res.ok) {
           const msg = data.error || "Error al subir el documento";
@@ -60,7 +64,7 @@ export function DocumentFileUpload({
         }
 
         if (data.url) {
-          onUploadSuccess(data.url, file.name);
+          onUploadSuccess(data.url, file.name, data.fileSizeBytes);
         }
       } catch (err) {
         const msg =

@@ -5,6 +5,7 @@ import type { CookieOptions } from "@supabase/ssr";
 import sharp from "sharp";
 import { uploadProductImage } from "@/lib/backblaze";
 import { validateImageFile } from "@/lib/image-validation";
+import { checkStorageLimit } from "@/lib/storage-limit";
 import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -229,6 +230,20 @@ export async function POST(request: Request) {
       .webp({ quality: 100 })
       .toBuffer();
 
+    const storage = await checkStorageLimit(
+      supabase,
+      user.id,
+      processedBuffer.length
+    );
+    if (!storage.allowed) {
+      return NextResponse.json(
+        {
+          error: `Límite de almacenamiento alcanzado (${Math.round(storage.currentUsed / 1024 / 1024)} MB / ${storage.limitMb} MB). Mejora tu plan para subir más.`,
+        },
+        { status: 413 }
+      );
+    }
+
     const arrayBuffer = new ArrayBuffer(processedBuffer.length);
     new Uint8Array(arrayBuffer).set(processedBuffer);
 
@@ -240,7 +255,7 @@ export async function POST(request: Request) {
       projectId: projectId?.trim() || undefined,
     });
 
-    return NextResponse.json({ url });
+    return NextResponse.json({ url, fileSizeBytes: processedBuffer.length });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Error al subir la imagen";
