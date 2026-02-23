@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
-import { useAuth } from "@/components/auth-provider";
+import { usePlanCapability } from "@/lib/use-plan-capability";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -35,9 +35,10 @@ export function ProjectSpaces({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
-  const { effectivePlan } = useAuth();
-  const canAddRenders =
-    !readOnly && !disabled && effectivePlan?.config?.documents === "full";
+  const addRendersAndDocumentsEnabled = usePlanCapability("documents", {
+    minModality: "full",
+  });
+  const canAddRenders = !readOnly && !disabled && addRendersAndDocumentsEnabled;
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);

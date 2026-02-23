@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState, useRef } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase";
-import { useAuth } from "@/components/auth-provider";
+import { usePlanCapability } from "@/lib/use-plan-capability";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +50,6 @@ function ProjectDetailContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const id = params.id as string;
-  const { effectivePlan } = useAuth();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -63,33 +62,46 @@ function ProjectDetailContent() {
   const tabsListRef = useRef<HTMLDivElement>(null);
   const supabase = getSupabaseClient();
 
-  const config = effectivePlan?.config;
+  const purchasesDisabled = !usePlanCapability("purchase_orders");
+  const paymentsDisabled = !usePlanCapability("payments_management");
+  const documentsDisabled = !usePlanCapability("documents");
+  const expensesDisabled = !usePlanCapability("costs_management");
   const costsDisabled = false;
-  const purchasesDisabled =
-    config?.purchase_orders === "none" || !config?.purchase_orders;
-  const paymentsDisabled =
-    config?.payments_management === "none" || !config?.payments_management;
-  const documentsDisabled = config?.documents === "none" || !config?.documents;
-  const expensesDisabled =
-    config?.costs_management === "none" || !config?.costs_management;
+  const advancedCostOptionsEnabled = usePlanCapability("costs_management", {
+    minModality: "full",
+  });
 
-  /** Solo mostrar el aviso de plan en pestañas que tengan algún elemento en modalidad basic o none */
+  const documentsAtLeastPlus = usePlanCapability("documents", {
+    minModality: "plus",
+  });
+  const budgetModeAtLeastPlus = usePlanCapability("budget_mode", {
+    minModality: "plus",
+  });
+  const costsManagementAtLeastPlus = usePlanCapability("costs_management", {
+    minModality: "plus",
+  });
+  const purchaseOrdersAtLeastPlus = usePlanCapability("purchase_orders", {
+    minModality: "plus",
+  });
+  const paymentsManagementAtLeastPlus = usePlanCapability(
+    "payments_management",
+    { minModality: "plus" }
+  );
+
   const currentTabHasRestrictedContent = (() => {
-    const isBasicOrNone = (v: string | undefined) =>
-      v === "basic" || v === "none" || !v;
     switch (activeTab) {
       case "spaces":
-        return isBasicOrNone(config?.documents);
+        return !documentsAtLeastPlus;
       case "quotation":
-        return isBasicOrNone(config?.budget_mode);
+        return !budgetModeAtLeastPlus;
       case "expenses":
-        return isBasicOrNone(config?.costs_management);
+        return !costsManagementAtLeastPlus;
       case "purchases":
-        return isBasicOrNone(config?.purchase_orders);
+        return !purchaseOrdersAtLeastPlus;
       case "payments":
-        return isBasicOrNone(config?.payments_management);
+        return !paymentsManagementAtLeastPlus;
       case "documents":
-        return isBasicOrNone(config?.documents);
+        return !documentsAtLeastPlus;
       default:
         return false;
     }
@@ -366,7 +378,7 @@ function ProjectDetailContent() {
             projectId={id}
             readOnly={isReadOnly}
             disabled={expensesDisabled}
-            costsManagementFull={config?.costs_management === "full"}
+            advancedCostOptionsEnabled={advancedCostOptionsEnabled}
           />
         </TabsContent>
 

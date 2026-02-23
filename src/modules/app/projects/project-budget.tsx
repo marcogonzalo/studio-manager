@@ -55,6 +55,7 @@ import {
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
+import { usePlanCapability } from "@/lib/use-plan-capability";
 import {
   getBudgetCategoryLabel,
   getBudgetSubcategoryLabel,
@@ -82,8 +83,10 @@ export function ProjectBudget({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
-  const { user, effectivePlan } = useAuth();
-  const pdfExportFull = effectivePlan?.config?.budget_mode === "full";
+  const { user } = useAuth();
+  const printFilterOptionsEnabled = usePlanCapability("budget_mode", {
+    minModality: "full",
+  });
   const supabase = getSupabaseClient();
   const { budgetLines, refetch: refetchBudgetLines } = useProjectBudgetLines(
     projectId,
@@ -877,7 +880,7 @@ export function ProjectBudget({
           onOpenChange={setIsPrintOptionsOpen}
           onConfirm={handleGeneratePDF}
           isGenerating={isGeneratingPDF}
-          pdfExportFull={pdfExportFull}
+          printFilterOptionsEnabled={printFilterOptionsEnabled}
         />
       </div>
     </ProjectTabContent>
