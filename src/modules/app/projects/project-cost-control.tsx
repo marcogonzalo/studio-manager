@@ -55,13 +55,13 @@ export function ProjectCostControl({
   projectId,
   readOnly = false,
   disabled = false,
-  costsManagementFull = false,
+  advancedCostOptionsEnabled = false,
 }: {
   projectId: string;
   readOnly?: boolean;
   disabled?: boolean;
-  /** Si false (modalidad basic), se ocultan Precio Venta/Margen y desviación % (solo full) */
-  costsManagementFull?: boolean;
+  /** Si true, muestra margen y desviación %. Precio de venta y coste siempre se muestran. */
+  advancedCostOptionsEnabled?: boolean;
 }) {
   const supabase = getSupabaseClient();
   const canEdit = !readOnly && !disabled;
@@ -297,7 +297,7 @@ export function ProjectCostControl({
                 </div>
 
                 {/* Deviation bar with percentage (solo modalidad full) */}
-                {costsManagementFull && (
+                {advancedCostOptionsEnabled && (
                   <div className="flex items-center gap-3">
                     <div className="bg-muted h-2 flex-1 overflow-hidden rounded-full">
                       <div
@@ -501,16 +501,16 @@ export function ProjectCostControl({
                       />
                       Coste de Productos
                     </CardTitle>
-                    {costsManagementFull && (
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <p className="text-muted-foreground text-sm">
-                            Precio Venta: {formatCurrency(totalProductsPrice)}
-                          </p>
-                          <p className="font-semibold">
-                            Coste: {formatCurrency(totalProductsCost)}
-                          </p>
-                        </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="text-muted-foreground text-sm">
+                          Precio Venta: {formatCurrency(totalProductsPrice)}
+                        </p>
+                        <p className="font-semibold">
+                          Coste: {formatCurrency(totalProductsCost)}
+                        </p>
+                      </div>
+                      {advancedCostOptionsEnabled && (
                         <div className="text-primary flex items-center gap-1">
                           <TrendingUp className="h-4 w-4" />
                           <span className="text-sm font-medium">
@@ -520,8 +520,8 @@ export function ProjectCostControl({
                             )}
                           </span>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
               </CollapsibleTrigger>
@@ -534,9 +534,9 @@ export function ProjectCostControl({
                   </p>
                   <div
                     className={
-                      costsManagementFull
+                      advancedCostOptionsEnabled
                         ? "grid grid-cols-3 gap-4 text-center"
-                        : "grid grid-cols-1 gap-4 text-center"
+                        : "grid grid-cols-2 gap-4 text-center"
                     }
                   >
                     <div className="bg-secondary/30 rounded-lg p-4">
@@ -547,32 +547,30 @@ export function ProjectCostControl({
                         {formatCurrency(totalProductsCost)}
                       </p>
                     </div>
-                    {costsManagementFull && (
-                      <>
-                        <div className="bg-secondary/30 rounded-lg p-4">
-                          <p className="text-muted-foreground text-sm">
-                            Total Venta
-                          </p>
-                          <p className="text-xl font-bold">
-                            {formatCurrency(totalProductsPrice)}
-                          </p>
-                        </div>
-                        <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
-                          <p className="text-muted-foreground text-sm">
-                            Margen Productos
-                          </p>
-                          <p className="text-primary text-xl font-bold">
-                            {formatCurrency(
-                              totalProductsPrice - totalProductsCost
-                            )}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {totalProductsPrice > 0
-                              ? `${(((totalProductsPrice - totalProductsCost) / totalProductsPrice) * 100).toFixed(1)}%`
-                              : "0%"}
-                          </p>
-                        </div>
-                      </>
+                    <div className="bg-secondary/30 rounded-lg p-4">
+                      <p className="text-muted-foreground text-sm">
+                        Total Venta
+                      </p>
+                      <p className="text-xl font-bold">
+                        {formatCurrency(totalProductsPrice)}
+                      </p>
+                    </div>
+                    {advancedCostOptionsEnabled && (
+                      <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
+                        <p className="text-muted-foreground text-sm">
+                          Margen Productos
+                        </p>
+                        <p className="text-primary text-xl font-bold">
+                          {formatCurrency(
+                            totalProductsPrice - totalProductsCost
+                          )}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          {totalProductsPrice > 0
+                            ? `${(((totalProductsPrice - totalProductsCost) / totalProductsPrice) * 100).toFixed(1)}%`
+                            : "0%"}
+                        </p>
+                      </div>
                     )}
                   </div>
                 </CardContent>

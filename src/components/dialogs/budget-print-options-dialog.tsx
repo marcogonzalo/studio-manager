@@ -40,8 +40,8 @@ interface BudgetPrintOptionsDialogProps {
   onOpenChange: (open: boolean) => void;
   onConfirm: (option: BudgetPrintOption) => void;
   isGenerating?: boolean;
-  /** Si false (plan base), solo se permite "Presupuesto completo". "Solo productos" y "Solo partidas" quedan deshabilitados. */
-  pdfExportFull?: boolean;
+  /** Si false, solo se permite "Presupuesto completo"; "Solo productos" y "Solo partidas" quedan deshabilitados. */
+  printFilterOptionsEnabled?: boolean;
 }
 
 export function BudgetPrintOptionsDialog({
@@ -49,17 +49,17 @@ export function BudgetPrintOptionsDialog({
   onOpenChange,
   onConfirm,
   isGenerating = false,
-  pdfExportFull = true,
+  printFilterOptionsEnabled = true,
 }: BudgetPrintOptionsDialogProps) {
   const [selected, setSelected] = useState<BudgetPrintOption>("full");
 
   useEffect(() => {
-    if (open && !pdfExportFull) setSelected("full");
-  }, [open, pdfExportFull]);
+    if (open && !printFilterOptionsEnabled) setSelected("full");
+  }, [open, printFilterOptionsEnabled]);
 
   const handleConfirm = () => {
     const valueToSend =
-      !pdfExportFull && selected !== "full" ? "full" : selected;
+      !printFilterOptionsEnabled && selected !== "full" ? "full" : selected;
     onConfirm(valueToSend);
     onOpenChange(false);
   };
@@ -73,7 +73,7 @@ export function BudgetPrintOptionsDialog({
         <div className="space-y-3 py-2">
           {OPTIONS.map((opt) => {
             const isDisabled =
-              !pdfExportFull &&
+              !printFilterOptionsEnabled &&
               (opt.value === "products" || opt.value === "lines");
             return (
               <label

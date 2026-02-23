@@ -12,6 +12,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  COMPACT_FEATURE_KEYS,
+  getCommercialFeatures,
+  getPlanConfigForDisplay,
+} from "@/lib/plan-copy";
 import { getSupabaseClient } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import { getErrorMessage, reportError } from "@/lib/utils";
@@ -43,19 +48,9 @@ const PLANS: PlanOption[] = [
     price: "25",
     annualPrice: "250",
     currency: PRICING_CURRENCY,
-    features: [
-      "Todas las características base",
-      "Hasta 10 proyectos",
-      "50 clientes",
-      "50 proveedores",
-      "500 productos en catálogo",
-      "Exportación PDF personalizada",
-      "Selección de moneda por proyecto",
-      "Órdenes de compra",
-      "Control de costes",
-      "Gestión de pagos",
-      "Subida de renders y documentos, notas y resumen",
-    ],
+    features: getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
+      include: COMPACT_FEATURE_KEYS,
+    }),
     popular: true,
   },
   {
@@ -65,13 +60,9 @@ const PLANS: PlanOption[] = [
     price: "75",
     annualPrice: "750",
     currency: PRICING_CURRENCY,
-    features: [
-      "Todas las funcionalidades Pro",
-      "Proyectos ilimitados",
-      "Clientes ilimitados",
-      "Proveedores ilimitados",
-      "Catálogo ilimitado",
-    ],
+    features: getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
+      include: COMPACT_FEATURE_KEYS,
+    }),
     popular: false,
   },
 ];

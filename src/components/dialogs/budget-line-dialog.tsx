@@ -32,6 +32,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
+import { usePlanCapability } from "@/lib/use-plan-capability";
 import {
   getCategoryOptions,
   getSubcategoryOptions,
@@ -95,9 +96,10 @@ export function BudgetLineDialog({
   onSuccess,
   budgetLine,
 }: BudgetLineDialogProps) {
-  const { user, effectivePlan } = useAuth();
-  const costsManagementEnabled =
-    effectivePlan?.config?.costs_management === "full";
+  const { user } = useAuth();
+  const advancedCostLineOptionsEnabled = usePlanCapability("costs_management", {
+    minModality: "full",
+  });
   const supabase = getSupabaseClient();
   const isEditing = !!budgetLine;
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -205,12 +207,12 @@ export function BudgetLineDialog({
             ? typeof values.estimated_amount === "string"
               ? parseFloat(values.estimated_amount) || 0
               : values.estimated_amount
-            : costsManagementEnabled
+            : advancedCostLineOptionsEnabled
               ? typeof values.actual_amount === "string"
                 ? parseFloat(values.actual_amount) || 0
                 : values.actual_amount
               : 0,
-        is_internal_cost: costsManagementEnabled
+        is_internal_cost: advancedCostLineOptionsEnabled
           ? values.is_internal_cost
           : false,
         phase: values.phase || null,
@@ -431,12 +433,12 @@ export function BudgetLineDialog({
                         {...field}
                         disabled={
                           !selectedCategory ||
-                          !costsManagementEnabled ||
+                          !advancedCostLineOptionsEnabled ||
                           selectedCategory === "own_fees"
                         }
                       />
                     </FormControl>
-                    {!costsManagementEnabled && (
+                    {!advancedCostLineOptionsEnabled && (
                       <p className="text-muted-foreground text-xs">
                         <Link href="/pricing" className="underline">
                           Mejora tu plan
@@ -456,17 +458,19 @@ export function BudgetLineDialog({
               render={({ field }) => (
                 <FormItem
                   className={`flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
-                    !costsManagementEnabled ? "opacity-60" : ""
+                    !advancedCostLineOptionsEnabled ? "opacity-60" : ""
                   }`}
                 >
                   <FormControl>
                     <Checkbox
-                      checked={costsManagementEnabled ? field.value : false}
+                      checked={
+                        advancedCostLineOptionsEnabled ? field.value : false
+                      }
                       onCheckedChange={(checked) =>
-                        costsManagementEnabled &&
+                        advancedCostLineOptionsEnabled &&
                         field.onChange(checked === true)
                       }
-                      disabled={!costsManagementEnabled}
+                      disabled={!advancedCostLineOptionsEnabled}
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
@@ -475,12 +479,12 @@ export function BudgetLineDialog({
                       Si está marcado, esta partida NO aparecerá en el
                       presupuesto del cliente ni en el PDF.
                     </p>
-                    {!costsManagementEnabled && (
+                    {!advancedCostLineOptionsEnabled && (
                       <p className="text-muted-foreground mt-1 text-xs">
                         <Link href="/pricing" className="underline">
                           Mejora tu plan
                         </Link>{" "}
-                        para activar la gestión de costes.
+                        para activar la gestión de costes internos.
                       </p>
                     )}
                   </div>

@@ -10,6 +10,11 @@ import {
 } from "@/components/json-ld";
 import { PricingCardsClient } from "@/app/(marketing)/pricing/pricing-cards-client";
 import {
+  COMPACT_FEATURE_KEYS,
+  getCommercialFeatures,
+  getPlanConfigForDisplay,
+} from "@/lib/plan-copy";
+import {
   AnimatedSection,
   StaggerContainer,
   StaggerItem,
@@ -52,15 +57,9 @@ const plans = [
     annualPrice: null as string | null,
     annualNote: null as string | null,
     currency: null as string | null,
-    features: [
-      "1 proyecto activo",
-      "10 clientes",
-      "50 proveedores",
-      "50 productos en catálogo",
-      "500 MB de almacenamiento",
-      "Exportación de presupuesto en PDF",
-      "Control de gastos",
-    ],
+    features: getCommercialFeatures(getPlanConfigForDisplay("BASE"), {
+      include: COMPACT_FEATURE_KEYS,
+    }),
     cta: "Comenzar Gratis",
     ctaVariant: "outline" as const,
     popular: false,
@@ -74,20 +73,9 @@ const plans = [
     annualPrice: "250",
     annualNote: "2 meses gratis",
     currency: PRICING_CURRENCY,
-    features: [
-      "Todo lo incluido en Base",
-      "5 proyectos activos",
-      "Clientes ilimitados",
-      "Proveedores ilimitados",
-      "Productos ilimitados",
-      "10 GB de almacenamiento",
-      "Presupuesto personalizado",
-      "Control de gastos",
-      "Pedidos de compra",
-      "Control de pagos",
-      "Control de márgenes y reporte",
-      "Soporte por email",
-    ],
+    features: getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
+      include: COMPACT_FEATURE_KEYS,
+    }),
     cta: "Prueba 30 días gratis",
     ctaVariant: "default" as const,
     popular: true,
@@ -101,14 +89,9 @@ const plans = [
     annualPrice: "750",
     annualNote: "2 meses gratis",
     currency: PRICING_CURRENCY,
-    features: [
-      "Todo lo incluido en Pro",
-      "50 proyectos activos",
-      "100 GB de almacenamiento",
-      "Presupuesto personalizado con marca propia",
-      "Moneda e impuesto por proyecto",
-      "Soporte prioritario",
-    ],
+    features: getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
+      include: COMPACT_FEATURE_KEYS,
+    }),
     cta: "Prueba 30 días gratis",
     ctaVariant: "outline" as const,
     popular: false,
