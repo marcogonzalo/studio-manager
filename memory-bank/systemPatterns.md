@@ -34,7 +34,7 @@ The application uses **Next.js App Router** for routing and SSR where needed, wi
 - **Database:** PostgreSQL.
 - **API:** Auto-generated REST/GraphQL APIs provided by Supabase.
 - **Auth:** Supabase Auth (handling JWTs).
-- **Storage:** Supabase Storage for images and documents.
+- **Storage:** Backblaze B2 for file bytes. Central `assets` table (PostgreSQL) holds metadata (url, storage_path, bytes, owner_table, owner_id); domain tables (`products`, `project_documents`, `space_images`) have optional `asset_id`. Upload APIs create an asset row and return `assetId`; delete/replace removes the asset and B2 file. `user_storage_usage` is maintained by triggers from `assets` (and legacy rows where `asset_id` is null).
 - **Security:** Row Level Security (RLS) policies enforce data access control directly at the database level.
 
 ## Code Organization

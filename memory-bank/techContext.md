@@ -44,14 +44,15 @@
 - `projects`: Main project entity (with address, completed_date fields).
 - `clients`: Client CRM data.
 - `spaces`: Spaces within a project.
-- `space_images`: Images/renders associated with spaces. Pueden subirse por URL o por archivo (B2).
-- `products`: Global item catalog (reference_url, image_url). Imágenes en Backblaze B2 (`assets/{userId}/catalog/` o `assets/{userId}/projects/{projectId}/img/`). Compresión Sharp (1200px, WebP) en servidor.
+- `assets`: Central table for file metadata (id, user_id, source, url, storage_path, bytes, mime_type, kind, owner_table, owner_id). Every upload creates a row; domain tables reference it via optional `asset_id`. Drives `user_storage_usage` and cascade delete when domain row is removed.
+- `space_images`: Images/renders associated with spaces. Optional `asset_id` → `assets`. Upload via URL or file (B2); file upload creates asset and stores `asset_id`.
+- `products`: Global item catalog (reference_url, image_url). Optional `asset_id` → `assets`. Imágenes en Backblaze B2 (`assets/{userId}/catalog/` o `assets/{userId}/projects/{projectId}/img/`). Compresión Sharp (1200px, WebP) en servidor.
 - `project_items`: Join table (Project <-> Product) with custom pricing/status and purchase_order_id.
 - `suppliers`: Vendor directory.
 - `purchase_orders`: Grouped orders by supplier with status tracking.
 - `additional_project_costs`: Additional costs per project (shipping, installation, etc.).
 - `project_notes`: Project diary/notes (with archived field).
-- `project_documents`: Documents linked to projects. Subida por URL o archivo (B2). Tipos: PDFs, docs, hojas de cálculo, presentaciones, texto (máx. 10MB).
+- `project_documents`: Documents linked to projects. Optional `asset_id` → `assets`. Subida por URL o archivo (B2); file upload creates asset and stores `asset_id`. Tipos: PDFs, docs, hojas de cálculo, presentaciones, texto (máx. 10MB).
 
 ## Known Constraints/Notes
 

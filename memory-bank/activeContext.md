@@ -54,20 +54,19 @@ The project is in **Phase 1 (MVP Complete)**. The core functionality requested h
    - Email de contacto de ejemplo en página Contact: `hey@veta.pro`. Formulario envía a `veta.pro.pm@gmail.com`.
 
 2. **Documents & Renders Feature Branch:**
-   - Documentos: modal con URL + subida de archivos (PDFs, docs, hojas de cálculo, presentaciones, texto, máx. 10MB). Auto-nombre desde fichero. Limpieza de huérfanos si no se completa el registro.
-   - Renders de espacios: modal permite subir imágenes además de URL (JPG, PNG, WebP, máx. 5MB).
-   - Estructura de almacenamiento unificada: `assets/{userId}/catalog/`, `assets/{userId}/projects/{projectId}/img/`, `assets/{userId}/projects/{projectId}/doc/`.
+   - Documentos: modal con URL + subida de archivos (PDFs, docs, hojas de cálculo, presentaciones, texto, máx. 10MB). Auto-nombre desde fichero. Cada subida crea fila en tabla `assets` y el documento guarda `asset_id`; limpieza de huérfanos si no se completa el registro (asset + B2).
+   - Renders de espacios: modal permite subir imágenes además de URL (JPG, PNG, WebP, máx. 5MB). Subida crea asset y se guarda `asset_id` en `space_images`.
+   - Estructura de almacenamiento unificada en B2: `assets/{userId}/catalog/`, `assets/{userId}/projects/{projectId}/img/`, `assets/{userId}/projects/{projectId}/doc/`. Metadatos y uso en tabla `assets` y `user_storage_usage`.
    - Imágenes de producto organizadas por proyecto cuando se suben desde add-item-dialog.
 
 2. **Product Image Upload (Backblaze B2):**
-   - Integración con Backblaze B2 para almacenar imágenes de productos.
+   - Integración con Backblaze B2 para almacenar imágenes de productos. Cada subida crea fila en `assets` y el producto guarda `asset_id`.
    - Formulario con pestañas: URL (por defecto) o Subir archivo (drag & drop).
    - Compresión Sharp: redimensionado 1200px máximo, WebP calidad 100.
-   - Validación JPG, PNG, WebP. Ruta: `<userId>/<productId>.ext`.
-   - Al eliminar producto del catálogo se borra la imagen en B2.
-   - Al cambiar URL al guardar se elimina la imagen previa en B2.
+   - Validación JPG, PNG, WebP. Ruta en B2: `assets/{userId}/catalog/` o `assets/{userId}/projects/{projectId}/img/`.
+   - Al eliminar producto o reemplazar imagen se borra el asset (y archivo en B2). Al cambiar URL al guardar se elimina la imagen previa en B2.
    - Disponible en catálogo y en add-item-dialog (nuevo producto desde presupuesto).
-   - API keys en servidor (no expuestas en frontend).
+   - API keys en servidor (no expuestas en frontend). Lib `src/lib/assets.ts` para crear/borrar/consultar assets.
 2. **Legal Page & Terms Acceptance:**
    - Nueva vista `/legal` con términos de uso, política de privacidad y derechos RGPD.
    - Checkbox obligatorio en registro con enlace a términos.
