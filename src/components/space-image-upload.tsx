@@ -10,6 +10,8 @@ interface SpaceImageUploadProps {
   spaceId: string;
   imageId: string;
   currentImageUrl?: string;
+  /** Llamar antes de subir; debe crear el registro en BD para evitar archivos huérfanos. */
+  onBeforeUpload?: () => Promise<void>;
   onUploadSuccess: (
     url: string,
     fileSizeBytes?: number,
@@ -25,6 +27,7 @@ export function SpaceImageUpload({
   spaceId,
   imageId,
   currentImageUrl,
+  onBeforeUpload,
   onUploadSuccess,
   onUploadError,
   disabled = false,
@@ -42,6 +45,18 @@ export function SpaceImageUpload({
         setError(validation.error);
         onUploadError?.(validation.error);
         return;
+      }
+
+      if (onBeforeUpload) {
+        try {
+          await onBeforeUpload();
+        } catch (err) {
+          const msg =
+            err instanceof Error ? err.message : "Error al crear la imagen";
+          setError(msg);
+          onUploadError?.(msg);
+          return;
+        }
       }
 
       setIsUploading(true);
@@ -83,7 +98,14 @@ export function SpaceImageUpload({
         setIsUploading(false);
       }
     },
-    [projectId, spaceId, imageId, onUploadSuccess, onUploadError]
+    [
+      projectId,
+      spaceId,
+      imageId,
+      onBeforeUpload,
+      onUploadSuccess,
+      onUploadError,
+    ]
   );
 
   const handleDrop = useCallback(

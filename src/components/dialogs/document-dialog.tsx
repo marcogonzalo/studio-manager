@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -66,6 +66,8 @@ export function DocumentDialog({
   const uploadedFileUrlRef = useRef<string | null>(null);
   const uploadedFileSizeBytesRef = useRef<number | null>(null);
   const uploadedAssetIdRef = useRef<string | null>(null);
+  /** True si ya creamos la fila en BD antes de subir (flujo subida de archivo). */
+  const documentRowCreatedForUploadRef = useRef(false);
   const documentIdForUpload = useMemo(() => {
     if (open) return crypto.randomUUID();
     return "";
@@ -76,7 +78,7 @@ export function DocumentDialog({
     defaultValues: { name: "", file_url: "" },
   });
 
-  const handleUploadSuccess = (
+  const handleUploadSuccess = async (
     url: string,
     fileName?: string,
     fileSizeBytes?: number,
@@ -92,6 +94,21 @@ export function DocumentDialog({
         shouldValidate: true,
       });
     }
+    if (documentRowCreatedForUploadRef.current) {
+      const { getSupabaseClient } = await import("@/lib/supabase");
+      const supabase = getSupabaseClient();
+      const update: Record<string, unknown> = {
+        file_url: url,
+        file_type: "link",
+      };
+      if (fileSizeBytes != null) update.file_size_bytes = fileSizeBytes;
+      if (assetId != null) update.asset_id = assetId;
+      await supabase
+        .from("project_documents")
+        .update(update)
+        .eq("id", documentIdForUpload)
+        .eq("project_id", projectId);
+    }
     toast.success("Documento subido");
   };
 
@@ -103,9 +120,39 @@ export function DocumentDialog({
     }
   };
 
+  const ensureDocumentRowBeforeUpload = useCallback(async () => {
+    if (documentRowCreatedForUploadRef.current) return;
+    const { getSupabaseClient } = await import("@/lib/supabase");
+    const supabase = getSupabaseClient();
+    const name = form.getValues("name")?.trim() || "Sin título";
+    const { error } = await supabase.from("project_documents").insert([
+      {
+        id: documentIdForUpload,
+        project_id: projectId,
+        name,
+        file_url: "",
+        file_type: "link",
+      },
+    ]);
+    if (error) throw error;
+    documentRowCreatedForUploadRef.current = true;
+  }, [documentIdForUpload, projectId, form]);
+
   async function onSubmit(values: FormValues) {
     setLoading(true);
     try {
+      if (documentRowCreatedForUploadRef.current) {
+        uploadedFileUrlRef.current = null;
+        uploadedFileSizeBytesRef.current = null;
+        uploadedAssetIdRef.current = null;
+        documentRowCreatedForUploadRef.current = false;
+        toast.success("Documento añadido");
+        form.reset({ name: "", file_url: "" });
+        onOpenChange(false);
+        onSuccess();
+        return;
+      }
+
       const { getSupabaseClient } = await import("@/lib/supabase");
       const supabase = getSupabaseClient();
       const row: Record<string, unknown> = {
@@ -150,8 +197,21 @@ export function DocumentDialog({
     }
   }
 
-  const handleOpenChange = (next: boolean) => {
+  const handleOpenChange = async (next: boolean) => {
     if (!next) {
+      if (
+        documentRowCreatedForUploadRef.current &&
+        !uploadedFileUrlRef.current
+      ) {
+        const { getSupabaseClient } = await import("@/lib/supabase");
+        const supabase = getSupabaseClient();
+        await supabase
+          .from("project_documents")
+          .delete()
+          .eq("id", documentIdForUpload)
+          .eq("project_id", projectId);
+        documentRowCreatedForUploadRef.current = false;
+      }
       void cleanupOrphanUpload();
       form.reset({ name: "", file_url: "" });
     }
@@ -210,6 +270,7 @@ export function DocumentDialog({
                           documentId={documentIdForUpload}
                           projectId={projectId}
                           currentFileUrl={field.value || undefined}
+                          onBeforeUpload={ensureDocumentRowBeforeUpload}
                           onUploadSuccess={handleUploadSuccess}
                           onUploadError={(msg) => toast.error(msg)}
                           className="mt-2"

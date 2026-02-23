@@ -9,6 +9,8 @@ interface DocumentFileUploadProps {
   documentId: string;
   projectId: string;
   currentFileUrl?: string;
+  /** Llamar antes de subir; debe crear el registro en BD para evitar archivos huérfanos. */
+  onBeforeUpload?: () => Promise<void>;
   onUploadSuccess: (
     url: string,
     fileName?: string,
@@ -24,6 +26,7 @@ export function DocumentFileUpload({
   documentId,
   projectId,
   currentFileUrl,
+  onBeforeUpload,
   onUploadSuccess,
   onUploadError,
   disabled = false,
@@ -41,6 +44,18 @@ export function DocumentFileUpload({
         setError(validation.error);
         onUploadError?.(validation.error);
         return;
+      }
+
+      if (onBeforeUpload) {
+        try {
+          await onBeforeUpload();
+        } catch (err) {
+          const msg =
+            err instanceof Error ? err.message : "Error al crear el documento";
+          setError(msg);
+          onUploadError?.(msg);
+          return;
+        }
       }
 
       setIsUploading(true);
@@ -86,7 +101,7 @@ export function DocumentFileUpload({
         setIsUploading(false);
       }
     },
-    [documentId, projectId, onUploadSuccess, onUploadError]
+    [documentId, projectId, onBeforeUpload, onUploadSuccess, onUploadError]
   );
 
   const handleDrop = useCallback(
