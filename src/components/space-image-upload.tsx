@@ -10,7 +10,13 @@ interface SpaceImageUploadProps {
   spaceId: string;
   imageId: string;
   currentImageUrl?: string;
-  onUploadSuccess: (url: string) => void;
+  /** Llamar antes de subir; debe crear el registro en BD para evitar archivos huérfanos. */
+  onBeforeUpload?: () => Promise<void>;
+  onUploadSuccess: (
+    url: string,
+    fileSizeBytes?: number,
+    assetId?: string
+  ) => void;
   onUploadError?: (error: string) => void;
   disabled?: boolean;
   className?: string;
@@ -21,6 +27,7 @@ export function SpaceImageUpload({
   spaceId,
   imageId,
   currentImageUrl,
+  onBeforeUpload,
   onUploadSuccess,
   onUploadError,
   disabled = false,
@@ -40,6 +47,18 @@ export function SpaceImageUpload({
         return;
       }
 
+      if (onBeforeUpload) {
+        try {
+          await onBeforeUpload();
+        } catch (err) {
+          const msg =
+            err instanceof Error ? err.message : "Error al crear la imagen";
+          setError(msg);
+          onUploadError?.(msg);
+          return;
+        }
+      }
+
       setIsUploading(true);
       try {
         const formData = new FormData();
@@ -53,7 +72,12 @@ export function SpaceImageUpload({
           body: formData,
         });
 
-        const data = (await res.json()) as { url?: string; error?: string };
+        const data = (await res.json()) as {
+          url?: string;
+          error?: string;
+          fileSizeBytes?: number;
+          assetId?: string;
+        };
 
         if (!res.ok) {
           const msg = data.error || "Error al subir la imagen";
@@ -63,7 +87,7 @@ export function SpaceImageUpload({
         }
 
         if (data.url) {
-          onUploadSuccess(data.url);
+          onUploadSuccess(data.url, data.fileSizeBytes, data.assetId);
         }
       } catch (err) {
         const msg =
@@ -74,7 +98,14 @@ export function SpaceImageUpload({
         setIsUploading(false);
       }
     },
-    [projectId, spaceId, imageId, onUploadSuccess, onUploadError]
+    [
+      projectId,
+      spaceId,
+      imageId,
+      onBeforeUpload,
+      onUploadSuccess,
+      onUploadError,
+    ]
   );
 
   const handleDrop = useCallback(

@@ -59,11 +59,6 @@ export async function GET(request: NextRequest) {
       error.message,
       error.code
     );
-    // Log original error for debugging; UI shows only friendlyMessage
-    console.log("originalAuthError", {
-      message: error.message,
-      code: error.code,
-    });
     const authUrl = new URL("/auth", origin);
     authUrl.searchParams.set("error", friendlyMessage);
     authUrl.searchParams.set("redirect", redirectPath);

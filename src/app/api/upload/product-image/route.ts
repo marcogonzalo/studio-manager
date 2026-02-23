@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { CookieOptions } from "@supabase/ssr";
 import sharp from "sharp";
 import { uploadProductImage } from "@/lib/backblaze";
+import { createAsset, deleteAssetById, getAssetIdByOwner } from "@/lib/assets";
 import { validateImageFile } from "@/lib/image-validation";
-import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
+import { checkStorageLimit } from "@/lib/storage-limit";
+import {
+  getSupabaseUrl,
+  getSupabaseServerKey,
+  getSupabaseServiceRoleKey,
+} from "@/lib/supabase/keys";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_DIMENSION = 1200;
@@ -56,12 +63,14 @@ export async function DELETE(request: Request) {
       .eq("image_url", imageUrl.trim())
       .single();
 
+    let spaceImageId: string | null = null;
+
     if (productError || !product) {
       // Also check space_images for space images
       const { data: spaceImage, error: spaceImageError } = await supabase
         .from("space_images")
         .select("id, space_id")
-        .eq("image_url", imageUrl.trim())
+        .eq("url", imageUrl.trim())
         .single();
 
       if (spaceImageError || !spaceImage) {
@@ -70,6 +79,7 @@ export async function DELETE(request: Request) {
           { status: 404 }
         );
       }
+      spaceImageId = spaceImage.id;
 
       // Get space and project owner to verify ownership
       const { data: space, error: spaceError } = await supabase
@@ -108,6 +118,32 @@ export async function DELETE(request: Request) {
     }
 
     const { deleteProductImage } = await import("@/lib/backblaze");
+    const serviceRoleKey = getSupabaseServiceRoleKey();
+    const admin = serviceRoleKey
+      ? createClient(supabaseUrl, serviceRoleKey)
+      : null;
+
+    if (product && !productError) {
+      if (admin) {
+        const assetId = await getAssetIdByOwner(admin, "products", product.id);
+        if (assetId) await deleteAssetById(admin, assetId);
+      }
+      await supabase
+        .from("products")
+        .update({ image_url: null, image_size_bytes: null, asset_id: null })
+        .eq("id", product.id);
+    } else if (spaceImageId) {
+      if (admin) {
+        const assetId = await getAssetIdByOwner(
+          admin,
+          "space_images",
+          spaceImageId
+        );
+        if (assetId) await deleteAssetById(admin, assetId);
+      }
+      await supabase.from("space_images").delete().eq("id", spaceImageId);
+    }
+
     await deleteProductImage(imageUrl);
 
     return NextResponse.json({ ok: true });
@@ -229,10 +265,38 @@ export async function POST(request: Request) {
       .webp({ quality: 100 })
       .toBuffer();
 
+    let currentUsedOverride: number | undefined;
+    const serviceRoleKey = getSupabaseServiceRoleKey();
+    const admin = serviceRoleKey
+      ? createClient(supabaseUrl, serviceRoleKey)
+      : null;
+    if (admin) {
+      const { data: usageRow } = await admin
+        .from("user_storage_usage")
+        .select("bytes_used")
+        .eq("user_id", user.id)
+        .single();
+      currentUsedOverride = Number(usageRow?.bytes_used ?? 0);
+    }
+    const storage = await checkStorageLimit(
+      supabase,
+      user.id,
+      processedBuffer.length,
+      currentUsedOverride
+    );
+    if (!storage.allowed) {
+      return NextResponse.json(
+        {
+          error: `Límite de almacenamiento alcanzado (${Math.round(storage.currentUsed / 1024 / 1024)} MB / ${storage.limitMb} MB). Mejora tu plan para que puedas subir más archivos.`,
+        },
+        { status: 413 }
+      );
+    }
+
     const arrayBuffer = new ArrayBuffer(processedBuffer.length);
     new Uint8Array(arrayBuffer).set(processedBuffer);
 
-    const url = await uploadProductImage({
+    const { url, storagePath } = await uploadProductImage({
       buffer: arrayBuffer,
       mimeType: "image/webp",
       userId: user.id,
@@ -240,7 +304,32 @@ export async function POST(request: Request) {
       projectId: projectId?.trim() || undefined,
     });
 
-    return NextResponse.json({ url });
+    let assetId: string | null = null;
+    if (admin) {
+      const existingAssetId = await getAssetIdByOwner(
+        admin,
+        "products",
+        productId.trim()
+      );
+      if (existingAssetId) await deleteAssetById(admin, existingAssetId);
+      assetId = await createAsset(admin, {
+        userId: user.id,
+        source: "b2",
+        url,
+        storagePath,
+        bytes: processedBuffer.length,
+        mimeType: "image/webp",
+        kind: "product_image",
+        ownerTable: "products",
+        ownerId: productId.trim(),
+      });
+    }
+
+    return NextResponse.json({
+      url,
+      fileSizeBytes: processedBuffer.length,
+      assetId: assetId ?? undefined,
+    });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Error al subir la imagen";

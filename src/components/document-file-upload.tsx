@@ -9,7 +9,14 @@ interface DocumentFileUploadProps {
   documentId: string;
   projectId: string;
   currentFileUrl?: string;
-  onUploadSuccess: (url: string, fileName?: string) => void;
+  /** Llamar antes de subir; debe crear el registro en BD para evitar archivos huérfanos. */
+  onBeforeUpload?: () => Promise<void>;
+  onUploadSuccess: (
+    url: string,
+    fileName?: string,
+    fileSizeBytes?: number,
+    assetId?: string
+  ) => void;
   onUploadError?: (error: string) => void;
   disabled?: boolean;
   className?: string;
@@ -19,6 +26,7 @@ export function DocumentFileUpload({
   documentId,
   projectId,
   currentFileUrl,
+  onBeforeUpload,
   onUploadSuccess,
   onUploadError,
   disabled = false,
@@ -38,6 +46,18 @@ export function DocumentFileUpload({
         return;
       }
 
+      if (onBeforeUpload) {
+        try {
+          await onBeforeUpload();
+        } catch (err) {
+          const msg =
+            err instanceof Error ? err.message : "Error al crear el documento";
+          setError(msg);
+          onUploadError?.(msg);
+          return;
+        }
+      }
+
       setIsUploading(true);
       try {
         const formData = new FormData();
@@ -50,7 +70,12 @@ export function DocumentFileUpload({
           body: formData,
         });
 
-        const data = (await res.json()) as { url?: string; error?: string };
+        const data = (await res.json()) as {
+          url?: string;
+          error?: string;
+          fileSizeBytes?: number;
+          assetId?: string;
+        };
 
         if (!res.ok) {
           const msg = data.error || "Error al subir el documento";
@@ -60,7 +85,12 @@ export function DocumentFileUpload({
         }
 
         if (data.url) {
-          onUploadSuccess(data.url, file.name);
+          onUploadSuccess(
+            data.url,
+            file.name,
+            data.fileSizeBytes,
+            data.assetId
+          );
         }
       } catch (err) {
         const msg =
@@ -71,7 +101,7 @@ export function DocumentFileUpload({
         setIsUploading(false);
       }
     },
-    [documentId, projectId, onUploadSuccess, onUploadError]
+    [documentId, projectId, onBeforeUpload, onUploadSuccess, onUploadError]
   );
 
   const handleDrop = useCallback(

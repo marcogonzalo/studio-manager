@@ -31,11 +31,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { reportError, CURRENCIES } from "@/lib/utils";
 import type { Product, Supplier } from "@/types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { SupplierDialog } from "./supplier-dialog";
 import { ProductImageUpload } from "@/components/product-image-upload";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
 
 const formSchema = z.object({
@@ -63,8 +63,12 @@ export function ProductDialog({
   product,
   onSuccess,
 }: ProductDialogProps) {
-  const { user } = useAuth();
+  const { user, effectivePlan } = useAuth();
+  const profileDefaults = useProfileDefaults();
   const supabase = getSupabaseClient();
+  const isBasePlan = effectivePlan?.plan_code === "BASE";
+  const currencyDisabled = isBasePlan;
+  const defaultCurrency = profileDefaults?.default_currency ?? "EUR";
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(
@@ -72,6 +76,10 @@ export function ProductDialog({
   );
   /** File selected for new product; uploaded only after product is created */
   const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
+  /** Size of image just uploaded (edit mode); included in next update so trigger can account for it */
+  const uploadedImageSizeBytesRef = useRef<number | null>(null);
+  /** Asset id from last upload (edit mode); linked in products.asset_id */
+  const uploadedAssetIdRef = useRef<string | null>(null);
 
   const productIdForUpload = product?.id ?? "";
 
@@ -146,44 +154,13 @@ export function ProductDialog({
         reference_url: product.reference_url || "",
         description: product.description || "",
         cost_price: product.cost_price?.toString() ?? "0",
-        currency: product.currency ?? "EUR",
+        currency: currencyDisabled
+          ? defaultCurrency
+          : (product.currency ?? "EUR"),
         category: product.category || "",
         supplier_id: product.supplier_id || "",
         image_url: product.image_url || "",
       });
-    } else if (open && user?.id) {
-      void (async () => {
-        try {
-          const { data } = await supabase
-            .from("profiles")
-            .select("default_currency")
-            .eq("id", user.id)
-            .single();
-          form.reset({
-            name: "",
-            reference_code: "",
-            reference_url: "",
-            description: "",
-            cost_price: "0",
-            currency: data?.default_currency ?? "EUR",
-            category: "",
-            supplier_id: "",
-            image_url: "",
-          });
-        } catch {
-          form.reset({
-            name: "",
-            reference_code: "",
-            reference_url: "",
-            description: "",
-            cost_price: "0",
-            currency: "EUR",
-            category: "",
-            supplier_id: "",
-            image_url: "",
-          });
-        }
-      })();
     } else if (open) {
       setPendingImageFile(null);
       form.reset({
@@ -192,13 +169,13 @@ export function ProductDialog({
         reference_url: "",
         description: "",
         cost_price: "0",
-        currency: "EUR",
+        currency: defaultCurrency,
         category: "",
         supplier_id: "",
         image_url: "",
       });
     }
-  }, [product, open, form, user?.id, supabase]);
+  }, [product, open, form, defaultCurrency, currencyDisabled]);
 
   async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
@@ -243,8 +220,16 @@ export function ProductDialog({
 
       if (values.image_url && values.image_url.trim()) {
         data.image_url = values.image_url;
+        if (uploadedImageSizeBytesRef.current != null) {
+          data.image_size_bytes = uploadedImageSizeBytesRef.current;
+        }
+        if (uploadedAssetIdRef.current) {
+          data.asset_id = uploadedAssetIdRef.current;
+        }
       } else {
         data.image_url = null;
+        data.image_size_bytes = null;
+        data.asset_id = null;
       }
 
       if (product) {
@@ -266,6 +251,8 @@ export function ProductDialog({
           .update(data)
           .eq("id", product.id);
         if (error) throw error;
+        uploadedImageSizeBytesRef.current = null;
+        uploadedAssetIdRef.current = null;
         toast.success("Producto actualizado");
       } else {
         // New product: insert first (no image_url if we have a pending file to upload)
@@ -292,16 +279,33 @@ export function ProductDialog({
           const uploadJson = (await res.json()) as {
             url?: string;
             error?: string;
+            fileSizeBytes?: number;
+            assetId?: string;
           };
           if (!res.ok) {
+            await supabase.from("products").delete().eq("id", newId);
             reportError(
               new Error(uploadJson.error ?? "Error al subir la imagen")
             );
             toast.error(uploadJson.error ?? "Error al subir la imagen");
-          } else if (uploadJson.url) {
+            setPendingImageFile(null);
+            return;
+          }
+          if (uploadJson.url) {
+            const updatePayload: {
+              image_url: string;
+              image_size_bytes?: number;
+              asset_id?: string | null;
+            } = {
+              image_url: uploadJson.url,
+            };
+            if (uploadJson.fileSizeBytes != null)
+              updatePayload.image_size_bytes = uploadJson.fileSizeBytes;
+            if (uploadJson.assetId != null)
+              updatePayload.asset_id = uploadJson.assetId;
             const { error: updateError } = await supabase
               .from("products")
-              .update({ image_url: uploadJson.url })
+              .update(updatePayload)
               .eq("id", newId);
             if (updateError)
               reportError(updateError, "Error updating image_url:");
@@ -422,7 +426,12 @@ export function ProductDialog({
                             <FormControl>
                               <Select
                                 onValueChange={currencyField.onChange}
-                                value={currencyField.value ?? "EUR"}
+                                value={
+                                  currencyDisabled
+                                    ? defaultCurrency
+                                    : (currencyField.value ?? "EUR")
+                                }
+                                disabled={currencyDisabled}
                               >
                                 <SelectTrigger className="bg-muted/30 h-full rounded-none border-0 focus:ring-0 focus:ring-offset-0">
                                   <SelectValue />
@@ -496,54 +505,40 @@ export function ProductDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Imagen del producto</FormLabel>
-                  <Tabs defaultValue="url" className="w-full">
-                    <TabsList>
-                      <TabsTrigger value="url">URL</TabsTrigger>
-                      <TabsTrigger value="upload">Subir archivo</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="url">
-                      <FormControl>
-                        <Input
-                          placeholder="https://..."
-                          {...field}
-                          className="mt-2"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </TabsContent>
-                    <TabsContent value="upload">
-                      {user?.id ? (
-                        product ? (
-                          <ProductImageUpload
-                            productId={productIdForUpload}
-                            currentImageUrl={field.value || undefined}
-                            onUploadSuccess={(url) => {
-                              field.onChange(url);
-                              toast.success("Imagen subida");
-                            }}
-                            onUploadError={(msg) => toast.error(msg)}
-                            className="mt-2"
-                          />
-                        ) : (
-                          <ProductImageUpload
-                            productId=""
-                            currentImageUrl={field.value || undefined}
-                            deferUpload
-                            onFileSelect={setPendingImageFile}
-                            pendingFile={pendingImageFile}
-                            onUploadSuccess={(url) => field.onChange(url)}
-                            onUploadError={(msg) => toast.error(msg)}
-                            className="mt-2"
-                          />
-                        )
-                      ) : (
-                        <div className="mt-2 space-y-2">
-                          <Skeleton className="h-4 w-full" />
-                          <Skeleton className="h-4 w-2/3" />
-                        </div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
+                  {user?.id ? (
+                    product ? (
+                      <ProductImageUpload
+                        productId={productIdForUpload}
+                        currentImageUrl={field.value || undefined}
+                        onUploadSuccess={(url, fileSizeBytes, assetId) => {
+                          field.onChange(url);
+                          uploadedImageSizeBytesRef.current =
+                            fileSizeBytes ?? null;
+                          uploadedAssetIdRef.current = assetId ?? null;
+                          toast.success("Imagen subida");
+                        }}
+                        onUploadError={(msg) => toast.error(msg)}
+                        className="mt-2"
+                      />
+                    ) : (
+                      <ProductImageUpload
+                        productId=""
+                        currentImageUrl={field.value || undefined}
+                        deferUpload
+                        onFileSelect={setPendingImageFile}
+                        pendingFile={pendingImageFile}
+                        onUploadSuccess={(url) => field.onChange(url)}
+                        onUploadError={(msg) => toast.error(msg)}
+                        className="mt-2"
+                      />
+                    )
+                  ) : (
+                    <div className="mt-2 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </div>
+                  )}
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -560,10 +555,7 @@ export function ProductDialog({
         onOpenChange={setIsSupplierDialogOpen}
         supplier={null}
         onSuccess={async (supplierId) => {
-          if (supplierId) {
-            await handleSupplierCreated(supplierId);
-            toast.success("Proveedor creado y seleccionado");
-          }
+          if (supplierId) await handleSupplierCreated(supplierId);
         }}
       />
     </Dialog>

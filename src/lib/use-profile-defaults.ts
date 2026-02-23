@@ -17,9 +17,9 @@ export function useProfileDefaults(): ProfileDefaults | null {
   useEffect(() => {
     if (!user?.id) return;
     supabase
-      .from("profiles")
+      .from("account_settings")
       .select("default_tax_rate, default_currency")
-      .eq("id", user.id)
+      .eq("user_id", user.id)
       .single()
       .then(
         (res: {

@@ -30,6 +30,7 @@ import type {
   ProjectPhase,
   BudgetCategory,
 } from "@/types";
+import { ProjectTabContent } from "./project-tab-content";
 
 interface PurchaseOrderCoverage {
   id: string;
@@ -56,9 +57,15 @@ interface ProjectItem {
 
 interface ProjectDashboardProps {
   projectId: string;
+  readOnly?: boolean;
+  disabled?: boolean;
 }
 
-export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
+export function ProjectDashboard({
+  projectId,
+  readOnly = false,
+  disabled = false,
+}: ProjectDashboardProps) {
   const supabase = getSupabaseClient();
   const [project, setProject] = useState<Project | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -304,280 +311,290 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* KPIs */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <KPICard
-          title="Avance"
-          value={`${kpis.progress.toFixed(0)}%`}
-          subtitle={
-            project?.phase ? getPhaseLabel(project.phase) : "No asignada"
-          }
-          icon={FolderKanban}
-          color="primary"
-        />
-        <KPICard
-          title="Cobertura de Pagos"
-          value={`${kpis.coverage.toFixed(1)}%`}
-          subtitle={`${formatCurrency(totalPaid)} de ${formatCurrency(clientBudget)}`}
-          icon={Wallet}
-          color="chart-1"
-        />
-        <KPICard
-          title="Desviación Costes"
-          value={`${kpis.deviation >= 0 ? "+" : ""}${kpis.deviation.toFixed(1)}%`}
-          subtitle={
-            kpis.deviation > 5
-              ? "Sobrecoste"
-              : kpis.deviation < -5
-                ? "Ahorro"
-                : "En línea"
-          }
-          icon={AlertTriangle}
-          color="text-muted-foreground"
-          valueIcon={kpis.deviation < 0 ? ArrowDown : ArrowUp}
-          valueColor={kpis.deviation < 0 ? "text-primary" : "text-destructive"}
-        />
-        <KPICard
-          title="Presupuestado"
-          value={formatCurrency(clientBudget)}
-          subtitle={`Productos: ${formatCurrency(totalProductsPrice)} + Partidas: ${formatCurrency(totalBudgetLinesEstimated)}`}
-          icon={FileText}
-          color="chart-2"
-        />
-        <KPICard
-          title="Coste total"
-          value={formatCurrency(totalCosts)}
-          subtitle={`Productos: ${formatCurrency(totalProductsCost)} + Partidas: ${formatCurrency(totalBudgetLinesActual)}`}
-          icon={Receipt}
-          color="chart-3"
-        />
-        <KPICard
-          title="Margen Bruto"
-          value={formatCurrency(margin)}
-          subtitle={`${marginPercentage.toFixed(1)}% del presupuesto`}
-          icon={TrendingUp}
-          color={margin >= 0 ? "chart-4" : "destructive"}
-        />
-      </div>
+    <ProjectTabContent disabled={disabled}>
+      <div className="space-y-6">
+        {/* KPIs */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <KPICard
+            title="Avance"
+            value={`${kpis.progress.toFixed(0)}%`}
+            subtitle={
+              project?.phase ? getPhaseLabel(project.phase) : "No asignada"
+            }
+            icon={FolderKanban}
+            color="primary"
+          />
+          <KPICard
+            title="Cobertura de Pagos"
+            value={`${kpis.coverage.toFixed(1)}%`}
+            subtitle={`${formatCurrency(totalPaid)} de ${formatCurrency(clientBudget)}`}
+            icon={Wallet}
+            color="chart-1"
+          />
+          <KPICard
+            title="Desviación Costes"
+            value={`${kpis.deviation >= 0 ? "+" : ""}${kpis.deviation.toFixed(1)}%`}
+            subtitle={
+              kpis.deviation > 5
+                ? "Sobrecoste"
+                : kpis.deviation < -5
+                  ? "Ahorro"
+                  : "En línea"
+            }
+            icon={AlertTriangle}
+            color="text-muted-foreground"
+            valueIcon={kpis.deviation < 0 ? ArrowDown : ArrowUp}
+            valueColor={
+              kpis.deviation < 0 ? "text-primary" : "text-destructive"
+            }
+          />
+          <KPICard
+            title="Presupuestado"
+            value={formatCurrency(clientBudget)}
+            subtitle={`Productos: ${formatCurrency(totalProductsPrice)} + Partidas: ${formatCurrency(totalBudgetLinesEstimated)}`}
+            icon={FileText}
+            color="chart-2"
+          />
+          <KPICard
+            title="Coste total"
+            value={formatCurrency(totalCosts)}
+            subtitle={`Productos: ${formatCurrency(totalProductsCost)} + Partidas: ${formatCurrency(totalBudgetLinesActual)}`}
+            icon={Receipt}
+            color="chart-3"
+          />
+          <KPICard
+            title="Margen Bruto"
+            value={formatCurrency(margin)}
+            subtitle={`${marginPercentage.toFixed(1)}% del presupuesto`}
+            icon={TrendingUp}
+            color={margin >= 0 ? "chart-4" : "destructive"}
+          />
+        </div>
 
-      {/* Budget by Category & Project Progress */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Budget by Category */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Presupuesto por Categoría</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {Object.keys(budgetLinesByCategory).length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                No hay partidas de presupuesto
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {(
-                  Object.entries(budgetLinesByCategory) as [
-                    BudgetCategory,
-                    { estimated: number; actual: number; count: number },
-                  ][]
-                ).map(([category, data]) => {
-                  const deviation =
-                    data.estimated > 0
-                      ? ((data.actual - data.estimated) / data.estimated) * 100
-                      : 0;
-                  return (
-                    <div key={category} className="space-y-1">
+        {/* Budget by Category & Project Progress */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Budget by Category */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Presupuesto por Categoría</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {Object.keys(budgetLinesByCategory).length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No hay partidas de presupuesto
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {(
+                    Object.entries(budgetLinesByCategory) as [
+                      BudgetCategory,
+                      { estimated: number; actual: number; count: number },
+                    ][]
+                  ).map(([category, data]) => {
+                    const deviation =
+                      data.estimated > 0
+                        ? ((data.actual - data.estimated) / data.estimated) *
+                          100
+                        : 0;
+                    return (
+                      <div key={category} className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">
+                            {getBudgetCategoryLabel(category)}
+                          </span>
+                          <span
+                            className={`rounded-full px-2 py-1 text-xs ${
+                              deviation > 5
+                                ? "bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive"
+                                : deviation < -5
+                                  ? "bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary"
+                                  : "bg-muted text-foreground"
+                            }`}
+                          >
+                            {deviation >= 0 ? "+" : ""}
+                            {deviation.toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="text-muted-foreground flex justify-between text-xs">
+                          <span>Est: {formatCurrency(data.estimated)}</span>
+                          <span>Real: {formatCurrency(data.actual)}</span>
+                        </div>
+                        <div className="bg-muted h-1 w-full rounded-full">
+                          <div
+                            className={`h-1 rounded-full ${
+                              deviation > 5
+                                ? "bg-destructive"
+                                : deviation < -5
+                                  ? "bg-primary"
+                                  : "bg-primary"
+                            }`}
+                            style={{
+                              width: `${data.estimated > 0 ? Math.min(100, (data.actual / data.estimated) * 100) : 0}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {/* Products summary */}
+                  <div className="space-y-1 border-t pt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Productos</span>
+                      <span className="bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary rounded-full px-2 py-1 text-xs">
+                        +
+                        {(
+                          ((totalProductsPrice - totalProductsCost) /
+                            totalProductsPrice) *
+                          100
+                        ).toFixed(0)}
+                        % margen
+                      </span>
+                    </div>
+                    <div className="text-muted-foreground flex justify-between text-xs">
+                      <span>Coste: {formatCurrency(totalProductsCost)}</span>
+                      <span>Venta: {formatCurrency(totalProductsPrice)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* PO Coverage */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Cobertura de Órdenes de Compra</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {poCoverage.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No hay órdenes de compra
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {poCoverage.map((po) => (
+                    <div key={po.id} className="space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium">
-                          {getBudgetCategoryLabel(category)}
+                          {po.order_number}
                         </span>
                         <span
                           className={`rounded-full px-2 py-1 text-xs ${
-                            deviation > 5
-                              ? "bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive"
-                              : deviation < -5
-                                ? "bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary"
+                            po.status === "covered"
+                              ? "bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary"
+                              : po.status === "partial"
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300"
                                 : "bg-muted text-foreground"
                           }`}
                         >
-                          {deviation >= 0 ? "+" : ""}
-                          {deviation.toFixed(0)}%
+                          {po.status === "covered"
+                            ? "✓ Cubierta"
+                            : po.status === "partial"
+                              ? "⚠ Parcial"
+                              : "○ Pendiente"}
                         </span>
                       </div>
                       <div className="text-muted-foreground flex justify-between text-xs">
-                        <span>Est: {formatCurrency(data.estimated)}</span>
-                        <span>Real: {formatCurrency(data.actual)}</span>
+                        <span>{formatCurrency(po.total_amount)}</span>
+                        <span>
+                          {po.total_amount > 0
+                            ? Math.min(
+                                100,
+                                (po.covered_amount / po.total_amount) * 100
+                              ).toFixed(0)
+                            : 0}
+                          %
+                        </span>
                       </div>
                       <div className="bg-muted h-1 w-full rounded-full">
                         <div
                           className={`h-1 rounded-full ${
-                            deviation > 5
-                              ? "bg-destructive"
-                              : deviation < -5
-                                ? "bg-primary"
-                                : "bg-primary"
+                            po.status === "covered"
+                              ? "bg-primary"
+                              : po.status === "partial"
+                                ? "bg-yellow-500"
+                                : "bg-muted-foreground"
                           }`}
                           style={{
-                            width: `${data.estimated > 0 ? Math.min(100, (data.actual / data.estimated) * 100) : 0}%`,
+                            width: `${po.total_amount > 0 ? Math.min(100, (po.covered_amount / po.total_amount) * 100) : 0}%`,
                           }}
                         />
                       </div>
                     </div>
-                  );
-                })}
-                {/* Products summary */}
-                <div className="space-y-1 border-t pt-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Productos</span>
-                    <span className="bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary rounded-full px-2 py-1 text-xs">
-                      +
-                      {(
-                        ((totalProductsPrice - totalProductsCost) /
-                          totalProductsPrice) *
-                        100
-                      ).toFixed(0)}
-                      % margen
-                    </span>
-                  </div>
-                  <div className="text-muted-foreground flex justify-between text-xs">
-                    <span>Coste: {formatCurrency(totalProductsCost)}</span>
-                    <span>Venta: {formatCurrency(totalProductsPrice)}</span>
-                  </div>
+                  ))}
                 </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* PO Coverage */}
+        {/* Alerts */}
         <Card>
           <CardHeader>
-            <CardTitle>Cobertura de Órdenes de Compra</CardTitle>
+            <CardTitle>Alertas</CardTitle>
           </CardHeader>
           <CardContent>
-            {poCoverage.length === 0 ? (
-              <p className="text-muted-foreground text-sm">
-                No hay órdenes de compra
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {poCoverage.map((po) => (
-                  <div key={po.id} className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">
-                        {po.order_number}
-                      </span>
-                      <span
-                        className={`rounded-full px-2 py-1 text-xs ${
-                          po.status === "covered"
-                            ? "bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary"
-                            : po.status === "partial"
-                              ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300"
-                              : "bg-muted text-foreground"
-                        }`}
-                      >
-                        {po.status === "covered"
-                          ? "✓ Cubierta"
-                          : po.status === "partial"
-                            ? "⚠ Parcial"
-                            : "○ Pendiente"}
-                      </span>
-                    </div>
-                    <div className="text-muted-foreground flex justify-between text-xs">
-                      <span>{formatCurrency(po.total_amount)}</span>
-                      <span>
-                        {po.total_amount > 0
-                          ? Math.min(
-                              100,
-                              (po.covered_amount / po.total_amount) * 100
-                            ).toFixed(0)
-                          : 0}
-                        %
-                      </span>
-                    </div>
-                    <div className="bg-muted h-1 w-full rounded-full">
-                      <div
-                        className={`h-1 rounded-full ${
-                          po.status === "covered"
-                            ? "bg-primary"
-                            : po.status === "partial"
-                              ? "bg-yellow-500"
-                              : "bg-muted-foreground"
-                        }`}
-                        style={{
-                          width: `${po.total_amount > 0 ? Math.min(100, (po.covered_amount / po.total_amount) * 100) : 0}%`,
-                        }}
-                      />
-                    </div>
+            <div className="space-y-2">
+              {poCoverage.filter((po) => po.status === "pending").length >
+                0 && (
+                <div className="flex items-start gap-2 rounded bg-yellow-50 p-2 dark:bg-yellow-950/30">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                  <div>
+                    <p className="text-sm font-medium">
+                      Órdenes de compra pendientes de pago
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      {
+                        poCoverage.filter((po) => po.status === "pending")
+                          .length
+                      }{" "}
+                      orden(es) sin cobertura
+                    </p>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              )}
+              {kpis.deviation > 5 && (
+                <div className="bg-destructive/10 dark:bg-destructive/20 flex items-start gap-2 rounded p-2">
+                  <AlertTriangle className="text-destructive mt-0.5 h-4 w-4" />
+                  <div>
+                    <p className="text-sm font-medium">
+                      Desviación presupuestaria
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      Los costes reales superan en {kpis.deviation.toFixed(1)}%
+                      el estimado
+                    </p>
+                  </div>
+                </div>
+              )}
+              {margin < 0 && (
+                <div className="bg-destructive/10 dark:bg-destructive/20 flex items-start gap-2 rounded p-2">
+                  <AlertTriangle className="text-destructive mt-0.5 h-4 w-4" />
+                  <div>
+                    <p className="text-sm font-medium">Margen negativo</p>
+                    <p className="text-muted-foreground text-xs">
+                      Los costes superan el presupuesto del cliente en{" "}
+                      {formatCurrency(Math.abs(margin))}
+                    </p>
+                  </div>
+                </div>
+              )}
+              {poCoverage.filter((po) => po.status === "pending").length ===
+                0 &&
+                kpis.deviation <= 5 &&
+                margin >= 0 && (
+                  <div className="bg-primary/10 dark:bg-primary/20 flex items-start gap-2 rounded p-2">
+                    <CheckCircle2 className="text-primary mt-0.5 h-4 w-4" />
+                    <p className="text-sm font-medium">
+                      Todo en orden. No hay alertas.
+                    </p>
+                  </div>
+                )}
+            </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Alerts */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Alertas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {poCoverage.filter((po) => po.status === "pending").length > 0 && (
-              <div className="flex items-start gap-2 rounded bg-yellow-50 p-2 dark:bg-yellow-950/30">
-                <AlertTriangle className="mt-0.5 h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                <div>
-                  <p className="text-sm font-medium">
-                    Órdenes de compra pendientes de pago
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    {poCoverage.filter((po) => po.status === "pending").length}{" "}
-                    orden(es) sin cobertura
-                  </p>
-                </div>
-              </div>
-            )}
-            {kpis.deviation > 5 && (
-              <div className="bg-destructive/10 dark:bg-destructive/20 flex items-start gap-2 rounded p-2">
-                <AlertTriangle className="text-destructive mt-0.5 h-4 w-4" />
-                <div>
-                  <p className="text-sm font-medium">
-                    Desviación presupuestaria
-                  </p>
-                  <p className="text-muted-foreground text-xs">
-                    Los costes reales superan en {kpis.deviation.toFixed(1)}% el
-                    estimado
-                  </p>
-                </div>
-              </div>
-            )}
-            {margin < 0 && (
-              <div className="bg-destructive/10 dark:bg-destructive/20 flex items-start gap-2 rounded p-2">
-                <AlertTriangle className="text-destructive mt-0.5 h-4 w-4" />
-                <div>
-                  <p className="text-sm font-medium">Margen negativo</p>
-                  <p className="text-muted-foreground text-xs">
-                    Los costes superan el presupuesto del cliente en{" "}
-                    {formatCurrency(Math.abs(margin))}
-                  </p>
-                </div>
-              </div>
-            )}
-            {poCoverage.filter((po) => po.status === "pending").length === 0 &&
-              kpis.deviation <= 5 &&
-              margin >= 0 && (
-                <div className="bg-primary/10 dark:bg-primary/20 flex items-start gap-2 rounded p-2">
-                  <CheckCircle2 className="text-primary mt-0.5 h-4 w-4" />
-                  <p className="text-sm font-medium">
-                    Todo en orden. No hay alertas.
-                  </p>
-                </div>
-              )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </ProjectTabContent>
   );
 }
 

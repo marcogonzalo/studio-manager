@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
@@ -10,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpaceImageUpload } from "@/components/space-image-upload";
 import Image from "next/image";
 import Link from "next/link";
@@ -40,8 +38,8 @@ export function SpaceImagesDialog({
 }) {
   const supabase = getSupabaseClient();
   const [images, setImages] = useState<Image[]>([]);
-  const [newImageUrl, setNewImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const imageRowCreatedForUploadRef = useRef(false);
   const imageIdForUpload = useMemo(
     () => (open ? crypto.randomUUID() : ""),
     [open]
@@ -60,37 +58,40 @@ export function SpaceImagesDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when open or space.id changes only
   }, [open, space.id]);
 
-  const insertImage = async (url: string) => {
+  const ensureImageRowBeforeUpload = useCallback(async () => {
+    if (imageRowCreatedForUploadRef.current) return;
     const { error } = await supabase.from("space_images").insert([
       {
+        id: imageIdForUpload,
         space_id: space.id,
-        url,
+        url: "",
         description: "Render",
       },
     ]);
-    if (error) {
-      toast.error("Error al añadir imagen");
-      throw error;
-    }
-    toast.success("Imagen añadida");
-    setNewImageUrl("");
-    fetchImages();
-  };
+    if (error) throw error;
+    imageRowCreatedForUploadRef.current = true;
+  }, [imageIdForUpload, space.id, supabase]);
 
-  const handleAddByUrl = async () => {
-    if (!newImageUrl) return;
+  const handleUploadSuccess = async (
+    url: string,
+    fileSizeBytes?: number,
+    assetId?: string
+  ) => {
     setLoading(true);
     try {
-      await insertImage(newImageUrl);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUploadSuccess = async (url: string) => {
-    setLoading(true);
-    try {
-      await insertImage(url);
+      if (imageRowCreatedForUploadRef.current) {
+        const update: Record<string, unknown> = { url };
+        if (fileSizeBytes != null) update.file_size_bytes = fileSizeBytes;
+        if (assetId != null) update.asset_id = assetId;
+        await supabase
+          .from("space_images")
+          .update(update)
+          .eq("id", imageIdForUpload)
+          .eq("space_id", space.id);
+        imageRowCreatedForUploadRef.current = false;
+        toast.success("Imagen añadida");
+        fetchImages();
+      }
     } finally {
       setLoading(false);
     }
@@ -112,60 +113,23 @@ export function SpaceImagesDialog({
           <DialogDescription>Visualizaciones del espacio.</DialogDescription>
         </DialogHeader>
 
-        <div className="mb-4 space-y-2">
-          <Tabs defaultValue="url" className="w-full">
-            <TabsList>
-              <TabsTrigger value="url">URL</TabsTrigger>
-              <TabsTrigger value="upload">Subir archivo</TabsTrigger>
-            </TabsList>
-            <TabsContent value="url" className="mt-2">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="https://..."
-                  value={newImageUrl}
-                  onChange={(e) => setNewImageUrl(e.target.value)}
-                />
-                <Button
-                  onClick={handleAddByUrl}
-                  disabled={loading || !newImageUrl?.trim()}
-                >
-                  Añadir
-                </Button>
-              </div>
-            </TabsContent>
-            <TabsContent value="upload" className="mt-2">
-              {imageIdForUpload && projectId ? (
-                <SpaceImageUpload
-                  projectId={projectId}
-                  spaceId={space.id}
-                  imageId={imageIdForUpload}
-                  onUploadSuccess={handleUploadSuccess}
-                  onUploadError={(msg) => toast.error(msg)}
-                />
-              ) : (
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
         <div className="mb-4 flex flex-col gap-2">
-          <div className="flex gap-2">
-            <Input
-              placeholder="URL de la imagen (http://...)"
-              value={newImageUrl}
-              onChange={(e) => setNewImageUrl(e.target.value)}
+          {imageIdForUpload && projectId ? (
+            <SpaceImageUpload
+              projectId={projectId}
+              spaceId={space.id}
+              imageId={imageIdForUpload}
+              onBeforeUpload={ensureImageRowBeforeUpload}
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={(msg) => toast.error(msg)}
               disabled={!canAddRenders}
             />
-            <Button
-              onClick={handleAddByUrl}
-              disabled={loading || !canAddRenders || !newImageUrl?.trim()}
-            >
-              Añadir
-            </Button>
-          </div>
+          ) : (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          )}
           {!canAddRenders && (
             <p className="text-muted-foreground text-xs">
               No disponible en tu plan.{" "}

@@ -16,7 +16,10 @@ vi.mock("next/headers", () => ({
 
 const mockDeleteProductImage = vi.fn(() => Promise.resolve());
 const mockUploadProductImage = vi.fn(() =>
-  Promise.resolve("https://b2.example.com/image.webp")
+  Promise.resolve({
+    url: "https://b2.example.com/image.webp",
+    storagePath: "assets/user1/catalog/product1.webp",
+  })
 );
 
 vi.mock("@/lib/backblaze", async () => {
@@ -33,6 +36,16 @@ vi.mock("@/lib/image-validation", () => ({
   validateImageFile: vi.fn(() => ({ valid: true })),
 }));
 
+vi.mock("@/lib/storage-limit", () => ({
+  checkStorageLimit: vi.fn(() => Promise.resolve({ allowed: true })),
+}));
+
+vi.mock("@/lib/assets", () => ({
+  createAsset: vi.fn(() => Promise.resolve("asset-123")),
+  deleteAssetById: vi.fn(() => Promise.resolve()),
+  getAssetIdByOwner: vi.fn(() => Promise.resolve(null)),
+}));
+
 vi.mock("sharp", () => ({
   default: vi.fn(() => ({
     resize: vi.fn().mockReturnThis(),
@@ -47,6 +60,7 @@ const mockGetServerKey = vi.fn(() => "server-key");
 vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseUrl: () => mockGetSupabaseUrl(),
   getSupabaseServerKey: () => mockGetServerKey(),
+  getSupabaseServiceRoleKey: () => undefined,
 }));
 
 function createMockChain(data: unknown, error: unknown = null) {
@@ -201,6 +215,11 @@ describe("DELETE /api/upload/product-image", () => {
         user_id: "user-1", // Same user
       })
     );
+    const updateChain = {
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    };
+    mockFrom.mockReturnValueOnce(updateChain);
 
     const res = await DELETE(
       new Request(
@@ -217,9 +236,10 @@ describe("DELETE /api/upload/product-image", () => {
 describe("POST /api/upload/product-image", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUploadProductImage.mockResolvedValue(
-      "https://b2.example.com/image.webp"
-    );
+    mockUploadProductImage.mockResolvedValue({
+      url: "https://b2.example.com/image.webp",
+      storagePath: "assets/user1/catalog/product1.webp",
+    });
   });
 
   it("returns 401 when no user", async () => {
@@ -396,5 +416,9 @@ describe("POST /api/upload/product-image", () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.url).toBeDefined();
+    expect(json.fileSizeBytes).toBeDefined();
+    expect(typeof json.assetId === "string" || json.assetId === undefined).toBe(
+      true
+    );
   });
 });

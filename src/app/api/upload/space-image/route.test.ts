@@ -15,7 +15,10 @@ vi.mock("next/headers", () => ({
 }));
 
 const mockUploadSpaceImage = vi.fn(() =>
-  Promise.resolve("https://b2.example.com/image.webp")
+  Promise.resolve({
+    url: "https://b2.example.com/image.webp",
+    storagePath: "assets/user1/projects/proj1/img/img1.webp",
+  })
 );
 
 vi.mock("@/lib/backblaze", async () => {
@@ -29,6 +32,16 @@ vi.mock("@/lib/backblaze", async () => {
 
 vi.mock("@/lib/image-validation", () => ({
   validateImageFile: vi.fn(() => ({ valid: true })),
+}));
+
+vi.mock("@/lib/storage-limit", () => ({
+  checkStorageLimit: vi.fn(() => Promise.resolve({ allowed: true })),
+}));
+
+vi.mock("@/lib/assets", () => ({
+  createAsset: vi.fn(() => Promise.resolve("asset-space-123")),
+  deleteAssetById: vi.fn(() => Promise.resolve()),
+  getAssetIdByOwner: vi.fn(() => Promise.resolve(null)),
 }));
 
 vi.mock("sharp", () => ({
@@ -45,6 +58,7 @@ const mockGetServerKey = vi.fn(() => "server-key");
 vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseUrl: () => mockGetSupabaseUrl(),
   getSupabaseServerKey: () => mockGetServerKey(),
+  getSupabaseServiceRoleKey: () => undefined,
 }));
 
 function createMockChain(data: unknown, error: unknown = null) {
@@ -67,7 +81,10 @@ function createMockChainWithError(error: unknown) {
 describe("POST /api/upload/space-image", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUploadSpaceImage.mockResolvedValue("https://b2.example.com/image.webp");
+    mockUploadSpaceImage.mockResolvedValue({
+      url: "https://b2.example.com/image.webp",
+      storagePath: "assets/user1/projects/proj1/img/img1.webp",
+    });
   });
 
   it("returns 401 when no user", async () => {
@@ -208,6 +225,50 @@ describe("POST /api/upload/space-image", () => {
     expect(json.error).toBe("Espacio no encontrado o no pertenece al proyecto");
   });
 
+  it("returns 400 when space_image row does not exist (upload before register)", async () => {
+    const { POST } = await import("./route");
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-1", email: "user@test.com" } },
+      error: null,
+    });
+
+    mockFrom.mockReturnValueOnce(
+      createMockChainWithData({
+        id: "project-1",
+        user_id: "user-1",
+      })
+    );
+    mockFrom.mockReturnValueOnce(
+      createMockChainWithData({
+        id: "space-1",
+        project_id: "project-1",
+      })
+    );
+    mockFrom.mockReturnValueOnce(
+      createMockChainWithError(new Error("Image not found"))
+    );
+
+    const formData = new FormData();
+    formData.append(
+      "file",
+      new File(["content"], "test.jpg", { type: "image/jpeg" })
+    );
+    formData.append("projectId", "project-1");
+    formData.append("spaceId", "space-1");
+    formData.append("imageId", "image-1");
+
+    const res = await POST(
+      new Request("http://localhost/api/upload/space-image", {
+        method: "POST",
+        body: formData,
+      })
+    );
+
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toContain("crearse antes de subir");
+  });
+
   it("returns 404 when space belongs to different project", async () => {
     const { POST } = await import("./route");
     mockGetUser.mockResolvedValue({
@@ -251,7 +312,7 @@ describe("POST /api/upload/space-image", () => {
     expect(json.error).toBe("Espacio no encontrado o no pertenece al proyecto");
   });
 
-  it("returns 200 when project and space belong to user", async () => {
+  it("returns 200 when project, space and space_image row exist", async () => {
     const { POST } = await import("./route");
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-1", email: "user@test.com" } },
@@ -272,6 +333,8 @@ describe("POST /api/upload/space-image", () => {
         project_id: "project-1", // Same project
       })
     );
+    // space_image row must exist before upload
+    mockFrom.mockReturnValueOnce(createMockChainWithData({ id: "image-1" }));
 
     const formData = new FormData();
     const file = new File(["content"], "test.jpg", { type: "image/jpeg" });
@@ -290,5 +353,9 @@ describe("POST /api/upload/space-image", () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.url).toBeDefined();
+    expect(json.fileSizeBytes).toBeDefined();
+    expect(typeof json.assetId === "string" || json.assetId === undefined).toBe(
+      true
+    );
   });
 });

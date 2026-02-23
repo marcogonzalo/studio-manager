@@ -15,7 +15,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import type { Project } from "@/types";
-import { getPhaseLabel, formatDate } from "@/lib/utils";
+import { getPhaseLabel, formatDate, getProjectStatusLabel } from "@/lib/utils";
 import { ProjectNotes } from "@/modules/app/projects/project-notes";
 import { ProjectPurchases } from "@/modules/app/projects/project-purchases";
 import { ProjectSpaces } from "@/modules/app/projects/project-spaces";
@@ -25,6 +25,12 @@ import { ProjectDocuments } from "@/modules/app/projects/project-documents";
 import { ProjectPayments } from "@/modules/app/projects/project-payments";
 import { ProjectDashboard } from "@/modules/app/projects/project-dashboard";
 import { ProjectDialog } from "@/components/project-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Pencil, ChevronDown } from "lucide-react";
 
@@ -58,10 +64,36 @@ function ProjectDetailContent() {
   const supabase = getSupabaseClient();
 
   const config = effectivePlan?.config;
-  const costsDisabled = false; // Tab siempre habilitado; la vista se muestra desactivada con marca de agua en plan base
-  const purchasesDisabled = !config?.purchase_orders;
-  const paymentsDisabled = !config?.payments_management;
-  const documentsDisabled = !config?.documents;
+  const costsDisabled = false;
+  const purchasesDisabled =
+    config?.purchase_orders === "none" || !config?.purchase_orders;
+  const paymentsDisabled =
+    config?.payments_management === "none" || !config?.payments_management;
+  const documentsDisabled = config?.documents === "none" || !config?.documents;
+  const expensesDisabled =
+    config?.costs_management === "none" || !config?.costs_management;
+
+  /** Solo mostrar el aviso de plan en pestañas que tengan algún elemento en modalidad basic o none */
+  const currentTabHasRestrictedContent = (() => {
+    const isBasicOrNone = (v: string | undefined) =>
+      v === "basic" || v === "none" || !v;
+    switch (activeTab) {
+      case "spaces":
+        return isBasicOrNone(config?.documents);
+      case "quotation":
+        return isBasicOrNone(config?.budget_mode);
+      case "expenses":
+        return isBasicOrNone(config?.costs_management);
+      case "purchases":
+        return isBasicOrNone(config?.purchase_orders);
+      case "payments":
+        return isBasicOrNone(config?.payments_management);
+      case "documents":
+        return isBasicOrNone(config?.documents);
+      default:
+        return false;
+    }
+  })();
 
   const setActiveTabAndUrl = (tab: string) => {
     setActiveTab(tab);
@@ -164,12 +196,21 @@ function ProjectDetailContent() {
   if (!project)
     return <div className="text-muted-foreground">Proyecto no encontrado</div>;
 
+  const isReadOnly =
+    project.status === "completed" || project.status === "cancelled";
+
   return (
     <div className="space-y-6">
       <Collapsible>
         <div className="flex items-center justify-between">
           <CollapsibleTrigger className="group flex-1 text-left">
-            <div>
+            <div
+              className={
+                project.status === "completed" || project.status === "cancelled"
+                  ? "text-muted-foreground"
+                  : undefined
+              }
+            >
               <div className="flex flex-wrap items-center gap-3">
                 <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
                   {project.name}
@@ -177,8 +218,22 @@ function ProjectDetailContent() {
                 </h1>
                 <div className="flex items-center gap-2">
                   <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize">
-                    {project.status}
+                    {getProjectStatusLabel(project.status)}
                   </span>
+                  {isReadOnly && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="bg-muted text-muted-foreground inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                            Solo lectura
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-brand-tertiary text-brand-tertiary-foreground">
+                          No se pueden editar datos ni añadir contenido.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                   {project.phase && (
                     <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
                       {getPhaseLabel(project.phase)}
@@ -191,14 +246,16 @@ function ProjectDetailContent() {
               </p>
             </div>
           </CollapsibleTrigger>
-          <Button
-            variant="outline"
-            onClick={() => setIsEditDialogOpen(true)}
-            className="shrink-0"
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Editar
-          </Button>
+          {!isReadOnly && (
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(true)}
+              className="shrink-0"
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Editar
+            </Button>
+          )}
         </div>
 
         <CollapsibleContent className="mt-4">
@@ -263,48 +320,82 @@ function ProjectDetailContent() {
             <TabsTrigger value="notes">Notas</TabsTrigger>
           </TabsList>
         </div>
-        {(costsDisabled ||
-          purchasesDisabled ||
-          paymentsDisabled ||
-          documentsDisabled) && (
-          <p className="text-muted-foreground mt-2 text-sm">
-            Algunas secciones no están disponibles en tu plan.{" "}
-            <Link href="/pricing" className="font-medium underline">
-              Mejora tu plan
-            </Link>
-          </p>
+        {currentTabHasRestrictedContent && (
+          <div
+            className="bg-secondary/50 text-secondary-foreground border-border mt-2 flex items-center gap-3 rounded-lg border px-4 py-3 text-sm"
+            role="alert"
+          >
+            <span>
+              Algunas secciones no están disponibles en tu plan.{" "}
+              <Link
+                href="/settings/plan/change"
+                className="font-medium underline hover:no-underline"
+              >
+                Mejora tu plan
+              </Link>
+            </span>
+          </div>
         )}
 
         <TabsContent value="overview">
-          <ProjectDashboard projectId={id} />
+          <ProjectDashboard
+            projectId={id}
+            readOnly={isReadOnly}
+            disabled={false}
+          />
         </TabsContent>
 
         <TabsContent value="spaces">
-          <ProjectSpaces projectId={id} />
+          <ProjectSpaces
+            projectId={id}
+            readOnly={isReadOnly}
+            disabled={false}
+          />
         </TabsContent>
 
         <TabsContent value="quotation">
-          <ProjectBudget projectId={id} />
+          <ProjectBudget
+            projectId={id}
+            readOnly={isReadOnly}
+            disabled={false}
+          />
         </TabsContent>
 
         <TabsContent value="expenses">
-          <ProjectCostControl projectId={id} />
+          <ProjectCostControl
+            projectId={id}
+            readOnly={isReadOnly}
+            disabled={expensesDisabled}
+            costsManagementFull={config?.costs_management === "full"}
+          />
         </TabsContent>
 
         <TabsContent value="purchases">
-          <ProjectPurchases projectId={id} />
+          <ProjectPurchases
+            projectId={id}
+            readOnly={isReadOnly}
+            disabled={purchasesDisabled}
+          />
         </TabsContent>
 
         <TabsContent value="payments">
-          <ProjectPayments projectId={id} />
+          <ProjectPayments
+            projectId={id}
+            readOnly={isReadOnly}
+            disabled={paymentsDisabled}
+          />
         </TabsContent>
 
         <TabsContent value="documents">
-          <ProjectDocuments projectId={id} />
+          <ProjectDocuments
+            projectId={id}
+            readOnly={isReadOnly}
+            disabled={documentsDisabled}
+          />
         </TabsContent>
 
         <TabsContent value="notes">
-          <ProjectNotes projectId={id} />
+          <ProjectNotes projectId={id} readOnly={isReadOnly} disabled={false} />
         </TabsContent>
       </Tabs>
 

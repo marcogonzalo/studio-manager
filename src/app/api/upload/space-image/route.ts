@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { CookieOptions } from "@supabase/ssr";
 import sharp from "sharp";
 import { uploadSpaceImage } from "@/lib/backblaze";
+import { createAsset, getAssetIdByOwner } from "@/lib/assets";
 import { validateImageFile } from "@/lib/image-validation";
-import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
+import { checkStorageLimit } from "@/lib/storage-limit";
+import {
+  getSupabaseUrl,
+  getSupabaseServerKey,
+  getSupabaseServiceRoleKey,
+} from "@/lib/supabase/keys";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_DIMENSION = 1200;
@@ -92,6 +99,24 @@ export async function POST(request: Request) {
       );
     }
 
+    // No subir antes de tener registro en BD: evita contenido huérfano en B2
+    const { data: imageRow, error: imageError } = await supabase
+      .from("space_images")
+      .select("id")
+      .eq("id", imageId.trim())
+      .eq("space_id", spaceId.trim())
+      .single();
+
+    if (imageError || !imageRow) {
+      return NextResponse.json(
+        {
+          error:
+            "La imagen debe crearse antes de subir el archivo. Añade la imagen primero.",
+        },
+        { status: 400 }
+      );
+    }
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: "El archivo no puede superar 5MB" },
@@ -113,10 +138,38 @@ export async function POST(request: Request) {
       .webp({ quality: 100 })
       .toBuffer();
 
+    let currentUsedOverride: number | undefined;
+    const serviceRoleKey = getSupabaseServiceRoleKey();
+    const admin = serviceRoleKey
+      ? createClient(supabaseUrl, serviceRoleKey)
+      : null;
+    if (admin) {
+      const { data: usageRow } = await admin
+        .from("user_storage_usage")
+        .select("bytes_used")
+        .eq("user_id", user.id)
+        .single();
+      currentUsedOverride = Number(usageRow?.bytes_used ?? 0);
+    }
+    const storage = await checkStorageLimit(
+      supabase,
+      user.id,
+      processedBuffer.length,
+      currentUsedOverride
+    );
+    if (!storage.allowed) {
+      return NextResponse.json(
+        {
+          error: `Límite de almacenamiento alcanzado (${Math.round(storage.currentUsed / 1024 / 1024)} MB / ${storage.limitMb} MB). Mejora tu plan para que puedas subir más archivos.`,
+        },
+        { status: 413 }
+      );
+    }
+
     const arrayBuffer = new ArrayBuffer(processedBuffer.length);
     new Uint8Array(arrayBuffer).set(processedBuffer);
 
-    const url = await uploadSpaceImage({
+    const { url, storagePath } = await uploadSpaceImage({
       buffer: arrayBuffer,
       mimeType: "image/webp",
       userId: user.id,
@@ -125,7 +178,33 @@ export async function POST(request: Request) {
       imageId: imageId.trim(),
     });
 
-    return NextResponse.json({ url });
+    let assetId: string | null = null;
+    if (admin) {
+      const { deleteAssetById } = await import("@/lib/assets");
+      const existingAssetId = await getAssetIdByOwner(
+        admin,
+        "space_images",
+        imageId.trim()
+      );
+      if (existingAssetId) await deleteAssetById(admin, existingAssetId);
+      assetId = await createAsset(admin, {
+        userId: user.id,
+        source: "b2",
+        url,
+        storagePath,
+        bytes: processedBuffer.length,
+        mimeType: "image/webp",
+        kind: "space_image",
+        ownerTable: "space_images",
+        ownerId: imageId.trim(),
+      });
+    }
+
+    return NextResponse.json({
+      url,
+      fileSizeBytes: processedBuffer.length,
+      assetId: assetId ?? undefined,
+    });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Error al subir la imagen";

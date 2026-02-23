@@ -28,6 +28,7 @@ interface SpaceProductsDialogProps {
   onOpenChange: (open: boolean) => void;
   space: Space;
   projectId: string;
+  readOnly?: boolean;
 }
 
 export function SpaceProductsDialog({
@@ -35,6 +36,7 @@ export function SpaceProductsDialog({
   onOpenChange,
   space,
   projectId,
+  readOnly = false,
 }: SpaceProductsDialogProps) {
   const supabase = getSupabaseClient();
   const [items, setItems] = useState<ProjectItem[]>([]);
@@ -110,9 +112,11 @@ export function SpaceProductsDialog({
                 <p className="text-muted-foreground mb-4">
                   No hay productos en este espacio
                 </p>
-                <Button onClick={handleAddNew} variant="outline" size="sm">
-                  <Plus className="mr-2 h-4 w-4" /> Añadir primer producto
-                </Button>
+                {!readOnly && (
+                  <Button onClick={handleAddNew} variant="outline" size="sm">
+                    <Plus className="mr-2 h-4 w-4" /> Añadir primer producto
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -170,28 +174,32 @@ export function SpaceProductsDialog({
                       <div className="border-t pt-2 text-right text-xs font-bold">
                         Total: ${(item.unit_price * item.quantity).toFixed(2)}
                       </div>
-                      <div className="mt-2 flex justify-end">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <MoreVertical className="h-3 w-3" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEdit(item)}>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDelete(item.id)}
-                              className="text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Eliminar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                      {!readOnly && (
+                        <div className="mt-2 flex justify-end">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => handleEdit(item)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(item.id)}
+                                className="text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -199,11 +207,13 @@ export function SpaceProductsDialog({
             )}
           </div>
 
-          <DialogFooter>
-            <Button type="button" onClick={handleAddNew}>
-              <Plus className="mr-2 h-4 w-4" /> Añadir Producto
-            </Button>
-          </DialogFooter>
+          {!readOnly && (
+            <DialogFooter>
+              <Button type="button" onClick={handleAddNew}>
+                <Plus className="mr-2 h-4 w-4" /> Añadir Producto
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
 
