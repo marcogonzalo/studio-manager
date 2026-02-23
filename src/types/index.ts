@@ -1,4 +1,4 @@
-export type PlanFeatureModality = "none" | "basic" | "full";
+export type PlanFeatureModality = "none" | "basic" | "plus" | "full";
 
 export interface PlanConfig {
   projects_limit: number;
