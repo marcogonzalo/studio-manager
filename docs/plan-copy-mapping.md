@@ -1,6 +1,6 @@
 # Propuesta: documento de mapeo plan → copy comercial
 
-Objetivo: una única fuente de verdad que relacione las **columnas y modalidades de la tabla `plans`** (y valores derivados como `effective_storage_limit_mb`) con **texto comercial humanizado**, para consumir desde **`/pricing`** y **`/settings/plan`** (y `/settings/plan/change`) de forma homologada.
+Objetivo: una única fuente de verdad que relacione las **columnas y modalidades de la tabla `plans`** (y valores derivados como `effective_storage_limit_mb`) con **texto comercial humanizado**, para consumir desde **`/pricing`**, las vistas de planes **`/plan-base-primer-proyecto-interiorismo`**, **`/plan-pro-independientes-diseno-interior`**, **`/plan-studio-empresas-arquitectura-diseno-interior`** y **`/settings/plan`** (y `/settings/plan/change`) de forma homologada.
 
 ---
 
@@ -66,11 +66,14 @@ Nota: `multi_currency_per_project` en Base se deja en **basic** en el plan gratu
 
 ## 3. Consumidores
 
-| Vista                   | Origen del plan                                        | Uso del mapeo                                            |
-| ----------------------- | ------------------------------------------------------ | -------------------------------------------------------- |
-| `/pricing`              | Datos estáticos o fetch de `plans` (Base, Pro, Studio) | Lista de features por plan para las tarjetas de precios. |
-| `/settings/plan`        | `get_effective_plan` (plan actual)                     | Resumen de qué incluye el plan actual.                   |
-| `/settings/plan/change` | Lista de planes (Pro, Studio) o fetch de `plans`       | Lista de features por plan en el comparador.             |
+| Vista                                                | Origen del plan                                              | Uso del mapeo                                            |
+| ---------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------- |
+| `/pricing`                                           | Datos estáticos o fetch de `plans` (Base, Pro, Studio)       | Lista de features por plan para las tarjetas de precios. |
+| `/plan-base-primer-proyecto-interiorismo`            | Config estática Base (`getPlanConfigForDisplay("BASE")`)     | Landing comercial del plan Base; lista de features.      |
+| `/plan-pro-independientes-diseno-interior`           | Config estática Pro (`getPlanConfigForDisplay("PRO")`)       | Landing comercial del plan Pro; lista de features.       |
+| `/plan-studio-empresas-arquitectura-diseno-interior` | Config estática Studio (`getPlanConfigForDisplay("STUDIO")`) | Landing comercial del plan Studio; lista de features.    |
+| `/settings/plan`                                     | `get_effective_plan` (plan actual)                           | Resumen de qué incluye el plan actual.                   |
+| `/settings/plan/change`                              | Lista de planes (Pro, Studio) o fetch de `plans`             | Lista de features por plan en el comparador.             |
 
 Todos deben obtener el array de strings comerciales llamando a la misma función/helpers que lean este mapeo.
 

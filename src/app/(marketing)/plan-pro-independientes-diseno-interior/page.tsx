@@ -4,12 +4,12 @@ import {
   Check,
   Sparkles,
   ArrowRight,
-  Building2,
-  Users,
-  Infinity,
-  Headphones,
+  Layers,
+  Wallet,
   FileText,
-  Shield,
+  BarChart3,
+  Receipt,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,80 +25,83 @@ import {
 } from "@/lib/plan-copy";
 
 export const metadata: Metadata = {
-  title: "Plan Studio | Gestión de proyectos para estudios de diseño interior",
+  title:
+    "Plan Pro | Gestión de proyectos de diseño interior con varios encargos",
   description:
-    "Plan Studio de Veta: gestión de proyectos e interiorismo a escala. Hasta 50 proyectos activos, gestión de presupuestos con tu marca (white label), soporte prioritario. Para estudios de arquitectura de diseño interior con equipo y ritmo continuo.",
-  alternates: { canonical: "/plan/studio" },
+    "Plan Pro de Veta: gestión de proyectos e interiorismo a escala. 5 proyectos activos, gestión de presupuestos personalizada, control de costes, pedidos y pagos. Para arquitectura de diseño interior con cartera de proyectos.",
+  alternates: { canonical: "/plan-pro-independientes-diseno-interior" },
   openGraph: {
-    title: "Plan Studio - Estudios de arquitectura de diseño interior | Veta",
+    title:
+      "Plan Pro - Gestión de proyectos de diseño interior | Varios encargos | Veta",
     description:
-      "Gestión de proyectos y gestión de presupuestos para estudios de diseño interior. 50 proyectos, marca propia, soporte prioritario, 100 GB.",
-    url: "/plan/studio",
+      "Gestión de proyectos y gestión de presupuestos para profesionales de diseño interior. 5 proyectos activos, control de costes y pagos.",
+    url: "/plan-pro-independientes-diseno-interior",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Plan Studio - Interiorismo y estudios | Veta",
+    title: "Plan Pro - Diseño interior con varios proyectos | Veta",
     description:
-      "Gestión de proyectos de diseño interior para estudios: múltiples proyectos, equipo, gestión de presupuestos con tu marca.",
+      "Gestión de proyectos de diseño interior con gestión de presupuestos, costes y pagos. Interiorismo profesional.",
   },
 };
 
 const pains = [
   {
-    title: "El ritmo no para: cierro un proyecto y entro en otro",
+    title:
+      "Varios proyectos de diseño interior a la vez y se me escapa el control",
     description:
-      "Con Studio la gestión de proyectos de diseño interior escala: hasta 50 proyectos activos. Misma herramienta para todo el equipo: gestión de presupuestos, costes, pagos y documentos. Interiorismo sin cuellos de botella.",
+      "Con Pro tienes hasta 5 proyectos activos en paralelo. Gestión de proyectos y gestión de presupuestos por encargo: costes y pagos. Una sola herramienta para tu interiorismo, todo bajo control.",
   },
   {
-    title: "Somos varios y necesitamos una sola fuente de verdad",
+    title: "Proyectos más grandes y no sé si estoy ganando o perdiendo",
     description:
-      "Un único espacio para proyectos, clientes, proveedores y gestión de presupuestos. Estudios de arquitectura de diseño interior con el equipo alineado, sin duplicar datos ni perder el hilo.",
+      "Control de costes y márgenes por proyecto: ves en tiempo real gastos, ingresos y margen. Pedidos de compra y seguimiento de pagos. Esencial en arquitectura de diseño interior con encargos grandes.",
   },
   {
-    title: "Queremos presupuestos con nuestra marca y soporte de verdad",
+    title: "Necesito profesionalizar la gestión del dinero",
     description:
-      "Gestión de presupuestos con tu marca (white label), moneda e impuesto por proyecto y soporte prioritario. Para estudios de diseño interior e interiorismo que no pueden parar.",
+      "Gestión de presupuestos personalizada, moneda e impuesto por proyecto, control de pagos y pedidos a proveedores. Todo lo que un profesional de diseño interior con cartera necesita para facturar y cobrar con tranquilidad.",
   },
 ];
 
-const features = getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
+const features = getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
   include: COMPACT_FEATURE_KEYS,
 });
 
 const highlights = [
   {
-    icon: Building2,
-    title: "Hasta 50 proyectos activos",
-    text: "Gestión de proyectos de diseño interior a ritmo alto: múltiples proyectos en paralelo para estudios de interiorismo con flujo constante.",
+    icon: Layers,
+    title: "5 proyectos activos",
+    text: "Gestión de proyectos de diseño interior con varios encargos en paralelo sin cambiar de herramienta ni de contexto.",
+  },
+  {
+    icon: BarChart3,
+    title: "Costes y márgenes",
+    text: "Sabe en todo momento cuánto gastas, cuánto facturas y cuánto ganas por proyecto.",
+  },
+  {
+    icon: Receipt,
+    title: "Pedidos de compra y pagos",
+    text: "Registra pedidos a proveedores y el estado de pagos para no perder el hilo.",
+  },
+  {
+    icon: Globe,
+    title: "Moneda e impuesto por proyecto",
+    text: "Trabaja con clientes en distintas monedas o regímenes fiscales sin mezclar números.",
   },
   {
     icon: FileText,
-    title: "Gestión de presupuestos con tu marca",
-    text: "White label: exporta presupuestos con tu identidad. Esencial en arquitectura de diseño interior con equipo.",
+    title: "Gestión de presupuestos personalizada",
+    text: "Exporta presupuestos adaptados a cada proyecto y cliente. Clave en interiorismo profesional.",
   },
   {
-    icon: Infinity,
-    title: "100 GB de almacenamiento",
-    text: "Renders, documentos y archivos de muchos proyectos sin preocuparte por el espacio.",
-  },
-  {
-    icon: Headphones,
-    title: "Soporte prioritario",
-    text: "Atención prioritaria cuando lo necesites. Tu estudio no puede esperar.",
-  },
-  {
-    icon: Users,
-    title: "Para todo el equipo",
-    text: "Una cuenta, todos los proyectos. Colaboración y visibilidad compartida.",
-  },
-  {
-    icon: Shield,
-    title: "Control total: costes, pagos, pedidos",
-    text: "Todo lo del plan Pro, a escala: pedidos de compra, pagos y moneda por proyecto.",
+    icon: Wallet,
+    title: "10 GB de almacenamiento",
+    text: "Sube renders, documentos y archivos sin quedarte corto.",
   },
 ];
 
-export default function PlanStudioPage() {
+export default function PlanProPage() {
   return (
     <>
       {/* Hero */}
@@ -111,24 +114,27 @@ export default function PlanStudioPage() {
           <AnimatedSection className="mx-auto max-w-3xl text-center">
             <div className="text-primary border-primary/30 bg-primary/10 mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
               <Sparkles className="h-4 w-4" />
-              Plan Studio · Para estudios consolidados
+              Plan Pro · El más elegido
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Estudio que no para.{" "}
-              <span className="text-primary">Una herramienta que acompaña</span>
+              Varios proyectos, un solo control.{" "}
+              <span className="text-primary">
+                Sin perder el norte del dinero
+              </span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Si tienes un estudio de arquitectura de diseño interior
-              consolidado, con equipo y un ritmo donde cerras un proyecto y ya
-              empieza otro, el plan Studio está pensado para vosotros. Gestión
-              de proyectos a escala: hasta 50 proyectos activos, gestión de
-              presupuestos con tu marca, soporte prioritario y 100 GB. La
-              plataforma de interiorismo que escala con tu estudio.
+              Si ya tienes una cartera de proyectos de diseño interior al año,
+              varios a la vez o encargos más grandes que exigen gestión de
+              proyectos y seguimiento serio de costes y pagos, el plan Pro está
+              pensado para ti. Hasta 5 proyectos activos, gestión de
+              presupuestos personalizada, control de márgenes, pedidos y pagos:
+              la herramienta de interiorismo que necesitas para no volver a
+              preguntarte "¿en este proyecto gano o pierdo?".
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/auth/signup">
-                  Prueba Studio 30 días gratis
+                  Prueba Pro 30 días gratis
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -150,12 +156,12 @@ export default function PlanStudioPage() {
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Si tu estudio vive esto, Studio es vuestro plan
+              Si te identificas con esto, Pro es tu plan
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Para equipos y estudios de diseño interior e interiorismo con
-              múltiples proyectos, gestión de presupuestos seria y soporte de
-              nivel profesional.
+              Para profesionales de diseño interior e interiorismo que ya
+              facturan y quieren gestión de proyectos y gestión de presupuestos
+              con control total del flujo de dinero.
             </p>
           </AnimatedSection>
 
@@ -184,12 +190,11 @@ export default function PlanStudioPage() {
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Gestión de proyectos y presupuestos para el estudio completo
+              Gestión de proyectos y de presupuestos en un solo sitio
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Estudios de diseño interior: más proyectos, gestión de
-              presupuestos con tu marca, más almacenamiento y soporte
-              prioritario.
+              Costes, márgenes, pedidos, pagos y gestión de presupuestos para
+              diseño interior. Todo para dominar la economía de tus proyectos.
             </p>
           </AnimatedSection>
 
@@ -214,7 +219,7 @@ export default function PlanStudioPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Check className="text-primary h-5 w-5" />
-                  Incluido en Studio
+                  Incluido en Pro
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -241,25 +246,22 @@ export default function PlanStudioPage() {
           <AnimatedSection className="mx-auto max-w-2xl text-center">
             <div className="text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
               <Sparkles className="h-4 w-4" />
-              30 días gratis · Soporte prioritario
+              30 días gratis · Sin permanencia
             </div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Escala con tu estudio. Nosotros te acompañamos.
+              Gestión de proyectos de diseño interior sin improvisar.
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Prueba el plan Studio 30 días sin coste. Gestión de proyectos y
-              gestión de presupuestos para estudios de diseño interior e
-              interiorismo. Si necesitas condiciones específicas, hablamos.
+              Prueba el plan Pro 30 días sin coste. Si encaja con tu ritmo de
+              interiorismo y gestión de presupuestos, te quedas. Si no, sin
+              compromiso.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <div className="mt-8">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/auth/signup">
-                  Probar Studio 30 días gratis
+                  Probar Pro 30 días gratis
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/contact">Hablar con ventas</Link>
               </Button>
             </div>
           </AnimatedSection>

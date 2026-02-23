@@ -27,12 +27,12 @@ export const metadata: Metadata = {
   title: "Plan Base gratis | Gestión de proyectos de diseño interior sin pagar",
   description:
     "Plan Base de Veta: gestión de proyectos y gestión de presupuestos para interiorismo. 100% gratis para empezar en arquitectura de diseño interior. Un proyecto, presupuestos en PDF, notas. Ideal si aún no tienes flujo o quieres probar.",
-  alternates: { canonical: "/plan/base" },
+  alternates: { canonical: "/plan-base-primer-proyecto-interiorismo" },
   openGraph: {
     title: "Plan Base - Gestión de proyectos de diseño interior gratis | Veta",
     description:
       "Prueba la gestión de proyectos de diseño interior sin pagar. Gestión de presupuestos básica, un proyecto, notas. Interiorismo sin compromiso.",
-    url: "/plan/base",
+    url: "/plan-base-primer-proyecto-interiorismo",
   },
   twitter: {
     card: "summary_large_image",
@@ -107,11 +107,11 @@ export default function PlanBasePage() {
               <span className="text-primary">Decide cuando estés listo</span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Si estás empezando en diseño interior o interiorismo en solitario,
-              aún no tienes un flujo estable de proyectos o quieres conocer la
-              gestión de proyectos de Veta sin compromiso, el plan Base es para
-              ti. Un proyecto, gestión de presupuestos y control básico: todo
-              gratis.
+              Si estás empezando en diseño interior en solitario, aún no tienes
+              un flujo estable de proyectos o quieres conocer la gestión de
+              proyectos de interiorismo en Veta sin compromiso, el plan Base es
+              para ti. Un proyecto, gestión de presupuestos y control básico:
+              todo gratis.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>

@@ -157,6 +157,38 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <PricingCardsClient plans={plans} />
 
+      {/* Conocer mejor los planes */}
+      <section className="py-20">
+        <div className="container mx-auto max-w-7xl px-4">
+          <AnimatedSection className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Conocer mejor los planes y encuentra el que mejor se adapta a ti
+            </h2>
+            <p className="text-muted-foreground mt-4 text-lg">
+              Cada plan está pensado para un perfil distinto. Descubre ventajas,
+              límites y para quién está recomendado.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <Button variant="outline" size="lg" asChild>
+                <Link href="/plan-base-primer-proyecto-interiorismo">
+                  Plan Base
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link href="/plan-pro-independientes-diseno-interior">
+                  Plan Pro
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link href="/plan-studio-empresas-arquitectura-diseno-interior">
+                  Plan Studio
+                </Link>
+              </Button>
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">

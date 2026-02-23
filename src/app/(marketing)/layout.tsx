@@ -67,7 +67,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  href="/plan/base"
+                  href="/plan-base-primer-proyecto-interiorismo"
                   className="hover:text-foreground transition-colors"
                 >
                   Plan Base
@@ -75,7 +75,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  href="/plan/pro"
+                  href="/plan-pro-independientes-diseno-interior"
                   className="hover:text-foreground transition-colors"
                 >
                   Plan Pro
@@ -83,7 +83,7 @@ function Footer() {
               </li>
               <li>
                 <Link
-                  href="/plan/studio"
+                  href="/plan-studio-empresas-arquitectura-diseno-interior"
                   className="hover:text-foreground transition-colors"
                 >
                   Plan Studio
