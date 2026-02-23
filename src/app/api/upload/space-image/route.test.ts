@@ -225,6 +225,50 @@ describe("POST /api/upload/space-image", () => {
     expect(json.error).toBe("Espacio no encontrado o no pertenece al proyecto");
   });
 
+  it("returns 400 when space_image row does not exist (upload before register)", async () => {
+    const { POST } = await import("./route");
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-1", email: "user@test.com" } },
+      error: null,
+    });
+
+    mockFrom.mockReturnValueOnce(
+      createMockChainWithData({
+        id: "project-1",
+        user_id: "user-1",
+      })
+    );
+    mockFrom.mockReturnValueOnce(
+      createMockChainWithData({
+        id: "space-1",
+        project_id: "project-1",
+      })
+    );
+    mockFrom.mockReturnValueOnce(
+      createMockChainWithError(new Error("Image not found"))
+    );
+
+    const formData = new FormData();
+    formData.append(
+      "file",
+      new File(["content"], "test.jpg", { type: "image/jpeg" })
+    );
+    formData.append("projectId", "project-1");
+    formData.append("spaceId", "space-1");
+    formData.append("imageId", "image-1");
+
+    const res = await POST(
+      new Request("http://localhost/api/upload/space-image", {
+        method: "POST",
+        body: formData,
+      })
+    );
+
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toContain("crearse antes de subir");
+  });
+
   it("returns 404 when space belongs to different project", async () => {
     const { POST } = await import("./route");
     mockGetUser.mockResolvedValue({
@@ -268,7 +312,7 @@ describe("POST /api/upload/space-image", () => {
     expect(json.error).toBe("Espacio no encontrado o no pertenece al proyecto");
   });
 
-  it("returns 200 when project and space belong to user", async () => {
+  it("returns 200 when project, space and space_image row exist", async () => {
     const { POST } = await import("./route");
     mockGetUser.mockResolvedValue({
       data: { user: { id: "user-1", email: "user@test.com" } },
@@ -289,6 +333,8 @@ describe("POST /api/upload/space-image", () => {
         project_id: "project-1", // Same project
       })
     );
+    // space_image row must exist before upload
+    mockFrom.mockReturnValueOnce(createMockChainWithData({ id: "image-1" }));
 
     const formData = new FormData();
     const file = new File(["content"], "test.jpg", { type: "image/jpeg" });

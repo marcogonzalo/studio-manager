@@ -99,6 +99,24 @@ export async function POST(request: Request) {
       );
     }
 
+    // No subir antes de tener registro en BD: evita contenido huérfano en B2
+    const { data: imageRow, error: imageError } = await supabase
+      .from("space_images")
+      .select("id")
+      .eq("id", imageId.trim())
+      .eq("space_id", spaceId.trim())
+      .single();
+
+    if (imageError || !imageRow) {
+      return NextResponse.json(
+        {
+          error:
+            "La imagen debe crearse antes de subir el archivo. Añade la imagen primero.",
+        },
+        { status: 400 }
+      );
+    }
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: "El archivo no puede superar 5MB" },

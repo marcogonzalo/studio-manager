@@ -176,6 +176,24 @@ export async function POST(request: Request) {
       );
     }
 
+    // No subir antes de tener registro en BD: evita contenido huérfano en B2
+    const { data: docRow, error: docError } = await supabase
+      .from("project_documents")
+      .select("id")
+      .eq("id", documentId.trim())
+      .eq("project_id", projectId.trim())
+      .single();
+
+    if (docError || !docRow) {
+      return NextResponse.json(
+        {
+          error:
+            "El documento debe crearse antes de subir el archivo. Guarda el documento primero.",
+        },
+        { status: 400 }
+      );
+    }
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         {
