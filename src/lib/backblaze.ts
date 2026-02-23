@@ -105,6 +105,11 @@ async function getUploadUrl(
   return res.json();
 }
 
+export interface B2UploadResult {
+  url: string;
+  storagePath: string;
+}
+
 /**
  * Estructura: assets/{userId}/catalog/ y assets/{userId}/projects/{projectId}/img|doc/
  * - Catálogo: assets/{userId}/catalog/{productId}.webp
@@ -116,7 +121,7 @@ export async function uploadProductImage(params: {
   userId: string;
   productId: string;
   projectId?: string;
-}): Promise<string> {
+}): Promise<B2UploadResult> {
   const { buffer, mimeType, userId, productId, projectId } = params;
 
   if (!isAllowedImageType(mimeType)) {
@@ -166,7 +171,10 @@ export async function uploadProductImage(params: {
     throw new Error("B2_BUCKET_NAME o downloadUrl no configurados");
   }
 
-  return `${downloadUrl}/file/${bucketName}/${data.fileName}`;
+  return {
+    url: `${downloadUrl}/file/${bucketName}/${data.fileName}`,
+    storagePath: fileName,
+  };
 }
 
 /**
@@ -179,7 +187,7 @@ export async function uploadSpaceImage(params: {
   projectId: string;
   spaceId: string;
   imageId: string;
-}): Promise<string> {
+}): Promise<B2UploadResult> {
   const { buffer, mimeType, userId, projectId, imageId } = params;
 
   if (!isAllowedImageType(mimeType)) {
@@ -227,7 +235,10 @@ export async function uploadSpaceImage(params: {
     throw new Error("B2_BUCKET_NAME o downloadUrl no configurados");
   }
 
-  return `${downloadUrl}/file/${bucketName}/${data.fileName}`;
+  return {
+    url: `${downloadUrl}/file/${bucketName}/${data.fileName}`,
+    storagePath: fileName,
+  };
 }
 
 /**
@@ -240,7 +251,7 @@ export async function uploadDocument(params: {
   projectId: string;
   documentId: string;
   extension: string;
-}): Promise<string> {
+}): Promise<B2UploadResult> {
   const { buffer, mimeType, userId, projectId, documentId, extension } = params;
 
   const ext = extension.startsWith(".") ? extension : `.${extension}`;
@@ -284,7 +295,10 @@ export async function uploadDocument(params: {
     throw new Error("B2_BUCKET_NAME o downloadUrl no configurados");
   }
 
-  return `${downloadUrl}/file/${bucketName}/${data.fileName}`;
+  return {
+    url: `${downloadUrl}/file/${bucketName}/${data.fileName}`,
+    storagePath: fileName,
+  };
 }
 
 /**

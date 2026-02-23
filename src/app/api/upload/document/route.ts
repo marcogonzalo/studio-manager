@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { CookieOptions } from "@supabase/ssr";
 import { uploadDocument, deleteProductImage } from "@/lib/backblaze";
+import { createAsset, deleteAssetById, getAssetIdByOwner } from "@/lib/assets";
 import {
   validateDocumentFile,
   getExtensionFromMime,
   getExtensionFromFileName,
 } from "@/lib/document-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
-import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
+import {
+  getSupabaseUrl,
+  getSupabaseServerKey,
+  getSupabaseServiceRoleKey,
+} from "@/lib/supabase/keys";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -84,6 +90,19 @@ export async function DELETE(request: Request) {
         { error: "No autorizado para eliminar este documento" },
         { status: 403 }
       );
+    }
+
+    const serviceRoleKey = getSupabaseServiceRoleKey();
+    const admin = serviceRoleKey
+      ? createClient(supabaseUrl, serviceRoleKey)
+      : null;
+    if (admin) {
+      const assetId = await getAssetIdByOwner(
+        admin,
+        "project_documents",
+        document.id
+      );
+      if (assetId) await deleteAssetById(admin, assetId);
     }
 
     await deleteProductImage(url);
@@ -167,11 +186,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const storage = await checkStorageLimit(supabase, user.id, file.size);
+    let currentUsedOverride: number | undefined;
+    const serviceRoleKey = getSupabaseServiceRoleKey();
+    const admin = serviceRoleKey
+      ? createClient(supabaseUrl, serviceRoleKey)
+      : null;
+    if (admin) {
+      const { data: usageRow } = await admin
+        .from("user_storage_usage")
+        .select("bytes_used")
+        .eq("user_id", user.id)
+        .single();
+      currentUsedOverride = Number(usageRow?.bytes_used ?? 0);
+    }
+    const storage = await checkStorageLimit(
+      supabase,
+      user.id,
+      file.size,
+      currentUsedOverride
+    );
     if (!storage.allowed) {
       return NextResponse.json(
         {
-          error: `Límite de almacenamiento alcanzado (${Math.round(storage.currentUsed / 1024 / 1024)} MB / ${storage.limitMb} MB). Mejora tu plan para subir más.`,
+          error: `Límite de almacenamiento alcanzado (${Math.round(storage.currentUsed / 1024 / 1024)} MB / ${storage.limitMb} MB). Mejora tu plan para que puedas subir más archivos.`,
         },
         { status: 413 }
       );
@@ -193,7 +230,7 @@ export async function POST(request: Request) {
       inputBuffer.byteOffset + inputBuffer.byteLength
     );
 
-    const url = await uploadDocument({
+    const { url, storagePath } = await uploadDocument({
       buffer: arrayBuffer,
       mimeType: file.type,
       userId: user.id,
@@ -202,7 +239,32 @@ export async function POST(request: Request) {
       extension: ext,
     });
 
-    return NextResponse.json({ url, fileSizeBytes: file.size });
+    let assetId: string | null = null;
+    if (admin) {
+      const existingAssetId = await getAssetIdByOwner(
+        admin,
+        "project_documents",
+        documentId.trim()
+      );
+      if (existingAssetId) await deleteAssetById(admin, existingAssetId);
+      assetId = await createAsset(admin, {
+        userId: user.id,
+        source: "b2",
+        url,
+        storagePath,
+        bytes: file.size,
+        mimeType: file.type,
+        kind: "document",
+        ownerTable: "project_documents",
+        ownerId: documentId.trim(),
+      });
+    }
+
+    return NextResponse.json({
+      url,
+      fileSizeBytes: file.size,
+      assetId: assetId ?? undefined,
+    });
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Error al subir el documento";

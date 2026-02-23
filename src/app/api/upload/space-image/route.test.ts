@@ -15,7 +15,10 @@ vi.mock("next/headers", () => ({
 }));
 
 const mockUploadSpaceImage = vi.fn(() =>
-  Promise.resolve("https://b2.example.com/image.webp")
+  Promise.resolve({
+    url: "https://b2.example.com/image.webp",
+    storagePath: "assets/user1/projects/proj1/img/img1.webp",
+  })
 );
 
 vi.mock("@/lib/backblaze", async () => {
@@ -35,6 +38,12 @@ vi.mock("@/lib/storage-limit", () => ({
   checkStorageLimit: vi.fn(() => Promise.resolve({ allowed: true })),
 }));
 
+vi.mock("@/lib/assets", () => ({
+  createAsset: vi.fn(() => Promise.resolve("asset-space-123")),
+  deleteAssetById: vi.fn(() => Promise.resolve()),
+  getAssetIdByOwner: vi.fn(() => Promise.resolve(null)),
+}));
+
 vi.mock("sharp", () => ({
   default: vi.fn(() => ({
     resize: vi.fn().mockReturnThis(),
@@ -49,6 +58,7 @@ const mockGetServerKey = vi.fn(() => "server-key");
 vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseUrl: () => mockGetSupabaseUrl(),
   getSupabaseServerKey: () => mockGetServerKey(),
+  getSupabaseServiceRoleKey: () => undefined,
 }));
 
 function createMockChain(data: unknown, error: unknown = null) {
@@ -71,7 +81,10 @@ function createMockChainWithError(error: unknown) {
 describe("POST /api/upload/space-image", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUploadSpaceImage.mockResolvedValue("https://b2.example.com/image.webp");
+    mockUploadSpaceImage.mockResolvedValue({
+      url: "https://b2.example.com/image.webp",
+      storagePath: "assets/user1/projects/proj1/img/img1.webp",
+    });
   });
 
   it("returns 401 when no user", async () => {
@@ -294,5 +307,9 @@ describe("POST /api/upload/space-image", () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.url).toBeDefined();
+    expect(json.fileSizeBytes).toBeDefined();
+    expect(typeof json.assetId === "string" || json.assetId === undefined).toBe(
+      true
+    );
   });
 });
