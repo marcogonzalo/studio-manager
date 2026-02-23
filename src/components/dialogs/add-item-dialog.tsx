@@ -766,77 +766,57 @@ export function AddItemDialog({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Imagen del producto</FormLabel>
-                        <Tabs defaultValue="url" className="w-full">
-                          <TabsList className="bg-background">
-                            <TabsTrigger value="url">URL</TabsTrigger>
-                            <TabsTrigger value="upload">
-                              Subir archivo
-                            </TabsTrigger>
-                          </TabsList>
-                          <TabsContent value="url">
-                            <FormControl>
-                              <Input
-                                placeholder="https://..."
-                                {...field}
-                                className="bg-background mt-2"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </TabsContent>
-                          <TabsContent value="upload">
-                            {user?.id ? (
-                              activeTab === "new" && !isEditing ? (
-                                <ProductImageUpload
-                                  productId=""
-                                  projectId={projectId}
-                                  currentImageUrl={field.value || undefined}
-                                  deferUpload
-                                  onFileSelect={setPendingImageFile}
-                                  pendingFile={pendingImageFile}
-                                  onUploadSuccess={(url) => field.onChange(url)}
-                                  onUploadError={(msg) => toast.error(msg)}
-                                  className="mt-2"
-                                />
-                              ) : productIdForUpload ||
-                                (form.watch("product_id") &&
-                                  form.watch("product_id") !== "custom") ? (
-                                <ProductImageUpload
-                                  productId={
-                                    productIdForUpload ||
-                                    form.watch("product_id") ||
-                                    ""
-                                  }
-                                  projectId={projectId}
-                                  currentImageUrl={field.value || undefined}
-                                  onUploadSuccess={(
-                                    url,
-                                    fileSizeBytes,
-                                    assetId
-                                  ) => {
-                                    field.onChange(url);
-                                    uploadedImageSizeBytesRef.current =
-                                      fileSizeBytes ?? null;
-                                    uploadedAssetIdRef.current =
-                                      assetId ?? null;
-                                    toast.success("Imagen subida");
-                                  }}
-                                  onUploadError={(msg) => toast.error(msg)}
-                                  className="mt-2"
-                                />
-                              ) : (
-                                <p className="text-muted-foreground mt-2 text-sm">
-                                  Selecciona un producto del catálogo o crea uno
-                                  nuevo para subir una imagen.
-                                </p>
-                              )
-                            ) : (
-                              <div className="mt-2 space-y-2">
-                                <Skeleton className="h-4 w-full" />
-                                <Skeleton className="h-4 w-2/3" />
-                              </div>
-                            )}
-                          </TabsContent>
-                        </Tabs>
+                        {user?.id ? (
+                          activeTab === "new" && !isEditing ? (
+                            <ProductImageUpload
+                              productId=""
+                              projectId={projectId}
+                              currentImageUrl={field.value || undefined}
+                              deferUpload
+                              onFileSelect={setPendingImageFile}
+                              pendingFile={pendingImageFile}
+                              onUploadSuccess={(url) => field.onChange(url)}
+                              onUploadError={(msg) => toast.error(msg)}
+                              className="mt-2"
+                            />
+                          ) : productIdForUpload ||
+                            (form.watch("product_id") &&
+                              form.watch("product_id") !== "custom") ? (
+                            <ProductImageUpload
+                              productId={
+                                productIdForUpload ||
+                                form.watch("product_id") ||
+                                ""
+                              }
+                              projectId={projectId}
+                              currentImageUrl={field.value || undefined}
+                              onUploadSuccess={(
+                                url,
+                                fileSizeBytes,
+                                assetId
+                              ) => {
+                                field.onChange(url);
+                                uploadedImageSizeBytesRef.current =
+                                  fileSizeBytes ?? null;
+                                uploadedAssetIdRef.current = assetId ?? null;
+                                toast.success("Imagen subida");
+                              }}
+                              onUploadError={(msg) => toast.error(msg)}
+                              className="mt-2"
+                            />
+                          ) : (
+                            <p className="text-muted-foreground mt-2 text-sm">
+                              Selecciona un producto del catálogo o crea uno
+                              nuevo para subir una imagen.
+                            </p>
+                          )
+                        ) : (
+                          <div className="mt-2 space-y-2">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-2/3" />
+                          </div>
+                        )}
+                        <FormMessage />
                       </FormItem>
                     )}
                   />

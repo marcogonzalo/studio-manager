@@ -36,7 +36,6 @@ import { useAuth } from "@/components/auth-provider";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { SupplierDialog } from "./supplier-dialog";
 import { ProductImageUpload } from "@/components/product-image-upload";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
 
 const formSchema = z.object({
@@ -506,57 +505,40 @@ export function ProductDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Imagen del producto</FormLabel>
-                  <Tabs defaultValue="url" className="w-full">
-                    <TabsList>
-                      <TabsTrigger value="url">URL</TabsTrigger>
-                      <TabsTrigger value="upload">Subir archivo</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="url">
-                      <FormControl>
-                        <Input
-                          placeholder="https://..."
-                          {...field}
-                          className="mt-2"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </TabsContent>
-                    <TabsContent value="upload">
-                      {user?.id ? (
-                        product ? (
-                          <ProductImageUpload
-                            productId={productIdForUpload}
-                            currentImageUrl={field.value || undefined}
-                            onUploadSuccess={(url, fileSizeBytes, assetId) => {
-                              field.onChange(url);
-                              uploadedImageSizeBytesRef.current =
-                                fileSizeBytes ?? null;
-                              uploadedAssetIdRef.current = assetId ?? null;
-                              toast.success("Imagen subida");
-                            }}
-                            onUploadError={(msg) => toast.error(msg)}
-                            className="mt-2"
-                          />
-                        ) : (
-                          <ProductImageUpload
-                            productId=""
-                            currentImageUrl={field.value || undefined}
-                            deferUpload
-                            onFileSelect={setPendingImageFile}
-                            pendingFile={pendingImageFile}
-                            onUploadSuccess={(url) => field.onChange(url)}
-                            onUploadError={(msg) => toast.error(msg)}
-                            className="mt-2"
-                          />
-                        )
-                      ) : (
-                        <div className="mt-2 space-y-2">
-                          <Skeleton className="h-4 w-full" />
-                          <Skeleton className="h-4 w-2/3" />
-                        </div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
+                  {user?.id ? (
+                    product ? (
+                      <ProductImageUpload
+                        productId={productIdForUpload}
+                        currentImageUrl={field.value || undefined}
+                        onUploadSuccess={(url, fileSizeBytes, assetId) => {
+                          field.onChange(url);
+                          uploadedImageSizeBytesRef.current =
+                            fileSizeBytes ?? null;
+                          uploadedAssetIdRef.current = assetId ?? null;
+                          toast.success("Imagen subida");
+                        }}
+                        onUploadError={(msg) => toast.error(msg)}
+                        className="mt-2"
+                      />
+                    ) : (
+                      <ProductImageUpload
+                        productId=""
+                        currentImageUrl={field.value || undefined}
+                        deferUpload
+                        onFileSelect={setPendingImageFile}
+                        pendingFile={pendingImageFile}
+                        onUploadSuccess={(url) => field.onChange(url)}
+                        onUploadError={(msg) => toast.error(msg)}
+                        className="mt-2"
+                      />
+                    )
+                  ) : (
+                    <div className="mt-2 space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </div>
+                  )}
+                  <FormMessage />
                 </FormItem>
               )}
             />
