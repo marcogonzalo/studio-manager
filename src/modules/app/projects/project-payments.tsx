@@ -44,7 +44,13 @@ const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
   other: "Otro",
 };
 
-export function ProjectPayments({ projectId }: { projectId: string }) {
+export function ProjectPayments({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const supabase = getSupabaseClient();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [projectCurrency, setProjectCurrency] = useState<string>("EUR");
@@ -157,9 +163,11 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
               <SelectItem value="other">Otro</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleCreateNew}>
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Pago
-          </Button>
+          {!readOnly && (
+            <Button onClick={handleCreateNew}>
+              <Plus className="mr-2 h-4 w-4" /> Nuevo Pago
+            </Button>
+          )}
         </div>
       </div>
 
@@ -170,9 +178,11 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
             <p className="text-muted-foreground mb-4">
               No hay pagos registrados.
             </p>
-            <Button onClick={handleCreateNew} variant="outline">
-              <Plus className="mr-2 h-4 w-4" /> Registrar Primer Pago
-            </Button>
+            {!readOnly && (
+              <Button onClick={handleCreateNew} variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Registrar Primer Pago
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -230,32 +240,34 @@ export function ProjectPayments({ projectId }: { projectId: string }) {
                           {payment.description || "-"}
                         </TableCell>
                         <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                aria-label="Acciones del pago"
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleEdit(payment)}
-                              >
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(payment.id)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          {!readOnly && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label="Acciones del pago"
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleEdit(payment)}
+                                >
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDelete(payment.id)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

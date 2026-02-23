@@ -51,10 +51,16 @@ import {
 
 import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
 
-export function ProjectCostControl({ projectId }: { projectId: string }) {
+export function ProjectCostControl({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const { effectivePlan } = useAuth();
   const costsManagementEnabled =
-    effectivePlan?.config?.costs_management === "full";
+    !readOnly && effectivePlan?.config?.costs_management === "full";
   const supabase = getSupabaseClient();
   const [project, setProject] = useState<{ currency?: string } | null>(null);
   const {
@@ -259,12 +265,14 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                 Seguimiento interno de estimado vs real
               </p>
             </div>
-            <Button
-              onClick={handleAddBudgetLine}
-              disabled={!costsManagementEnabled}
-            >
-              <Plus className="mr-2 h-4 w-4" /> Nueva Partida
-            </Button>
+            {!readOnly && (
+              <Button
+                onClick={handleAddBudgetLine}
+                disabled={!costsManagementEnabled}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Nueva Partida
+              </Button>
+            )}
           </div>
 
           {/* Cost Totalization Summary */}
@@ -431,36 +439,38 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                                         <Eye className="text-muted-foreground h-4 w-4" />
                                       </span>
                                     )}
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          aria-label="Acciones de la partida"
-                                        >
-                                          <MoreVertical className="h-4 w-4" />
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent align="end">
-                                        <DropdownMenuItem
-                                          onClick={() =>
-                                            handleEditBudgetLine(line)
-                                          }
-                                        >
-                                          <Pencil className="mr-2 h-4 w-4" />
-                                          Editar
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                          onClick={() =>
-                                            handleDeleteBudgetLine(line.id)
-                                          }
-                                          className="text-destructive"
-                                        >
-                                          <Trash2 className="mr-2 h-4 w-4" />
-                                          Eliminar
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    {!readOnly && (
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            aria-label="Acciones de la partida"
+                                          >
+                                            <MoreVertical className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                          <DropdownMenuItem
+                                            onClick={() =>
+                                              handleEditBudgetLine(line)
+                                            }
+                                          >
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            Editar
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem
+                                            onClick={() =>
+                                              handleDeleteBudgetLine(line.id)
+                                            }
+                                            className="text-destructive"
+                                          >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Eliminar
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    )}
                                   </div>
                                 </TableCell>
                               </TableRow>
@@ -562,12 +572,14 @@ export function ProjectCostControl({ projectId }: { projectId: string }) {
                 <p className="text-muted-foreground mb-4">
                   No hay partidas de presupuesto registradas.
                 </p>
-                <Button
-                  onClick={handleAddBudgetLine}
-                  disabled={!costsManagementEnabled}
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Añadir Primera Partida
-                </Button>
+                {!readOnly && (
+                  <Button
+                    onClick={handleAddBudgetLine}
+                    disabled={!costsManagementEnabled}
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Añadir Primera Partida
+                  </Button>
+                )}
               </CardContent>
             </Card>
           )}

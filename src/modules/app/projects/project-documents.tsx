@@ -20,7 +20,13 @@ interface Document {
   created_at: string;
 }
 
-export function ProjectDocuments({ projectId }: { projectId: string }) {
+export function ProjectDocuments({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const supabase = getSupabaseClient();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -47,21 +53,25 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Añadir documento
-        </Button>
-      </div>
+      {!readOnly && (
+        <div className="flex justify-end">
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Añadir documento
+          </Button>
+        </div>
+      )}
 
       {documents.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
             <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
             <p className="text-muted-foreground mb-4">No hay documentos.</p>
-            <Button onClick={() => setIsDialogOpen(true)} variant="outline">
-              <Plus className="mr-2 h-4 w-4" /> Añadir primer documento
-            </Button>
+            {!readOnly && (
+              <Button onClick={() => setIsDialogOpen(true)} variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Añadir primer documento
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -89,26 +99,28 @@ export function ProjectDocuments({ projectId }: { projectId: string }) {
                       <Download className="h-4 w-4" />
                     </a>
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Acciones del documento"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleDelete(doc.id)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  {!readOnly && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Acciones del documento"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(doc.id)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </CardContent>
             </Card>

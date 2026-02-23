@@ -25,7 +25,13 @@ interface Note {
   user: { full_name: string };
 }
 
-export function ProjectNotes({ projectId }: { projectId: string }) {
+export function ProjectNotes({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -110,31 +116,33 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>Añadir Nota</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Textarea
-            placeholder="Escribe una nota..."
-            value={newNote}
-            onChange={(e) => setNewNote(e.target.value)}
-            onKeyDown={(e) => {
-              if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-                e.preventDefault();
-                handleAddNote();
-              }
-            }}
-            rows={5}
-          />
-          <div className="flex items-center gap-2">
-            <Button onClick={handleAddNote} disabled={loading}>
-              {loading ? "Guardando..." : "Guardar Nota"}
-            </Button>
-            <KeyboardHint keys="Ctrl/Cmd + Enter" description="para guardar" />
-          </div>
-        </CardContent>
-      </Card>
+      {!readOnly && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Añadir Nota</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              placeholder="Escribe una nota..."
+              value={newNote}
+              onChange={(e) => setNewNote(e.target.value)}
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddNote();
+                }
+              }}
+              rows={5}
+            />
+            <div className="flex items-center gap-2">
+              <Button onClick={handleAddNote} disabled={loading}>
+                {loading ? "Guardando..." : "Guardar Nota"}
+              </Button>
+              <KeyboardHint keys="Ctrl/Cmd + Enter" description="para guardar" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="space-y-4">
         {notes.map((note) => (
@@ -145,40 +153,50 @@ export function ProjectNotes({ projectId }: { projectId: string }) {
             <CardContent className="pt-6">
               <div className="mb-4 flex items-start justify-between">
                 <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={note.archived}
-                    onChange={() => handleToggleArchive(note.id, note.archived)}
-                    className="border-border h-4 w-4 rounded"
-                    title={note.archived ? "Desarchivar" : "Archivar"}
-                  />
-                  <label
-                    className="text-muted-foreground cursor-pointer text-xs"
-                    onClick={() => handleToggleArchive(note.id, note.archived)}
-                  >
-                    {note.archived ? "Archivada" : "Archivar"}
-                  </label>
+                  {!readOnly && (
+                    <>
+                      <input
+                        type="checkbox"
+                        checked={note.archived}
+                        onChange={() =>
+                          handleToggleArchive(note.id, note.archived)
+                        }
+                        className="border-border h-4 w-4 rounded"
+                        title={note.archived ? "Desarchivar" : "Archivar"}
+                      />
+                      <label
+                        className="text-muted-foreground cursor-pointer text-xs"
+                        onClick={() =>
+                          handleToggleArchive(note.id, note.archived)
+                        }
+                      >
+                        {note.archived ? "Archivada" : "Archivar"}
+                      </label>
+                    </>
+                  )}
                 </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Acciones de la nota"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => handleDeleteNote(note.id)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {!readOnly && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Acciones de la nota"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteNote(note.id)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
               <p className="mb-4 whitespace-pre-wrap">{note.content}</p>
               <div className="text-muted-foreground flex justify-between text-xs">

@@ -164,8 +164,17 @@ function ProjectDetailContent() {
   if (!project)
     return <div className="text-muted-foreground">Proyecto no encontrado</div>;
 
+  const isReadOnly =
+    project.status === "completed" || project.status === "cancelled";
+
   return (
     <div className="space-y-6">
+      {isReadOnly && (
+        <div className="bg-muted/50 text-muted-foreground flex items-center gap-2 rounded-lg border px-4 py-3 text-sm">
+          <span className="font-medium">Proyecto en modo solo lectura.</span>
+          No se pueden editar datos ni añadir contenido.
+        </div>
+      )}
       <Collapsible>
         <div className="flex items-center justify-between">
           <CollapsibleTrigger className="group flex-1 text-left">
@@ -197,14 +206,16 @@ function ProjectDetailContent() {
               </p>
             </div>
           </CollapsibleTrigger>
-          <Button
-            variant="outline"
-            onClick={() => setIsEditDialogOpen(true)}
-            className="shrink-0"
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            Editar
-          </Button>
+          {!isReadOnly && (
+            <Button
+              variant="outline"
+              onClick={() => setIsEditDialogOpen(true)}
+              className="shrink-0"
+            >
+              <Pencil className="mr-2 h-4 w-4" />
+              Editar
+            </Button>
+          )}
         </div>
 
         <CollapsibleContent className="mt-4">
@@ -286,31 +297,31 @@ function ProjectDetailContent() {
         </TabsContent>
 
         <TabsContent value="spaces">
-          <ProjectSpaces projectId={id} />
+          <ProjectSpaces projectId={id} readOnly={isReadOnly} />
         </TabsContent>
 
         <TabsContent value="quotation">
-          <ProjectBudget projectId={id} />
+          <ProjectBudget projectId={id} readOnly={isReadOnly} />
         </TabsContent>
 
         <TabsContent value="expenses">
-          <ProjectCostControl projectId={id} />
+          <ProjectCostControl projectId={id} readOnly={isReadOnly} />
         </TabsContent>
 
         <TabsContent value="purchases">
-          <ProjectPurchases projectId={id} />
+          <ProjectPurchases projectId={id} readOnly={isReadOnly} />
         </TabsContent>
 
         <TabsContent value="payments">
-          <ProjectPayments projectId={id} />
+          <ProjectPayments projectId={id} readOnly={isReadOnly} />
         </TabsContent>
 
         <TabsContent value="documents">
-          <ProjectDocuments projectId={id} />
+          <ProjectDocuments projectId={id} readOnly={isReadOnly} />
         </TabsContent>
 
         <TabsContent value="notes">
-          <ProjectNotes projectId={id} />
+          <ProjectNotes projectId={id} readOnly={isReadOnly} />
         </TabsContent>
       </Tabs>
 

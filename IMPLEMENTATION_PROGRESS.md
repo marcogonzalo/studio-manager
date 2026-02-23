@@ -38,27 +38,24 @@
 - [x] Helper `checkStorageLimit()` en `src/lib/storage-limit.ts`; respuestas 413 cuando se supera el límite
 - [x] Migración `20260222100008_storage_triggers_and_columns.sql`: columnas en `space_images` y `products`, triggers de sincronización
 
-### 🚧 Pendiente (Fase 2 continuación)
+### ✅ Modo Solo Lectura y Listado (Completado)
 
 #### Modo Solo Lectura (Completed/Cancelled)
-- [ ] Detectar status en vista de detalle de proyecto
-- [ ] Deshabilitar/ocultar botones de edición en todas las secciones:
-  - [ ] Espacios y renders
-  - [ ] Productos/partidas de presupuesto
-  - [ ] Costes adicionales
-  - [ ] Órdenes de compra
-  - [ ] Pagos
-  - [ ] Documentos
-  - [ ] Notas
-- [ ] Mostrar mensaje informativo de "Proyecto en modo solo lectura"
+- [x] Detectar status en vista de detalle de proyecto (`isReadOnly = completed | cancelled`)
+- [x] Deshabilitar/ocultar botones de edición en todas las secciones (prop `readOnly`):
+  - [x] Espacios y renders (ProjectSpaces, SpaceProductsDialog)
+  - [x] Productos/partidas de presupuesto (ProjectBudget)
+  - [x] Costes adicionales (ProjectCostControl)
+  - [x] Órdenes de compra (ProjectPurchases)
+  - [x] Pagos (ProjectPayments)
+  - [x] Documentos (ProjectDocuments)
+  - [x] Notas (ProjectNotes)
+- [x] Mensaje informativo "Proyecto en modo solo lectura" y ocultar botón Editar proyecto
 
 #### Vista de Listado de Proyectos
-- [ ] Orden por defecto: Activos → Completados → Cancelados (alfabético dentro de cada grupo)
-- [ ] Filtro por estado (Todos, Activos, Completados, Cancelados)
-- [ ] Opciones de ordenamiento:
-  - [ ] Por estado (default)
-  - [ ] Por fecha de creación
-  - [ ] Por fecha de cierre
+- [x] Orden por defecto: Activos → Completados → Cancelados (alfabético dentro de cada grupo)
+- [x] Filtro por estado (Todos, Activos, Completados, Cancelados)
+- [x] Opciones de ordenamiento: Por estado (default), Por fecha de creación, Por fecha de cierre
 
 #### Testing y Verificación
 - [ ] Probar creación de proyectos con límite activo
@@ -77,7 +74,7 @@
 ### 🔄 Próximos Pasos Sugeridos
 
 1. ~~Implementar enforcement de almacenamiento en APIs de upload~~ (hecho)
-2. Implementar modo solo lectura completo en proyectos
-3. Implementar vista de listado con orden y filtros
+2. ~~Implementar modo solo lectura completo en proyectos~~ (hecho)
+3. ~~Implementar vista de listado con orden y filtros~~ (hecho)
 4. Testing manual de todos los flujos
 5. Documentar cambios en memoria-bank/progress.md

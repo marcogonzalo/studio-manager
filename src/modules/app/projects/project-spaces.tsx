@@ -25,9 +25,16 @@ import { SpaceProductsDialog } from "@/components/dialogs/space-products-dialog"
 
 import type { Space } from "@/types";
 
-export function ProjectSpaces({ projectId }: { projectId: string }) {
+export function ProjectSpaces({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const { effectivePlan } = useAuth();
-  const canAddRenders = effectivePlan?.config?.documents === "full";
+  const canAddRenders =
+    !readOnly && effectivePlan?.config?.documents === "full";
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -65,9 +72,11 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-medium">Espacios del Proyecto</h3>
-          <Button onClick={() => setIsDialogOpen(true)} size="sm">
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Espacio
-          </Button>
+          {!readOnly && (
+            <Button onClick={() => setIsDialogOpen(true)} size="sm">
+              <Plus className="mr-2 h-4 w-4" /> Nuevo Espacio
+            </Button>
+          )}
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
@@ -158,6 +167,7 @@ export function ProjectSpaces({ projectId }: { projectId: string }) {
               onOpenChange={setIsProductsOpen}
               space={selectedSpace}
               projectId={projectId}
+              readOnly={readOnly}
             />
           </>
         )}

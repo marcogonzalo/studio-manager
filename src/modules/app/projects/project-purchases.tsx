@@ -61,7 +61,13 @@ const STATUS_COLORS: Record<string, string> = {
     "bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive",
 };
 
-export function ProjectPurchases({ projectId }: { projectId: string }) {
+export function ProjectPurchases({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const supabase = getSupabaseClient();
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -191,11 +197,13 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <CardTitle>Órdenes de Compra</CardTitle>
-        <div className="flex gap-2">
-          <Button onClick={handleCreateNew} disabled={loading}>
-            <Plus className="mr-2 h-4 w-4" /> Nueva Orden
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="flex gap-2">
+            <Button onClick={handleCreateNew} disabled={loading}>
+              <Plus className="mr-2 h-4 w-4" /> Nueva Orden
+            </Button>
+          </div>
+        )}
       </div>
 
       {orders.length === 0 ? (
@@ -205,9 +213,11 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
             <p className="text-muted-foreground mb-4">
               No hay órdenes de compra.
             </p>
-            <Button onClick={handleCreateNew} variant="outline">
-              <Plus className="mr-2 h-4 w-4" /> Crear Primera Orden
-            </Button>
+            {!readOnly && (
+              <Button onClick={handleCreateNew} variant="outline">
+                <Plus className="mr-2 h-4 w-4" /> Crear Primera Orden
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -271,33 +281,35 @@ export function ProjectPurchases({ projectId }: { projectId: string }) {
                         )}
                       </div>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label="Acciones de la compra"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleEdit(po)}
-                          disabled={po.status === "cancelled"}
-                        >
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(po.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {!readOnly && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Acciones de la compra"
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleEdit(po)}
+                            disabled={po.status === "cancelled"}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(po.id)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>

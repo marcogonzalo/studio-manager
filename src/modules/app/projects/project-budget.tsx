@@ -72,7 +72,13 @@ import type {
   ProjectPhase,
 } from "@/types";
 
-export function ProjectBudget({ projectId }: { projectId: string }) {
+export function ProjectBudget({
+  projectId,
+  readOnly = false,
+}: {
+  projectId: string;
+  readOnly?: boolean;
+}) {
   const { user, effectivePlan } = useAuth();
   const pdfExportFull = effectivePlan?.config?.budget_mode === "full";
   const supabase = getSupabaseClient();
@@ -436,16 +442,20 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
             <Printer className="mr-2 h-4 w-4" />
             {isGeneratingPDF ? "Generando PDF..." : "Exportar PDF"}
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleAddBudgetLine}
-            className="print:hidden"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Nueva Partida
-          </Button>
-          <Button onClick={handleAddItem} className="print:hidden">
-            <Plus className="mr-2 h-4 w-4" /> Añadir Producto
-          </Button>
+          {!readOnly && (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleAddBudgetLine}
+                className="print:hidden"
+              >
+                <Plus className="mr-2 h-4 w-4" /> Nueva Partida
+              </Button>
+              <Button onClick={handleAddItem} className="print:hidden">
+                <Plus className="mr-2 h-4 w-4" /> Añadir Producto
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -561,40 +571,42 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                                           )}
                                         </TableCell>
                                         <TableCell>
-                                          <div className="flex justify-end">
-                                            <DropdownMenu>
-                                              <DropdownMenuTrigger asChild>
-                                                <Button
-                                                  variant="ghost"
-                                                  size="icon"
-                                                  aria-label="Acciones de la partida"
-                                                >
-                                                  <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                              </DropdownMenuTrigger>
-                                              <DropdownMenuContent align="end">
-                                                <DropdownMenuItem
-                                                  onClick={() =>
-                                                    handleEditBudgetLine(line)
-                                                  }
-                                                >
-                                                  <Pencil className="mr-2 h-4 w-4" />
-                                                  Editar
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                  onClick={() =>
-                                                    handleDeleteBudgetLine(
-                                                      line.id
-                                                    )
-                                                  }
-                                                  className="text-destructive"
-                                                >
-                                                  <Trash2 className="mr-2 h-4 w-4" />
-                                                  Eliminar
-                                                </DropdownMenuItem>
-                                              </DropdownMenuContent>
-                                            </DropdownMenu>
-                                          </div>
+                                          {!readOnly && (
+                                            <div className="flex justify-end">
+                                              <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    aria-label="Acciones de la partida"
+                                                  >
+                                                    <MoreVertical className="h-4 w-4" />
+                                                  </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                  <DropdownMenuItem
+                                                    onClick={() =>
+                                                      handleEditBudgetLine(line)
+                                                    }
+                                                  >
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Editar
+                                                  </DropdownMenuItem>
+                                                  <DropdownMenuItem
+                                                    onClick={() =>
+                                                      handleDeleteBudgetLine(
+                                                        line.id
+                                                      )
+                                                    }
+                                                    className="text-destructive"
+                                                  >
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Eliminar
+                                                  </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                              </DropdownMenu>
+                                            </div>
+                                          )}
                                         </TableCell>
                                       </TableRow>
                                     ))}
@@ -735,34 +747,36 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
                         {formatCurrency(item.unit_price * item.quantity)}
                       </TableCell>
                       <TableCell>
-                        <div className="flex justify-end">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                aria-label="Acciones de la partida"
-                              >
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => handleEditItem(item)}
-                              >
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteItem(item.id)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
+                        {!readOnly && (
+                          <div className="flex justify-end">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label="Acciones de la partida"
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={() => handleEditItem(item)}
+                                >
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -837,11 +851,15 @@ export function ProjectBudget({ projectId }: { projectId: string }) {
         onOpenChange={setIsProductModalOpen}
         projectItem={selectedItem}
         projectId={projectId}
-        onEdit={() => {
-          setIsProductModalOpen(false);
-          setEditingItem(selectedItem);
-          setIsItemDialogOpen(true);
-        }}
+        onEdit={
+          readOnly
+            ? undefined
+            : () => {
+                setIsProductModalOpen(false);
+                setEditingItem(selectedItem);
+                setIsItemDialogOpen(true);
+              }
+        }
       />
 
       <BudgetPrintOptionsDialog
