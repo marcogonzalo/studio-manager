@@ -11,8 +11,7 @@ import {
 export const EMAIL_INVALID_MESSAGE = "Introduce un correo electrónico válido";
 
 /** Mensaje cuando no se puede inferir el país. */
-const PHONE_INVALID_MESSAGE_NO_COUNTRY =
-  "Introduce un teléfono válido para el país seleccionado";
+const PHONE_INVALID_MESSAGE_NO_COUNTRY = "Introduce un teléfono válido";
 
 /** Devuelve el mensaje de error de teléfono, con ejemplo por país cuando se puede inferir. */
 function getPhoneInvalidMessage(value: string): string {
@@ -22,7 +21,7 @@ function getPhoneInvalidMessage(value: string): string {
   const example = getExampleNumber(country, examples as Examples);
   if (!example?.number) return PHONE_INVALID_MESSAGE_NO_COUNTRY;
   const formatted = formatPhoneNumberIntl(example.number);
-  return `Introduce un teléfono válido (ej. ${formatted})`;
+  return `${PHONE_INVALID_MESSAGE_NO_COUNTRY}(ej. ${formatted})`;
 }
 
 /** Mensaje de error para teléfono inválido (genérico; el mensaje real puede incluir ejemplo por país). */
