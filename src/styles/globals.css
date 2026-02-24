@@ -427,3 +427,96 @@
 .animate-collapsible-content[data-state="closed"] {
   animation: collapsible-slide-up 300ms ease-out;
 }
+
+/* react-phone-number-input: tema alineado con Input (border, radius, colores) */
+.PhoneInput {
+  --PhoneInput-color--focus: hsl(var(--ring));
+  --PhoneInputCountrySelect-marginRight: 0.5rem;
+  --PhoneInputCountrySelectArrow-width: 0.3rem;
+  --PhoneInputCountrySelectArrow-marginLeft: var(
+    --PhoneInputCountrySelect-marginRight
+  );
+  --PhoneInputCountrySelectArrow-borderWidth: 1px;
+  --PhoneInputCountrySelectArrow-opacity: 0.45;
+  --PhoneInputCountrySelectArrow-color: hsl(var(--muted-foreground));
+  --PhoneInputCountrySelectArrow-color--focus: var(--PhoneInput-color--focus);
+  --PhoneInputCountrySelectArrow-transform: rotate(45deg);
+  --PhoneInputCountryFlag-height: 1rem;
+  --PhoneInputCountryFlag-aspectRatio: 1.5;
+  display: flex;
+  align-items: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-md);
+  background: hsl(var(--background));
+}
+.PhoneInput:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 1px hsl(var(--ring));
+}
+.PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+
+  background: transparent;
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  color: hsl(var(--foreground));
+}
+.PhoneInputInput::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+.PhoneInputInput:focus {
+  outline: none;
+}
+.PhoneInputCountry {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  margin-right: var(--PhoneInputCountrySelect-marginRight);
+}
+.PhoneInputCountryIcon {
+  height: var(--PhoneInputCountryFlag-height);
+  aspect-ratio: var(--PhoneInputCountryFlag-aspectRatio);
+  display: block;
+  overflow: hidden;
+}
+.PhoneInputCountryIcon img,
+.PhoneInputCountryIcon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.PhoneInputCountrySelect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+  background: transparent;
+}
+.PhoneInputCountrySelect:focus + * + .PhoneInputCountrySelectArrow {
+  opacity: 1;
+  color: var(--PhoneInputCountrySelectArrow-color--focus);
+}
+.PhoneInputCountrySelectArrow {
+  display: block;
+  width: var(--PhoneInputCountrySelectArrow-width);
+  height: var(--PhoneInputCountrySelectArrow-width);
+  margin-left: var(--PhoneInputCountrySelectArrow-marginLeft);
+  border-style: solid;
+  border-color: var(--PhoneInputCountrySelectArrow-color);
+  border-top-width: 0;
+  border-bottom-width: var(--PhoneInputCountrySelectArrow-borderWidth);
+  border-left-width: 0;
+  border-right-width: var(--PhoneInputCountrySelectArrow-borderWidth);
+  transform: var(--PhoneInputCountrySelectArrow-transform);
+  opacity: var(--PhoneInputCountrySelectArrow-opacity);
+}
