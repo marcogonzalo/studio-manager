@@ -26,6 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { pushLogin } from "@/lib/gtm";
 
 const signInSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -89,6 +90,7 @@ export function SignInForm() {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to send magic link");
       }
+      pushLogin({ method: "magic_link" });
       setEmailSent(true);
       toast.success(
         "Revisa tu correo electrónico. Te hemos enviado un enlace para iniciar sesión."

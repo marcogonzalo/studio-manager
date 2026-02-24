@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { pushSignUp } from "@/lib/gtm";
 
 const VALID_PLAN_CODES = ["BASE", "PRO", "STUDIO"] as const;
 type PlanCode = (typeof VALID_PLAN_CODES)[number];
@@ -105,6 +106,7 @@ export function SignUpForm({
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to send magic link");
       }
+      pushSignUp({ method: "magic_link", plan_code: selectedPlan });
       setEmailSent(true);
       toast.success(
         "Revisa tu correo electrónico. Te hemos enviado un enlace para completar tu registro."

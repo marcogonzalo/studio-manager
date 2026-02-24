@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
+import { pushCtaClick } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { VetaLogo } from "@/components/veta-logo";
@@ -64,10 +65,32 @@ export function MarketingHeader() {
           <ThemeToggle />
           <div className="hidden md:flex md:items-center md:gap-3">
             <Button variant="ghost" asChild>
-              <Link href="/auth">Iniciar Sesión</Link>
+              <Link
+                href="/sign-in"
+                onClick={() =>
+                  pushCtaClick({
+                    cta_location: "header",
+                    cta_text: "Iniciar Sesión",
+                    destination_url: "/sign-in",
+                  })
+                }
+              >
+                Iniciar Sesión
+              </Link>
             </Button>
             <Button asChild className="hidden sm:inline-flex">
-              <Link href="/auth?mode=signup">Comenzar Gratis</Link>
+              <Link
+                href="/sign-up"
+                onClick={() =>
+                  pushCtaClick({
+                    cta_location: "header",
+                    cta_text: "Comenzar Gratis",
+                    destination_url: "/sign-up",
+                  })
+                }
+              >
+                Comenzar Gratis
+              </Link>
             </Button>
           </div>
 
@@ -94,14 +117,31 @@ export function MarketingHeader() {
                 ))}
                 <div className="border-border mt-4 flex flex-col gap-2 border-t pt-4">
                   <Button variant="ghost" asChild className="justify-start">
-                    <Link href="/auth" onClick={() => setOpen(false)}>
+                    <Link
+                      href="/sign-in"
+                      onClick={() => {
+                        pushCtaClick({
+                          cta_location: "header_mobile",
+                          cta_text: "Iniciar Sesión",
+                          destination_url: "/sign-in",
+                        });
+                        setOpen(false);
+                      }}
+                    >
                       Iniciar Sesión
                     </Link>
                   </Button>
                   <Button asChild className="justify-start">
                     <Link
-                      href="/auth?mode=signup"
-                      onClick={() => setOpen(false)}
+                      href="/sign-up"
+                      onClick={() => {
+                        pushCtaClick({
+                          cta_location: "header_mobile",
+                          cta_text: "Comenzar Gratis",
+                          destination_url: "/sign-up",
+                        });
+                        setOpen(false);
+                      }}
                     >
                       Comenzar Gratis
                     </Link>

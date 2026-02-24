@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { pushContact } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -45,6 +46,7 @@ export function ContactForm() {
 
   useEffect(() => {
     if (state?.success) {
+      pushContact();
       toast.success("Mensaje enviado correctamente. Te responderemos pronto.");
       form.reset();
     }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
+import { GtmPageView, GtmScript } from "@/components/gtm";
 
 export default function AuthLayout({
   children,
@@ -9,6 +10,8 @@ export default function AuthLayout({
 }) {
   return (
     <div className="bg-background flex min-h-screen flex-col items-center justify-center p-4">
+      <GtmScript />
+      <GtmPageView />
       <a href="#main-content" className="skip-link">
         Saltar al contenido
       </a>
