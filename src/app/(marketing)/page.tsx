@@ -32,6 +32,7 @@ import { BenefitsList } from "./benefits-list";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import { ProductMockup } from "@/components/product-mockup";
 import { SmoothScrollLink } from "@/components/smooth-scroll-link";
+import { TrackedCtaLink } from "@/components/gtm";
 
 export const metadata: Metadata = {
   title: {
@@ -214,10 +215,14 @@ export default function HomePage() {
                     asChild
                     className="animate-glow w-full sm:w-auto"
                   >
-                    <Link href="/auth?mode=signup">
+                    <TrackedCtaLink
+                      href="/sign-up"
+                      ctaLocation="hero"
+                      ctaText="Comenzar Gratis"
+                    >
                       Comenzar Gratis
                       <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
+                    </TrackedCtaLink>
                   </Button>
                   <Button
                     size="lg"
@@ -348,10 +353,14 @@ export default function HomePage() {
 
               <div className="mt-10">
                 <Button size="lg" asChild className="animate-glow">
-                  <Link href="/auth?mode=signup">
+                  <TrackedCtaLink
+                    href="/sign-up"
+                    ctaLocation="benefits"
+                    ctaText="Prueba Gratis"
+                  >
                     Prueba Gratis
                     <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
+                  </TrackedCtaLink>
                 </Button>
               </div>
             </AnimatedSection>
@@ -492,13 +501,23 @@ export default function HomePage() {
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" asChild className="animate-glow">
-                <Link href="/auth?mode=signup">
+                <TrackedCtaLink
+                  href="/sign-up"
+                  ctaLocation="cta_section"
+                  ctaText="Crear Cuenta Gratis"
+                >
                   Crear Cuenta Gratis
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                </TrackedCtaLink>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/pricing">Ver planes</Link>
+                <TrackedCtaLink
+                  href="/pricing"
+                  ctaLocation="cta_section"
+                  ctaText="Ver planes"
+                >
+                  Ver planes
+                </TrackedCtaLink>
               </Button>
             </div>
           </AnimatedSection>
@@ -566,13 +585,23 @@ export default function HomePage() {
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Button size="lg" asChild className="animate-glow">
-                <Link href="/auth?mode=signup">
+                <TrackedCtaLink
+                  href="/sign-up"
+                  ctaLocation="cta_final"
+                  ctaText="Crear Cuenta Gratis"
+                >
                   Crear Cuenta Gratis
                   <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+                </TrackedCtaLink>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/pricing">Ver planes</Link>
+                <TrackedCtaLink
+                  href="/pricing"
+                  ctaLocation="cta_final"
+                  ctaText="Ver planes"
+                >
+                  Ver planes
+                </TrackedCtaLink>
               </Button>
             </div>
           </AnimatedSection>

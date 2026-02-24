@@ -36,7 +36,7 @@ export default async function AppLayout({
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    redirect("/auth?redirect=" + encodeURIComponent(appPath("/dashboard")));
+    redirect("/sign-in?redirect=" + encodeURIComponent(appPath("/dashboard")));
   }
   return (
     <AuthProvider>

@@ -133,7 +133,7 @@ export default function PlanProPage() {
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
-                <Link href="/auth/signup">
+                <Link href="/sign-up">
                   Prueba Pro 30 días gratis
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
@@ -258,7 +258,7 @@ export default function PlanProPage() {
             </p>
             <div className="mt-8">
               <Button size="lg" className="animate-glow" asChild>
-                <Link href="/auth/signup">
+                <Link href="/sign-up">
                   Probar Pro 30 días gratis
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>

@@ -16,7 +16,8 @@ const PUBLIC_ROUTES = [
   "/pricing",
   "/contact",
   "/legal",
-  "/auth",
+  "/sign-in",
+  "/sign-up",
   "/sitemap.xml",
   "/robots.txt",
 ];
@@ -24,7 +25,7 @@ const PUBLIC_ROUTES = [
 function isPublicPath(pathname: string): boolean {
   return (
     PUBLIC_ROUTES.some((route) => pathname === route) ||
-    pathname.startsWith("/auth") ||
+    pathname === "/callback" ||
     pathname.startsWith("/plan-")
   );
 }
@@ -52,7 +53,7 @@ export async function updateSession(request: NextRequest) {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        if (pathname === "/auth") {
+        if (pathname === "/sign-in") {
           const url = request.nextUrl.clone();
           const redirectTo = request.nextUrl.searchParams.get("redirect");
           url.pathname = redirectTo
@@ -136,7 +137,7 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Redirect unauthenticated users trying to access protected routes (pages only)
-    // For /api/* do not redirect: let the request reach the route (avoids POST → redirect → 405 on /auth)
+    // For /api/* do not redirect: let the request reach the route (avoids POST → redirect → 405 on /sign-in)
     if (!user) {
       if (pathname.startsWith("/api/")) {
         return supabaseResponse;
@@ -145,7 +146,7 @@ export async function updateSession(request: NextRequest) {
       const redirectTo = encodeURIComponent(
         request.nextUrl.pathname + request.nextUrl.search
       );
-      url.pathname = "/auth";
+      url.pathname = "/sign-in";
       url.searchParams.set("redirect", redirectTo);
       return redirectWithCookies(url);
     }
@@ -167,7 +168,7 @@ export async function updateSession(request: NextRequest) {
   } catch {
     // Supabase init or auth failed (e.g. missing env, invalid/expired session)
     const url = request.nextUrl.clone();
-    url.pathname = "/auth";
+    url.pathname = "/sign-in";
     url.searchParams.set(
       "redirect",
       encodeURIComponent(pathname + request.nextUrl.search)

@@ -4,6 +4,8 @@ import { VetaLogo } from "@/components/veta-logo";
 import { MarketingHeader } from "@/components/layouts/marketing-header";
 import { RedirectAuthenticatedToDashboard } from "@/components/redirect-authenticated-to-dashboard";
 import { AnchorToHash } from "@/components/smooth-scroll-link";
+import { CookiebotScript } from "@/components/cookiebot";
+import { GtmPageView, GtmScript } from "@/components/gtm";
 
 export const metadata: Metadata = {
   robots: {
@@ -147,6 +149,8 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
+      <GtmScript />
+      <GtmPageView />
       <a href="#main-content" className="skip-link">
         Saltar al contenido
       </a>
@@ -156,6 +160,7 @@ export default function MarketingLayout({
         {children}
       </main>
       <Footer />
+      <CookiebotScript />
     </div>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Check, X, ArrowRight } from "lucide-react";
+import { pushSelectPlan, pushViewPricing } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -42,6 +43,10 @@ export type PlanItem = {
 
 export function PricingCardsClient({ plans }: { plans: PlanItem[] }) {
   const [isAnnual, setIsAnnual] = useState(false);
+
+  useEffect(() => {
+    pushViewPricing();
+  }, []);
 
   return (
     <section className="pb-20">
@@ -193,9 +198,17 @@ export function PricingCardsClient({ plans }: { plans: PlanItem[] }) {
                           asChild
                         >
                           <Link
-                            href={`/auth?mode=signup&plan=${plan.planCode}${
+                            href={`/sign-up?plan=${plan.planCode}${
                               isAnnual ? "&billing=annual" : ""
                             }`}
+                            onClick={() =>
+                              pushSelectPlan({
+                                plan_code: plan.planCode,
+                                billing_period: isAnnual ? "annual" : "monthly",
+                                plan_name: plan.name,
+                                cta_text: plan.cta,
+                              })
+                            }
                           >
                             {plan.cta}
                             <ArrowRight className="ml-2 h-4 w-4" />
