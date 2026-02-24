@@ -427,3 +427,41 @@
 .animate-collapsible-content[data-state="closed"] {
   animation: collapsible-slide-up 300ms ease-out;
 }
+
+/* react-phone-number-input: tema alineado con Input (border, radius, colores) */
+.PhoneInput {
+  --PhoneInputCountryFlag-height: 1rem;
+  --PhoneInputCountryFlag-borderColor: hsl(var(--border));
+  --PhoneInputCountrySelectArrow-color: hsl(var(--muted-foreground));
+  display: flex;
+  align-items: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-md);
+  background: hsl(var(--background));
+  padding-left: 0.5rem;
+}
+.PhoneInput:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 1px hsl(var(--ring));
+}
+.PhoneInput .PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  color: hsl(var(--foreground));
+}
+.PhoneInput .PhoneInputInput::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+.PhoneInput .PhoneInputInput:focus {
+  outline: none;
+}
+.PhoneInputCountrySelect {
+  margin-right: 0.25rem;
+}
+.PhoneInputCountrySelectArrow {
+  opacity: 0.6;
+}

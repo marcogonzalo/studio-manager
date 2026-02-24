@@ -25,11 +25,16 @@ import type { Client } from "@/types";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { getErrorMessage, reportError } from "@/lib/utils";
+import {
+  optionalEmailSchema,
+  optionalPhoneSchema,
+} from "@/lib/contact-validation";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const formSchema = z.object({
   full_name: z.string().min(2, "Nombre requerido"),
-  email: z.string().email().optional().or(z.literal("")),
-  phone: z.string().optional(),
+  email: optionalEmailSchema,
+  phone: optionalPhoneSchema,
   address: z.string().optional(),
 });
 
@@ -174,7 +179,11 @@ export function ClientDialog({
                 <FormItem>
                   <FormLabel>Teléfono</FormLabel>
                   <FormControl>
-                    <Input placeholder="+34 600 000 000" {...field} />
+                    <PhoneInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

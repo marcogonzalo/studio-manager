@@ -23,12 +23,17 @@ import { toast } from "sonner";
 import type { Supplier } from "@/types";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
+import {
+  optionalEmailSchema,
+  optionalPhoneSchema,
+} from "@/lib/contact-validation";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   contact_name: z.string().optional(),
-  email: z.string().email().optional().or(z.literal("")),
-  phone: z.string().optional(),
+  email: optionalEmailSchema,
+  phone: optionalPhoneSchema,
   website: z.string().optional(),
 });
 
@@ -148,7 +153,11 @@ export function SupplierDialog({
                   <FormItem>
                     <FormLabel>Teléfono</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <PhoneInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
