@@ -79,7 +79,7 @@ export default function SettingsAccountPage() {
     try {
       const redirectTo =
         typeof window !== "undefined"
-          ? `${window.location.origin}/auth?email_updated=1`
+          ? `${window.location.origin}/sign-in?email_updated=1`
           : undefined;
       const { error } = await supabase.auth.updateUser(
         { email: values.new_email.trim().toLowerCase() },
@@ -113,7 +113,7 @@ export default function SettingsAccountPage() {
       deleteForm.reset();
       toast.success("Cuenta eliminada");
       await signOut();
-      router.push("/auth");
+      router.push("/sign-in");
     } catch (err) {
       reportError(err, "Delete account:");
       toast.error("Error al eliminar la cuenta");

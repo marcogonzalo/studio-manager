@@ -82,7 +82,7 @@ describe("POST /api/auth/magic-link", () => {
       method: "POST",
       body: JSON.stringify({
         email: "test@example.com",
-        emailRedirectTo: "http://localhost/auth/callback",
+        emailRedirectTo: "http://localhost/callback",
       }),
     });
 
@@ -94,7 +94,7 @@ describe("POST /api/auth/magic-link", () => {
     expect(mockSignInWithOtp).toHaveBeenCalledWith({
       email: "test@example.com",
       options: {
-        emailRedirectTo: "http://localhost/auth/callback",
+        emailRedirectTo: "http://localhost/callback",
       },
     });
   });
@@ -106,7 +106,7 @@ describe("POST /api/auth/magic-link", () => {
       method: "POST",
       body: JSON.stringify({
         email: "test@example.com",
-        emailRedirectTo: "http://localhost/auth/callback",
+        emailRedirectTo: "http://localhost/callback",
         data: {
           full_name: "Test User",
           signup_plan: "PRO",
@@ -121,7 +121,7 @@ describe("POST /api/auth/magic-link", () => {
     expect(mockSignInWithOtp).toHaveBeenCalledWith({
       email: "test@example.com",
       options: {
-        emailRedirectTo: "http://localhost/auth/callback",
+        emailRedirectTo: "http://localhost/callback",
         data: {
           full_name: "Test User",
           signup_plan: "PRO",
