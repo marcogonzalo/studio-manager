@@ -154,6 +154,8 @@
 
 - [x] **Cookiebot (chore/gtm):** Componente Cookiebot para gestión de consentimiento de cookies. `CookiebotScript` en `src/components/cookiebot/` cargado con `beforeInteractive` en el layout de marketing, antes de GTM, para que el consentimiento pueda condicionar el tracking.
 
+- [x] **CSP para GTM, Cookiebot y Vercel (chore/enable-gtm-in-policies):** Ajuste de Content-Security-Policy en `next.config.ts` para permitir scripts y recursos de terceros: `script-src` incluye googletagmanager.com, consent.cookiebot.com, consentcdn.cookiebot.com, va.vercel-scripts.com y vercel.live (feedback); `frame-src` para GTM y consentcdn.cookiebot.com; `connect-src` e `img-src` actualizados para GA4, Cookiebot y Vercel. Elimina errores de consola por scripts bloqueados por CSP.
+
 - [x] **Duración de notificaciones Toast (fixes #53):** Las notificaciones Toast (Sonner) duran ahora 5 segundos (5000 ms) en lugar del valor por defecto. Configurado en `src/components/ui/sonner.tsx` con la prop `duration={5000}`.
 
 - [x] **Contact fields validation (feat/contact-fields-validation):** Validación y UX del campo teléfono en clientes y proveedores. **PhoneInput:** Banderas del paquete (SVG) en lugar de emoji; ancho fijo 40px del selector de país; estilos en globals.css para `.PhoneInputCountryFlag` (altura, aspect-ratio, img/svg). **Validación:** Mensaje de error dinámico según país inferido: con país → "Introduce un teléfono válido (ej. +34 612 34 56 78)"; sin país → "Introduce un teléfono válido para el país seleccionado". Uso de `libphonenumber-js` (getExampleNumber + mobile/examples) y `superRefine` en Zod para mensaje dinámico. Dependencia directa `libphonenumber-js`. Tests en contact-validation.test.ts (incl. aserción de mensaje con ejemplo cuando se infiere país).
