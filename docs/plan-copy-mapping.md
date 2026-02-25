@@ -16,11 +16,11 @@ La tabla `plans` expone:
   - **none:** la funcionalidad no está disponible (oculta o desactivada).
   - **basic**, **plus**, **full:** niveles crecientes de capacidad.
 
-  Columnas de modalidad: `budget_mode`, `multi_currency_per_project`, `purchase_orders`, `costs_management`, `payments_management`, `documents`, `notes`, `summary`, `support_level`.
+  Columnas de modalidad: `pdf_export_mode`, `multi_currency_per_project`, `purchase_orders`, `costs_management`, `payments_management`, `documents`, `notes`, `summary`, `support_level`.
 
 **Homologación:** en todos los casos donde “basic” significaba “no existe” o “desactivado”, se usa **none** para que solo `none` represente “no disponible”.
 
-### Ejemplo: exportación / presupuesto (`budget_mode`)
+### Ejemplo: exportación / presupuesto (`pdf_export_mode`)
 
 | Modalidad | Significado                                            |
 | --------- | ------------------------------------------------------ |
@@ -53,7 +53,7 @@ Valor por plan para cada columna de la BD. Consumibles = número (0, N o -1); mo
 | `summary`                    | basic | basic | basic  |
 | `documents`                  | basic | basic | basic  |
 | `notes`                      | basic | basic | basic  |
-| `budget_mode`                | basic | plus  | full   |
+| `pdf_export_mode`            | basic | plus  | full   |
 | `costs_management`           | basic | plus  | plus   |
 | `purchase_orders`            | none  | basic | plus   |
 | `payments_management`        | none  | basic | plus   |
@@ -118,7 +118,7 @@ Solo se emite línea cuando la modalidad **no** es `none`. Si es `none`, no se a
 
 | Columna                      | basic                                | plus                                                   | full                                                      |
 | ---------------------------- | ------------------------------------ | ------------------------------------------------------ | --------------------------------------------------------- |
-| `budget_mode`                | Exportación de presupuesto en PDF    | Presupuesto personalizado con membrete de la app       | Presupuesto personalizable con marca propia (white label) |
+| `pdf_export_mode`            | Exportación de presupuesto en PDF    | Presupuesto personalizado con membrete de la app       | Presupuesto personalizable con marca propia (white label) |
 | `multi_currency_per_project` | Una única moneda para toda la cuenta | Una única moneda y un único impuesto en toda la cuenta | Definición de moneda e impuestos por proyecto             |
 | `purchase_orders`            | Pedidos de compra                    | Ídem                                                   | Ídem                                                      |
 | `costs_management`           | Control de costes                    | Añade control de márgenes                              | Ídem                                                      |

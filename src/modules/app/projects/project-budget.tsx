@@ -84,7 +84,7 @@ export function ProjectBudget({
   disabled?: boolean;
 }) {
   const { user } = useAuth();
-  const printFilterOptionsEnabled = usePlanCapability("budget_mode", {
+  const printFilterOptionsEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "full",
   });
   const supabase = getSupabaseClient();

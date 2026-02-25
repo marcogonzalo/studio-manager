@@ -38,7 +38,7 @@ begin
     'catalog_products_limit', v_plan.catalog_products_limit,
     'storage_limit_mb', v_plan.storage_limit_mb,
     'support_level', v_plan.support_level,
-    'budget_mode', v_plan.budget_mode,
+    'pdf_export_mode', v_plan.pdf_export_mode,
     'multi_currency_per_project', v_plan.multi_currency_per_project,
     'purchase_orders', v_plan.purchase_orders,
     'costs_management', v_plan.costs_management,

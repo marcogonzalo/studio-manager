@@ -15,7 +15,7 @@ const CONSUMABLE_KEYS = [
 ] as const;
 
 const MODALITY_KEYS = [
-  "budget_mode",
+  "pdf_export_mode",
   "multi_currency_per_project",
   "purchase_orders",
   "costs_management",

@@ -336,7 +336,7 @@ describe("AuthProvider", () => {
       error: null,
     });
     mockRpc.mockResolvedValue({
-      data: [{ plan_code: "PRO", config: { budget_mode: "full" } }],
+      data: [{ plan_code: "PRO", config: { pdf_export_mode: "full" } }],
       error: null,
     });
 

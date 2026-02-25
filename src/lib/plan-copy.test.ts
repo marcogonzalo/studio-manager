@@ -63,9 +63,9 @@ describe("plan-copy", () => {
 
   describe("getPlanConfigForDisplay", () => {
     it("returns config for each plan code", () => {
-      expect(getPlanConfigForDisplay("BASE").budget_mode).toBe("basic");
-      expect(getPlanConfigForDisplay("PRO").budget_mode).toBe("plus");
-      expect(getPlanConfigForDisplay("STUDIO").budget_mode).toBe("full");
+      expect(getPlanConfigForDisplay("BASE").pdf_export_mode).toBe("basic");
+      expect(getPlanConfigForDisplay("PRO").pdf_export_mode).toBe("plus");
+      expect(getPlanConfigForDisplay("STUDIO").pdf_export_mode).toBe("full");
     });
 
     it("with include returns only selected keys in standard order", () => {

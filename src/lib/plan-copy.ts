@@ -51,7 +51,7 @@ type ModalityCopy = Partial<
 const MODALITY_COPY: Record<
   keyof Pick<
     PlanConfig,
-    | "budget_mode"
+    | "pdf_export_mode"
     | "multi_currency_per_project"
     | "purchase_orders"
     | "costs_management"
@@ -63,7 +63,7 @@ const MODALITY_COPY: Record<
   >,
   ModalityCopy
 > = {
-  budget_mode: {
+  pdf_export_mode: {
     basic: "Exportación de presupuesto en PDF",
     plus: "Presupuesto personalizado",
     full: "Presupuesto personalizable con marca propia (white label)",
@@ -111,7 +111,7 @@ const MODALITY_COPY: Record<
 };
 
 const MODALITY_ORDER: (keyof typeof MODALITY_COPY)[] = [
-  "budget_mode",
+  "pdf_export_mode",
   "costs_management",
   "payments_management",
   "purchase_orders",
@@ -146,7 +146,7 @@ export const COMPACT_FEATURE_KEYS: PlanFeatureKey[] = [
   // "suppliers_limit",
   // "catalog_products_limit",
   "storage_limit_mb",
-  "budget_mode",
+  "pdf_export_mode",
   "costs_management",
   "payments_management",
   "purchase_orders",
@@ -256,7 +256,7 @@ export const STATIC_PLAN_CONFIGS: Record<
     summary: "basic",
     documents: "basic",
     notes: "basic",
-    budget_mode: "basic",
+    pdf_export_mode: "basic",
     costs_management: "basic",
     purchase_orders: "none",
     payments_management: "none",
@@ -272,7 +272,7 @@ export const STATIC_PLAN_CONFIGS: Record<
     summary: "basic",
     documents: "basic",
     notes: "basic",
-    budget_mode: "plus",
+    pdf_export_mode: "plus",
     costs_management: "plus",
     purchase_orders: "basic",
     payments_management: "basic",
@@ -288,7 +288,7 @@ export const STATIC_PLAN_CONFIGS: Record<
     summary: "basic",
     documents: "basic",
     notes: "basic",
-    budget_mode: "full",
+    pdf_export_mode: "full",
     costs_management: "plus",
     purchase_orders: "plus",
     payments_management: "plus",

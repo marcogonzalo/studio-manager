@@ -75,7 +75,7 @@ function ProjectDetailContent() {
   const documentsAtLeastPlus = usePlanCapability("documents", {
     minModality: "plus",
   });
-  const budgetModeAtLeastPlus = usePlanCapability("budget_mode", {
+  const budgetModeAtLeastPlus = usePlanCapability("pdf_export_mode", {
     minModality: "plus",
   });
   const costsManagementAtLeastPlus = usePlanCapability("costs_management", {
