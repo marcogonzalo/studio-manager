@@ -154,7 +154,7 @@
 
 - [x] **Cookiebot (chore/gtm):** Componente Cookiebot para gestión de consentimiento de cookies. `CookiebotScript` en `src/components/cookiebot/` cargado con `beforeInteractive` en el layout de marketing, antes de GTM, para que el consentimiento pueda condicionar el tracking.
 
-- [x] **CSP para GTM, Cookiebot y Vercel Analytics (chore/enable-gtm-in-policies):** Ajuste de Content-Security-Policy en `next.config.ts` para permitir scripts y recursos de terceros: `script-src` incluye googletagmanager.com, consent.cookiebot.com, consentcdn.cookiebot.com y va.vercel-scripts.com; `frame-src` para GTM y consentcdn.cookiebot.com; `connect-src` e `img-src` actualizados para GA4, Cookiebot y Vercel. Elimina errores de consola por scripts bloqueados por CSP.
+- [x] **CSP para GTM, Cookiebot y Vercel (chore/enable-gtm-in-policies):** Ajuste de Content-Security-Policy en `next.config.ts` para permitir scripts y recursos de terceros: `script-src` incluye googletagmanager.com, consent.cookiebot.com, consentcdn.cookiebot.com, va.vercel-scripts.com y vercel.live (feedback); `frame-src` para GTM y consentcdn.cookiebot.com; `connect-src` e `img-src` actualizados para GA4, Cookiebot y Vercel. Elimina errores de consola por scripts bloqueados por CSP.
 
 - [x] **Duración de notificaciones Toast (fixes #53):** Las notificaciones Toast (Sonner) duran ahora 5 segundos (5000 ms) en lugar del valor por defecto. Configurado en `src/components/ui/sonner.tsx` con la prop `duration={5000}`.
 
