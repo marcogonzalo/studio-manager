@@ -6,7 +6,7 @@ create type plan_feature_modality_new as enum ('none', 'basic', 'plus', 'full');
 comment on type plan_feature_modality_new is 'none = not available, basic = basic level, plus = mid tier, full = full/unrestricted';
 
 alter table plans
-  add column budget_mode_new plan_feature_modality_new,
+  add column pdf_export_mode_new plan_feature_modality_new,
   add column multi_currency_per_project_new plan_feature_modality_new,
   add column purchase_orders_new plan_feature_modality_new,
   add column costs_management_new plan_feature_modality_new,
@@ -18,7 +18,7 @@ alter table plans
 
 -- Migrate: existing enum values (none, basic, full) map 1:1 into new type
 update plans set
-  budget_mode_new = case budget_mode::text when 'none' then 'none'::plan_feature_modality_new when 'basic' then 'basic'::plan_feature_modality_new when 'full' then 'full'::plan_feature_modality_new else 'none'::plan_feature_modality_new end,
+  pdf_export_mode_new = case pdf_export_mode::text when 'none' then 'none'::plan_feature_modality_new when 'basic' then 'basic'::plan_feature_modality_new when 'full' then 'full'::plan_feature_modality_new else 'none'::plan_feature_modality_new end,
   multi_currency_per_project_new = case multi_currency_per_project::text when 'none' then 'none'::plan_feature_modality_new when 'basic' then 'basic'::plan_feature_modality_new when 'full' then 'full'::plan_feature_modality_new else 'none'::plan_feature_modality_new end,
   purchase_orders_new = case purchase_orders::text when 'none' then 'none'::plan_feature_modality_new when 'basic' then 'basic'::plan_feature_modality_new when 'full' then 'full'::plan_feature_modality_new else 'none'::plan_feature_modality_new end,
   costs_management_new = case costs_management::text when 'none' then 'none'::plan_feature_modality_new when 'basic' then 'basic'::plan_feature_modality_new when 'full' then 'full'::plan_feature_modality_new else 'basic'::plan_feature_modality_new end,
@@ -30,7 +30,7 @@ update plans set
 
 -- Target values from doc (Base, Pro, Studio)
 update plans set
-  budget_mode_new = 'basic',
+  pdf_export_mode_new = 'basic',
   multi_currency_per_project_new = 'basic',
   purchase_orders_new = 'none',
   payments_management_new = 'none',
@@ -42,7 +42,7 @@ update plans set
 where code = 'BASE';
 
 update plans set
-  budget_mode_new = 'plus',
+  pdf_export_mode_new = 'plus',
   multi_currency_per_project_new = 'plus',
   purchase_orders_new = 'basic',
   payments_management_new = 'basic',
@@ -54,7 +54,7 @@ update plans set
 where code = 'PRO';
 
 update plans set
-  budget_mode_new = 'full',
+  pdf_export_mode_new = 'full',
   multi_currency_per_project_new = 'full',
   purchase_orders_new = 'plus',
   payments_management_new = 'plus',
@@ -66,7 +66,7 @@ update plans set
 where code = 'STUDIO';
 
 alter table plans
-  drop column budget_mode,
+  drop column pdf_export_mode,
   drop column multi_currency_per_project,
   drop column purchase_orders,
   drop column costs_management,
@@ -80,7 +80,7 @@ drop type plan_feature_modality;
 
 alter type plan_feature_modality_new rename to plan_feature_modality;
 
-alter table plans rename column budget_mode_new to budget_mode;
+alter table plans rename column pdf_export_mode_new to pdf_export_mode;
 alter table plans rename column multi_currency_per_project_new to multi_currency_per_project;
 alter table plans rename column purchase_orders_new to purchase_orders;
 alter table plans rename column costs_management_new to costs_management;
@@ -92,7 +92,7 @@ alter table plans rename column support_level_new to support_level;
 
 -- Re-apply NOT NULL where needed (from previous migration)
 alter table plans
-  alter column budget_mode set not null,
+  alter column pdf_export_mode set not null,
   alter column multi_currency_per_project set not null,
   alter column purchase_orders set not null,
   alter column costs_management set not null,

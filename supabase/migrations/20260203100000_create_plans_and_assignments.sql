@@ -4,10 +4,10 @@
 --
 -- Plan rules (registro de cambios):
 -- - BASE (Prueba): notas y resumen (full); NO subida de renders ni documentos (documents = null).
---   Límites: 3 proyectos, 10 clientes, 10 proveedores, 50 productos. budget_mode basic (exportación y excluir limitados).
+--   Límites: 3 proyectos, 10 clientes, 10 proveedores, 50 productos. pdf_export_mode basic (exportación y excluir limitados).
 --   Una sola moneda por defecto. Sin órdenes de compra, control de costes ni pagos.
 -- - PRO: todas las funcionalidades (documents full = subida de renders y documentos). Cambio de moneda por proyecto.
---   budget_mode full (opciones de exportación y excluir del proyecto). Límites: 10 proyectos, 50 clientes, 50 proveedores, 500 productos.
+--   pdf_export_mode full (opciones de exportación y excluir del proyecto). Límites: 10 proyectos, 50 clientes, 50 proveedores, 500 productos.
 -- - STUDIO: igual que PRO con límites ilimitados (-1).
 
 create type plan_feature_modality as enum ('basic', 'full');
@@ -23,7 +23,7 @@ create table plans (
   suppliers_limit integer not null,
   catalog_products_limit integer not null,
   -- Feature modalities (null = not available, basic = basic level, full = full/personalized)
-  budget_mode plan_feature_modality,
+  pdf_export_mode plan_feature_modality,
   multi_currency_per_project plan_feature_modality,
   purchase_orders plan_feature_modality,
   costs_management plan_feature_modality,
@@ -87,7 +87,7 @@ insert into plans (
   clients_limit,
   suppliers_limit,
   catalog_products_limit,
-  budget_mode,
+  pdf_export_mode,
   multi_currency_per_project,
   purchase_orders,
   costs_management,
@@ -104,7 +104,7 @@ insert into plans (
   10,
   10,
   50,
-  'basic',
+  'basic'::plan_feature_modality,
   null,
   null,
   null,
@@ -138,14 +138,14 @@ insert into plans (
   -1,
   -1,
   -1,
-  'full',
-  'full',
-  'full',
-  'full',
-  'full',
-  'full',
-  'full',
-  'full'
+  'full'::plan_feature_modality,
+  'full'::plan_feature_modality,
+  'full'::plan_feature_modality,
+  'full'::plan_feature_modality,
+  'full'::plan_feature_modality,
+  'full'::plan_feature_modality,
+  'full'::plan_feature_modality,
+  'full'::plan_feature_modality
 );
 
 -- Function: get effective plan for a user.
@@ -187,7 +187,7 @@ begin
     'clients_limit', v_base_plan.clients_limit,
     'suppliers_limit', v_base_plan.suppliers_limit,
     'catalog_products_limit', v_base_plan.catalog_products_limit,
-    'budget_mode', v_base_plan.budget_mode,
+    'pdf_export_mode', v_base_plan.pdf_export_mode,
     'multi_currency_per_project', v_base_plan.multi_currency_per_project,
     'purchase_orders', v_base_plan.purchase_orders,
     'costs_management', v_base_plan.costs_management,

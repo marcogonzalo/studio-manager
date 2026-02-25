@@ -17,8 +17,8 @@ import {
  *
  * @example
  * const canShowTab = usePlanCapability("purchase_orders");
- * const canUseBudgetFilter = usePlanCapability("budget_mode", { minModality: "plus" });
- * const canExportWhiteLabel = usePlanCapability("budget_mode", { minModality: "full" });
+ * const canUseBudgetFilter = usePlanCapability("pdf_export_mode", { minModality: "plus" });
+ * const canExportWhiteLabel = usePlanCapability("pdf_export_mode", { minModality: "full" });
  */
 export function usePlanCapability(
   featureKey: PlanFeatureKey,

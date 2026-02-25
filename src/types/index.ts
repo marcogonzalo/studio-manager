@@ -7,7 +7,7 @@ export interface PlanConfig {
   catalog_products_limit: number;
   storage_limit_mb: number;
   support_level: PlanFeatureModality;
-  budget_mode: PlanFeatureModality;
+  pdf_export_mode: PlanFeatureModality;
   multi_currency_per_project: PlanFeatureModality;
   purchase_orders: PlanFeatureModality;
   costs_management: PlanFeatureModality;
