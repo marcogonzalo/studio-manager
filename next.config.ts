@@ -57,14 +57,16 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // unsafe-inline/unsafe-eval needed for Next.js
+              // GTM + GA4 + Cookiebot: allow their script origins (unsafe-inline/unsafe-eval required for Next.js and GTM)
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://consent.cookiebot.com https://consentcdn.cookiebot.com https://va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
-              "img-src 'self' data: https: blob:",
+              "img-src 'self' data: https: blob: http://imgsct.cookiebot.com",
               "font-src 'self' data:",
-              // Allow HTTPS connections in production, HTTP (localhost) in other environments
+              // connect-src: Supabase, Backblaze, GTM/GA4, Cookiebot; in dev add local Supabase + HMR
               process.env.NODE_ENV === "production"
-                ? "connect-src 'self' https://*.supabase.co https://*.backblazeb2.com"
-                : "connect-src 'self' http://localhost:54321 http://127.0.0.1:54321 https://*.backblazeb2.com ws://localhost:3000 ws://127.0.0.1:3000", // Supabase local (54321) + Next.js HMR (3000)
+                ? "connect-src 'self' https://*.supabase.co https://*.backblazeb2.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://consent.cookiebot.com https://consentcdn.cookiebot.com https://va.vercel-scripts.com"
+                : "connect-src 'self' http://localhost:54321 http://127.0.0.1:54321 https://*.backblazeb2.com ws://localhost:3000 ws://127.0.0.1:3000 https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://consent.cookiebot.com https://consentcdn.cookiebot.com https://va.vercel-scripts.com",
+              "frame-src 'self' https://www.googletagmanager.com https://consentcdn.cookiebot.com",
               "frame-ancestors 'none'",
             ].join("; "),
           },
