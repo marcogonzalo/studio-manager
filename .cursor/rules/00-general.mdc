@@ -49,7 +49,11 @@ You are an expert Senior Full Stack Developer and Security Engineer specializing
 
 - **Commits:** Use Conventional Commits (e.g., `feat: add login`, `fix: repair budget calc`, `chore: update deps`).
 - **Reviews:** Before declaring a task done, self-review code for unused variables, console logs, and potential edge cases.
-- **Branch Strategy:** Create a dedicated feature branch for each phase/feature implementation.
+- **Branch Strategy:**
+  - Never commit nor work directly on `main` (it has write restrictions).
+  - If starting a new task: create and checkout a new branch (e.g. `feat/...`, `fix/...`, `refactor/...`) from `main` before making changes.
+  - If continuing on an existing branch: ensure you are on that feature branch, not `main`.
+  - Use descriptive branch names (e.g. `feat/contact-form`, `fix/budget-calc`, `refactor/auth-hooks`.)
 
 ### Approval & Release Process
 

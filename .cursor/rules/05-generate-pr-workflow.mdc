@@ -62,7 +62,7 @@ When either scenario is triggered, run **in this order**:
 
 **Summary:**
 
-- **Generate PR:** Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push → PR
-- **Push changes:** Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push (stop here)
+- **Generate PR:** Branch (ensure not on main) → Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push → PR
+- **Push changes:** Branch (ensure not on main) → Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push (stop here)
 
 Do not skip steps; if something fails, fix it before continuing.
