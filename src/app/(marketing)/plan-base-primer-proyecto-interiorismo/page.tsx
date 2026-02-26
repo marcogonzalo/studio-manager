@@ -104,14 +104,11 @@ export default function PlanBasePage() {
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
               Prueba sin pagar.{" "}
-              <span className="text-primary">Decide cuando estés listo</span>
+              <span className="text-primary">Decide cuando quieras crecer</span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Si estás empezando en diseño interior en solitario, aún no tienes
-              un flujo estable de proyectos o quieres conocer la gestión de
-              proyectos de interiorismo en Veta sin compromiso, el plan Base es
-              para ti. Un proyecto, gestión de presupuestos y control básico:
-              todo gratis.
+              Pensado para quien prefiere probar antes de invertir y crecer
+              cuando tenga más proyectos.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
@@ -141,8 +138,11 @@ export default function PlanBasePage() {
               Si te suena esto, el plan Base encaja
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Pensado para quien prefiere probar antes de invertir y crecer
-              cuando tenga más proyectos.
+              Si estás empezando en arquitectura o diseño interior en solitario,
+              aún no tienes un flujo estable de proyectos o quieres conocer la
+              gestión de proyectos de interiorismo en Veta sin compromiso, el
+              plan Base es para ti. Un proyecto con su gestión de presupuestos y
+              control de gastos: todo gratis.
             </p>
           </AnimatedSection>
 

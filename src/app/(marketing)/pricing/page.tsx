@@ -112,7 +112,7 @@ const faqs = [
   {
     question: "¿Hay descuento por pago anual?",
     answer:
-      "Sí, ofrecemos un 20% de descuento en todos los planes al pagar anualmente. Esto equivale a 2 meses gratis.",
+      "Sí, ofrecemos un 17% de descuento en todos los planes al pagar anualmente. Esto equivale a un ahorro de 2 meses de costes.",
   },
   {
     question: "¿Qué pasa con mis datos si cancelo?",
@@ -141,8 +141,8 @@ export default function PricingPage() {
               <span className="text-primary">precios transparentes</span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Elige el plan que mejor se adapte a tu estudio. Sin sorpresas, sin
-              costos ocultos.
+              Elige el plan que mejor se adapte a tu momento profesional. Sin
+              sorpresas, sin costes ocultos.
             </p>
           </AnimatedSection>
         </div>

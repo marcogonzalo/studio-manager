@@ -66,16 +66,16 @@ export default function AboutPage() {
         <div className="relative container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto max-w-3xl text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Diseñada para ayudar a crear{" "}
+              Diseñada para ayudar a quienes crean{" "}
               <span className="text-primary">
                 espacios que transforman vidas
               </span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Veta nace de la necesidad real de simplificar la gestión de
-              proyectos de diseño interior para que arquitectas y diseñadores
-              puedan hacer lo que mejor saben hacer: crear espacios que
-              transforman vidas.
+              <strong className="text-foreground font-semibold">Veta</strong>{" "}
+              nace de la necesidad real de simplificar la gestión de proyectos
+              de diseño interior para que diseñadores de interiores puedan hacer
+              lo que mejor saben hacer: crear espacios que transforman vidas.
             </p>
           </AnimatedSection>
         </div>
@@ -172,7 +172,9 @@ export default function AboutPage() {
               Nuestra Misión
             </h2>
             <p className="text-muted-foreground mt-6 text-xl">
-              Veta quiere empoderar a los profesionales y estudios de
+              <strong className="text-foreground font-semibold">Veta</strong>{" "}
+              quiere ser esa marca, ese color, ese elemento que se distingue a
+              través del empoderamiento de los profesionales y estudios de
               arquitectura y diseño interior con herramientas que simplifiquen
               su trabajo, para que puedan dedicar más tiempo a lo que realmente
               importa: crear espacios que transforman vidas.

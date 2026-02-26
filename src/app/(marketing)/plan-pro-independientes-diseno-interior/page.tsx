@@ -60,7 +60,7 @@ const pains = [
   {
     title: "Necesito profesionalizar la gestión del dinero",
     description:
-      "Gestión de presupuestos personalizada, moneda e impuesto por proyecto, control de pagos y pedidos a proveedores. Todo lo que un profesional de diseño interior con cartera necesita para facturar y cobrar con tranquilidad.",
+      "Gestión de presupuestos personalizada, control de pagos y pedidos a proveedores. Todo lo que un profesional de diseño interior con cartera necesita para facturar y cobrar con tranquilidad.",
   },
 ];
 
@@ -86,8 +86,8 @@ const highlights = [
   },
   {
     icon: Globe,
-    title: "Moneda e impuesto por proyecto",
-    text: "Trabaja con clientes en distintas monedas o regímenes fiscales sin mezclar números.",
+    title: "Incluir o excluir productos del presupuesto",
+    text: "Activa o desactiva productos del proyecto y del presupuesto para adaptar cada oferta sin borrar líneas.",
   },
   {
     icon: FileText,
@@ -97,7 +97,7 @@ const highlights = [
   {
     icon: Wallet,
     title: "10 GB de almacenamiento",
-    text: "Sube renders, documentos y archivos sin quedarte corto.",
+    text: "Sube renders, documentos y archivos sin que tu cuenta se quede corta.",
   },
 ];
 
@@ -123,13 +123,9 @@ export default function PlanProPage() {
               </span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Si ya tienes una cartera de proyectos de diseño interior al año,
-              varios a la vez o encargos más grandes que exigen gestión de
-              proyectos y seguimiento serio de costes y pagos, el plan Pro está
-              pensado para ti. Hasta 5 proyectos activos, gestión de
-              presupuestos personalizada, control de márgenes, pedidos y pagos:
-              la herramienta de interiorismo que necesitas para no volver a
-              preguntarte "¿en este proyecto gano o pierdo?".
+              Para profesionales de diseño interior e interiorismo que ya
+              facturan y quieren gestión de proyectos y gestión de presupuestos
+              con control total del flujo de dinero.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
@@ -159,9 +155,9 @@ export default function PlanProPage() {
               Si te identificas con esto, Pro es tu plan
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Para profesionales de diseño interior e interiorismo que ya
-              facturan y quieren gestión de proyectos y gestión de presupuestos
-              con control total del flujo de dinero.
+              Tengo una cartera de proyectos y quiero controlar el flujo del
+              dinero para no volver a preguntarme &quot;¿en este proyecto gano o
+              pierdo?&quot;
             </p>
           </AnimatedSection>
 
@@ -252,9 +248,8 @@ export default function PlanProPage() {
               Gestión de proyectos de diseño interior sin improvisar.
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Prueba el plan Pro 30 días sin coste. Si encaja con tu ritmo de
-              interiorismo y gestión de presupuestos, te quedas. Si no, sin
-              compromiso.
+              Prueba el plan Pro 30 días sin coste. Si encaja con el ritmo de
+              tus proyectos, te quedas. Si no, sin compromiso.
             </p>
             <div className="mt-8">
               <Button size="lg" className="animate-glow" asChild>
