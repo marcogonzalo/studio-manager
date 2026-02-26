@@ -42,7 +42,7 @@ globs: src/**/*.tsx, src/**/*.ts
 
 ## Supabase Client
 
-- **Singleton:** Use the singleton instance from `@/lib/supabase`.
+- **Client-side:** Use `getSupabaseClient()` from `@/lib/supabase` (re-exports from `client.ts`). For Server Components or server code, use `createClient` from `@/lib/supabase/server`.
 - **Types:** Import database types from `@/types` or generated Supabase types.
 - **Error Handling:** Always check `error` returned by Supabase calls.
 
