@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -38,10 +38,19 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { AlertTriangle, Mail } from "lucide-react";
+import { AlertTriangle, Building2, Mail, User } from "lucide-react";
 import { toast } from "sonner";
-import { getErrorMessage, reportError } from "@/lib/utils";
+import {
+  getErrorMessage,
+  reportError,
+  INPUT_CONFIG_STANDARD_CLASS,
+} from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
+
+const profileFormSchema = z.object({
+  full_name: z.string().optional(),
+  company: z.string().optional(),
+});
 
 const deleteAccountSchema = z.object({
   email: z.string().min(1, "Introduce tu correo electrónico"),
@@ -54,6 +63,7 @@ const changeEmailSchema = z.object({
     .email("Correo no válido"),
 });
 
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
 type DeleteAccountValues = z.infer<typeof deleteAccountSchema>;
 type ChangeEmailValues = z.infer<typeof changeEmailSchema>;
 
@@ -64,6 +74,12 @@ export default function SettingsAccountPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [changeEmailDialogOpen, setChangeEmailDialogOpen] = useState(false);
   const [dangerZoneOpen, setDangerZoneOpen] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  const profileForm = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: { full_name: "", company: "" },
+  });
 
   const deleteForm = useForm<DeleteAccountValues>({
     resolver: zodResolver(deleteAccountSchema),
@@ -94,6 +110,58 @@ export default function SettingsAccountPage() {
     } catch (err) {
       reportError(err, "Change email:");
       toast.error("Error al cambiar el correo: " + getErrorMessage(err));
+    }
+  }
+
+  const fetchProfile = async () => {
+    if (!user?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (error) throw error;
+      profileForm.reset({
+        full_name: data?.full_name ?? "",
+        company: data?.company ?? "",
+      });
+    } catch (err) {
+      reportError(err, "Error fetching profile:");
+      toast.error("Error al cargar el perfil");
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchProfile();
+    } else {
+      setProfileLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run only when user?.id changes
+  }, [user?.id]);
+
+  async function onProfileSubmit(values: ProfileFormValues) {
+    if (!user?.id) return;
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: values.full_name?.trim() || null,
+          company: values.company?.trim() || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
+
+      if (error) throw error;
+      toast.success("Perfil actualizado correctamente");
+      fetchProfile();
+    } catch (err) {
+      reportError(err, "Error updating profile:");
+      toast.error("Error al guardar: " + getErrorMessage(err));
     }
   }
 
@@ -134,6 +202,81 @@ export default function SettingsAccountPage() {
           Correo de acceso y acciones sobre tu cuenta
         </p>
       </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <User className="text-primary h-5 w-5" />
+            <CardTitle>Perfil</CardTitle>
+          </div>
+          <CardDescription>
+            Información que aparece en presupuestos y en la aplicación
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {profileLoading ? (
+            <div className="text-muted-foreground text-sm">Cargando…</div>
+          ) : (
+            <Form {...profileForm}>
+              <form
+                onSubmit={profileForm.handleSubmit(onProfileSubmit)}
+                className="max-w-xl space-y-6"
+              >
+                <FormField
+                  control={profileForm.control}
+                  name="full_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Nombre completo
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Tu nombre"
+                          className={INPUT_CONFIG_STANDARD_CLASS}
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={profileForm.control}
+                  name="company"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        Empresa
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Nombre de tu empresa o estudio"
+                          className={INPUT_CONFIG_STANDARD_CLASS}
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  disabled={profileForm.formState.isSubmitting}
+                >
+                  {profileForm.formState.isSubmitting
+                    ? "Guardando…"
+                    : "Guardar cambios"}
+                </Button>
+              </form>
+            </Form>
+          )}
+        </CardContent>
+      </Card>
 
       {user?.email && (
         <Card>

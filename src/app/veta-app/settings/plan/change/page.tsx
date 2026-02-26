@@ -6,7 +6,13 @@ import Link from "next/link";
 import { Check, X, ArrowRight, ChevronDown } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
@@ -108,8 +114,8 @@ export default function ChangePlanPage() {
         </p>
       </div>
 
-      {/* Billing period switch */}
-      <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6">
+      {/* Billing period switch - hidden */}
+      <div className="hidden flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6">
         <span
           className={`text-base font-semibold sm:text-lg ${
             !isAnnual ? "text-foreground" : "text-muted-foreground"
@@ -189,11 +195,17 @@ export default function ChangePlanPage() {
               )}
               <CardHeader className="pb-2 text-center">
                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                <CardDescription className="mt-1">
+                  Oferta por tiempo limitado
+                </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col">
                 <div className="mb-4 text-center">
-                  <div className="flex items-baseline justify-center gap-1">
+                  <div className="flex items-baseline justify-center gap-2">
                     <span className="text-primary text-4xl font-bold">
+                      {formatCurrency(0, currency, { maxFractionDigits: 0 })}
+                    </span>
+                    <span className="text-muted-foreground text-xl font-medium line-through">
                       {formatCurrency(Number(displayPrice), currency, {
                         maxFractionDigits: displayPriceDecimals,
                       })}
