@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
+import { GtmScript } from "@/components/gtm";
 import {
   JsonLd,
   organizationJsonLd,
@@ -98,6 +99,7 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className={montserrat.variable}>
       <body className="bg-background min-h-screen font-sans antialiased">
+        <GtmScript />
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={softwareApplicationJsonLd} />
         <ThemeProvider
