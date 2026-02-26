@@ -15,6 +15,12 @@ export const CURRENCIES: Record<string, string> = {
   CLP: "CLP - $",
 } as const;
 
+/**
+ * Clase estándar para inputs en vistas de configuración (Cuenta, Personalización, etc.).
+ * Ancho estándar (max-w-md); no usar en inputs inline o cuando se defina un tamaño más pequeño.
+ */
+export const INPUT_CONFIG_STANDARD_CLASS = "h-9 max-w-md text-sm";
+
 export interface FormatCurrencyOptions {
   /** Máximo de decimales. 0 para ocultar decimales en precios enteros. */
   maxFractionDigits?: number;

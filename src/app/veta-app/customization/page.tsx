@@ -31,9 +31,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Link from "next/link";
-import { FileSpreadsheet, SlidersHorizontal } from "lucide-react";
+import {
+  Coins,
+  FileSpreadsheet,
+  Mail,
+  Percent,
+  SlidersHorizontal,
+  User,
+} from "lucide-react";
 import { toast } from "sonner";
-import { getErrorMessage, reportError, CURRENCIES } from "@/lib/utils";
+import {
+  getErrorMessage,
+  reportError,
+  CURRENCIES,
+  INPUT_CONFIG_STANDARD_CLASS,
+} from "@/lib/utils";
 import type { Profile } from "@/types";
 import {
   customizationFormSchema,
@@ -196,11 +208,14 @@ export default function CustomizationPage() {
                 name="public_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre público</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Nombre público
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Ej. Estudio García Interiorismo"
-                        className="h-9 text-sm"
+                        className={INPUT_CONFIG_STANDARD_CLASS}
                         {...field}
                         value={field.value ?? ""}
                         disabled={isBasePlan}
@@ -228,12 +243,15 @@ export default function CustomizationPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Correo</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Correo público
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="correo@ejemplo.com"
-                        className="h-9 text-sm"
+                        className={INPUT_CONFIG_STANDARD_CLASS}
                         autoComplete="email"
                         {...field}
                         value={field.value ?? ""}
@@ -288,7 +306,10 @@ export default function CustomizationPage() {
                     name="default_currency"
                     render={({ field }) => (
                       <FormItem className="w-[125px]">
-                        <FormLabel>Moneda</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          <Coins className="h-4 w-4" />
+                          Moneda
+                        </FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value ?? "EUR"}
@@ -317,7 +338,10 @@ export default function CustomizationPage() {
                     name="default_tax_rate"
                     render={({ field }) => (
                       <FormItem className="w-[125px]">
-                        <FormLabel>Impuesto (%)</FormLabel>
+                        <FormLabel className="flex items-center gap-2">
+                          <Percent className="h-4 w-4" />
+                          Impuesto
+                        </FormLabel>
                         <FormControl>
                           <Input
                             type="number"
