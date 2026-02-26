@@ -26,11 +26,13 @@ import {
   PanelLeft,
   User,
   SlidersHorizontal,
-  Palette,
+  Moon,
   Rocket,
+  Sun,
   ArrowLeft,
   CreditCard,
   Bug,
+  ChevronRight,
 } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
 import {
@@ -47,8 +49,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState } from "react";
-import { ThemeToggleSimple } from "@/components/theme-toggle-simple";
+import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -84,6 +86,11 @@ const navItems = [
 const settingsNavItems = [
   { name: "Volver atrás", href: appPath("/dashboard"), icon: ArrowLeft },
   { name: "Cuenta", href: appPath("/settings/account"), icon: User },
+  {
+    name: "Personalización",
+    href: appPath("/customization"),
+    icon: SlidersHorizontal,
+  },
   { name: "Tu plan", href: appPath("/settings/plan"), icon: CreditCard },
 ];
 
@@ -92,6 +99,27 @@ const PLAN_DISPLAY_NAMES: Record<string, string> = {
   PRO: "Pro",
   STUDIO: "Studio",
 };
+
+const SETTINGS_BREADCRUMB_LABELS: Record<string, string> = {
+  [appPath("/settings")]: "Cuenta",
+  [appPath("/settings/account")]: "Cuenta",
+  [appPath("/settings/plan")]: "Tu plan",
+  [appPath("/settings/plan/change")]: "Cambiar plan",
+  [appPath("/customization")]: "Personalización",
+};
+
+function getSettingsBreadcrumbs(
+  pathname: string
+): { label: string; href?: string }[] {
+  const base = { label: "Configuración", href: appPath("/settings") };
+  const current = SETTINGS_BREADCRUMB_LABELS[pathname];
+  if (!current) return [base];
+  const items = [base, { label: current }];
+  if (pathname === appPath("/settings/plan/change")) {
+    items.splice(1, 0, { label: "Tu plan", href: appPath("/settings/plan") });
+  }
+  return items;
+}
 
 function SidebarContent({
   collapsed = false,
@@ -114,7 +142,12 @@ function SidebarContent({
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
 }) {
-  const isInSettings = pathname.includes("/settings");
+  const { theme, setTheme } = useTheme();
+  const [themeMounted, setThemeMounted] = useState(false);
+  useEffect(() => setThemeMounted(true), []);
+
+  const isInSettings =
+    pathname.includes("/settings") || pathname === appPath("/customization");
   const navSource = isInSettings ? settingsNavItems : navItems;
 
   const renderNavLink = (
@@ -230,6 +263,65 @@ function SidebarContent({
             </Fragment>
           );
         })}
+        {isInSettings && (
+          <span
+            className="animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards block duration-300"
+            style={{ animationDelay: "320ms" }}
+          >
+            {(() => {
+              const isDark = theme === "dark";
+              const oppositeLabel = isDark ? "Modo claro" : "Modo oscuro";
+              const ariaLabel = isDark
+                ? "Cambiar a modo claro"
+                : "Cambiar a modo oscuro";
+              if (!themeMounted) {
+                return (
+                  <div className="text-muted-foreground flex cursor-default items-center justify-between gap-2 rounded-xl px-4 py-2.5 text-sm font-medium">
+                    <span className="flex items-center gap-3">
+                      <Sun className="h-5 w-5 flex-shrink-0" />
+                      {!collapsed && "Tema"}
+                    </span>
+                  </div>
+                );
+              }
+              return collapsed ? (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setTheme(isDark ? "light" : "dark")}
+                      className="group text-muted-foreground hover:bg-secondary hover:text-secondary-foreground flex w-full cursor-pointer items-center justify-center rounded-xl px-2 py-2.5 text-sm font-medium transition-all duration-200 [&_svg]:size-5"
+                      aria-label={ariaLabel}
+                    >
+                      {isDark ? (
+                        <Sun className="h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110" />
+                      ) : (
+                        <Moon className="h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{oppositeLabel}</TooltipContent>
+                </Tooltip>
+              ) : (
+                <Button
+                  variant="ghost"
+                  onClick={() => setTheme(isDark ? "light" : "dark")}
+                  className="text-muted-foreground hover:bg-secondary hover:text-secondary-foreground flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors [&_svg]:size-5"
+                  aria-label={ariaLabel}
+                >
+                  <span className="flex items-center gap-3">
+                    {isDark ? (
+                      <Sun className="h-5 w-5 flex-shrink-0" />
+                    ) : (
+                      <Moon className="h-5 w-5 flex-shrink-0" />
+                    )}
+                    {oppositeLabel}
+                  </span>
+                </Button>
+              );
+            })()}
+          </span>
+        )}
       </nav>
       <div
         className={cn(
@@ -237,18 +329,28 @@ function SidebarContent({
           collapsed ? "p-2" : "space-y-3 p-4"
         )}
       >
-        {effectivePlan?.plan_code === "BASE" && (
-          <Link
-            href={appPath("/settings/plan/change")}
-            className={cn(
-              "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
-              collapsed ? "py-2" : "mb-2"
-            )}
-          >
-            <Rocket className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>Mejora tu plan</span>}
-          </Link>
-        )}
+        {effectivePlan?.plan_code === "BASE" &&
+          (collapsed ? (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Link
+                  href={appPath("/settings/plan/change")}
+                  className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
+                >
+                  <Rocket className="h-4 w-4 shrink-0" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Mejorar plan</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Link
+              href={appPath("/settings/plan/change")}
+              className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 mb-2 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors"
+            >
+              <Rocket className="h-4 w-4 shrink-0" />
+              <span>Mejora tu plan</span>
+            </Link>
+          ))}
         {collapsed ? (
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
@@ -269,28 +371,24 @@ function SidebarContent({
                   className="w-56 rounded-xl"
                 >
                   <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">
-                        {getDisplayName(user, profileFullName)}
-                      </p>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-medium">
+                          {getDisplayName(user, profileFullName)}
+                        </p>
+                        {effectivePlan?.plan_code && (
+                          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+                            {PLAN_DISPLAY_NAMES[effectivePlan.plan_code] ??
+                              effectivePlan.plan_code}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-muted-foreground text-xs">
                         {user?.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href={appPath("/profile")}>
-                      <User className="mr-2 h-4 w-4" />
-                      Mi perfil
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href={appPath("/customization")}>
-                      <SlidersHorizontal className="mr-2 h-4 w-4" />
-                      Personalización
-                    </Link>
-                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href={appPath("/settings")}>
                       <Settings className="mr-2 h-4 w-4" />
@@ -315,16 +413,6 @@ function SidebarContent({
                     Reportar fallo
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    className="flex cursor-default items-center justify-between gap-2"
-                  >
-                    <span className="flex items-center">
-                      <Palette className="mr-2 h-4 w-4" />
-                      Tema
-                    </span>
-                    <ThemeToggleSimple />
-                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={signOut}
                     className="text-destructive focus:text-destructive cursor-pointer"
@@ -367,28 +455,25 @@ function SidebarContent({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl">
-                <DropdownMenuLabel className="flex flex-wrap items-center gap-2">
-                  Mi Cuenta
-                  {effectivePlan?.plan_code && (
-                    <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-                      {PLAN_DISPLAY_NAMES[effectivePlan.plan_code] ??
-                        effectivePlan.plan_code}
-                    </span>
-                  )}
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-medium">
+                        {getDisplayName(user, profileFullName)}
+                      </p>
+                      {effectivePlan?.plan_code && (
+                        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+                          {PLAN_DISPLAY_NAMES[effectivePlan.plan_code] ??
+                            effectivePlan.plan_code}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-muted-foreground text-xs">
+                      {user?.email}
+                    </p>
+                  </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href={appPath("/profile")}>
-                    <User className="mr-2 h-4 w-4" />
-                    Mi perfil
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href={appPath("/customization")}>
-                    <SlidersHorizontal className="mr-2 h-4 w-4" />
-                    Personalización
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href={appPath("/settings")}>
                     <Settings className="mr-2 h-4 w-4" />
@@ -413,16 +498,6 @@ function SidebarContent({
                   Reportar fallo
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onSelect={(e) => e.preventDefault()}
-                  className="flex cursor-default items-center justify-between gap-2"
-                >
-                  <span className="flex items-center">
-                    <Palette className="mr-2 h-4 w-4" />
-                    Tema
-                  </span>
-                  <ThemeToggleSimple />
-                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={signOut}
                   className="text-destructive focus:text-destructive cursor-pointer"
@@ -530,6 +605,41 @@ export default function AppLayoutClient({
           )}
         >
           <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500">
+            {(pathname.includes("/settings") ||
+              pathname === appPath("/customization")) && (
+              <nav
+                aria-label="Breadcrumb"
+                className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"
+              >
+                <ol className="flex flex-wrap items-center gap-1.5">
+                  {getSettingsBreadcrumbs(pathname).map((item, i) => (
+                    <li key={i} className="flex items-center gap-1.5">
+                      {i > 0 && (
+                        <ChevronRight
+                          className="h-4 w-4 shrink-0 opacity-60"
+                          aria-hidden
+                        />
+                      )}
+                      {item.href ? (
+                        <Link
+                          href={item.href}
+                          className="hover:text-foreground transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <span
+                          className="text-foreground font-medium"
+                          aria-current="page"
+                        >
+                          {item.label}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            )}
             {children}
           </div>
         </main>
