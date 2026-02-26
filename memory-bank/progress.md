@@ -16,6 +16,7 @@
 - **Seguridad:** Headers (CSP, X-Frame-Options, etc.), validación ownership en uploads, OWASP documentado.
 - **Analytics:** GTM, GA4, Cookiebot, CSP ajustada para terceros.
 - **Otros:** Moneda por proyecto/producto, validación teléfono (libphonenumber), mensajes auth amigables, Supabase keys por entorno.
+- **Reporte de fallos:** Enlace "Reportar fallo" en el menú de usuario que abre GitHub Issues con plantilla YAML (ES/EN), pre-rellenando título y URL de la vista. Ver `src/lib/report-bug.ts` y `.github/ISSUE_TEMPLATE/`.
 - **Memory bank:** Optimización aplicada: activeContext, productContext, constraints, progress; eliminados techContext, systemPatterns y archivos duplicados (.optimized). Ver OPTIMIZATION_PROPOSAL.md.
 
 ## Pendiente
