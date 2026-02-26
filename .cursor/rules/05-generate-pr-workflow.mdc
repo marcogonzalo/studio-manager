@@ -13,6 +13,10 @@ alwaysApply: true
 
 When either scenario is triggered, run **in this order**:
 
+## 0. Branch
+
+- If currently on `main`, create and checkout a feature branch (e.g. `feat/...`, `fix/...`, `chore/...`) before making any changes. Never commit directly to `main`.
+
 ## 1. Clean
 
 - Remove `console.log`, `debugger`, and debug code.
