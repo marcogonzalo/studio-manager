@@ -16,10 +16,8 @@
 - **Seguridad:** Headers (CSP, X-Frame-Options, etc.), validación ownership en uploads, OWASP documentado.
 - **Analytics:** GTM, GA4, Cookiebot, CSP ajustada para terceros.
 - **Otros:** Moneda por proyecto/producto, validación teléfono (libphonenumber), mensajes auth amigables, Supabase keys por entorno.
-<<<<<<< feat/report-bug-link
 - **Reporte de fallos:** Enlace "Reportar fallo" en el menú de usuario que abre GitHub Issues con plantilla YAML (ES/EN), pre-rellenando título y URL de la vista. Ver `src/lib/report-bug.ts` y `.github/ISSUE_TEMPLATE/`.
-=======
->>>>>>> main
+- **Vistas de configuración:** Sidebar unificado (Cuenta, Personalización, Tu plan, Tema); breadcrumbs en vistas de configuración; Perfil integrado en Cuenta (nombre/empresa); menú cuenta unificado (avatar colapsado/expandido); oferta plan cambio (0 €, precio tachado, "Oferta por tiempo limitado"); selector mensual/anual oculto; input estándar `INPUT_CONFIG_STANDARD_CLASS` en configuración; iconos en labels (personalización, cuenta).
 - **Memory bank:** Optimización aplicada: activeContext, productContext, constraints, progress; eliminados techContext, systemPatterns y archivos duplicados (.optimized). Ver OPTIMIZATION_PROPOSAL.md.
 
 ## Pendiente
