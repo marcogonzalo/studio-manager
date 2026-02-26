@@ -59,7 +59,7 @@ const pains = [
   {
     title: "Queremos presupuestos con nuestra marca y soporte de verdad",
     description:
-      "Gestión de presupuestos con tu marca (white label), moneda e impuesto por proyecto y soporte prioritario. Para estudios de diseño interior e interiorismo que no pueden parar.",
+      "Gestión de presupuestos con tu marca (white label), configuración de moneda e impuesto por proyecto y soporte prioritario. Para estudios de diseño interior e interiorismo que no pueden parar.",
   },
 ];
 
@@ -95,8 +95,8 @@ const highlights = [
   },
   {
     icon: Shield,
-    title: "Control total: costes, pagos, pedidos",
-    text: "Todo lo del plan Pro, a escala: pedidos de compra, pagos y moneda por proyecto.",
+    title: "Moneda e impuesto por proyecto",
+    text: "Configuración de moneda e impuesto por proyecto para adaptar cada presupuesto al cliente o al país.",
   },
 ];
 
@@ -120,12 +120,10 @@ export default function PlanStudioPage() {
               <span className="text-primary">Una herramienta que acompaña</span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Si tienes un estudio de arquitectura de diseño interior
-              consolidado, con equipo y un ritmo donde cerras un proyecto y ya
-              empieza otro, el plan Studio está pensado para vosotros. Gestión
-              de proyectos a escala: hasta 50 proyectos activos, gestión de
-              presupuestos con tu marca, soporte prioritario y 100 GB. La
-              plataforma de interiorismo que escala con tu estudio.
+              Para equipos y estudios de arquitectura y de diseño interior con
+              múltiples proyectos, gestión de presupuestos totalmente adaptados
+              a la marca y capacidad para proyectos internacionales con
+              configuración de monedas e impuestos.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
@@ -155,9 +153,9 @@ export default function PlanStudioPage() {
               Si tu estudio vive esto, Studio es vuestro plan
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Para equipos y estudios de diseño interior e interiorismo con
-              múltiples proyectos, gestión de presupuestos seria y soporte de
-              nivel profesional.
+              Los proyectos abren y cierran constantemente, tienes clientes en
+              distintos países que requieren adaptación a su moneda y quieres
+              más capacidad y personalización para escalar.
             </p>
           </AnimatedSection>
 

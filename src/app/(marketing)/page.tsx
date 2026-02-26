@@ -88,7 +88,7 @@ const features = [
   },
   {
     icon: FileText,
-    title: "Documentos PDF",
+    title: "Exporta",
     description:
       "Genera presupuestos y documentos profesionales para tus clientes.",
   },
@@ -97,10 +97,10 @@ const features = [
 const benefits = [
   "Interfaz pensada para arquitectos y diseñadores de interior",
   "Acceso en todo momento desde cualquier dispositivo",
-  "Tus datos almacenados de forma segura (HTTPS, normativa RGPD)",
-  "Mejoras y actualizaciones sin coste adicional",
-  "Escucha activa para responder a tus necesidades",
-  "Planes con precio fijo, sin comisiones por uso",
+  "Gestión de datos responsable y segura (normativa RGPD)",
+  "Mejoras y actualizaciones constantes",
+  "Escucha activa para responder a tus requerimientos",
+  "Planes con precio fijo y adaptables a tus necesidades",
 ];
 
 const stats = [
@@ -156,7 +156,7 @@ const homeFaqs = [
 const testimonials = [
   {
     quote:
-      "La gestión de clientes, proveedores y catálogo en un solo sitio ha simplificado mucho el trabajo en los proyectos de diseño interior. Recomendable para independientes o estudios que quieren profesionalizar la parte de gestión.",
+      "La gestión de clientes, proveedores y catálogo en un solo sitio ha simplificado mucho el trabajo en los proyectos de diseño interior. Recomendable para independientes o estudios que quieren optimizar su gestión de proyectos.",
     author: "FH Interiorismo",
     role: "Estudio de arquitectura interior",
     url: "https://instagram.com/fh.interiorismo",
@@ -202,7 +202,7 @@ export default function HomePage() {
 
               <AnimatedSection delay={0.2} duration={0.5} triggerOnMount>
                 <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-                  La plataforma todo-en-uno para arquitectos y diseñadores.
+                  La plataforma todo-en-uno para arquitectos e interioristas.
                   Administra proyectos, clientes, proveedores y presupuestos
                   desde un solo lugar y toma el control.
                 </p>
@@ -344,9 +344,9 @@ export default function HomePage() {
                 ¿Por qué <strong className="text-primary">elegir Veta</strong>?
               </h2>
               <p className="text-muted-foreground mt-4 text-lg">
-                Simplificamos la gestión de tu estudio de interiorismo para que
-                puedas enfocarte en lo que mejor sabes hacer: diseñar espacios
-                increíbles.
+                Simplificamos la gestión de tu estudio de arquitectura e
+                interiorismo para que puedas enfocarte en lo que mejor sabes
+                hacer: diseñar espacios increíbles.
               </p>
 
               <BenefitsList benefits={benefits} />

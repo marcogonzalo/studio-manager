@@ -22,7 +22,7 @@ export function ProductMockup() {
     : { opacity: 0, y: 20, scale: 0.95 };
 
   return (
-    <div className="relative mx-auto w-full max-w-lg">
+    <div className="relative mx-auto w-full max-w-lg -translate-x-[10px]">
       {/* Glow background */}
       <div className="from-primary/20 via-primary/5 absolute -inset-4 rounded-3xl bg-gradient-to-br to-transparent blur-2xl" />
 
