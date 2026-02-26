@@ -1,0 +1,58 @@
+name: Bug Report
+description: Describe a bug or issue to help us improve
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## View context
+        These fields are filled automatically if you open this form from the app.
+  - type: textarea
+    id: what_report
+    attributes:
+      label: What do you want to report?
+      description: Briefly describe the bug or issue.
+      placeholder: "E.g.: The save button does nothing when clicked."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What steps did you take when it happened?
+      description: List the steps to reproduce the bug.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should have happened?
+      description: Describe the expected behaviour.
+      placeholder: "E.g.: The form should be saved and a confirmation message should appear."
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        ## Screenshot (recommended)
+        If possible, attach a screenshot in the text box above (drag the image or paste it). **We recommend hiding sensitive information** (personal data, payment details, etc.).
+  - type: input
+    id: view_title
+    attributes:
+      label: View title
+      description: Title of the page where the bug occurred (filled from the app when opened from there).
+      placeholder: "E.g.: Dashboard, Project X, ..."
+    validations:
+      required: false
+  - type: input
+    id: view_url
+    attributes:
+      label: View URL
+      description: Full URL of the page where the bug occurred (filled from the app when opened from there).
+      placeholder: "https://..."
+    validations:
+      required: false

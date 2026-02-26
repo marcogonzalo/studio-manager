@@ -30,6 +30,7 @@ import {
   Rocket,
   ArrowLeft,
   CreditCard,
+  Bug,
 } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
 import {
@@ -53,6 +54,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getDisplayName } from "@/lib/display-name";
 import { appPath } from "@/lib/app-paths";
+import { getReportBugUrl } from "@/lib/report-bug";
 
 function AppLayoutSkeleton() {
   return (
@@ -295,6 +297,23 @@ function SidebarContent({
                       Configuración
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      const url = getReportBugUrl({
+                        viewTitle:
+                          typeof document !== "undefined" ? document.title : "",
+                        viewUrl:
+                          typeof window !== "undefined"
+                            ? window.location.href
+                            : "",
+                      });
+                      window.open(url, "_blank", "noopener,noreferrer");
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Bug className="mr-2 h-4 w-4" />
+                    Reportar fallo
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onSelect={(e) => e.preventDefault()}
@@ -375,6 +394,23 @@ function SidebarContent({
                     <Settings className="mr-2 h-4 w-4" />
                     Configuración
                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    const url = getReportBugUrl({
+                      viewTitle:
+                        typeof document !== "undefined" ? document.title : "",
+                      viewUrl:
+                        typeof window !== "undefined"
+                          ? window.location.href
+                          : "",
+                    });
+                    window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Bug className="mr-2 h-4 w-4" />
+                  Reportar fallo
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
