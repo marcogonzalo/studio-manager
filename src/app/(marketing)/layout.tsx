@@ -149,7 +149,7 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <CookiebotScript />
+      {/* <CookiebotScript /> */}
       <GtmPageView />
       <a href="#main-content" className="skip-link">
         Saltar al contenido

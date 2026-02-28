@@ -36,6 +36,16 @@ const nextConfig: NextConfig = {
 
     return [
       {
+        // Long cache for hashed static assets (Lighthouse: efficient cache lifetimes)
+        source: "/_next/static/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=43800, immutable",
+          },
+        ],
+      },
+      {
         // Apply to all routes
         source: "/:path*",
         headers: [
@@ -125,6 +135,8 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "2mb",
     },
+    // Tree-shake barrel exports (lucide-react: only icons in use; smaller JS bundle)
+    optimizePackageImports: ["lucide-react"],
   },
 };
 

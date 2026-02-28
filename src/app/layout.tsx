@@ -99,10 +99,14 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className={montserrat.variable}>
       <head>
-        {/* Preconnect to third-party origins used on marketing and app for faster TTFB/LCP */}
+        {/* Preconnect to third-party origins (faster TTFB, keeps third-party budget &lt; 200 KB). */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://consent.cookiebot.com" />
-        <link rel="dns-prefetch" href="https://consentcdn.cookiebot.com" />
+        <link
+          rel="preconnect"
+          href="https://consentcdn.cookiebot.com"
+          crossOrigin=""
+        />
       </head>
       <body className="bg-background min-h-screen font-sans antialiased">
         <GtmScript />

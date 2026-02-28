@@ -170,39 +170,44 @@ function ProjectDetailContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when id changes only
   }, [id]);
 
-  // Scroll to active tab when it changes
+  // Scroll to active tab when it changes (rAF to avoid forced reflow)
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (!tabsListRef.current) return;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const rafId = requestAnimationFrame(() => {
+      timeoutId = setTimeout(() => {
+        if (!tabsListRef.current) return;
 
-      const container = tabsListRef.current.parentElement;
-      if (!container) return;
+        const container = tabsListRef.current.parentElement;
+        if (!container) return;
 
-      const activeTrigger = tabsListRef.current.querySelector(
-        `[data-state="active"]`
-      ) as HTMLElement;
-      if (!activeTrigger) return;
+        const activeTrigger = tabsListRef.current.querySelector(
+          `[data-state="active"]`
+        ) as HTMLElement;
+        if (!activeTrigger) return;
 
-      const triggerLeft = activeTrigger.offsetLeft;
-      const triggerWidth = activeTrigger.offsetWidth;
-      const containerWidth = container.clientWidth;
-      const scrollLeft = container.scrollLeft;
+        const triggerLeft = activeTrigger.offsetLeft;
+        const triggerWidth = activeTrigger.offsetWidth;
+        const containerWidth = container.clientWidth;
+        const scrollLeft = container.scrollLeft;
 
-      const isFullyVisible =
-        triggerLeft >= scrollLeft &&
-        triggerLeft + triggerWidth <= scrollLeft + containerWidth;
+        const isFullyVisible =
+          triggerLeft >= scrollLeft &&
+          triggerLeft + triggerWidth <= scrollLeft + containerWidth;
 
-      if (!isFullyVisible) {
-        const targetScroll =
-          triggerLeft - containerWidth / 2 + triggerWidth / 2;
-        container.scrollTo({
-          left: Math.max(0, targetScroll),
-          behavior: "smooth",
-        });
-      }
-    }, 50);
-
-    return () => clearTimeout(timeoutId);
+        if (!isFullyVisible) {
+          const targetScroll =
+            triggerLeft - containerWidth / 2 + triggerWidth / 2;
+          container.scrollTo({
+            left: Math.max(0, targetScroll),
+            behavior: "smooth",
+          });
+        }
+      }, 50);
+    });
+    return () => {
+      cancelAnimationFrame(rafId);
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, [activeTab]);
 
   if (loading) return <PageLoading variant="detail" />;

@@ -17,7 +17,7 @@
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "lighthouse": "next build && next start -d && lighthouse http://localhost:3000"
+    "lighthouse": "lighthouse http://localhost:3000 --view"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -85,9 +85,10 @@
     "vitest": "^4.0.16"
   },
   "browserslist": [
-    "chrome >= 111",
-    "edge >= 111",
-    "firefox >= 111",
-    "safari >= 16.4"
+    "chrome >= 120",
+    "edge >= 120",
+    "firefox >= 121",
+    "safari >= 17.3",
+    "opera >= 106"
   ]
 }
