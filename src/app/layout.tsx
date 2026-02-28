@@ -7,6 +7,13 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
 import { GtmScript } from "@/components/gtm";
 import {
+  consentStateToGtmPayload,
+  ConsentStatus,
+  ConsentType,
+  getDefaultGtmConsent,
+  loadStoredConsent,
+} from "@/lib/consent";
+import {
   JsonLd,
   organizationJsonLd,
   softwareApplicationJsonLd,
@@ -96,16 +103,34 @@ export default async function RootLayout({
     }
   }
 
+  function getGtmInitializationConsentScript(): Record<
+    ConsentType,
+    ConsentStatus
+  > {
+    const storedConsent = loadStoredConsent();
+    return storedConsent
+      ? consentStateToGtmPayload(storedConsent)
+      : getDefaultGtmConsent(true);
+  }
+
   return (
     <html lang="es" suppressHydrationWarning className={montserrat.variable}>
       <head>
         {/* Preconnect to third-party origins (faster TTFB, keeps third-party budget &lt; 200 KB). */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://consent.cookiebot.com" />
-        <link
-          rel="preconnect"
-          href="https://consentcdn.cookiebot.com"
-          crossOrigin=""
+
+        <script
+          id="gtm-consent-default"
+          dangerouslySetInnerHTML={{
+            __html: `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = gtag;
+gtag('consent', 'default', ${JSON.stringify(getGtmInitializationConsentScript())});
+gtag('set', 'ads_data_redaction', true);
+gtag('set', 'url_passthrough', false);
+          `.trim(),
+          }}
         />
       </head>
       <body className="bg-background min-h-screen font-sans antialiased">
