@@ -4,25 +4,27 @@
 
 Cálculo aproximado usando luminancia (L de OKLCH): ratio ≈ (L_claro + 0.05) / (L_oscuro + 0.05). Los valores exactos pueden variar al convertir OKLCH → sRGB; este informe sirve para priorizar correcciones.
 
-_Actualizado: modo oscuro con fondos y textos de contraste ajustados (background 0.18, card/muted 0.16, secondary/accent 0.18, sidebar-accent 0.16; muted-foreground 0.92, secondary-foreground 0.96). Colores de marca (primary, chart-\*, brand-secondary, brand-tertiary) sin cambios._
+_Actualizado: modo claro revertido a valores originales (muted-foreground 0.55, border/input 0.9, sidebar-foreground 0.3, sidebar-border 0.9). Modo oscuro con contraste ajustado; colores de marca sin cambios._
 
 ---
 
 ## Modo claro
 
-| Combinación (texto sobre fondo)                      | L texto | L fondo | Ratio aprox. | WCAG 4.5:1 | Estado                         |
-| ---------------------------------------------------- | ------- | ------- | ------------ | ---------- | ------------------------------ |
-| **foreground** sobre background                      | 0.25    | 0.98    | 3.4          | ❌         | Insuficiente                   |
-| **card-foreground** sobre card                       | 0.25    | 1.0     | 3.5          | ❌         | Insuficiente                   |
-| **muted-foreground** sobre background                | 0.34    | 0.98    | 2.6          | ❌         | Insuficiente                   |
-| **muted-foreground** sobre muted                     | 0.34    | 0.94    | 2.5          | ❌         | Insuficiente                   |
-| **primary** (text-primary) sobre background          | 0.65    | 0.98    | 1.5          | ❌         | Insuficiente                   |
-| **primary** sobre card                               | 0.65    | 1.0     | 1.5          | ❌         | Insuficiente                   |
-| **secondary-foreground** sobre secondary             | 0.35    | 0.94    | 2.5          | ❌         | Insuficiente                   |
-| **accent-foreground** sobre accent                   | 0.25    | 0.92    | 3.2          | ❌         | Insuficiente                   |
-| **sidebar-foreground** sobre sidebar                 | 0.28    | 0.97    | 3.1          | ❌         | Solo cumple 3:1 (texto grande) |
-| **brand-secondary-foreground** sobre brand-secondary | 0.25    | 0.75    | 2.7          | ❌         | Insuficiente                   |
-| **brand-tertiary-foreground** sobre brand-tertiary   | 0.28    | 0.89    | 2.8          | ❌         | Insuficiente                   |
+_Valores revertidos (sin ajustes de contraste aplicados)._
+
+| Combinación (texto sobre fondo)                      | L texto | L fondo | Ratio aprox. | WCAG 4.5:1 | Estado       |
+| ---------------------------------------------------- | ------- | ------- | ------------ | ---------- | ------------ |
+| **foreground** sobre background                      | 0.25    | 0.98    | 3.4          | ❌         | Insuficiente |
+| **card-foreground** sobre card                       | 0.25    | 1.0     | 3.5          | ❌         | Insuficiente |
+| **muted-foreground** sobre background                | 0.55    | 0.98    | ~1.9         | ❌         | Insuficiente |
+| **muted-foreground** sobre muted                     | 0.55    | 0.94    | ~1.8         | ❌         | Insuficiente |
+| **primary** (text-primary) sobre background          | 0.65    | 0.98    | 1.5          | ❌         | Insuficiente |
+| **primary** sobre card                               | 0.65    | 1.0     | 1.5          | ❌         | Insuficiente |
+| **secondary-foreground** sobre secondary             | 0.35    | 0.94    | 2.5          | ❌         | Insuficiente |
+| **accent-foreground** sobre accent                   | 0.25    | 0.92    | 3.2          | ❌         | Insuficiente |
+| **sidebar-foreground** sobre sidebar                 | 0.30    | 0.97    | ~2.9         | ❌         | Insuficiente |
+| **brand-secondary-foreground** sobre brand-secondary | 0.25    | 0.75    | 2.7          | ❌         | Insuficiente |
+| **brand-tertiary-foreground** sobre brand-tertiary   | 0.28    | 0.89    | 2.8          | ❌         | Insuficiente |
 
 ---
 
