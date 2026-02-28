@@ -171,18 +171,6 @@ export function ProjectDialog({
   }, [clientId, clients, form]);
 
   useEffect(() => {
-    if (open && isBasePlan && profileDefaults) {
-      form.setValue("currency", profileDefaults.default_currency ?? "EUR");
-      form.setValue(
-        "tax_rate",
-        profileDefaults.default_tax_rate != null
-          ? profileDefaults.default_tax_rate.toString()
-          : ""
-      );
-    }
-  }, [open, isBasePlan, profileDefaults, form]);
-
-  useEffect(() => {
     if (project && open) {
       const startDate = project.start_date
         ? project.start_date.includes("T")
@@ -212,60 +200,20 @@ export function ProjectDialog({
         currency: project.currency ?? "EUR",
       });
     } else if (!project && open) {
-      if (!user?.id) {
-        form.reset({
-          name: "",
-          description: "",
-          client_id: "",
-          status: "active",
-          start_date: new Date().toISOString().split("T")[0],
-          end_date: "",
-          address: "",
-          phase: undefined,
-          tax_rate: "",
-          currency: "EUR",
-        });
-        return;
-      }
-      void (async () => {
-        try {
-          const { data } = await supabase
-            .from("profiles")
-            .select("default_tax_rate, default_currency")
-            .eq("id", user.id)
-            .single();
-          form.reset({
-            name: "",
-            description: "",
-            client_id: "",
-            status: "active",
-            start_date: new Date().toISOString().split("T")[0],
-            end_date: "",
-            address: "",
-            phase: undefined,
-            tax_rate:
-              data?.default_tax_rate != null
-                ? data.default_tax_rate.toString()
-                : "",
-            currency: data?.default_currency ?? "EUR",
-          });
-        } catch {
-          form.reset({
-            name: "",
-            description: "",
-            client_id: "",
-            status: "active",
-            start_date: new Date().toISOString().split("T")[0],
-            end_date: "",
-            address: "",
-            phase: undefined,
-            tax_rate: "",
-            currency: "EUR",
-          });
-        }
-      })();
+      form.reset({
+        name: "",
+        description: "",
+        client_id: "",
+        status: "active",
+        start_date: new Date().toISOString().split("T")[0],
+        end_date: "",
+        address: "",
+        phase: undefined,
+        tax_rate: defaultTaxRateStr,
+        currency: defaultCurrency,
+      });
     }
-  }, [project, open, form, user?.id, supabase]);
+  }, [project, open, form, defaultCurrency, defaultTaxRateStr]);
 
   async function onSubmit(values: z.input<typeof formSchema>) {
     // Check if status is changing to completed or cancelled and needs confirmation
