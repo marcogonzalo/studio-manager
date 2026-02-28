@@ -57,12 +57,14 @@
   :host {
     --radius: 0.75rem;
 
-    /* Identical in light and dark (Natural/Pastel palette) */
-    --primary: oklch(0.65 0.08 140); /* Soft Sage Green */
+    /* Light mode: darker primary for WCAG AA (≥4.5:1) when used as text on light bg */
+    --primary: oklch(
+      0.28 0.09 140
+    ); /* Sage Green – sufficient contrast on white/cream */
     --primary-foreground: oklch(0.98 0.01 100);
-    --ring: oklch(0.65 0.08 140);
+    --ring: oklch(0.28 0.09 140);
     --destructive-foreground: oklch(0.98 0 0);
-    --sidebar-primary: oklch(0.65 0.08 140);
+    --sidebar-primary: oklch(0.28 0.09 140);
     --sidebar-primary-foreground: oklch(0.98 0.01 100);
 
     /* LIGHT MODE - default */
@@ -88,7 +90,7 @@
     --border: oklch(0.85 0.02 100);
     --input: oklch(0.85 0.02 100);
 
-    --chart-1: oklch(0.65 0.08 140); /* Primary sage */
+    --chart-1: oklch(0.28 0.09 140); /* Primary sage */
     --chart-2: oklch(
       0.75 0.055 75
     ); /* Brand secondary – golden tan from logo */
@@ -101,7 +103,7 @@
     --sidebar-accent: oklch(0.93 0.03 100);
     --sidebar-accent-foreground: oklch(0.25 0.02 100);
     --sidebar-border: oklch(0.85 0.02 100);
-    --sidebar-ring: oklch(0.65 0.08 140);
+    --sidebar-ring: oklch(0.28 0.09 140);
 
     /* Brand secondary (golden tan from logo #C7AE88) – CTAs secundarios, acentos */
     --brand-secondary: oklch(0.75 0.055 75);
@@ -147,7 +149,15 @@
       --sidebar-accent: oklch(0.28 0.025 90);
       --sidebar-accent-foreground: oklch(0.9 0.02 95);
       --sidebar-border: oklch(0.42 0.025 90);
-      --sidebar-ring: oklch(0.65 0.08 140);
+      --sidebar-ring: oklch(0.55 0.08 140);
+
+      /* Dark: lighter primary for text/accents on dark bg; darker primary-foreground for buttons */
+      --primary: oklch(0.55 0.08 140);
+      --primary-foreground: oklch(0.12 0.02 100);
+      --ring: oklch(0.55 0.08 140);
+      --sidebar-primary: oklch(0.55 0.08 140);
+      --sidebar-primary-foreground: oklch(0.12 0.02 100);
+      --chart-1: oklch(0.55 0.08 140);
 
       /* Brand secondary – algo más claro en dark para contraste */
       --brand-secondary: oklch(0.78 0.06 75);

@@ -25,15 +25,17 @@ function LogoLight({
   width,
   height,
   className,
+  alt,
 }: {
   width: number;
   height: number;
   className?: string;
+  alt: string;
 }) {
   return (
     <Image
       src={LOGO_LIGHT_SRC}
-      alt="Veta"
+      alt={alt}
       width={width}
       height={height}
       className={cn("h-auto w-auto flex-shrink-0 dark:hidden", className)}
@@ -47,15 +49,17 @@ function LogoDark({
   width,
   height,
   className,
+  alt,
 }: {
   width: number;
   height: number;
   className?: string;
+  alt: string;
 }) {
   return (
     <Image
       src={LOGO_DARK_SRC}
-      alt="Veta"
+      alt={alt}
       width={width}
       height={height}
       className={cn("hidden h-auto w-auto flex-shrink-0 dark:block", className)}
@@ -77,6 +81,8 @@ export function VetaLogo({
 }: VetaLogoProps) {
   const showText =
     showWordmark !== undefined ? showWordmark : variant === "full";
+  /** Empty alt when wordmark is visible to avoid redundant "Veta Veta" for screen readers */
+  const logoSrOnly = showText ? "" : "Veta";
 
   const aspectRatio = LOGO_WIDTH / LOGO_HEIGHT;
   const containerWidth = width ?? Math.round((height ?? 28) * aspectRatio);
@@ -98,11 +104,13 @@ export function VetaLogo({
           width={containerWidth}
           height={containerHeight}
           className="absolute inset-0 h-full w-full object-contain"
+          alt={logoSrOnly}
         />
         <LogoDark
           width={containerWidth}
           height={containerHeight}
           className="absolute inset-0 h-full w-full object-contain dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
+          alt={logoSrOnly}
         />
       </span>
       {showText && (
