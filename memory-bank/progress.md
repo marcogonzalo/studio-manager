@@ -5,7 +5,7 @@
 ## Completado (resumen por áreas)
 
 - **Infra y auth:** Next.js 16 (App Router), Docker, Supabase (schema, RLS, Auth). Login/signup, magic links, sesión, caducidad con redirección. Migración desde Vite.
-- **CRUD:** Clientes, proveedores, catálogo (productos), proyectos. Layout app (sidebar, responsive).
+- **CRUD:** Clientes, proveedores, catálogo (productos), proyectos. Layout app (sidebar, responsive). Eliminación de proyectos desde la lista (menú ⋮ en cada card, confirmación con `ConfirmDeleteDialog`; RLS solo permite borrar los propios).
 - **Detalle de proyecto:** Info general, espacios, renders por espacio, presupuesto (ítems, partidas por fase/categoría, edición, exclusión), órdenes de compra (gestionables, cobertura), **pagos** (registro por proyecto, tipos, vinculación a PO/costes), costes adicionales, documentos (URL + subida), notas (archivado).
 - **Almacenamiento:** Tabla `assets`, Backblaze B2, rutas por usuario/proyecto. Subida de imágenes (producto, espacios, documentos). Sharp, límites, `user_storage_usage`.
 - **Planes:** Base / Pro / Studio. Consumibles y modalidades, `plan-copy.ts`, `plan-capability.ts`, restricciones por plan, cambio de plan en `/settings/plan`.

@@ -27,8 +27,17 @@ import {
   User as UserIcon,
   FolderKanban,
   Search,
+  MoreVertical,
+  Trash2,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ProjectDialog } from "@/components/project-dialog";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { appPath } from "@/lib/app-paths";
@@ -65,7 +74,31 @@ export default function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("status");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const supabase = getSupabaseClient();
+
+  const handleDeleteClick = (project: Project) => {
+    setDeleteTarget(project);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase.from("projects").delete().eq("id", id);
+      if (error) {
+        toast.error("Error al eliminar el proyecto");
+        return;
+      }
+      toast.success("Proyecto eliminado");
+      setDeleteTarget(null);
+      fetchProjects();
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const filteredAndSortedProjects = useMemo(() => {
     let list = projects.filter((p) => matchProject(p, search));
@@ -216,15 +249,38 @@ export default function ProjectsPage() {
                     : "transition-shadow hover:shadow-md"
                 }
               >
-                <CardHeader>
-                  <CardTitle
-                    className={isMuted ? "text-muted-foreground" : undefined}
-                  >
-                    {project.name}
-                  </CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {project.description}
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <CardTitle
+                      className={isMuted ? "text-muted-foreground" : undefined}
+                    >
+                      {project.name}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {project.description}
+                    </CardDescription>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        aria-label="Acciones del proyecto"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteClick(project)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardHeader>
                 <CardContent>
                   <div className="text-muted-foreground space-y-2 text-sm">
@@ -313,6 +369,15 @@ export default function ProjectsPage() {
           setIsDialogOpen(false);
           fetchProjects();
         }}
+      />
+
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="¿Eliminar proyecto?"
+        description="Esta acción no se puede deshacer. Se eliminarán todos los datos asociados al proyecto (espacios, presupuestos, documentos, etc.)."
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
       />
     </div>
   );
