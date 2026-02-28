@@ -79,20 +79,20 @@ export function HomeFeaturesSection() {
         </AnimatedSection>
 
         <StaggerContainer
-          className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-8 md:grid-cols-2 md:items-stretch lg:grid-cols-3"
           staggerDelay={0.1}
           triggerOnMount={false}
         >
           {features.map((feature) => (
-            <StaggerItem key={feature.title}>
-              <Card className="group/card border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+            <StaggerItem key={feature.title} className="h-full">
+              <Card className="group/card flex h-full flex-col border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                 <CardHeader>
                   <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover/card:scale-110">
                     <feature.icon className="text-muted-foreground group-hover/card:text-primary h-6 w-6 transition-colors duration-300" />
                   </div>
                   <CardTitle>{feature.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1">
                   <CardDescription className="text-base">
                     {feature.description}
                   </CardDescription>
