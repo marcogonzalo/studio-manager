@@ -57,56 +57,56 @@
   :host {
     --radius: 0.75rem;
 
-    /* Identical in light and dark (Natural/Pastel palette) */
-    --primary: oklch(0.65 0.08 140); /* Soft Sage Green */
+    /* Shared: primary (Soft Sage), ring; texto del botón en blanco/crema */
+    --primary: oklch(0.65 0.08 140);
     --primary-foreground: oklch(0.98 0.01 100);
     --ring: oklch(0.65 0.08 140);
     --destructive-foreground: oklch(0.98 0 0);
     --sidebar-primary: oklch(0.65 0.08 140);
     --sidebar-primary-foreground: oklch(0.98 0.01 100);
 
-    /* LIGHT MODE - default */
+    /* LIGHT MODE - Contraste ≥4.5:1, paleta cálida, profundidad bg < card < muted < secondary */
     --background: oklch(0.98 0.01 100); /* Warm Cream */
-    --foreground: oklch(0.25 0.02 100); /* Dark Earthy Grey */
+    --foreground: oklch(0.17 0.02 100); /* Texto oscuro para ≥4.5:1 */
 
-    --card: oklch(1 0 0); /* White */
-    --card-foreground: oklch(0.25 0.02 100);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.25 0.02 100);
+    --card: oklch(0.97 0.012 100); /* Un escalón por debajo del fondo */
+    --card-foreground: oklch(0.17 0.02 100);
+    --popover: oklch(0.97 0.012 100);
+    --popover-foreground: oklch(0.17 0.02 100);
+
+    --muted: oklch(0.96 0.015 98);
+    --muted-foreground: oklch(0.17 0.02 100);
 
     --secondary: oklch(0.94 0.03 95); /* Sand/Beige */
-    --secondary-foreground: oklch(0.35 0.04 100);
-    --muted: oklch(0.94 0.03 95);
-    --muted-foreground: oklch(0.55 0.04 100);
-
-    --accent: oklch(0.92 0.04 140); /* Lighter Sage for hovers */
-    --accent-foreground: oklch(0.25 0.02 100);
+    --secondary-foreground: oklch(0.17 0.02 100);
+    --accent: oklch(0.92 0.04 140);
+    --accent-foreground: oklch(0.16 0.02 100);
 
     --destructive: oklch(0.6 0.15 25);
-    --border: oklch(0.9 0.02 100);
-    --input: oklch(0.9 0.02 100);
+    --border: oklch(0.88 0.02 100);
+    --input: oklch(0.88 0.02 100);
 
-    --chart-1: oklch(0.65 0.08 140); /* Primary sage */
-    --chart-2: oklch(
-      0.75 0.055 75
-    ); /* Brand secondary – golden tan from logo */
+    --chart-1: oklch(0.65 0.08 140);
+    --chart-2: oklch(0.75 0.055 75);
     --chart-3: oklch(0.8 0.08 100);
     --chart-4: oklch(0.7 0.08 180);
     --chart-5: oklch(0.85 0.08 50);
 
-    --sidebar: oklch(0.97 0.02 100); /* Slightly darker cream/beige */
-    --sidebar-foreground: oklch(0.3 0.03 100);
+    --sidebar: oklch(0.96 0.02 100);
+    --sidebar-foreground: oklch(0.16 0.02 100);
     --sidebar-accent: oklch(0.93 0.03 100);
-    --sidebar-accent-foreground: oklch(0.25 0.02 100);
-    --sidebar-border: oklch(0.9 0.02 100);
+    --sidebar-accent-foreground: oklch(0.16 0.02 100);
+    --sidebar-border: oklch(0.88 0.02 100);
     --sidebar-ring: oklch(0.65 0.08 140);
 
-    /* Brand secondary (golden tan from logo #C7AE88) – CTAs secundarios, acentos */
     --brand-secondary: oklch(0.75 0.055 75);
-    --brand-secondary-foreground: oklch(0.25 0.02 75);
-    /* Brand tertiary (cream beige from logo #E8DFCD) – fondos sutiles, highlights */
+    --brand-secondary-foreground: oklch(
+      0.12 0.02 75
+    ); /* Texto oscuro para ≥4.5:1 sobre 0.75 */
     --brand-tertiary: oklch(0.89 0.025 85);
-    --brand-tertiary-foreground: oklch(0.28 0.03 85);
+    --brand-tertiary-foreground: oklch(
+      0.15 0.02 85
+    ); /* Texto oscuro para ≥4.5:1 sobre 0.89 */
   }
 
   /* DARK MODE - Fondos revertidos ~1%: L 0.17–0.19; textos blanco 0.98; ratios ~4.3–4.7:1 */
@@ -137,9 +137,7 @@
       --border: oklch(0.29 0.02 75);
       --input: oklch(0.29 0.02 75);
 
-      /* primary, ring, sidebar-primary: heredados del tema base (Soft Sage); texto del botón en negro para ≥4.5:1 */
-      --primary-foreground: oklch(0.10 0.02 95);
-      --sidebar-primary-foreground: oklch(0.10 0.02 95);
+      /* primary, ring, sidebar-primary, primary-foreground: heredados del tema base (Soft Sage + texto oscuro en botón) */
 
       --chart-1: oklch(0.65 0.08 140);
       --chart-2: oklch(0.78 0.06 75);
@@ -154,8 +152,12 @@
       --sidebar-border: oklch(0.27 0.02 75);
 
       --brand-secondary: oklch(0.78 0.06 75);
-      --brand-secondary-foreground: oklch(0.12 0.02 75); /* texto más oscuro para ≥4.5:1 sobre 0.78 */
-      --brand-tertiary: oklch(0.17 0.025 85); /* fondo más oscuro para ≥4.5:1 con texto 0.98 */
+      --brand-secondary-foreground: oklch(
+        0.12 0.02 75
+      ); /* texto más oscuro para ≥4.5:1 sobre 0.78 */
+      --brand-tertiary: oklch(
+        0.17 0.025 85
+      ); /* fondo más oscuro para ≥4.5:1 con texto 0.98 */
       --brand-tertiary-foreground: oklch(0.98 0.008 95);
     }
   }
@@ -177,7 +179,9 @@
   }
   body {
     @apply bg-background text-foreground;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
   }
   /* Viñeta sutil en modo oscuro (look tipo cine) */
   html.dark body {
