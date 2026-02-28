@@ -16,7 +16,8 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "lighthouse": "next build && next start -d && lighthouse http://localhost:3000"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

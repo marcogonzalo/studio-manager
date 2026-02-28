@@ -1,38 +1,58 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import {
-  ArrowRight,
-  FolderKanban,
-  Quote,
-  ShoppingBag,
-  Truck,
-  BarChart3,
-  FileText,
-  Leaf,
-  Users,
-  Sparkles,
-  Clock,
-  Shield,
-} from "lucide-react";
+import dynamic from "next/dynamic";
+import { ArrowRight, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { JsonLd, faqPageJsonLd } from "@/components/json-ld";
-import {
-  AnimatedSection,
-  StaggerContainer,
-  StaggerItem,
-} from "@/components/ui/animated-section";
-import { BenefitsList } from "./benefits-list";
-import { AnimatedCounter } from "@/components/ui/animated-counter";
+import { AnimatedSection } from "@/components/ui/animated-section";
 import { ProductMockup } from "@/components/product-mockup";
 import { SmoothScrollLink } from "@/components/smooth-scroll-link";
 import { TrackedCtaLink } from "@/components/gtm";
+
+/** Below-the-fold sections lazy-loaded to reduce initial JS bundle (framer-motion, etc.). */
+const HomeStatsSection = dynamic(
+  () =>
+    import("./_sections/home-stats-section").then((m) => m.HomeStatsSection),
+  { ssr: true }
+);
+const HomeFeaturesSection = dynamic(
+  () =>
+    import("./_sections/home-features-section").then(
+      (m) => m.HomeFeaturesSection
+    ),
+  { ssr: true }
+);
+const HomeBenefitsSection = dynamic(
+  () =>
+    import("./_sections/home-benefits-section").then(
+      (m) => m.HomeBenefitsSection
+    ),
+  { ssr: true }
+);
+const HomeTestimonialsSection = dynamic(
+  () =>
+    import("./_sections/home-testimonials-section").then(
+      (m) => m.HomeTestimonialsSection
+    ),
+  { ssr: true }
+);
+const HomeCtaBeforeFaqSection = dynamic(
+  () =>
+    import("./_sections/home-cta-before-faq-section").then(
+      (m) => m.HomeCtaBeforeFaqSection
+    ),
+  { ssr: true }
+);
+const HomeFaqSection = dynamic(
+  () => import("./_sections/home-faq-section").then((m) => m.HomeFaqSection),
+  { ssr: true }
+);
+const HomeCtaFinalSection = dynamic(
+  () =>
+    import("./_sections/home-cta-final-section").then(
+      (m) => m.HomeCtaFinalSection
+    ),
+  { ssr: true }
+);
 
 export const metadata: Metadata = {
   title: {
@@ -54,75 +74,6 @@ export const metadata: Metadata = {
       "Plataforma todo-en-uno para estudios de diseño interior. Prueba gratis.",
   },
 };
-
-const features = [
-  {
-    icon: FolderKanban,
-    title: "Gestión de Proyectos",
-    description:
-      "Organiza tus proyectos de diseño interior con espacios, presupuestos y seguimiento de fases.",
-  },
-  {
-    icon: Users,
-    title: "Clientes",
-    description:
-      "Mantén toda la información de tus clientes organizada y accesible en un solo lugar.",
-  },
-  {
-    icon: ShoppingBag,
-    title: "Catálogo de Productos",
-    description:
-      "Gestiona tu catálogo de productos con imágenes, precios y referencias de proveedores.",
-  },
-  {
-    icon: Truck,
-    title: "Proveedores",
-    description:
-      "Administra tus proveedores y mantén un historial de compras y pedidos.",
-  },
-  {
-    icon: BarChart3,
-    title: "Control de Costos",
-    description:
-      "Visualiza gastos, ingresos y márgenes de cada proyecto en tiempo real.",
-  },
-  {
-    icon: FileText,
-    title: "Exporta",
-    description:
-      "Genera presupuestos y documentos profesionales para tus clientes.",
-  },
-];
-
-const benefits = [
-  "Interfaz pensada para arquitectos y diseñadores de interior",
-  "Acceso en todo momento desde cualquier dispositivo",
-  "Gestión de datos responsable y segura (normativa RGPD)",
-  "Mejoras y actualizaciones constantes",
-  "Escucha activa para responder a tus requerimientos",
-  "Planes con precio fijo y adaptables a tus necesidades",
-];
-
-const stats = [
-  {
-    value: Infinity,
-    suffix: "",
-    label: "Proyectos gestionables",
-    icon: FolderKanban,
-  },
-  {
-    value: 65,
-    suffix: "%",
-    label: "Tiempo ahorrado en gestión",
-    icon: Clock,
-  },
-  {
-    value: 100,
-    suffix: "%",
-    label: "De tu proyecto en un solo lugar",
-    icon: Shield,
-  },
-];
 
 const baseUrl =
   process.env.NEXT_PUBLIC_APP_URL ??
@@ -150,23 +101,6 @@ const homeFaqs = [
     question: "¿Mis datos están seguros?",
     answer:
       "La seguridad de tu información es nuestra prioridad. En Veta implementamos protocolos de protección de datos de nivel bancario para que tu estudio de interiorismo opere con total tranquilidad: cumplimos estrictamente con el Reglamento General de Protección de Datos (RGPD), garantizando la privacidad de tu base de datos en todo momento; solo tú y las personas autorizadas de tu equipo tenéis acceso a la plataforma mediante credenciales protegidas; y como titular puedes ejercer tus derechos de acceso, rectificación o supresión de datos de forma sencilla y directa.",
-  },
-];
-
-const testimonials = [
-  {
-    quote:
-      "La gestión de clientes, proveedores y catálogo en un solo sitio ha simplificado mucho el trabajo en los proyectos de diseño interior. Recomendable para independientes o estudios que quieren optimizar su gestión de proyectos.",
-    author: "FH Interiorismo",
-    role: "Estudio de arquitectura interior",
-    url: "https://instagram.com/fh.interiorismo",
-  },
-  {
-    quote:
-      "Con Veta hemos dejado de perder horas en hojas de cálculo. Los presupuestos por espacios y el control de costes nos permiten organizarnos y enfocarnos en el diseño.",
-    author: "EM Estilo Creativo",
-    role: "Diseño de interiores y estilismo",
-    url: "https://emestilocreativo.com/",
   },
 ];
 
@@ -262,351 +196,13 @@ export default function HomePage() {
         aria-hidden
       />
 
-      {/* Stats Section */}
-      <section className="border-border/40 bg-muted/20 border-y py-16">
-        <div className="container mx-auto max-w-7xl px-4">
-          <StaggerContainer
-            className="grid gap-8 md:grid-cols-3"
-            staggerDelay={0.15}
-          >
-            {stats.map((stat) => (
-              <StaggerItem key={stat.label}>
-                <div className="text-center">
-                  <div className="bg-primary/10 text-primary mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
-                    <stat.icon className="h-6 w-6" />
-                  </div>
-                  <div className="text-3xl font-bold tracking-tight sm:text-4xl">
-                    <AnimatedCounter
-                      target={stat.value}
-                      suffix={stat.suffix}
-                      duration={2.5}
-                    />
-                  </div>
-                  <p className="text-muted-foreground mt-2 text-sm font-medium">
-                    {stat.label}
-                  </p>
-                </div>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="bg-muted/30 pt-20 pb-28">
-        <div className="container mx-auto max-w-7xl px-4">
-          <AnimatedSection
-            className="mx-auto mb-16 max-w-2xl text-center"
-            triggerOnMount={false}
-          >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Todo lo que necesitas{" "}
-              <strong className="text-primary">para tu estudio</strong>
-            </h2>
-            <p className="text-muted-foreground mt-4 text-lg">
-              Herramientas diseñadas específicamente para profesionales del
-              diseño interior.
-            </p>
-          </AnimatedSection>
-
-          <StaggerContainer
-            className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
-            staggerDelay={0.1}
-            triggerOnMount={false}
-          >
-            {features.map((feature) => (
-              <StaggerItem key={feature.title}>
-                <Card className="group/card border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                  <CardHeader>
-                    <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover/card:scale-110">
-                      <feature.icon className="text-muted-foreground group-hover/card:text-primary h-6 w-6 transition-colors duration-300" />
-                    </div>
-                    <CardTitle>{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">
-                      {feature.description}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-28">
-        <div className="container mx-auto max-w-7xl px-4">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <AnimatedSection direction="left" triggerOnMount={false}>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                ¿Por qué <strong className="text-primary">elegir Veta</strong>?
-              </h2>
-              <p className="text-muted-foreground mt-4 text-lg">
-                Simplificamos la gestión de tu estudio de arquitectura e
-                interiorismo para que puedas enfocarte en lo que mejor sabes
-                hacer: diseñar espacios increíbles.
-              </p>
-
-              <BenefitsList benefits={benefits} />
-
-              <div className="mt-10">
-                <Button size="lg" asChild className="animate-glow">
-                  <TrackedCtaLink
-                    href="/sign-up"
-                    ctaLocation="benefits"
-                    ctaText="Prueba Gratis"
-                  >
-                    Prueba Gratis
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </TrackedCtaLink>
-                </Button>
-              </div>
-            </AnimatedSection>
-
-            <AnimatedSection
-              direction="right"
-              delay={0.2}
-              triggerOnMount={false}
-            >
-              <ProductMockup />
-            </AnimatedSection>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section – layout roto: primera cita destacada, segunda con offset */}
-      <section className="bg-muted/30 py-20">
-        <div className="container mx-auto max-w-7xl px-4">
-          <AnimatedSection
-            className="mx-auto mb-12 max-w-2xl text-center"
-            triggerOnMount={false}
-          >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Lo que dicen de <strong className="text-primary">Veta</strong>
-            </h2>
-            <p className="text-muted-foreground mt-4 text-lg">
-              Estudios y profesionales de arquitectura y diseño interior que ya
-              confían en Veta.
-            </p>
-          </AnimatedSection>
-
-          <StaggerContainer
-            className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2 md:items-stretch"
-            staggerDelay={0.2}
-            triggerOnMount={false}
-          >
-            <StaggerItem
-              key={testimonials[0].author}
-              className="h-full md:col-span-2"
-            >
-              <Card className="flex h-full flex-col border-none shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl md:px-10 md:py-8">
-                <CardContent className="flex flex-1 flex-col pt-6 md:pt-8">
-                  <Quote className="text-primary/60 mb-4 h-10 w-10 flex-shrink-0 md:h-12 md:w-12" />
-                  <p className="text-foreground mb-6 flex-1 text-base italic md:text-lg md:leading-relaxed">
-                    &ldquo;{testimonials[0].quote}&rdquo;
-                  </p>
-                  <div className="flex flex-shrink-0 items-center gap-3">
-                    <div className="bg-primary/10 text-primary flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold md:h-14 md:w-14 md:text-xl">
-                      {testimonials[0].author.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-semibold md:text-lg">
-                        {"url" in testimonials[0] && testimonials[0].url ? (
-                          <a
-                            href={testimonials[0].url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-primary underline underline-offset-2 transition-colors"
-                          >
-                            {testimonials[0].author}
-                          </a>
-                        ) : (
-                          testimonials[0].author
-                        )}
-                      </p>
-                      <p className="text-muted-foreground text-sm">
-                        {testimonials[0].role}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </StaggerItem>
-            <StaggerItem
-              key={testimonials[1].author}
-              className="h-full md:col-span-2 md:ml-auto md:max-w-[90%]"
-            >
-              <Card className="flex h-full flex-col border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-                <CardContent className="flex flex-1 flex-col pt-6">
-                  <Quote className="text-primary/60 mb-4 h-8 w-8 flex-shrink-0" />
-                  <p className="text-foreground mb-6 flex-1 italic">
-                    &ldquo;{testimonials[1].quote}&rdquo;
-                  </p>
-                  <div className="flex flex-shrink-0 items-center gap-3">
-                    <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-full text-base font-bold">
-                      {testimonials[1].author.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-semibold">
-                        {"url" in testimonials[1] && testimonials[1].url ? (
-                          <a
-                            href={testimonials[1].url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-primary underline underline-offset-2 transition-colors"
-                          >
-                            {testimonials[1].author}
-                          </a>
-                        ) : (
-                          testimonials[1].author
-                        )}
-                      </p>
-                      <p className="text-muted-foreground text-sm">
-                        {testimonials[1].role}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </StaggerItem>
-          </StaggerContainer>
-        </div>
-      </section>
-
-      {/* CTA Section - before FAQ */}
-      <section className="relative overflow-hidden py-20">
-        <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent" />
-        <div className="bg-primary/10 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
-        <div className="bg-primary/5 absolute bottom-0 left-0 h-72 w-72 -translate-x-1/4 translate-y-1/3 rounded-full blur-3xl" />
-        <div className="noise-overlay" aria-hidden />
-
-        <div className="relative container mx-auto max-w-7xl px-4">
-          <AnimatedSection
-            className="mx-auto max-w-2xl text-center"
-            triggerOnMount={false}
-          >
-            <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
-              <Sparkles className="h-4 w-4" />
-              <span>Empieza hoy mismo</span>
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Comienza a{" "}
-              <strong className="text-primary">gestionar tu estudio</strong> hoy
-            </h2>
-            <p className="text-muted-foreground mt-4 text-lg">
-              Únete a diseñadores que ya confían en Veta para gestionar sus
-              proyectos.
-            </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg" asChild className="animate-glow">
-                <TrackedCtaLink
-                  href="/sign-up"
-                  ctaLocation="cta_section"
-                  ctaText="Crear Cuenta Gratis"
-                >
-                  Crear Cuenta Gratis
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </TrackedCtaLink>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <TrackedCtaLink
-                  href="/pricing"
-                  ctaLocation="cta_section"
-                  ctaText="Ver planes"
-                >
-                  Ver planes
-                </TrackedCtaLink>
-              </Button>
-            </div>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="bg-muted/30 py-20">
-        <div className="container mx-auto max-w-7xl px-4">
-          <AnimatedSection
-            className="mx-auto mb-12 max-w-2xl text-center"
-            triggerOnMount={false}
-          >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Preguntas Frecuentes
-            </h2>
-            <p className="text-muted-foreground mt-4 text-lg">
-              Resolvemos las dudas más habituales sobre <strong>Veta</strong>.
-            </p>
-          </AnimatedSection>
-
-          <StaggerContainer
-            className="mx-auto max-w-3xl space-y-4"
-            staggerDelay={0.1}
-            triggerOnMount={false}
-          >
-            {homeFaqs.map((faq) => (
-              <StaggerItem key={faq.question}>
-                <Card className="border-none shadow-sm transition-all duration-300 hover:shadow-md">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-medium">
-                      {faq.question}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground">{faq.answer}</p>
-                  </CardContent>
-                </Card>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </div>
-      </section>
-
-      {/* CTA Section - interiorismo */}
-      <section className="relative overflow-hidden py-20">
-        <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-tl to-transparent" />
-        <div className="bg-primary/8 absolute right-0 bottom-0 h-80 w-80 translate-x-1/4 translate-y-1/4 rounded-full blur-3xl" />
-
-        <div className="relative container mx-auto max-w-7xl px-4">
-          <AnimatedSection
-            className="mx-auto max-w-2xl text-center"
-            triggerOnMount={false}
-          >
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              ¿Quieres empezar a mejorar la experiencia en tus{" "}
-              <strong className="text-primary">
-                proyectos de interiorismo
-              </strong>
-              ?
-            </h2>
-            <p className="text-muted-foreground mt-4 text-lg">
-              Prueba <strong>Veta</strong> sin compromiso y descubre cómo
-              centralizar toda la gestión de tus proyectos en un solo lugar.
-            </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button size="lg" asChild className="animate-glow">
-                <TrackedCtaLink
-                  href="/sign-up"
-                  ctaLocation="cta_final"
-                  ctaText="Crear Cuenta Gratis"
-                >
-                  Crear Cuenta Gratis
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </TrackedCtaLink>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <TrackedCtaLink
-                  href="/pricing"
-                  ctaLocation="cta_final"
-                  ctaText="Ver planes"
-                >
-                  Ver planes
-                </TrackedCtaLink>
-              </Button>
-            </div>
-          </AnimatedSection>
-        </div>
-      </section>
+      <HomeStatsSection />
+      <HomeFeaturesSection />
+      <HomeBenefitsSection />
+      <HomeTestimonialsSection />
+      <HomeCtaBeforeFaqSection />
+      <HomeFaqSection />
+      <HomeCtaFinalSection />
     </>
   );
 }

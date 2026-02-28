@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+const PRODUCTION_CSP =
+  "https://*.supabase.co https://*.backblazeb2.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://consent.cookiebot.com https://consent.cookiebot.eu https://consentcdn.cookiebot.com https://va.vercel-scripts.com https://vercel.live";
+
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
   reactStrictMode: true,
@@ -57,16 +60,17 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              // GTM + GA4 + Cookiebot: allow their script origins (unsafe-inline/unsafe-eval required for Next.js and GTM)
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://consent.cookiebot.com https://consentcdn.cookiebot.com https://va.vercel-scripts.com https://vercel.live",
+              // GTM + GA4 + Cookiebot: allow their script origins (Cookiebot may load from .eu; unsafe-inline/unsafe-eval required for Next.js and GTM)
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://consent.cookiebot.com https://consent.cookiebot.eu https://consentcdn.cookiebot.com https://va.vercel-scripts.com https://vercel.live",
               "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
               "img-src 'self' data: https: blob: http://imgsct.cookiebot.com",
               "font-src 'self' data:",
               // connect-src: Supabase, Backblaze, GTM/GA4, Cookiebot; in dev add local Supabase + HMR
               process.env.NODE_ENV === "production"
-                ? "connect-src 'self' https://*.supabase.co https://*.backblazeb2.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://consent.cookiebot.com https://consentcdn.cookiebot.com https://va.vercel-scripts.com https://vercel.live"
-                : "connect-src 'self' http://localhost:54321 http://127.0.0.1:54321 https://*.backblazeb2.com ws://localhost:3000 ws://127.0.0.1:3000 https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://consent.cookiebot.com https://consentcdn.cookiebot.com https://va.vercel-scripts.com https://vercel.live",
-              "frame-src 'self' https://www.googletagmanager.com https://consentcdn.cookiebot.com",
+                ? "connect-src 'self' " + PRODUCTION_CSP
+                : "connect-src 'self' http://localhost:54321 http://127.0.0.1:54321 ws://localhost:3000 ws://127.0.0.1:3000 " +
+                  PRODUCTION_CSP,
+              "frame-src 'self' https://www.googletagmanager.com https://consentcdn.cookiebot.com https://consent.cookiebot.eu",
               "frame-ancestors 'none'",
             ].join("; "),
           },

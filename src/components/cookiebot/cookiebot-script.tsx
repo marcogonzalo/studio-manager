@@ -15,7 +15,7 @@ export function CookiebotScript() {
       src="https://consent.cookiebot.com/uc.js"
       data-cbid={COOKIEBOT_ID}
       data-blockingmode="auto"
-      strategy="beforeInteractive"
+      strategy="lazyOnload"
     />
   );
 }
