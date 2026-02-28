@@ -57,14 +57,12 @@
   :host {
     --radius: 0.75rem;
 
-    /* Light mode: darker primary for WCAG AA (≥4.5:1) when used as text on light bg */
-    --primary: oklch(
-      0.28 0.09 140
-    ); /* Sage Green – sufficient contrast on white/cream */
+    /* Identical in light and dark (Natural/Pastel palette) */
+    --primary: oklch(0.65 0.08 140); /* Soft Sage Green */
     --primary-foreground: oklch(0.98 0.01 100);
-    --ring: oklch(0.28 0.09 140);
+    --ring: oklch(0.65 0.08 140);
     --destructive-foreground: oklch(0.98 0 0);
-    --sidebar-primary: oklch(0.28 0.09 140);
+    --sidebar-primary: oklch(0.65 0.08 140);
     --sidebar-primary-foreground: oklch(0.98 0.01 100);
 
     /* LIGHT MODE - default */
@@ -90,7 +88,7 @@
     --border: oklch(0.85 0.02 100);
     --input: oklch(0.85 0.02 100);
 
-    --chart-1: oklch(0.28 0.09 140); /* Primary sage */
+    --chart-1: oklch(0.65 0.08 140); /* Primary sage */
     --chart-2: oklch(
       0.75 0.055 75
     ); /* Brand secondary – golden tan from logo */
@@ -103,7 +101,7 @@
     --sidebar-accent: oklch(0.93 0.03 100);
     --sidebar-accent-foreground: oklch(0.25 0.02 100);
     --sidebar-border: oklch(0.85 0.02 100);
-    --sidebar-ring: oklch(0.28 0.09 140);
+    --sidebar-ring: oklch(0.65 0.08 140);
 
     /* Brand secondary (golden tan from logo #C7AE88) – CTAs secundarios, acentos */
     --brand-secondary: oklch(0.75 0.055 75);
@@ -113,57 +111,46 @@
     --brand-tertiary-foreground: oklch(0.28 0.03 85);
   }
 
-  /* DARK MODE - overrides via @variant (requires parent selector) */
+  /* DARK MODE - contraste ≥4.5:1; primary, chart-*, brand-secondary, brand-tertiary sin cambios */
   :root,
   :host {
     @variant dark {
-      --background: oklch(0.35 0.02 95); /* Soft Dark Beige */
-      --foreground: oklch(0.9 0.02 95);
+      --background: oklch(0.18 0.02 95);
+      --foreground: oklch(0.95 0.01 95);
 
-      --card: oklch(0.32 0.025 90);
-      --card-foreground: oklch(0.9 0.02 95);
-      --popover: oklch(0.32 0.025 90);
-      --popover-foreground: oklch(0.9 0.02 95);
+      --card: oklch(0.16 0.025 90);
+      --card-foreground: oklch(0.95 0.01 95);
+      --popover: oklch(0.16 0.025 90);
+      --popover-foreground: oklch(0.95 0.01 95);
 
-      --secondary: oklch(0.35 0.03 85);
-      --secondary-foreground: oklch(0.88 0.03 90);
-      --muted: oklch(0.34 0.025 95);
-      /* Slightly lighter for WCAG AA and audit contrast on dark bg */
-      --muted-foreground: oklch(0.78 0.03 95);
+      --secondary: oklch(0.18 0.03 85);
+      --secondary-foreground: oklch(0.96 0.02 90);
+      --muted: oklch(0.16 0.025 95);
+      --muted-foreground: oklch(0.92 0.025 95);
 
-      --accent: oklch(0.38 0.035 110);
-      --accent-foreground: oklch(0.9 0.02 95);
+      --accent: oklch(0.18 0.035 110);
+      --accent-foreground: oklch(0.95 0.01 95);
 
       --destructive: oklch(0.5 0.18 30);
-      --border: oklch(0.4 0.025 90);
-      --input: oklch(0.4 0.025 90);
+      --border: oklch(0.34 0.025 90);
+      --input: oklch(0.34 0.025 90);
 
       --chart-1: oklch(0.65 0.08 140);
-      --chart-2: oklch(0.78 0.06 75); /* Brand secondary dark */
+      --chart-2: oklch(0.78 0.06 75);
       --chart-3: oklch(0.8 0.08 100);
       --chart-4: oklch(0.7 0.08 180);
       --chart-5: oklch(0.85 0.08 50);
 
-      --sidebar: oklch(0.24 0.02 95);
-      --sidebar-foreground: oklch(0.9 0.02 95);
-      --sidebar-accent: oklch(0.28 0.025 90);
-      --sidebar-accent-foreground: oklch(0.9 0.02 95);
-      --sidebar-border: oklch(0.42 0.025 90);
-      --sidebar-ring: oklch(0.55 0.08 140);
+      --sidebar: oklch(0.14 0.02 95);
+      --sidebar-foreground: oklch(0.94 0.02 95);
+      --sidebar-accent: oklch(0.16 0.025 90);
+      --sidebar-accent-foreground: oklch(0.94 0.02 95);
+      --sidebar-border: oklch(0.32 0.025 90);
+      --sidebar-ring: oklch(0.65 0.08 140);
 
-      /* Dark: lighter primary for text/accents on dark bg; darker primary-foreground for buttons */
-      --primary: oklch(0.55 0.08 140);
-      --primary-foreground: oklch(0.12 0.02 100);
-      --ring: oklch(0.55 0.08 140);
-      --sidebar-primary: oklch(0.55 0.08 140);
-      --sidebar-primary-foreground: oklch(0.12 0.02 100);
-      --chart-1: oklch(0.55 0.08 140);
-
-      /* Brand secondary – algo más claro en dark para contraste */
       --brand-secondary: oklch(0.78 0.06 75);
       --brand-secondary-foreground: oklch(0.2 0.02 75);
-      /* Brand tertiary – tono crema que funciona sobre fondo oscuro */
-      --brand-tertiary: oklch(0.45 0.04 85);
+      --brand-tertiary: oklch(0.30 0.04 85);
       --brand-tertiary-foreground: oklch(0.92 0.02 85);
     }
   }
