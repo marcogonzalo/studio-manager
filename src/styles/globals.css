@@ -520,3 +520,18 @@
   transform: var(--PhoneInputCountrySelectArrow-transform);
   opacity: var(--PhoneInputCountrySelectArrow-opacity);
 }
+
+/* Onboarding: highlight target section when navigated from onboarding modal */
+.onboarding-highlight {
+  animation: onboarding-pulse 2s ease-in-out 2;
+  border-radius: var(--radius-lg);
+}
+@keyframes onboarding-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.65 0.08 140 / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px oklch(0.65 0.08 140 / 0);
+  }
+}

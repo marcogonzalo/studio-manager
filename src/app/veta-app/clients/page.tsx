@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -30,6 +31,7 @@ import type { Client } from "@/types";
 export default function ClientsPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+  useOnboardingHighlight("client", !loading);
   const [searchInput, searchDebounced, setSearchInput] = useDebouncedState(
     "",
     500
@@ -114,7 +116,10 @@ export default function ClientsPage() {
             <Users className="text-primary h-8 w-8" />
             <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
           </div>
-          <Button onClick={handleCreate}>
+          <Button
+            onClick={handleCreate}
+            {...(clients.length > 0 && { "data-onboarding-target": "client" })}
+          >
             <Plus className="mr-2 h-4 w-4" /> Nuevo Cliente
           </Button>
         </div>
@@ -152,7 +157,10 @@ export default function ClientsPage() {
             </Card>
           ))
         ) : clients.length === 0 ? (
-          <Card className="border-dashed sm:col-span-2 lg:col-span-3">
+          <Card
+            className="border-dashed sm:col-span-2 lg:col-span-3"
+            data-onboarding-target="client"
+          >
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <div className="bg-muted rounded-full p-4">
                 <Users className="text-muted-foreground h-8 w-8" />

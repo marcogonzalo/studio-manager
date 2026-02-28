@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -70,6 +71,7 @@ type ChangeEmailValues = z.infer<typeof changeEmailSchema>;
 export default function SettingsAccountPage() {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  useOnboardingHighlight("config");
   const supabase = getSupabaseClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [changeEmailDialogOpen, setChangeEmailDialogOpen] = useState(false);
@@ -203,80 +205,82 @@ export default function SettingsAccountPage() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <User className="text-primary h-5 w-5" />
-            <CardTitle>Perfil</CardTitle>
-          </div>
-          <CardDescription>
-            Información que aparece en presupuestos y en la aplicación
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {profileLoading ? (
-            <div className="text-muted-foreground text-sm">Cargando…</div>
-          ) : (
-            <Form {...profileForm}>
-              <form
-                onSubmit={profileForm.handleSubmit(onProfileSubmit)}
-                className="max-w-xl space-y-6"
-              >
-                <FormField
-                  control={profileForm.control}
-                  name="full_name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Nombre completo
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Tu nombre"
-                          className={INPUT_CONFIG_STANDARD_CLASS}
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={profileForm.control}
-                  name="company"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4" />
-                        Empresa
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Nombre de tu empresa o estudio"
-                          className={INPUT_CONFIG_STANDARD_CLASS}
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  type="submit"
-                  disabled={profileForm.formState.isSubmitting}
+      <div data-onboarding-target="config">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <User className="text-primary h-5 w-5" />
+              <CardTitle>Perfil</CardTitle>
+            </div>
+            <CardDescription>
+              Información que aparece en presupuestos y en la aplicación
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {profileLoading ? (
+              <div className="text-muted-foreground text-sm">Cargando…</div>
+            ) : (
+              <Form {...profileForm}>
+                <form
+                  onSubmit={profileForm.handleSubmit(onProfileSubmit)}
+                  className="max-w-xl space-y-6"
                 >
-                  {profileForm.formState.isSubmitting
-                    ? "Guardando…"
-                    : "Guardar cambios"}
-                </Button>
-              </form>
-            </Form>
-          )}
-        </CardContent>
-      </Card>
+                  <FormField
+                    control={profileForm.control}
+                    name="full_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          Nombre completo
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Tu nombre"
+                            className={INPUT_CONFIG_STANDARD_CLASS}
+                            {...field}
+                            value={field.value ?? ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={profileForm.control}
+                    name="company"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4" />
+                          Empresa
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Nombre de tu empresa o estudio"
+                            className={INPUT_CONFIG_STANDARD_CLASS}
+                            {...field}
+                            value={field.value ?? ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={profileForm.formState.isSubmitting}
+                  >
+                    {profileForm.formState.isSubmitting
+                      ? "Guardando…"
+                      : "Guardar cambios"}
+                  </Button>
+                </form>
+              </Form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {user?.email && (
         <Card>

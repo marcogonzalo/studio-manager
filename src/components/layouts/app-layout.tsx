@@ -4,6 +4,13 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
+import { useOnboardingStatus } from "@/lib/use-onboarding-status";
+import { OnboardingStepModal } from "@/components/onboarding/onboarding-step-modal";
+import {
+  ONBOARDING_SESSION_SKIP_KEY,
+  ONBOARDING_WELCOME_SEEN_SESSION_KEY,
+  isOnOnboardingStepTargetPage,
+} from "@/lib/onboarding";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -88,7 +95,7 @@ const settingsNavItems = [
   { name: "Cuenta", href: appPath("/settings/account"), icon: User },
   {
     name: "Personalización",
-    href: appPath("/customization"),
+    href: appPath("/settings/customization"),
     icon: SlidersHorizontal,
   },
   { name: "Tu plan", href: appPath("/settings/plan"), icon: CreditCard },
@@ -105,7 +112,7 @@ const SETTINGS_BREADCRUMB_LABELS: Record<string, string> = {
   [appPath("/settings/account")]: "Cuenta",
   [appPath("/settings/plan")]: "Tu plan",
   [appPath("/settings/plan/change")]: "Cambiar plan",
-  [appPath("/customization")]: "Personalización",
+  [appPath("/settings/customization")]: "Personalización",
 };
 
 function getSettingsBreadcrumbs(
@@ -146,8 +153,7 @@ function SidebarContent({
   const [themeMounted, setThemeMounted] = useState(false);
   useEffect(() => setThemeMounted(true), []);
 
-  const isInSettings =
-    pathname.includes("/settings") || pathname === appPath("/customization");
+  const isInSettings = pathname.includes("/settings");
   const navSource = isInSettings ? settingsNavItems : navItems;
 
   const renderNavLink = (
@@ -523,6 +529,47 @@ export default function AppLayoutClient({
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [skippedOnboardingThisSession, setSkippedOnboardingThisSession] =
+    useState(
+      () =>
+        typeof window !== "undefined" &&
+        !!sessionStorage.getItem(ONBOARDING_SESSION_SKIP_KEY)
+    );
+  const [onboardingModalOpen, setOnboardingModalOpen] = useState(true);
+  const [welcomeDismissedTrigger, setWelcomeDismissedTrigger] = useState(0);
+  const { firstPendingStepId, loading: onboardingLoading } =
+    useOnboardingStatus();
+  const showOnboardingModal =
+    !onboardingLoading &&
+    firstPendingStepId !== null &&
+    !skippedOnboardingThisSession;
+
+  // Reabrir el modal al navegar a una página que no sea la del paso actual (oculto temporalmente para realizar la acción)
+  useEffect(() => {
+    if (
+      showOnboardingModal &&
+      firstPendingStepId &&
+      !isOnOnboardingStepTargetPage(pathname, firstPendingStepId)
+    ) {
+      setOnboardingModalOpen(true);
+    }
+  }, [showOnboardingModal, pathname, firstPendingStepId]);
+
+  const handleOnboardingWelcomeComplete = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(ONBOARDING_WELCOME_SEEN_SESSION_KEY, "1");
+    }
+    setWelcomeDismissedTrigger((n) => n + 1);
+    return Promise.resolve();
+  };
+
+  const handleOnboardingOmitir = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(ONBOARDING_SESSION_SKIP_KEY, "1");
+    }
+    setSkippedOnboardingThisSession(true);
+    setOnboardingModalOpen(false);
+  };
 
   if (loading) {
     return (
@@ -537,6 +584,15 @@ export default function AppLayoutClient({
       <a href="#main-content" className="skip-link">
         Saltar al contenido
       </a>
+      {showOnboardingModal && firstPendingStepId && (
+        <OnboardingStepModal
+          stepId={firstPendingStepId}
+          open={onboardingModalOpen}
+          onOpenChange={setOnboardingModalOpen}
+          onOmitir={handleOnboardingOmitir}
+          onWelcomeComplete={handleOnboardingWelcomeComplete}
+        />
+      )}
       <div className="bg-background text-foreground flex min-h-screen">
         {/* Desktop Sidebar */}
         <div
@@ -606,7 +662,7 @@ export default function AppLayoutClient({
         >
           <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500">
             {(pathname.includes("/settings") ||
-              pathname === appPath("/customization")) && (
+              pathname === appPath("/settings/customization")) && (
               <nav
                 aria-label="Breadcrumb"
                 className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"

@@ -30,6 +30,8 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
+import { useOnboardingStatus } from "@/lib/use-onboarding-status";
+import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
 import { reportError, formatDate, getProjectStatusLabel } from "@/lib/utils";
@@ -99,6 +101,8 @@ function getFirstName(fullName: string | null | undefined): string {
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { steps: onboardingSteps, allComplete: onboardingComplete } =
+    useOnboardingStatus();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     activeProjects: 0,
@@ -323,6 +327,8 @@ export default function DashboardPage() {
           </Button>
         </div>
       </AnimatedSection>
+
+      {!onboardingComplete && <OnboardingChecklist steps={onboardingSteps} />}
 
       {loading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

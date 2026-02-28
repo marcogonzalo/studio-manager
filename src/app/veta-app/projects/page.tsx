@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase";
+import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -59,6 +60,7 @@ type SortOption = "status" | "created_at" | "end_date";
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  useOnboardingHighlight("project", !loading);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("status");
@@ -122,7 +124,12 @@ export default function ProjectsPage() {
             <FolderKanban className="text-primary h-8 w-8" />
             <h1 className="text-3xl font-bold tracking-tight">Proyectos</h1>
           </div>
-          <Button onClick={() => setIsDialogOpen(true)}>
+          <Button
+            onClick={() => setIsDialogOpen(true)}
+            {...(projects.length > 0 && {
+              "data-onboarding-target": "project",
+            })}
+          >
             <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
           </Button>
         </div>
@@ -256,7 +263,12 @@ export default function ProjectsPage() {
             );
           })}
           {filteredAndSortedProjects.length === 0 && (
-            <Card className="border-dashed md:col-span-2 lg:col-span-3">
+            <Card
+              className="border-dashed md:col-span-2 lg:col-span-3"
+              {...(projects.length === 0 && {
+                "data-onboarding-target": "project",
+              })}
+            >
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="bg-muted rounded-full p-4">
                   <FolderKanban className="text-muted-foreground h-8 w-8" />
