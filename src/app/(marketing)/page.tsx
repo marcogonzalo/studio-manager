@@ -196,13 +196,15 @@ export default function HomePage() {
         aria-hidden
       />
 
-      <HomeStatsSection />
-      <HomeFeaturesSection />
-      <HomeBenefitsSection />
-      <HomeTestimonialsSection />
-      <HomeCtaBeforeFaqSection />
-      <HomeFaqSection />
-      <HomeCtaFinalSection />
+      <div className="below-the-fold">
+        <HomeStatsSection />
+        <HomeFeaturesSection />
+        <HomeBenefitsSection />
+        <HomeTestimonialsSection />
+        <HomeCtaBeforeFaqSection />
+        <HomeFaqSection />
+        <HomeCtaFinalSection />
+      </div>
     </>
   );
 }

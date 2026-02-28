@@ -254,6 +254,12 @@
       0 0 20px -4px oklch(0.65 0.08 140 / 0.15);
   }
 
+  /* Below-the-fold: content-visibility to reduce layout/paint cost (LCP/TBT). */
+  .below-the-fold {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 400px;
+  }
+
   /* Base: print */
   @media print {
     body {

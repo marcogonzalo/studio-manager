@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import nextConfig from "../../next.config";
 
+/** Finds the security headers config (route "/:path*"), not static cache config. */
+async function getSecurityHeaderConfig() {
+  const headers = await nextConfig.headers?.();
+  return headers?.find((h) => h.source === "/:path*");
+}
+
 /**
  * Tests for security headers configuration
  * Verifies that security headers are properly configured in next.config.ts
@@ -18,7 +24,7 @@ describe("Security Headers Configuration", () => {
     expect(Array.isArray(headers)).toBe(true);
     expect(headers?.length).toBeGreaterThan(0);
 
-    const headerConfig = headers?.[0];
+    const headerConfig = await getSecurityHeaderConfig();
     expect(headerConfig).toBeDefined();
     expect(headerConfig?.source).toBe("/:path*");
     expect(headerConfig?.headers).toBeDefined();
@@ -26,8 +32,7 @@ describe("Security Headers Configuration", () => {
   });
 
   it("should include X-Frame-Options header", async () => {
-    const headers = await nextConfig.headers?.();
-    const headerConfig = headers?.[0];
+    const headerConfig = await getSecurityHeaderConfig();
     const headerArray = headerConfig?.headers as Array<{
       key: string;
       value: string;
@@ -39,8 +44,7 @@ describe("Security Headers Configuration", () => {
   });
 
   it("should include X-Content-Type-Options header", async () => {
-    const headers = await nextConfig.headers?.();
-    const headerConfig = headers?.[0];
+    const headerConfig = await getSecurityHeaderConfig();
     const headerArray = headerConfig?.headers as Array<{
       key: string;
       value: string;
@@ -54,8 +58,7 @@ describe("Security Headers Configuration", () => {
   });
 
   it("should include Referrer-Policy header", async () => {
-    const headers = await nextConfig.headers?.();
-    const headerConfig = headers?.[0];
+    const headerConfig = await getSecurityHeaderConfig();
     const headerArray = headerConfig?.headers as Array<{
       key: string;
       value: string;
@@ -69,8 +72,7 @@ describe("Security Headers Configuration", () => {
   });
 
   it("should include Content-Security-Policy header", async () => {
-    const headers = await nextConfig.headers?.();
-    const headerConfig = headers?.[0];
+    const headerConfig = await getSecurityHeaderConfig();
     const headerArray = headerConfig?.headers as Array<{
       key: string;
       value: string;
@@ -84,8 +86,7 @@ describe("Security Headers Configuration", () => {
   });
 
   it("should include X-DNS-Prefetch-Control header", async () => {
-    const headers = await nextConfig.headers?.();
-    const headerConfig = headers?.[0];
+    const headerConfig = await getSecurityHeaderConfig();
     const headerArray = headerConfig?.headers as Array<{
       key: string;
       value: string;
@@ -99,8 +100,7 @@ describe("Security Headers Configuration", () => {
   });
 
   it("should include Permissions-Policy header", async () => {
-    const headers = await nextConfig.headers?.();
-    const headerConfig = headers?.[0];
+    const headerConfig = await getSecurityHeaderConfig();
     const headerArray = headerConfig?.headers as Array<{
       key: string;
       value: string;
@@ -115,8 +115,7 @@ describe("Security Headers Configuration", () => {
   });
 
   it("should have Content-Security-Policy with required directives", async () => {
-    const headers = await nextConfig.headers?.();
-    const headerConfig = headers?.[0];
+    const headerConfig = await getSecurityHeaderConfig();
     const headerArray = headerConfig?.headers as Array<{
       key: string;
       value: string;
@@ -135,8 +134,7 @@ describe("Security Headers Configuration", () => {
   });
 
   it("should have frame-ancestors set to 'none' in CSP", async () => {
-    const headers = await nextConfig.headers?.();
-    const headerConfig = headers?.[0];
+    const headerConfig = await getSecurityHeaderConfig();
     const headerArray = headerConfig?.headers as Array<{
       key: string;
       value: string;

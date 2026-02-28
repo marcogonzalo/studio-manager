@@ -4,9 +4,9 @@ import Script from "next/script";
 import { GTM_ID } from "@/lib/gtm";
 
 /**
- * Injects the Google Tag Manager snippet per official install instructions:
- * - Head script as high as possible (beforeInteractive → head)
- * - Noscript iframe immediately after <body>
+ * Injects the Google Tag Manager snippet.
+ * Uses lazyOnload to keep third-party JS off the critical path (Core Web Vitals, &lt; 200 KB budget).
+ * Noscript iframe remains first in body for fallback.
  * @see https://support.google.com/tagmanager/answer/14847097
  */
 export function GtmScript() {
@@ -30,11 +30,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           title="Google Tag Manager"
         />
       </noscript>
-      {/* beforeInteractive is used only from root layout (app/layout.tsx); required for GTM official install */}
-      {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
       <Script
         id="gtm-script"
-        strategy="beforeInteractive"
+        strategy="lazyOnload"
         dangerouslySetInnerHTML={{ __html: gtmScript }}
       />
     </>
