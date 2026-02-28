@@ -195,6 +195,7 @@
     box-shadow: inset 0 0 10rem 1.5rem oklch(0.06 0.012 75);
     z-index: 0;
   }
+
   button,
   a {
     @apply cursor-pointer;
@@ -216,6 +217,43 @@
 }
 
 @layer utilities {
+  /* Modo oscuro: sombras invertidas (luz suave desde arriba en lugar de sombra oscura) */
+  .dark .shadow-sm {
+    box-shadow: 0 1px 2px 0 oklch(1 0 0 / 0.06);
+  }
+  .dark .shadow {
+    box-shadow:
+      0 1px 3px 0 oklch(1 0 0 / 0.08),
+      0 1px 2px -1px oklch(1 0 0 / 0.06);
+  }
+  .dark .shadow-md {
+    box-shadow:
+      0 4px 6px -1px oklch(1 0 0 / 0.08),
+      0 2px 4px -2px oklch(1 0 0 / 0.06);
+  }
+  .dark .shadow-lg {
+    box-shadow:
+      0 10px 15px -3px oklch(1 0 0 / 0.09),
+      0 4px 6px -4px oklch(1 0 0 / 0.05);
+  }
+  .dark .shadow-xl {
+    box-shadow:
+      0 20px 25px -5px oklch(1 0 0 / 0.1),
+      0 8px 10px -6px oklch(1 0 0 / 0.06);
+  }
+  .dark .shadow-2xl {
+    box-shadow: 0 25px 50px -12px oklch(1 0 0 / 0.18);
+  }
+  .dark .shadow-inner {
+    box-shadow: inset 0 2px 4px 0 oklch(1 0 0 / 0.06);
+  }
+  /* shadow-primary en dark: glow suave con primary (sage) */
+  .dark [class*="shadow-primary"] {
+    box-shadow:
+      0 4px 14px -2px oklch(0.65 0.08 140 / 0.2),
+      0 0 20px -4px oklch(0.65 0.08 140 / 0.15);
+  }
+
   /* Base: print */
   @media print {
     body {
@@ -250,9 +288,13 @@
     animation: float 6s ease-in-out infinite;
   }
 
-  /* Subtle glow pulse for CTA buttons */
+  /* Subtle glow pulse for CTA buttons (light mode) */
   .animate-glow {
     animation: glow 2s ease-in-out infinite;
+  }
+  /* Dark mode: glow invertido (más intenso sobre fondo oscuro, con halo claro sutil) */
+  .dark .animate-glow {
+    animation: glow-dark 2s ease-in-out infinite;
   }
 
   /* Shimmer effect for skeleton loading */
@@ -410,6 +452,23 @@
     box-shadow:
       0 0 10px oklch(0.65 0.08 140 / 0.5),
       0 0 40px oklch(0.65 0.08 140 / 0.2);
+  }
+}
+
+/* Modo oscuro: glow más visible (primary + halo crema suave) */
+@keyframes glow-dark {
+  0%,
+  100% {
+    box-shadow:
+      0 0 8px oklch(0.65 0.08 140 / 0.4),
+      0 0 24px oklch(0.65 0.08 140 / 0.2),
+      0 0 2px oklch(0.95 0.01 95 / 0.15);
+  }
+  50% {
+    box-shadow:
+      0 0 14px oklch(0.65 0.08 140 / 0.55),
+      0 0 48px oklch(0.65 0.08 140 / 0.25),
+      0 0 4px oklch(0.95 0.01 95 / 0.2);
   }
 }
 

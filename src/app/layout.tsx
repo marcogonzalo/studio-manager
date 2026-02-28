@@ -110,7 +110,7 @@ export default async function RootLayout({
         <JsonLd data={softwareApplicationJsonLd} />
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >

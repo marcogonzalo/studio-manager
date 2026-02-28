@@ -4,7 +4,18 @@
 
 Cálculo aproximado usando luminancia (L de OKLCH): ratio ≈ (L_claro + 0.05) / (L_oscuro + 0.05). Los valores exactos pueden variar al convertir OKLCH → sRGB; este informe sirve para priorizar correcciones.
 
-_Actualizado: modo claro y oscuro con contraste ≥4.5:1 en textos y fondos; botón primary con texto blanco (0.98) por decisión de diseño — ratio ~1.5:1, no cumple 4.5:1._
+_Actualizado: modo claro y oscuro con contraste ≥4.5:1 en textos y fondos; botón primary con texto blanco (0.98) por decisión de diseño — ratio ~1.5:1. Tema por defecto: system (modo claro salvo que el navegador indique oscuro). Sombras/glows invertidos en dark y pestaña activa resaltada._
+
+---
+
+## Sombras y glows (efectos visuales)
+
+| Modo   | Sombras                                                                                                                                         | Glow (animate-glow)                                                        |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Claro  | Estándar Tailwind (oscuro, profundidad abajo)                                                                                                   | `glow`: halo primary (sage) suave, pulsación 2s                            |
+| Oscuro | **Invertidas**: luz desde arriba (blanco ~6–18% opacidad). `shadow-sm`…`shadow-2xl`, `shadow-inner`, `shadow-primary` → glow suave con primary. | **glow-dark**: primary más intenso + halo crema sutil; misma animación 2s. |
+
+_No afectan ratios de contraste; mejoran jerarquía y legibilidad visual en dark. Pestaña activa en proyectos (dark): bg-card, ring sutil, shadow._
 
 ---
 
@@ -61,10 +72,12 @@ _Fondos: background 0.17, muted/card 0.18, secondary/accent 0.17, sidebar 0.15; 
 2. **Textos**: 0.98 (blanco) en general; **brand-secondary-foreground** 0.12 (texto oscuro sobre 0.78) para ≥4.5:1.
 3. **Primary**: botón con texto blanco (0.98) en ambos modos; ratio ~1.5:1 (no cumple 4.5:1).
 4. Bordes L 0.29; transición 0.3s y viñeta aplicadas.
+5. **Sombras/glows:** sombras invertidas (luz desde arriba), `glow-dark` en CTAs; pestaña activa (proyectos) resaltada con bg-card, ring y shadow.
 
 ---
 
 ## Recomendación prioritaria
 
+- **Tema por defecto:** `system` (modo claro salvo que el navegador indique oscuro).
 - **Modo claro:** Contraste ≥4.5:1 en textos y fondos; botón primary con texto blanco (decisión diseño). Brand-foregrounds oscuros.
-- **Modo oscuro:** Fondos marrones; textos 0.98; brand-foregrounds oscuros; botón primary texto blanco. Ratios ≥4.5:1 salvo botón primary (~1.5:1).
+- **Modo oscuro:** Fondos marrones; textos 0.98; brand-foregrounds oscuros; botón primary texto blanco. Ratios ≥4.5:1 salvo botón primary (~1.5:1). Sombras invertidas y pestaña activa resaltada.
