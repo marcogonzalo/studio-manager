@@ -11,6 +11,15 @@ export function isGtmEnabled(): boolean {
   return typeof window !== "undefined" && Boolean(GTM_ID);
 }
 
+/** Generate a unique event_id for GA4 deduplication. Same event_id = GA4 counts once. */
+function generateEventId(): string {
+  if (typeof window === "undefined") return "";
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
 /** GA4 recommended + custom event names for funnel and engagement */
 export const GTM_EVENTS = {
   PAGE_VIEW: "page_view",
@@ -18,9 +27,9 @@ export const GTM_EVENTS = {
   SELECT_ITEM: "select_item",
   BEGIN_CHECKOUT: "begin_checkout",
   SIGN_UP: "sign_up",
-  LOGIN: "login",
   /** When user completes registration by using the confirmation link (custom, use with sign_up) */
   SIGN_UP_CONFIRMED: "sign_up_confirmed",
+  LOGIN: "login",
   /** When user completes login by using the magic link */
   LOGIN_CONFIRMED: "login_confirmed",
   CONTACT: "contact",
@@ -150,11 +159,16 @@ declare global {
   }
 }
 
-/** Push an event to the GTM dataLayer. Safe to call in SSR (no-op). */
+/** Push an event to the GTM dataLayer. Safe to call in SSR (no-op). Adds event_id for GA4 deduplication when not provided. */
 export function pushToDataLayer(event: DataLayerEvent): void {
   if (typeof window === "undefined") return;
   window.dataLayer = window.dataLayer ?? [];
-  window.dataLayer.push(event);
+  const payload = event as Record<string, unknown>;
+  const withEventId =
+    payload.event_id !== undefined
+      ? event
+      : { ...payload, event_id: generateEventId() };
+  window.dataLayer.push(withEventId as DataLayerEvent);
 }
 
 /** Push page_view (path, title, location). Call on client when route changes. */
