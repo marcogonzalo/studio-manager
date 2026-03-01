@@ -86,7 +86,7 @@ export function SignUpForm({
     setLoading(true);
     try {
       const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}`;
+      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
 
       const response = await fetch("/api/auth/magic-link", {
         method: "POST",
@@ -106,7 +106,13 @@ export function SignUpForm({
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to send magic link");
       }
-      pushSignUp({ method: "magic_link", plan_code: selectedPlan });
+      const billingPeriod =
+        billingParam?.toLowerCase() === "annual" ? "annual" : "monthly";
+      pushSignUp({
+        method: "magic_link",
+        plan_code: selectedPlan,
+        billing_period: billingPeriod,
+      });
       setEmailSent(true);
       toast.success(
         "Revisa tu correo electrónico. Te hemos enviado un enlace para completar tu registro."
@@ -128,7 +134,7 @@ export function SignUpForm({
     setLoading(true);
     try {
       const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}`;
+      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
 
       const response = await fetch("/api/auth/magic-link", {
         method: "POST",

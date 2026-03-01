@@ -11,21 +11,22 @@ interface CookieToSet {
   options?: CookieOptions;
 }
 
+const AUTH_CONFIRMED_TYPES = ["signup", "login"] as const;
+const VALID_PLAN_CODES = ["BASE", "PRO", "STUDIO"] as const;
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const nextParam = searchParams.get("next");
+  const typeParam = searchParams.get("type");
   const next = nextParam
     ? decodeURIComponent(nextParam)
     : appPath("/dashboard");
 
   if (code) {
     const redirectPath = next.startsWith("/") ? next : `/${next}`;
-    const supabaseResponse = NextResponse.redirect(`${origin}${redirectPath}`);
-
-    // CRITICAL: Must use the SAME URL as the client for PKCE cookies to work
-    // The cookie prefix is generated from the URL, so they must match exactly
     const supabaseUrl = getSupabaseUrl();
+    const pendingCookies: CookieToSet[] = [];
 
     const supabase = createServerClient(supabaseUrl, getSupabaseServerKey(), {
       cookies: {
@@ -36,16 +37,17 @@ export async function GET(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
+          pendingCookies.push(...cookiesToSet);
         },
       },
     });
 
     let error: { message?: string; code?: string } | null = null;
+    let result: Awaited<
+      ReturnType<typeof supabase.auth.exchangeCodeForSession>
+    > | null = null;
     try {
-      const result = await supabase.auth.exchangeCodeForSession(code);
+      result = await supabase.auth.exchangeCodeForSession(code);
       error = result.error;
     } catch (err) {
       error = {
@@ -54,18 +56,53 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    if (!error) {
-      return supabaseResponse;
+    if (!error && result?.data?.session) {
+      const authConfirmed =
+        typeParam &&
+        AUTH_CONFIRMED_TYPES.includes(
+          typeParam as (typeof AUTH_CONFIRMED_TYPES)[number]
+        )
+          ? typeParam
+          : "login";
+      const redirectUrl = new URL(redirectPath, origin);
+      redirectUrl.searchParams.set("auth_confirmed", authConfirmed);
+
+      if (authConfirmed === "signup") {
+        const metadata = result.data.user?.user_metadata as
+          | { signup_plan?: string; signup_billing?: string }
+          | undefined;
+        const plan =
+          metadata?.signup_plan &&
+          VALID_PLAN_CODES.includes(
+            metadata.signup_plan as (typeof VALID_PLAN_CODES)[number]
+          )
+            ? metadata.signup_plan
+            : null;
+        const billing =
+          metadata?.signup_billing?.toLowerCase() === "annual"
+            ? "annual"
+            : "monthly";
+        if (plan) redirectUrl.searchParams.set("plan_code", plan);
+        redirectUrl.searchParams.set("billing_period", billing);
+      }
+
+      const response = NextResponse.redirect(redirectUrl.toString());
+      pendingCookies.forEach(({ name, value, options }) =>
+        response.cookies.set(name, value, options)
+      );
+      return response;
     }
 
-    const friendlyMessage = getFriendlyAuthErrorMessage(
-      error.message,
-      error.code
-    );
-    const authUrl = new URL("/sign-in", origin);
-    authUrl.searchParams.set("error", friendlyMessage);
-    authUrl.searchParams.set("redirect", redirectPath);
-    return NextResponse.redirect(authUrl.toString());
+    if (error) {
+      const friendlyMessage = getFriendlyAuthErrorMessage(
+        error.message,
+        error.code
+      );
+      const authUrl = new URL("/sign-in", origin);
+      authUrl.searchParams.set("error", friendlyMessage);
+      authUrl.searchParams.set("redirect", redirectPath);
+      return NextResponse.redirect(authUrl.toString());
+    }
   }
 
   const authUrl = new URL("/sign-in", origin);

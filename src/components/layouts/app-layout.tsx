@@ -64,6 +64,7 @@ import { cn } from "@/lib/utils";
 import { getDisplayName } from "@/lib/display-name";
 import { appPath } from "@/lib/app-paths";
 import { getReportBugUrl } from "@/lib/report-bug";
+import { AuthConfirmedTracker } from "@/components/gtm/auth-confirmed-tracker";
 
 function AppLayoutSkeleton() {
   return (
@@ -581,6 +582,7 @@ export default function AppLayoutClient({
 
   return (
     <TooltipProvider>
+      <AuthConfirmedTracker />
       <a href="#main-content" className="skip-link">
         Saltar al contenido
       </a>

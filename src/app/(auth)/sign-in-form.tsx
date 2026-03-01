@@ -75,7 +75,7 @@ export function SignInForm() {
     setLoading(true);
     try {
       const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}`;
+      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}&type=login`;
 
       const response = await fetch("/api/auth/magic-link", {
         method: "POST",
@@ -111,7 +111,7 @@ export function SignInForm() {
     setLoading(true);
     try {
       const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}`;
+      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}&type=login`;
 
       const response = await fetch("/api/auth/magic-link", {
         method: "POST",
@@ -126,6 +126,7 @@ export function SignInForm() {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to resend magic link");
       }
+      pushLogin({ method: "magic_link" });
       toast.success("Enlace reenviado. Revisa tu correo nuevamente.");
     } catch (error: unknown) {
       const message =
