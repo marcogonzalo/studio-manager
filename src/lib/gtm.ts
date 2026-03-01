@@ -1,5 +1,7 @@
 /**
  * Google Tag Manager (GTM) + GA4 dataLayer helpers for marketing funnel tracking.
+ * Event names and parameters follow GA4 recommended events where applicable:
+ * https://developers.google.com/analytics/devguides/collection/ga4/reference/events
  * Use with GTM container; configure GA4 tags in GTM to consume these events.
  */
 
@@ -17,7 +19,13 @@ export const GTM_EVENTS = {
   BEGIN_CHECKOUT: "begin_checkout",
   SIGN_UP: "sign_up",
   LOGIN: "login",
+  /** When user completes registration by using the confirmation link (custom, use with sign_up) */
+  SIGN_UP_CONFIRMED: "sign_up_confirmed",
+  /** When user completes login by using the magic link */
+  LOGIN_CONFIRMED: "login_confirmed",
   CONTACT: "contact",
+  /** GA4 recommended: lead generation (e.g. contact form submit) */
+  GENERATE_LEAD: "generate_lead",
   /** Custom: CTA click (header, hero, etc.) */
   CTA_CLICK: "cta_click",
   /** Custom: plan selected on pricing (plan code + billing) */
@@ -59,12 +67,19 @@ export interface DataLayerSelectPlan {
   cta_text?: string;
 }
 
+/** GA4 recommended: begin_checkout with items array (item_id/item_name, quantity, optional price). */
 export interface DataLayerBeginCheckout {
   event: typeof GTM_EVENTS.BEGIN_CHECKOUT;
+  currency: string;
+  items: Array<{
+    item_id: string;
+    item_name: string;
+    quantity: number;
+    price?: number;
+  }>;
+  value?: number;
   plan_code?: PlanCode;
   billing_period?: BillingPeriod;
-  value?: number;
-  currency?: string;
 }
 
 export interface DataLayerCtaClick {
@@ -79,9 +94,22 @@ export interface DataLayerViewPricing {
   page_location?: string;
 }
 
+/** GA4 recommended: contact event (e.g. form submit). Params: currency/value for key events, lead_status. */
 export interface DataLayerContact {
   event: typeof GTM_EVENTS.CONTACT;
   page_location?: string;
+  currency?: string;
+  value?: number;
+  lead_status?: string;
+}
+
+/** GA4 recommended: generate_lead. Params: currency, value (recommended for key events), lead_source. */
+export interface DataLayerGenerateLead {
+  event: typeof GTM_EVENTS.GENERATE_LEAD;
+  page_location?: string;
+  currency?: string;
+  value?: number;
+  lead_source?: string;
 }
 
 export interface DataLayerViewSection {
@@ -94,6 +122,7 @@ export interface DataLayerSignUp {
   event: typeof GTM_EVENTS.SIGN_UP;
   method?: string;
   plan_code?: PlanCode;
+  billing_period?: BillingPeriod;
 }
 
 export interface DataLayerLogin {
@@ -109,6 +138,7 @@ export type DataLayerEvent =
   | DataLayerCtaClick
   | DataLayerViewPricing
   | DataLayerContact
+  | DataLayerGenerateLead
   | DataLayerViewSection
   | DataLayerSignUp
   | DataLayerLogin
@@ -144,22 +174,33 @@ export function pushPageView(params: {
   });
 }
 
-/** Push select_plan when user clicks a plan CTA on pricing. */
+/** Push select_plan (custom) + begin_checkout (GA4) when user clicks a plan CTA on pricing. */
 export function pushSelectPlan(params: {
   plan_code: PlanCode;
   billing_period: BillingPeriod;
   plan_name: string;
   cta_text?: string;
+  value?: number;
 }): void {
   pushToDataLayer({
     event: GTM_EVENTS.SELECT_PLAN,
     ...params,
   });
+  const items = [
+    {
+      item_id: params.plan_code,
+      item_name: params.plan_name,
+      quantity: 1,
+      ...(params.value != null && { price: params.value }),
+    },
+  ];
   pushToDataLayer({
     event: GTM_EVENTS.BEGIN_CHECKOUT,
+    currency: "EUR",
+    items,
+    ...(params.value != null && { value: params.value }),
     plan_code: params.plan_code,
     billing_period: params.billing_period,
-    currency: "EUR",
   });
 }
 
@@ -184,31 +225,91 @@ export function pushViewPricing(): void {
   });
 }
 
-/** Push contact when contact form is submitted successfully. */
-export function pushContact(): void {
+/** Push contact + generate_lead (GA4 recommended) when contact form is submitted successfully. */
+export function pushContact(params?: {
+  lead_source?: string;
+  lead_status?: string;
+  value?: number;
+  currency?: string;
+}): void {
+  const location =
+    typeof window !== "undefined" ? window.location.href : undefined;
+  const currency = params?.currency ?? "EUR";
+  const value = params?.value ?? 0;
   pushToDataLayer({
     event: GTM_EVENTS.CONTACT,
-    page_location:
-      typeof window !== "undefined" ? window.location.href : undefined,
+    page_location: location,
+    currency,
+    value,
+    lead_status: params?.lead_status ?? "Form submitted",
+  });
+  pushToDataLayer({
+    event: GTM_EVENTS.GENERATE_LEAD,
+    page_location: location,
+    currency,
+    value,
+    lead_source: params?.lead_source ?? "contact_form",
   });
 }
 
-/** Push sign_up when user completes sign-up flow (e.g. magic link sent). */
+/** Push sign_up when user submits registration form (magic link requested). */
 export function pushSignUp(params?: {
   method?: string;
   plan_code?: PlanCode;
+  billing_period?: BillingPeriod;
 }): void {
   pushToDataLayer({
     event: GTM_EVENTS.SIGN_UP,
     method: params?.method ?? "magic_link",
     ...(params?.plan_code && { plan_code: params.plan_code }),
+    ...(params?.billing_period && { billing_period: params.billing_period }),
   });
 }
 
-/** Push login when user initiates login (e.g. magic link sent). */
+/** Push login when user requests magic link (sign-in form submit). */
 export function pushLogin(params?: { method?: string }): void {
   pushToDataLayer({
     event: GTM_EVENTS.LOGIN,
     method: params?.method ?? "magic_link",
+  });
+}
+
+/** Push when user completes registration by using the confirmation link (account effective in DB). */
+export function pushSignUpConfirmed(params?: {
+  method?: string;
+  plan_code?: PlanCode;
+  billing_period?: BillingPeriod;
+}): void {
+  const method = params?.method ?? "magic_link";
+  const location =
+    typeof window !== "undefined" ? window.location.href : undefined;
+  pushToDataLayer({
+    event: GTM_EVENTS.SIGN_UP_CONFIRMED,
+    method,
+    page_location: location,
+    ...(params?.plan_code && { plan_code: params.plan_code }),
+    ...(params?.billing_period && { billing_period: params.billing_period }),
+  });
+  pushToDataLayer({
+    event: GTM_EVENTS.SIGN_UP,
+    method,
+    confirmed: true,
+    ...(params?.plan_code && { plan_code: params.plan_code }),
+    ...(params?.billing_period && { billing_period: params.billing_period }),
+  });
+}
+
+/** Push when user completes login by using the magic link. */
+export function pushLoginConfirmed(): void {
+  pushToDataLayer({
+    event: GTM_EVENTS.LOGIN_CONFIRMED,
+    method: "magic_link",
+    page_location:
+      typeof window !== "undefined" ? window.location.href : undefined,
+  });
+  pushToDataLayer({
+    event: GTM_EVENTS.LOGIN,
+    method: "magic_link",
+    confirmed: true,
   });
 }
