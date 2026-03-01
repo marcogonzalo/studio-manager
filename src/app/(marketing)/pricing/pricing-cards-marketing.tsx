@@ -41,7 +41,7 @@ export type PlanItem = {
   popular: boolean;
 };
 
-export function PricingCardsClient({ plans }: { plans: PlanItem[] }) {
+export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
   const [isAnnual, setIsAnnual] = useState(false);
 
   useEffect(() => {
@@ -198,6 +198,7 @@ export function PricingCardsClient({ plans }: { plans: PlanItem[] }) {
                           asChild
                         >
                           <Link
+                            id={`select-plan-${plan.planCode}`}
                             href={`/sign-up?plan=${plan.planCode}${
                               isAnnual ? "&billing=annual" : ""
                             }`}

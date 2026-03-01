@@ -46,7 +46,10 @@ export function ContactForm() {
 
   useEffect(() => {
     if (state?.success) {
-      pushContact();
+      pushContact({
+        lead_source: "contact_form",
+        lead_status: "Form submitted",
+      });
       toast.success("Mensaje enviado correctamente. Te responderemos pronto.");
       form.reset();
     }
