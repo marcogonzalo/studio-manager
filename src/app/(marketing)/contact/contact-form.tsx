@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,16 +19,34 @@ import {
 import { CardContent } from "@/components/ui/card";
 import { submitContactForm, type ContactFormState } from "./actions";
 
+const NAME_MAX = 50;
+const EMAIL_MAX = 150;
+const SUBJECT_MAX = 100;
+const MESSAGE_MAX = 1000;
+
 const formSchema = z.object({
-  name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  email: z.string().email("Email inválido"),
-  subject: z.string().min(5, "El asunto debe tener al menos 5 caracteres"),
-  message: z.string().min(10, "El mensaje debe tener al menos 10 caracteres"),
+  name: z
+    .string()
+    .min(2, "El nombre debe tener al menos 2 caracteres")
+    .max(NAME_MAX, "El nombre es demasiado largo"),
+  email: z
+    .string()
+    .email("Email inválido")
+    .max(EMAIL_MAX, "El email es demasiado largo"),
+  subject: z
+    .string()
+    .min(5, "El asunto debe tener al menos 5 caracteres")
+    .max(SUBJECT_MAX, "El asunto es demasiado largo"),
+  message: z
+    .string()
+    .min(10, "El mensaje debe tener al menos 10 caracteres")
+    .max(MESSAGE_MAX, "El mensaje es demasiado largo"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 export function ContactForm() {
+  const [formTimestamp] = useState(() => Date.now());
   const [state, formAction, isPending] = useActionState(
     submitContactForm,
     null as ContactFormState | null
@@ -62,6 +80,21 @@ export function ContactForm() {
     <CardContent className="pt-6">
       <Form {...form}>
         <form action={formAction} className="space-y-6">
+          {/* Anti-spam: honeypot (hidden from users, bots fill it) and form timestamp */}
+          <div
+            className="absolute top-0 -left-[9999px] h-0 w-0 overflow-hidden"
+            aria-hidden="true"
+          >
+            <label htmlFor="website">No rellenar</label>
+            <input
+              id="website"
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+          <input type="hidden" name="_ts" value={formTimestamp} />
           <div className="grid gap-6 md:grid-cols-2">
             <FormField
               control={form.control}
@@ -126,13 +159,18 @@ export function ContactForm() {
             name="message"
             render={({ field }) => (
               <FormItem>
-                <FormLabel htmlFor="message">Mensaje</FormLabel>
+                <div className="flex items-center justify-between gap-2">
+                  <FormLabel htmlFor="message">Mensaje</FormLabel>
+                  <span className="text-muted-foreground text-xs tabular-nums">
+                    {field.value.length} / {MESSAGE_MAX}
+                  </span>
+                </div>
                 <FormControl>
                   <textarea
                     id="message"
                     rows={5}
                     placeholder="Cuéntanos más detalles..."
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full resize-none rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     {...field}
                     disabled={isPending}
                   />

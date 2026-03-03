@@ -9,7 +9,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const routeGroup = getRouteGroup(pathname);
+  const routeGroup = getRouteGroup(pathname, request.method);
   if (routeGroup) {
     const ip = getClientIp(request);
     const { allowed, resetAt } = checkRateLimit(ip, routeGroup);
