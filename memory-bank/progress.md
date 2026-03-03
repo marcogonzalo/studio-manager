@@ -12,7 +12,7 @@
 - **Marca y marketing:** Veta, logos light/dark, tipografía Montserrat. Páginas marketing (home, about, pricing, contact, planes), SEO, sitemap, robots, OG, MailerSend contacto, dominio veta.pro.
 - **UI/UX y a11y:** Tema natural/pastel, dark mode OKLCH, animaciones (Framer Motion), skeletons, skip link, una h1 por página, focus-visible, `prefers-reduced-motion`, loading por ruta.
 - **PDF:** Presupuestos con `@react-pdf/renderer` (espacios, costes adicionales, opciones de filtrado).
-- **Cuenta:** Perfil, personalización (/customization), Mi cuenta (email, zona peligro, eliminar cuenta, cambiar email). Legal (términos, privacidad). Plantillas email Supabase.
+- **Cuenta:** Perfil, personalización (/customization), Mi cuenta (email, zona peligro, eliminar cuenta, cambiar email). Legal (términos, privacidad, **Cookies**: explicación, necesarias/Supabase, estadísticas/GA4-GTM-Vercel, personalización, marketing, no clasificadas). Plantillas email Supabase.
 - **Seguridad:** Headers (CSP, X-Frame-Options, etc.), validación ownership en uploads, OWASP documentado.
 - **Analytics:** GTM, GA4, Cookiebot, CSP ajustada para terceros.
 - **PageSpeed / marketing:** Auditoría PageSpeed sobre rutas (marketing); preconnect a GTM/Cookiebot en layout; secciones below-the-fold de la home lazy-load con `next/dynamic` (`_sections/`); contraste WCAG AA (globals.css); logo con `alt=""` cuando va con wordmark; CSP con `consent.cookiebot.eu`; docs `pagespeed-audit-marketing.md`, `pagespeed-improvements-from-report.md`.

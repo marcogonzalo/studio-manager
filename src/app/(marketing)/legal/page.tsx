@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Shield, FileText, Scale } from "lucide-react";
+import { ArrowLeft, Shield, FileText, Scale, Cookie } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Términos de uso y privacidad",
@@ -24,33 +24,33 @@ const sections = [
   {
     id: "terminos",
     icon: FileText,
-    title: "Términos de Uso",
-    lastUpdated: "11 de febrero de 2025",
+    title: "Términos de uso",
+    lastUpdated: "11 de febrero de 2026",
     content: (
       <>
         <p>
           Al utilizar Veta («la Plataforma»), aceptas los siguientes términos.
           Si no estás de acuerdo, no utilices el servicio.
         </p>
-        <h3 className="mt-6 font-semibold">1. Descripción del Servicio</h3>
+        <h3 className="mt-6 font-semibold">1. Descripción del servicio</h3>
         <p className="mt-2">
           Veta es una plataforma de gestión de proyectos de diseño interior que
           permite a los usuarios administrar clientes, proyectos, presupuestos,
           proveedores y catálogos de productos.
         </p>
-        <h3 className="mt-6 font-semibold">2. Uso Aceptable</h3>
+        <h3 className="mt-6 font-semibold">2. Uso aceptable</h3>
         <p className="mt-2">
           Te comprometes a utilizar la Plataforma de forma lícita y de acuerdo
           con estos términos. No debes utilizar el servicio para actividades
           ilegales, abusivas o que vulneren derechos de terceros.
         </p>
-        <h3 className="mt-6 font-semibold">3. Cuenta de Usuario</h3>
+        <h3 className="mt-6 font-semibold">3. Cuenta de usuario</h3>
         <p className="mt-2">
           Eres responsable de mantener la confidencialidad de tu cuenta y
           contraseña. Todas las actividades realizadas bajo tu cuenta son de tu
           responsabilidad.
         </p>
-        <h3 className="mt-6 font-semibold">4. Propiedad Intelectual</h3>
+        <h3 className="mt-6 font-semibold">4. Propiedad intelectual</h3>
         <p className="mt-2">
           El software, diseño y contenidos de la Plataforma son propiedad de
           Veta o sus licenciantes. Los datos que introduces siguen siendo de tu
@@ -62,27 +62,27 @@ const sections = [
   {
     id: "privacidad",
     icon: Shield,
-    title: "Política de Privacidad",
-    lastUpdated: "11 de febrero de 2025",
+    title: "Política de privacidad",
+    lastUpdated: "11 de febrero de 2026",
     content: (
       <>
         <p>
           Respetamos tu privacidad y nos comprometemos a proteger tus datos
           personales de acuerdo con la normativa aplicable.
         </p>
-        <h3 className="mt-6 font-semibold">Datos que Recogemos</h3>
+        <h3 className="mt-6 font-semibold">Datos que recogemos</h3>
         <p className="mt-2">
           Recopilamos la información que nos proporcionas al registrarte (correo
           electrónico, nombre) y los datos que introduces en la Plataforma para
           gestionar tus proyectos (clientes, proveedores, presupuestos, etc.).
         </p>
-        <h3 className="mt-6 font-semibold">Finalidad del Tratamiento</h3>
+        <h3 className="mt-6 font-semibold">Finalidad del tratamiento</h3>
         <p className="mt-2">
           Utilizamos tus datos para prestar el servicio, gestionar tu cuenta,
           enviar comunicaciones necesarias (por ejemplo, enlaces de inicio de
           sesión) y mejorar la Plataforma.
         </p>
-        <h3 className="mt-6 font-semibold">Compartición de Datos</h3>
+        <h3 className="mt-6 font-semibold">Compartición de datos</h3>
         <p className="mt-2">
           No vendemos tus datos personales. Utilizamos proveedores de servicios
           (como Supabase) para el alojamiento y la autenticación, que actúan
@@ -97,10 +97,98 @@ const sections = [
     ),
   },
   {
+    id: "cookies",
+    icon: Cookie,
+    title: "Cookies",
+    lastUpdated: "3 de marzo de 2026",
+    content: (
+      <>
+        <p>
+          Las cookies son pequeños archivos de texto que el sitio web guarda en
+          tu dispositivo (ordenador, tablet o móvil) cuando lo visitas. Sirven
+          para recordar preferencias, mantener tu sesión o medir el uso del
+          sitio. Solo nosotros o nuestros proveedores autorizados pueden
+          leerlas.
+        </p>
+
+        <h3 className="mt-6 font-semibold">Cookies necesarias</h3>
+        <p className="mt-2">
+          Son imprescindibles para el funcionamiento del sitio: sin ellas no
+          podrías iniciar sesión ni usar las funciones protegidas.
+        </p>
+        <ul className="mt-2 list-inside list-disc space-y-1 text-sm">
+          <li>
+            <strong>Supabase (autenticación):</strong> cookies de sesión para
+            mantener tu acceso seguro (por ejemplo,{" "}
+            <code className="bg-muted rounded px-1 py-0.5">
+              sb-*-auth-token
+            </code>
+            ). Se usan solo cuando inicias sesión en la plataforma.
+          </li>
+        </ul>
+
+        <h3 className="mt-6 font-semibold">Cookies de estadísticas</h3>
+        <p className="mt-2">
+          Nos ayudan a entender cómo se usa el sitio (páginas vistas, origen del
+          tráfico) de forma agregada y anónima.
+        </p>
+        <ul className="mt-2 list-inside list-disc space-y-1 text-sm">
+          <li>
+            <strong>Google Analytics 4 (GA4):</strong>{" "}
+            <code className="bg-muted rounded px-1 py-0.5">_ga</code>,{" "}
+            <code className="bg-muted rounded px-1 py-0.5">_ga_*</code>,{" "}
+            <code className="bg-muted rounded px-1 py-0.5">_gid</code>,{" "}
+            <code className="bg-muted rounded px-1 py-0.5">_gat</code> —
+            medición de visitas y eventos (solo si aceptas analíticas en el
+            banner de cookies).
+          </li>
+          <li>
+            <strong>Google Tag Manager (GTM):</strong> contenedor que carga y
+            gestiona etiquetas (incluida GA4). Puede usar cookies propias según
+            la configuración del contenedor.
+          </li>
+          <li>
+            <strong>Vercel Analytics:</strong> métricas de rendimiento y uso del
+            sitio en la infraestructura donde se aloja la aplicación.
+          </li>
+        </ul>
+
+        <h3 className="mt-6 font-semibold">Cookies de personalización</h3>
+        <p className="mt-2">
+          Guardan preferencias de idioma, tema o presentación para ofrecerte una
+          experiencia más adecuada. En este momento no utilizamos cookies
+          específicas de personalización; el tema (claro/oscuro) se puede
+          almacenar de forma local en tu navegador sin cookies identificables.
+        </p>
+
+        <h3 className="mt-6 font-semibold">Cookies de marketing</h3>
+        <p className="mt-2">
+          Se usan para mostrar anuncios relevantes o medir campañas. Actualmente
+          no utilizamos cookies de publicidad o remarketing en este sitio.
+        </p>
+
+        <h3 className="mt-6 font-semibold">Cookies no clasificadas</h3>
+        <p className="mt-2">
+          Son cookies que aún no hemos categorizado en las secciones anteriores
+          o que pueden depender de servicios de terceros. En la práctica, las
+          herramientas que usamos (GTM, GA4, Vercel, Supabase) quedan cubiertas
+          en necesarias y estadísticas. Si en el futuro añadiéramos otras
+          cookies, las listaremos aquí y actualizaremos esta página.
+        </p>
+
+        <p className="mt-6 text-sm">
+          Puedes cambiar tus preferencias de cookies en cualquier momento desde
+          el banner de cookies (en las páginas de marketing) o revisando la
+          configuración de tu navegador.
+        </p>
+      </>
+    ),
+  },
+  {
     id: "rgpd",
     icon: Scale,
-    title: "Tus Derechos según el RGPD",
-    lastUpdated: "11 de febrero de 2025",
+    title: "Tus derechos según el RGPD",
+    lastUpdated: "11 de febrero de 2026",
     content: (
       <>
         <p>
@@ -169,7 +257,7 @@ export default function LegalPage() {
           </Link>
 
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Términos de Uso y Política de Privacidad
+            Términos de uso y Política de privacidad
           </h1>
           <p className="text-muted-foreground mt-4 text-lg">
             Última actualización:{" "}
