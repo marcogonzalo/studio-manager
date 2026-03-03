@@ -12,6 +12,19 @@ vi.mock("@/lib/email/mailersend", () => ({
   getDefaultFrom: () => mockGetDefaultFrom(),
 }));
 
+const mockCheckRateLimit = vi.fn();
+const mockGetClientIpFromHeaders = vi.fn();
+vi.mock("@/lib/rate-limit", () => ({
+  checkRateLimit: (...args: unknown[]) => mockCheckRateLimit(...args),
+  getClientIpFromHeaders: (...args: unknown[]) =>
+    mockGetClientIpFromHeaders(...args),
+  RATE_LIMIT_MESSAGE: "Has excedido el límite de solicitudes.",
+}));
+
+vi.mock("next/headers", () => ({
+  headers: vi.fn(),
+}));
+
 function formData(overrides: Record<string, string> = {}) {
   const data = new FormData();
   data.set("name", overrides.name ?? "Jane Doe");
@@ -25,8 +38,18 @@ function formData(overrides: Record<string, string> = {}) {
 }
 
 describe("submitContactForm", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    const { headers } = await import("next/headers");
+    vi.mocked(headers).mockResolvedValue(
+      new Headers({ "x-forwarded-for": "192.168.1.1" })
+    );
+    mockGetClientIpFromHeaders.mockReturnValue("192.168.1.1");
+    mockCheckRateLimit.mockReturnValue({
+      allowed: true,
+      remaining: 5,
+      resetAt: Date.now() + 60000,
+    });
     mockGetContactFormToEmail.mockReturnValue("veta.pro.pm@gmail.com");
     mockGetDefaultFrom.mockReturnValue({
       email: "noreply@veta.pro",
@@ -37,6 +60,15 @@ describe("submitContactForm", () => {
 
   it("returns error when name is too short", async () => {
     const result = await submitContactForm(null, formData({ name: "A" }));
+    expect(result.error).toContain("nombre");
+    expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns error when name is too long", async () => {
+    const result = await submitContactForm(
+      null,
+      formData({ name: "a".repeat(51) })
+    );
     expect(result.error).toContain("nombre");
     expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
   });
@@ -82,6 +114,8 @@ describe("submitContactForm", () => {
     expect(call.subject).toContain("Test subject here");
     expect(call.text).toContain("Jane Doe");
     expect(call.text).toContain("jane@example.com");
+    expect(call.text).toContain("IP: 192.168.1.1");
+    expect(call.html).toContain("192.168.1.1");
     expect(call.html).toContain("Nuevo mensaje de contacto");
   });
 
@@ -126,5 +160,58 @@ describe("submitContactForm", () => {
     expect(call.html).not.toContain("<script>");
     expect(call.html).toContain("&lt;script&gt;");
     expect(call.html).toContain("&amp;");
+  });
+
+  it("returns success without sending when honeypot (website) is filled", async () => {
+    const data = formData();
+    data.set("website", "http://spam-bot.com");
+    const result = await submitContactForm(null, data);
+    expect(result.success).toBe(true);
+    expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns success without sending when form submitted too fast", async () => {
+    const data = formData();
+    data.set("_ts", String(Date.now() - 2000)); // 2s ago
+    const result = await submitContactForm(null, data);
+    expect(result.success).toBe(true);
+    expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns success without sending when form timestamp is too old", async () => {
+    const data = formData();
+    data.set("_ts", String(Date.now() - 3600001)); // > 1 hour
+    const result = await submitContactForm(null, data);
+    expect(result.success).toBe(true);
+    expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns rate limit error when over limit", async () => {
+    mockCheckRateLimit.mockReturnValueOnce({
+      allowed: false,
+      remaining: 0,
+      resetAt: Date.now() + 30000,
+    });
+    const result = await submitContactForm(null, formData());
+    expect(result.error).toContain("límite de solicitudes");
+    expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns error when subject exceeds max length", async () => {
+    const result = await submitContactForm(
+      null,
+      formData({ subject: "a".repeat(101) })
+    );
+    expect(result.error).toContain("asunto");
+    expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns error when message exceeds max length", async () => {
+    const result = await submitContactForm(
+      null,
+      formData({ message: "a".repeat(5001) })
+    );
+    expect(result.error).toContain("mensaje");
+    expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
   });
 });

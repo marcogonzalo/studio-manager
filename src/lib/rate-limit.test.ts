@@ -23,6 +23,11 @@ describe("getRouteGroup", () => {
   it("returns null for /dashboard", () => {
     expect(getRouteGroup("/dashboard")).toBeNull();
   });
+  it("returns contact for POST /contact only", () => {
+    expect(getRouteGroup("/contact", "POST")).toBe("contact");
+    expect(getRouteGroup("/contact", "GET")).toBeNull();
+    expect(getRouteGroup("/contact")).toBeNull();
+  });
 });
 
 describe("getClientIp", () => {
@@ -91,5 +96,14 @@ describe("checkRateLimit", () => {
     const r = checkRateLimit("192.168.1.7", "auth");
     expect(r.resetAt).toBeGreaterThan(1000);
     vi.useRealTimers();
+  });
+  it("contact allows 5 then denies", () => {
+    const ip = "192.168.1.8";
+    for (let i = 0; i < 5; i++) {
+      const r = checkRateLimit(ip, "contact");
+      expect(r.allowed).toBe(true);
+    }
+    const r = checkRateLimit(ip, "contact");
+    expect(r.allowed).toBe(false);
   });
 });
