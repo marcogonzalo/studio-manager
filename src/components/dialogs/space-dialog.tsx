@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { getDemoAccountMessage } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
@@ -65,6 +66,13 @@ export function SpaceDialog({
       form.reset();
       onSuccess();
     } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
       toast.error(
         error instanceof Error ? error.message : "Error al crear espacio"
       );

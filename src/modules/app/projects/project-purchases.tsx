@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
+import { getDemoAccountMessage } from "@/lib/utils";
 import { ProjectTabContent } from "./project-tab-content";
 
 interface PurchaseOrder {
@@ -173,7 +174,14 @@ export function ProjectPurchases({
       .eq("id", orderId);
 
     if (error) {
-      toast.error("Error al eliminar la orden");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al eliminar la orden");
+      }
     } else {
       toast.success("Orden eliminada");
       fetchOrders();

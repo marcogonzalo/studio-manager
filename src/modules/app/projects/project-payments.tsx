@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/select";
 import type { Payment, PaymentType } from "@/types";
 import {
+  getDemoAccountMessage,
   getPhaseLabel,
   formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
@@ -107,7 +108,14 @@ export function ProjectPayments({
       .eq("id", paymentId);
 
     if (error) {
-      toast.error("Error al eliminar pago");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al eliminar pago");
+      }
     } else {
       toast.success("Pago eliminado");
       fetchPayments();

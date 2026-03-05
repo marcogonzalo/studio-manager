@@ -24,7 +24,11 @@ import { toast } from "sonner";
 import type { Client } from "@/types";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { getErrorMessage, reportError } from "@/lib/utils";
+import {
+  getDemoAccountMessage,
+  getErrorMessage,
+  reportError,
+} from "@/lib/utils";
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
@@ -128,6 +132,13 @@ export function ClientDialog({
         onSuccess(newClient.id);
       }
     } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
       reportError(error, "Error saving client:");
       toast.error(getErrorMessage(error) || "Error al guardar cliente");
     }

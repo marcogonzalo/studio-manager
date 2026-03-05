@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import type { Supplier } from "@/types";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { getDemoAccountMessage } from "@/lib/utils";
 import {
   optionalEmailSchema,
   optionalPhoneSchema,
@@ -93,7 +94,14 @@ export function SupplierDialog({
         toast.success("Proveedor creado");
         onSuccess(newSupplier.id);
       }
-    } catch {
+    } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
       toast.error("Error al guardar");
     }
   }

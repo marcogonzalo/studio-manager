@@ -45,6 +45,16 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    if (user.email?.toLowerCase() === "demo@veta.pro") {
+      return NextResponse.json(
+        {
+          code: "DEMO_ACCOUNT_READ_ONLY",
+          message: "Las acciones están limitadas en la cuenta de demostración.",
+        },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const imageUrl = searchParams.get("url");
 
@@ -186,6 +196,16 @@ export async function POST(request: Request) {
 
     if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    if (user.email?.toLowerCase() === "demo@veta.pro") {
+      return NextResponse.json(
+        {
+          code: "DEMO_ACCOUNT_READ_ONLY",
+          message: "Las acciones están limitadas en la cuenta de demostración.",
+        },
+        { status: 403 }
+      );
     }
 
     const formData = await request.formData();

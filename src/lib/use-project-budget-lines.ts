@@ -40,7 +40,8 @@ export function useProjectBudgetLines(
         .order("created_at");
 
       if (excludeInternal) {
-        query = query.eq("is_internal_cost", false);
+        // Incluir false y null (tratar null como "no interno") para que se muestren partidas sin el flag
+        query = query.or("is_internal_cost.eq.false,is_internal_cost.is.null");
       }
 
       const { data, error } = await query;

@@ -30,6 +30,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
+import { getDemoAccountMessage } from "@/lib/utils";
 import type { AdditionalCost } from "@/types";
 
 const formSchema = z.object({
@@ -121,6 +122,13 @@ export function AdditionalCostDialog({
         .eq("id", cost.id);
 
       if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+          return;
+        }
         toast.error("Error al actualizar coste adicional");
       } else {
         toast.success("Coste adicional actualizado");
@@ -140,6 +148,13 @@ export function AdditionalCostDialog({
       ]);
 
       if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+          return;
+        }
         toast.error("Error al crear coste adicional");
       } else {
         toast.success("Coste adicional añadido");

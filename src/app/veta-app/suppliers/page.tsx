@@ -24,6 +24,7 @@ import { SupplierDialog } from "@/components/dialogs/supplier-dialog";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { getDemoAccountMessage } from "@/lib/utils";
 import { useDebouncedState } from "@/lib/use-debounced-value";
 
 import type { Supplier } from "@/types";
@@ -85,7 +86,14 @@ export default function SuppliersPage() {
       }
       const { error } = await supabase.from("suppliers").delete().eq("id", id);
       if (error) {
-        toast.error("Error al eliminar");
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error("Error al eliminar");
+        }
         return;
       }
       toast.success("Proveedor eliminado");

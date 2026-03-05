@@ -345,7 +345,7 @@ export function ProjectDashboard({
             color="text-muted-foreground"
             valueIcon={kpis.deviation < 0 ? ArrowDown : ArrowUp}
             valueColor={
-              kpis.deviation < 0 ? "text-primary" : "text-destructive"
+              kpis.deviation > 5 ? "text-destructive" : "text-primary"
             }
           />
           <KPICard

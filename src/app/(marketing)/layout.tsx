@@ -91,6 +91,14 @@ function Footer() {
                   Plan Studio
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/demo"
+                  className="hover:text-foreground transition-colors"
+                >
+                  Probar demo
+                </Link>
+              </li>
             </ul>
           </div>
 

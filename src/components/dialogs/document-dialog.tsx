@@ -25,6 +25,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocumentFileUpload } from "@/components/document-file-upload";
 import { toast } from "sonner";
+import { getDemoAccountMessage } from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nombre requerido"),
@@ -187,7 +188,15 @@ export function DocumentDialog({
       form.reset({ name: "", file_url: "" });
       onOpenChange(false);
       onSuccess();
-    } catch (err) {
+    } catch (err: unknown) {
+      const demoMsg = getDemoAccountMessage(err);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        await cleanupOrphanUpload();
+        return;
+      }
       await cleanupOrphanUpload();
       toast.error(
         err instanceof Error ? err.message : "Error al añadir documento"

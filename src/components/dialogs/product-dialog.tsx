@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { reportError, CURRENCIES } from "@/lib/utils";
+import { getDemoAccountMessage, reportError, CURRENCIES } from "@/lib/utils";
 import type { Product, Supplier } from "@/types";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
@@ -316,6 +316,13 @@ export function ProductDialog({
       }
       onSuccess();
     } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
       reportError(error, "Error saving product:");
       toast.error(error instanceof Error ? error.message : "Error al guardar");
     }

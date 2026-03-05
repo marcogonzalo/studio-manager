@@ -43,6 +43,7 @@ import {
   getBudgetCategoryLabel,
   getBudgetSubcategoryLabel,
   getPhaseLabel,
+  getDemoAccountMessage,
   reportError,
   COST_CATEGORIES,
   formatCurrency as formatCurrencyUtil,
@@ -117,8 +118,15 @@ export function ProjectCostControl({
       .delete()
       .eq("id", id);
     if (error) {
-      toast.error("Error al eliminar la partida");
-      reportError(error, "Error deleting budget line:");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al eliminar la partida");
+        reportError(error, "Error deleting budget line:");
+      }
     } else {
       toast.success("Partida eliminada");
       refetchBudgetLines();

@@ -26,6 +26,7 @@ function isPublicPath(pathname: string): boolean {
   return (
     PUBLIC_ROUTES.some((route) => pathname === route) ||
     pathname === "/callback" ||
+    pathname === "/auth/complete" ||
     pathname.startsWith("/plan-")
   );
 }

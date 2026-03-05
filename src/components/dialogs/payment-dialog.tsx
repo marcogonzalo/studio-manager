@@ -32,7 +32,11 @@ import { toast } from "sonner";
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
 import type { Payment, PurchaseOrder, AdditionalCost } from "@/types";
-import { getCurrencySymbol, formatCurrency } from "@/lib/utils";
+import {
+  getDemoAccountMessage,
+  getCurrencySymbol,
+  formatCurrency,
+} from "@/lib/utils";
 
 const formSchema = z
   .object({
@@ -218,6 +222,13 @@ export function PaymentDialog({
       onSuccess();
       onOpenChange(false);
     } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
       const errorMessage =
         error instanceof Error
           ? error.message
