@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { getSupabaseClient } from "@/lib/supabase";
-import { reportError, formatCurrency } from "@/lib/utils";
+import {
+  getDemoAccountMessage,
+  reportError,
+  formatCurrency,
+} from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -104,6 +108,13 @@ export default function CatalogPage() {
         .eq("id", product.id)
         .select();
       if (deleteError) {
+        const demoMsg = getDemoAccountMessage(deleteError);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+          return;
+        }
         reportError(deleteError, "Error deleting product:");
         if (
           deleteError.code === "42501" ||

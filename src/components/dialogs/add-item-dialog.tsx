@@ -37,7 +37,7 @@ import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ProductImageUpload } from "@/components/product-image-upload";
 import type { Product, ProjectItem, Space, Supplier } from "@/types";
 import Link from "next/link";
-import { reportError } from "@/lib/utils";
+import { getDemoAccountMessage, reportError } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { SupplierDialog } from "./supplier-dialog";
@@ -490,7 +490,14 @@ export function AddItemDialog({
 
       form.reset();
       onSuccess();
-    } catch {
+    } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
       toast.error("Error al guardar");
     }
   }

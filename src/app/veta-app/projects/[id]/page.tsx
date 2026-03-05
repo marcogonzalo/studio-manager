@@ -72,9 +72,6 @@ function ProjectDetailContent() {
     minModality: "full",
   });
 
-  const documentsAtLeastPlus = usePlanCapability("documents", {
-    minModality: "plus",
-  });
   const budgetModeAtLeastPlus = usePlanCapability("pdf_export_mode", {
     minModality: "plus",
   });
@@ -92,7 +89,7 @@ function ProjectDetailContent() {
   const currentTabHasRestrictedContent = (() => {
     switch (activeTab) {
       case "spaces":
-        return !documentsAtLeastPlus;
+        return documentsDisabled;
       case "quotation":
         return !budgetModeAtLeastPlus;
       case "expenses":
@@ -102,7 +99,7 @@ function ProjectDetailContent() {
       case "payments":
         return !paymentsManagementAtLeastPlus;
       case "documents":
-        return !documentsAtLeastPlus;
+        return documentsDisabled;
       default:
         return false;
     }

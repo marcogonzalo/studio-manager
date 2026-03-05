@@ -32,7 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
-import { reportError } from "@/lib/utils";
+import { getDemoAccountMessage, reportError } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import type { Supplier } from "@/types";
@@ -646,6 +646,13 @@ export function PurchaseOrderDialog({
       onSuccess();
       onOpenChange(false);
     } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
       toast.error(
         error instanceof Error
           ? error.message

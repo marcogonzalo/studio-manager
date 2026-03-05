@@ -35,9 +35,7 @@ export function ProjectSpaces({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
-  const addRendersAndDocumentsEnabled = usePlanCapability("documents", {
-    minModality: "full",
-  });
+  const addRendersAndDocumentsEnabled = usePlanCapability("documents");
   const canAddRenders = !readOnly && !disabled && addRendersAndDocumentsEnabled;
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);

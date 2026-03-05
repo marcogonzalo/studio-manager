@@ -60,6 +60,7 @@ import {
   getBudgetCategoryLabel,
   getBudgetSubcategoryLabel,
   getPhaseLabel,
+  getDemoAccountMessage,
   getErrorMessage,
   reportError,
   formatCurrency as formatCurrencyUtil,
@@ -187,8 +188,15 @@ export function ProjectBudget({
       .delete()
       .eq("id", id);
     if (error) {
-      toast.error("Error al eliminar la partida");
-      reportError(error, "Error deleting budget line:");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al eliminar la partida");
+        reportError(error, "Error deleting budget line:");
+      }
     } else {
       toast.success("Partida eliminada");
       refetchBudgetLines();
@@ -507,7 +515,7 @@ export function ProjectBudget({
                             ? "Sin Fase"
                             : getPhaseLabel(phase as ProjectPhase)}
                         </CardTitle>
-                        <span className="text-primary font-semibold">
+                        <span className="text-foreground font-semibold">
                           {formatCurrency(phaseTotal)}
                         </span>
                       </div>
@@ -543,7 +551,7 @@ export function ProjectBudget({
                                       />
                                       {getBudgetCategoryLabel(category)}
                                     </CardTitle>
-                                    <span className="text-primary text-sm font-semibold">
+                                    <span className="text-foreground text-sm font-semibold">
                                       {formatCurrency(categoryTotal)}
                                     </span>
                                   </div>
@@ -642,7 +650,7 @@ export function ProjectBudget({
           open={openSections.products}
           onOpenChange={() => toggleSection("products")}
         >
-          <Card>
+          <Card className="border-l-primary border-l-4">
             <CollapsibleTrigger asChild>
               <CardHeader className="hover:bg-accent/30 cursor-pointer">
                 <div className="flex items-center justify-between">
@@ -652,7 +660,7 @@ export function ProjectBudget({
                     />
                     Mobiliario y Productos
                   </CardTitle>
-                  <span className="text-primary font-semibold">
+                  <span className="text-foreground font-semibold">
                     {formatCurrency(totalItemsPrice)}
                   </span>
                 </div>

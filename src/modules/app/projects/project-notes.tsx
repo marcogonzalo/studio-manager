@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getDemoAccountMessage } from "@/lib/utils";
 import { ProjectTabContent } from "./project-tab-content";
 
 interface Note {
@@ -79,7 +80,14 @@ export function ProjectNotes({
     ]);
 
     if (error) {
-      toast.error("Error al añadir nota");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al añadir nota");
+      }
     } else {
       toast.success("Nota añadida");
       setNewNote("");
@@ -96,7 +104,14 @@ export function ProjectNotes({
       .eq("id", id);
 
     if (error) {
-      toast.error("Error al eliminar nota");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al eliminar nota");
+      }
     } else {
       toast.success("Nota eliminada");
       fetchNotes();
@@ -110,7 +125,14 @@ export function ProjectNotes({
       .eq("id", id);
 
     if (error) {
-      toast.error("Error al actualizar nota");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al actualizar nota");
+      }
     } else {
       toast.success(currentArchived ? "Nota desarchivada" : "Nota archivada");
       fetchNotes();

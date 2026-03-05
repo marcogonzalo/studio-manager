@@ -46,7 +46,11 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import type { Client, Project, ProjectStatus } from "@/types";
 import { ClientDialog } from "@/components/dialogs/client-dialog";
-import { CURRENCIES, getPlanErrorMessage } from "@/lib/utils";
+import {
+  CURRENCIES,
+  getDemoAccountMessage,
+  getPlanErrorMessage,
+} from "@/lib/utils";
 
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
@@ -346,6 +350,13 @@ export function ProjectDialog({
 
       onSuccess();
     } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
       const planError = getPlanErrorMessage(error);
       if (planError) {
         toast.error(`${planError.title}. ${planError.description}`, {

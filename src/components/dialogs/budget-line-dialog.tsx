@@ -37,6 +37,7 @@ import {
   getCategoryOptions,
   getSubcategoryOptions,
   getPhaseLabel,
+  getDemoAccountMessage,
   getErrorMessage,
   reportError,
   isCostCategory,
@@ -278,6 +279,13 @@ export function BudgetLineDialog({
         onOpenChange(false);
       }
     } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
       reportError(error, "Unexpected error in onSubmit:");
       toast.error("Error inesperado: " + getErrorMessage(error));
     }

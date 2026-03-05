@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase";
+import { getDemoAccountMessage } from "@/lib/utils";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
 import {
@@ -89,7 +90,14 @@ export default function ProjectsPage() {
     try {
       const { error } = await supabase.from("projects").delete().eq("id", id);
       if (error) {
-        toast.error("Error al eliminar el proyecto");
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error("Error al eliminar el proyecto");
+        }
         return;
       }
       toast.success("Proyecto eliminado");

@@ -42,6 +42,7 @@ import {
 import { AlertTriangle, Building2, Mail, User } from "lucide-react";
 import { toast } from "sonner";
 import {
+  getDemoAccountMessage,
   getErrorMessage,
   reportError,
   INPUT_CONFIG_STANDARD_CLASS,
@@ -174,9 +175,19 @@ export default function SettingsAccountPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: values.email.trim() }),
       });
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      const data = (await res.json().catch(() => ({}))) as {
+        error?: string;
+        code?: string;
+      };
       if (!res.ok) {
-        toast.error(data.error ?? "Error al eliminar la cuenta");
+        const demoMsg = getDemoAccountMessage(data);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error(data.error ?? "Error al eliminar la cuenta");
+        }
         return;
       }
       setDeleteDialogOpen(false);

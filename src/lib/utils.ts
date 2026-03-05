@@ -175,6 +175,33 @@ export function getPlanErrorMessage(error: unknown): {
   return null;
 }
 
+/** Código de error cuando la cuenta es demo y las escrituras están bloqueadas. */
+export const DEMO_ACCOUNT_READ_ONLY = "DEMO_ACCOUNT_READ_ONLY" as const;
+
+/** Mensaje amable para cuenta demo (solo lectura en escrituras). */
+export const DEMO_ACCOUNT_MESSAGE = {
+  title: "Cuenta de demostración",
+  description:
+    "Las acciones de creación, edición y eliminación están desactivadas en esta cuenta.",
+} as const;
+
+/** True when the error is from demo account write restriction. */
+export function isDemoAccountError(error: unknown): boolean {
+  const msg = getErrorMessageString(error);
+  if (msg.includes(DEMO_ACCOUNT_READ_ONLY)) return true;
+  const code = (error as { code?: string })?.code;
+  return code === DEMO_ACCOUNT_READ_ONLY;
+}
+
+/** Devuelve el mensaje para mostrar cuando el error es por cuenta demo (solo lectura), o null. */
+export function getDemoAccountMessage(error: unknown): {
+  title: string;
+  description: string;
+} | null {
+  if (!isDemoAccountError(error)) return null;
+  return DEMO_ACCOUNT_MESSAGE;
+}
+
 /**
  * Centraliza el reporte de errores (log; opcionalmente Sentry en el futuro).
  * Usar en lugar de console.error en rutas críticas.

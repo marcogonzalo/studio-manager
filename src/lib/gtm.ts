@@ -43,6 +43,8 @@ export const GTM_EVENTS = {
   VIEW_PRICING: "view_pricing",
   /** Custom: scroll / section view (engagement) */
   VIEW_SECTION: "view_section",
+  /** Custom: usuario accedió a la demo (entró tras magic link demo) */
+  DEMO_ACCESS: "demo_access",
 } as const;
 
 export type PlanCode = "BASE" | "PRO" | "STUDIO";
@@ -325,5 +327,25 @@ export function pushLoginConfirmed(): void {
     event: GTM_EVENTS.LOGIN,
     method: "magic_link",
     confirmed: true,
+  });
+}
+
+/** Push generate_lead when user successfully submits the demo request form (solicitud de enlace). */
+export function pushDemoRequest(): void {
+  const location =
+    typeof window !== "undefined" ? window.location.href : undefined;
+  pushToDataLayer({
+    event: GTM_EVENTS.GENERATE_LEAD,
+    page_location: location,
+    lead_source: "demo_request",
+  });
+}
+
+/** Push when user completes demo access (landed on auth/complete with ?demo=1 and session set). */
+export function pushDemoAccess(): void {
+  pushToDataLayer({
+    event: GTM_EVENTS.DEMO_ACCESS,
+    page_location:
+      typeof window !== "undefined" ? window.location.href : undefined,
   });
 }

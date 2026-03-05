@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
 import {
   cn,
+  DEMO_ACCOUNT_MESSAGE,
+  DEMO_ACCOUNT_READ_ONLY,
+  getDemoAccountMessage,
   getErrorMessage,
   getPhaseLabel,
   getBudgetCategoryLabel,
@@ -8,6 +11,7 @@ import {
   getSubcategoryOptions,
   getCategoryOptions,
   isCostCategory,
+  isDemoAccountError,
   isPlanLimitExceeded,
   isPlanFeatureUnavailable,
   getPlanErrorType,
@@ -194,6 +198,36 @@ describe("getPlanErrorMessage", () => {
 
   it("should return null for non-plan errors", () => {
     expect(getPlanErrorMessage(new Error("Other"))).toBe(null);
+  });
+});
+
+describe("demo account helpers", () => {
+  it("isDemoAccountError returns true when message contains DEMO_ACCOUNT_READ_ONLY", () => {
+    expect(
+      isDemoAccountError(
+        new Error("DEMO_ACCOUNT_READ_ONLY: Las acciones están limitadas.")
+      )
+    ).toBe(true);
+  });
+
+  it("isDemoAccountError returns true when code is DEMO_ACCOUNT_READ_ONLY", () => {
+    expect(isDemoAccountError({ code: DEMO_ACCOUNT_READ_ONLY })).toBe(true);
+  });
+
+  it("isDemoAccountError returns false for other errors", () => {
+    expect(isDemoAccountError(new Error("Other"))).toBe(false);
+    expect(isDemoAccountError({ code: "OTHER" })).toBe(false);
+  });
+
+  it("getDemoAccountMessage returns message for demo error", () => {
+    const result = getDemoAccountMessage(
+      new Error("DEMO_ACCOUNT_READ_ONLY: limitadas.")
+    );
+    expect(result).toEqual(DEMO_ACCOUNT_MESSAGE);
+  });
+
+  it("getDemoAccountMessage returns null for non-demo error", () => {
+    expect(getDemoAccountMessage(new Error("Other"))).toBe(null);
   });
 });
 
