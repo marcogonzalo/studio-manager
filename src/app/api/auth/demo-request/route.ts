@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     const origin = request.headers.get("origin") || request.nextUrl.origin;
     const dashboardPath = appPath("/dashboard");
-    const redirectTo = `${origin}/auth/complete?next=${encodeURIComponent(dashboardPath)}`;
+    const redirectTo = `${origin}/auth/complete?next=${encodeURIComponent(dashboardPath)}&demo=1`;
 
     const { data: linkData, error: linkError } =
       await admin.auth.admin.generateLink({

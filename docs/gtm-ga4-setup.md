@@ -33,6 +33,7 @@ Sustituye `GTM-XXXXXXX` por el ID de tu contenedor de Google Tag Manager (Admin 
 | `contact`        | Envío correcto del formulario de contacto (`/contact`).                                                                                                           | Lead; conversión.                                                                                                     |
 | `sign_up`        | Usuario envía el formulario de registro y recibe magic link (`/sign-up`). Parámetros: `method`, `plan_code` (opcional).                                           | Conversión registro.                                                                                                  |
 | `login`          | Usuario solicita enlace de inicio de sesión (`/sign-in`). Parámetro: `method`.                                                                                    | Engagement; inicio de sesión.                                                                                         |
+| `demo_access`    | Usuario completa el acceso a la demo (entra tras hacer clic en el magic link de demo). Se envía en `/auth/complete` cuando la URL incluye `?demo=1`.              | Conversión; usuario que realmente entró a la demo.                                                                    |
 
 Nombres de evento y parámetros están pensados para usarse tanto en GA4 (eventos estándar y personalizados) como en disparadores y variables de GTM.
 
@@ -63,7 +64,26 @@ El layout `(auth)` incluye GTM (mismo snippet y `GtmPageView`). Se envían:
 - **sign_up** cuando el usuario envía el formulario de registro y se envía correctamente el magic link (parámetros: `method: 'magic_link'`, `plan_code` si viene por URL).
 - **login** cuando el usuario envía el formulario de inicio de sesión y se envía correctamente el magic link (`method: 'magic_link'`).
 
-## 6. Referencias
+## 6. Funnel demo (`/demo`)
+
+La **vista de la página demo** ya queda cubierta por el `page_view` estándar (el layout de marketing envía `page_view` en cada ruta). En GTM/GA4 puedes identificar visitas a la demo con un disparador de tipo “Vista de página” donde `page_path` (o la URL) contenga `/demo`.
+
+Eventos específicos del funnel demo:
+
+1. **generate_lead** — cuando el usuario envía el correo en el formulario de demo y la API responde OK (solicitud de enlace). Se envía con `lead_source: "demo_request"` para identificar el origen en GA4.
+2. **demo_access** — cuando el usuario llega a `/auth/complete?demo=1` y la sesión se establece correctamente (acceso efectivo a la demo tras el magic link).
+
+**Qué registrar en GTM:**
+
+- **Vista a /demo:** usar el `page_view` existente; en GA4 o en un disparador, filtrar por `page_path` = `/demo` (o variable de página que contenga “/demo”).
+- **Disparadores** de tipo “Evento personalizado” con estos nombres de evento:
+  - `generate_lead` (para solicitud de demo: condición en variable de capa de datos `lead_source` = `demo_request` si quieres una etiqueta solo para demo).
+  - `demo_access`
+- **Etiquetas GA4 de evento** que se activen con esos disparadores.
+- **Variables de capa de datos** si necesitas: `page_path`, `page_location`, `lead_source`.
+- En **GA4**, marcar como conversión (opcional): `generate_lead` (filtrar por `lead_source` = `demo_request`) y/o `demo_access` para el funnel demo (vista /demo por page_view → solicitud → acceso).
+
+## 7. Referencias
 
 - [Guía para desarrolladores - API de Google Tag Manager (Tag Platform)](https://developers.google.com/tag-platform/tag-manager/api/v2/devguide?hl=es-419)
 - [Eventos recomendados de GA4](https://support.google.com/analytics/answer/9267738)

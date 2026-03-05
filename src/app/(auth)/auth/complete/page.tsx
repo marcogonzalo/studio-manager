@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
+import { pushDemoAccess } from "@/lib/gtm";
 
 function AuthCompleteContent() {
   const searchParams = useSearchParams();
@@ -13,6 +14,7 @@ function AuthCompleteContent() {
     const next =
       searchParams.get("next")?.replace(/^\/+/, "") || appPath("/dashboard");
     const redirectPath = next.startsWith("/") ? next : `/${next}`;
+    const isDemoAccess = searchParams.get("demo") === "1";
 
     const hash =
       typeof window !== "undefined" ? window.location.hash.slice(1) : "";
@@ -35,6 +37,7 @@ function AuthCompleteContent() {
     supabase.auth
       .setSession({ access_token: accessToken, refresh_token: refreshToken })
       .then(() => {
+        if (isDemoAccess) pushDemoAccess();
         const origin = window.location.origin;
         window.location.replace(`${origin}${redirectPath}`);
       })

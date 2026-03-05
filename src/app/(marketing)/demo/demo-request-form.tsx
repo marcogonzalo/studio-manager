@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { pushDemoRequest } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -45,6 +46,7 @@ export function DemoRequestForm() {
         toast.error(data.error ?? "Error al solicitar el enlace");
         return;
       }
+      pushDemoRequest();
       setSent(true);
       toast.success(
         "Revisa tu correo. Te hemos enviado un enlace para acceder a la demo."
