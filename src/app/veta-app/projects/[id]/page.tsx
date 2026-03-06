@@ -69,7 +69,7 @@ function ProjectDetailContent() {
   const expensesDisabled = !usePlanCapability("costs_management");
   const costsDisabled = false;
   const advancedCostOptionsEnabled = usePlanCapability("costs_management", {
-    minModality: "full",
+    minModality: "plus",
   });
 
   const budgetModeAtLeastPlus = usePlanCapability("pdf_export_mode", {
