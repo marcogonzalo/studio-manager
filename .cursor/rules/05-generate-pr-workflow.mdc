@@ -41,18 +41,26 @@ When either scenario is triggered, run **in this order**:
 - Update README, API docs, or guides if the change requires it.
 - Include these changes in the documentation commit or in previous commits if already ready.
 
-## 5. Commits
+## 5. New routes and middleware (public vs private)
+
+- If the changes **add new route(s)** (new segments under `app/` that are not under an existing known layout), decide whether each new route must be **public** or **private**:
+  - **Known folders (assume same behaviour):** `(marketing)` → public; `veta-app` → private; `(auth)` → public (sign-in, sign-up, callback, auth/complete). No need to ask.
+  - **Unknown / new top-level route or new route group:** Ask the user: “¿Esta ruta debe ser pública (accesible sin sesión) o privada?”
+  - If the user says **public** (or it belongs to a public group), add the path to `PUBLIC_ROUTES` in `src/lib/supabase/middleware.ts` so unauthenticated users are not redirected to sign-in.
+  - If **private**, no change in middleware (protected by default).
+
+## 6. Commits
 
 - Review `git status` and ensure all relevant changes are included.
 - Create commits using **Conventional Commits** (`feat:`, `fix:`, `chore:`, `docs:`, etc.).
 - Clear, descriptive messages per logical set of changes.
 - Optional: a final commit `docs: update progress and release notes` if documentation was updated in step 4.
 
-## 6. Push to remote
+## 7. Push to remote
 
 - Push the branch to the remote.
 
-## 7. Create the PR (only if user asked to "generate PR")
+## 8. Create the PR (only if user asked to "generate PR")
 
 - **Only execute this step if the user explicitly asked to generate/create the PR.**
 - **If the user only asked to "push changes" or "subir cambios", skip this step.**
@@ -66,7 +74,8 @@ When either scenario is triggered, run **in this order**:
 
 **Summary:**
 
-- **Generate PR:** Branch (ensure not on main) → Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push → PR
-- **Push changes:** Branch (ensure not on main) → Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push (stop here)
+- **Generate PR:** Branch → Clean → Format → Tests + Build → Documentation → [New routes: ask public/private if unknown, update middleware] → Commits → Push → PR
+- **Push changes:** same flow, stop after Push.
+- **Rutas:** Si se añade una ruta nueva que no está en una carpeta conocida, preguntar si es pública; si es pública, añadirla a `PUBLIC_ROUTES` en el middleware.
 
 Do not skip steps; if something fails, fix it before continuing.

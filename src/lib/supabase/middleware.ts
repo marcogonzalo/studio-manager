@@ -16,6 +16,7 @@ const PUBLIC_ROUTES = [
   "/pricing",
   "/contact",
   "/legal",
+  "/demo",
   "/sign-in",
   "/sign-up",
   "/sitemap.xml",
