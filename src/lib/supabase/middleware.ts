@@ -21,10 +21,6 @@ const PUBLIC_ROUTES = [
   "/sign-up",
   "/sitemap.xml",
   "/robots.txt",
-  // Vistas de cada plan
-  "/plan-base-primer-proyecto-interiorismo",
-  "/plan-pro-proyectos-ilimitados",
-  "/plan-studio-marca-blanca",
 ];
 
 function isPublicPath(pathname: string): boolean {
