@@ -34,7 +34,7 @@ export const DEFAULT_STATE: ConsentState = {
   personalization: false,
 };
 
-/** EU/EEA region codes for default-deny consent (same as previous Cookiebot setup) */
+/** EU/EEA region codes for default-deny consent */
 export const EU_REGIONS = [
   "GB",
   "AT",
