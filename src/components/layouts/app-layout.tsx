@@ -622,10 +622,15 @@ export default function AppLayoutClient({
             <Button
               variant="ghost"
               size="icon"
-              className="bg-background/80 border-border fixed bottom-4 left-1/2 z-50 h-10 w-10 -translate-x-1/2 rounded-[25px] border shadow-sm backdrop-blur-sm md:hidden print:hidden"
+              className="bg-background/80 border-border fixed bottom-4 left-1/2 z-50 h-12 w-12 -translate-x-1/2 overflow-hidden rounded-full border shadow-sm backdrop-blur-sm md:hidden print:hidden"
               aria-label="Abrir menú"
             >
-              <VetaLogo variant="icon" height={20} width={28} />
+              <VetaLogo
+                variant="icon"
+                height={24}
+                width={34}
+                className="shrink-0"
+              />
             </Button>
           </SheetTrigger>
           <SheetContent
