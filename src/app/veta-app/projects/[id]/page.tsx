@@ -69,7 +69,7 @@ function ProjectDetailContent() {
   const expensesDisabled = !usePlanCapability("costs_management");
   const costsDisabled = false;
   const advancedCostOptionsEnabled = usePlanCapability("costs_management", {
-    minModality: "full",
+    minModality: "plus",
   });
 
   const budgetModeAtLeastPlus = usePlanCapability("pdf_export_mode", {
@@ -321,7 +321,7 @@ function ProjectDetailContent() {
             <TabsTrigger value="spaces">Espacios</TabsTrigger>
             <TabsTrigger value="quotation">Presupuesto</TabsTrigger>
             <TabsTrigger value="expenses" disabled={costsDisabled}>
-              Control Costos
+              Control de costes
             </TabsTrigger>
             <TabsTrigger value="purchases" disabled={purchasesDisabled}>
               Compras

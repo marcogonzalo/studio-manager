@@ -58,6 +58,7 @@ export function ProjectPayments({
   const supabase = getSupabaseClient();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [projectCurrency, setProjectCurrency] = useState<string>("EUR");
+  const [budgetGrandTotal, setBudgetGrandTotal] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
@@ -65,13 +66,26 @@ export function ProjectPayments({
 
   const fetchPayments = async () => {
     setLoading(true);
-    const [{ data: projectData }, { data, error }] = await Promise.all([
+    const [
+      { data: projectData },
+      { data, error },
+      { data: budgetLines },
+      { data: items },
+    ] = await Promise.all([
       supabase.from("projects").select("currency").eq("id", projectId).single(),
       supabase
         .from("payments")
         .select("*")
         .eq("project_id", projectId)
         .order("payment_date", { ascending: false }),
+      supabase
+        .from("project_budget_lines")
+        .select("estimated_amount")
+        .eq("project_id", projectId),
+      supabase
+        .from("project_items")
+        .select("unit_price, quantity")
+        .eq("project_id", projectId),
     ]);
     if (projectData?.currency) setProjectCurrency(projectData.currency);
     if (error) {
@@ -79,6 +93,17 @@ export function ProjectPayments({
     } else {
       setPayments(data || []);
     }
+    const linesTotal = (budgetLines || []).reduce(
+      (sum: number, line: { estimated_amount?: unknown }) =>
+        sum + Number(line.estimated_amount),
+      0
+    );
+    const itemsTotal = (items || []).reduce(
+      (sum: number, item: { unit_price?: unknown; quantity?: unknown }) =>
+        sum + Number(item.unit_price) * Number(item.quantity),
+      0
+    );
+    setBudgetGrandTotal(linesTotal + itemsTotal);
     setLoading(false);
   };
 
@@ -138,6 +163,12 @@ export function ProjectPayments({
     (sum, p) => sum + Number(p.amount),
     0
   );
+  const totalReceived = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const totalPending = Math.max(0, budgetGrandTotal - totalReceived);
+  const paidPercentage =
+    budgetGrandTotal > 0
+      ? Math.min(100, (totalReceived / budgetGrandTotal) * 100)
+      : 0;
 
   if (loading) {
     return (
@@ -160,9 +191,9 @@ export function ProjectPayments({
       disabled={disabled}
       disabledMessage="La gestión de pagos no está incluida en tu plan actual."
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <CardTitle>Pagos del Proyecto</CardTitle>
+          <h3 className="text-lg font-medium">Pagos del Proyecto</h3>
           <div className="flex gap-2">
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-[200px]">
@@ -185,6 +216,44 @@ export function ProjectPayments({
             )}
           </div>
         </div>
+
+        {/* Totals summary (like cost control) */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-secondary/30 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs">Total pendiente</p>
+                <p className="text-xl font-bold">
+                  {formatCurrencyUtil(totalPending, projectCurrency)}
+                </p>
+              </div>
+              <div className="bg-secondary/30 rounded-lg p-3">
+                <p className="text-muted-foreground text-xs">Total recibido</p>
+                <p className="text-xl font-bold">
+                  {formatCurrencyUtil(totalReceived, projectCurrency)}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <div
+                className="bg-muted h-2 flex-1 overflow-hidden rounded-full"
+                role="progressbar"
+                aria-valuenow={paidPercentage}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Porcentaje cobrado del presupuesto"
+              >
+                <div
+                  className="bg-primary h-full rounded-full transition-all duration-300"
+                  style={{ width: `${paidPercentage}%` }}
+                />
+              </div>
+              <span className="text-muted-foreground min-w-[3rem] text-right text-sm font-medium tabular-nums">
+                {paidPercentage.toFixed(0)}%
+              </span>
+            </div>
+          </CardContent>
+        </Card>
 
         {filteredPayments.length === 0 ? (
           <Card>

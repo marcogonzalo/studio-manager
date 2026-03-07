@@ -82,31 +82,38 @@ export function DemoRequestForm() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col gap-4 sm:flex-row sm:items-end"
+            className="flex flex-col gap-4"
           >
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem className="flex-1">
+                <FormItem className="space-y-2">
                   <FormLabel>Correo electrónico</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="tu@email.com"
-                      autoComplete="email"
-                      {...field}
-                    />
-                  </FormControl>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="tu@email.com"
+                        autoComplete="email"
+                        className="sm:min-w-[200px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <Button
+                      type="submit"
+                      disabled={form.formState.isSubmitting}
+                      className="shrink-0"
+                    >
+                      {form.formState.isSubmitting
+                        ? "Enviando…"
+                        : "Recibir enlace de demo"}
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting
-                ? "Enviando…"
-                : "Recibir enlace de demo"}
-            </Button>
           </form>
         </Form>
         <p className="text-muted-foreground mt-4 text-sm">

@@ -99,7 +99,7 @@ export function BudgetLineDialog({
 }: BudgetLineDialogProps) {
   const { user } = useAuth();
   const advancedCostLineOptionsEnabled = usePlanCapability("costs_management", {
-    minModality: "full",
+    minModality: "plus",
   });
   const supabase = getSupabaseClient();
   const isEditing = !!budgetLine;

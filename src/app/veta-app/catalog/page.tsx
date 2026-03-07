@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   getDemoAccountMessage,
@@ -228,26 +227,31 @@ export default function CatalogPage() {
           </Card>
         ) : (
           products.map((p) => (
-            <Card key={p.id} className="transition-shadow hover:shadow-md">
+            <Card
+              key={p.id}
+              className="relative transition-shadow hover:shadow-md"
+            >
               <CardContent className="flex gap-4 p-4">
                 <button
                   type="button"
-                  className="bg-muted focus-visible:ring-ring relative h-16 w-16 shrink-0 overflow-hidden rounded-md transition-opacity hover:opacity-90 focus-visible:ring-2"
+                  className="bg-muted focus-visible:ring-ring relative h-24 w-24 shrink-0 overflow-hidden rounded-md transition-opacity hover:opacity-90 focus-visible:ring-2"
                   onClick={() => {
                     setSelectedProduct(p);
                     setIsProductModalOpen(true);
                   }}
                   aria-label={`Ver imagen de ${p.name}`}
+                  style={
+                    p.image_url
+                      ? {
+                          backgroundImage: `url(${p.image_url})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }
+                      : undefined
+                  }
                 >
-                  {p.image_url ? (
-                    <Image
-                      src={p.image_url}
-                      alt={p.name}
-                      width={64}
-                      height={64}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
+                  {!p.image_url && (
                     <div className="flex h-full w-full items-center justify-center">
                       <ImageIcon
                         className="text-muted-foreground h-6 w-6"
@@ -257,18 +261,14 @@ export default function CatalogPage() {
                   )}
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className="text-foreground truncate font-medium">
+                  <p className="text-foreground line-clamp-2 font-medium">
                     {p.name}
                   </p>
-                  <p className="text-muted-foreground font-mono text-xs">
-                    {p.reference_code}
-                  </p>
-                  <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-sm">
-                    {p.category && <span>{p.category}</span>}
-                    {p.supplier?.name && (
-                      <span className="truncate">{p.supplier.name}</span>
-                    )}
-                  </div>
+                  {p.supplier?.name && (
+                    <p className="text-muted-foreground mt-1 truncate text-sm">
+                      {p.supplier.name}
+                    </p>
+                  )}
                   <p className="text-foreground mt-1 text-sm font-medium tabular-nums">
                     {formatCurrency(
                       Number(p.cost_price),
@@ -276,17 +276,23 @@ export default function CatalogPage() {
                     )}
                   </p>
                 </div>
+              </CardContent>
+              <div
+                className="absolute right-3 bottom-3 z-10"
+                style={{ inset: "auto 0.75rem 0.75rem auto" }}
+              >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8"
                       aria-label="Acciones del producto"
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" side="top">
                     <DropdownMenuItem
                       onClick={() => {
                         setEditingProduct(p);
@@ -305,7 +311,7 @@ export default function CatalogPage() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </CardContent>
+              </div>
             </Card>
           ))
         )}

@@ -405,7 +405,7 @@ export default function DashboardPage() {
                   <AnimatedCounter
                     target={stats.totalExpensesThisMonth}
                     duration={1.5}
-                    prefix="€"
+                    currencyCode="EUR"
                     decimals={2}
                   />
                 </div>
@@ -430,7 +430,7 @@ export default function DashboardPage() {
                   <AnimatedCounter
                     target={stats.totalIncomeThisMonth}
                     duration={1.5}
-                    prefix="€"
+                    currencyCode="EUR"
                     decimals={2}
                   />
                 </div>

@@ -432,218 +432,102 @@ export function ProjectBudget({
   }
 
   return (
-    <ProjectTabContent disabled={disabled}>
+    <ProjectTabContent
+      disabled={disabled}
+      disabledMessage="El presupuesto no está incluido en tu plan actual."
+    >
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <h3 className="text-lg font-medium">Presupuesto</h3>
-            <div className="text-muted-foreground text-sm">
-              Productos: {formatCurrency(totalItemsPrice)} | Partidas:{" "}
-              {formatCurrency(totalBudgetLinesEstimated)} |
-              <span className="font-semibold">
-                {" "}
-                Total: {formatCurrency(grandTotal)}
-              </span>
-            </div>
           </div>
           <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsPrintOptionsOpen(true)}
-              className="print:hidden"
-              disabled={isGeneratingPDF || !project}
-            >
-              <Printer className="mr-2 h-4 w-4" />
-              {isGeneratingPDF ? "Generando PDF..." : "Exportar PDF"}
-            </Button>
-            {!readOnly && (
-              <>
+            {/* Exportar (PDF) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  onClick={handleAddBudgetLine}
-                  className="print:hidden"
+                  className="shrink-0 print:hidden"
+                  aria-label="Exportar"
                 >
-                  <Plus className="mr-2 h-4 w-4" /> Nueva Partida
+                  Exportar
+                  <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
-                <Button onClick={handleAddItem} className="print:hidden">
-                  <Plus className="mr-2 h-4 w-4" /> Añadir Producto
-                </Button>
-              </>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => setIsPrintOptionsOpen(true)}
+                  disabled={isGeneratingPDF || !project}
+                >
+                  <Printer className="mr-2 h-4 w-4" />
+                  {isGeneratingPDF ? "Generando PDF..." : "Exportar PDF"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {/* Añadir (Partida, Producto) */}
+            {!readOnly && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="shrink-0 print:hidden" aria-label="Añadir">
+                    Añadir
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleAddBudgetLine}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Nueva Partida
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleAddItem}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Añadir Producto
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
 
-        {/* Budget Lines by Phase and Category */}
-        {phaseOrder.map((phase) => {
-          const phaseData = budgetLinesByPhaseAndCategory[phase];
-          if (!phaseData) return null;
-
-          // Check if this phase has any lines
-          const hasLines = Object.values(phaseData).some(
-            (lines) => lines.length > 0
-          );
-          if (!hasLines) return null;
-
-          const phaseTotal = Object.values(phaseData).reduce(
-            (sum, lines) =>
-              sum +
-              lines.reduce(
-                (lineSum, line) => lineSum + Number(line.estimated_amount),
-                0
-              ),
-            0
-          );
-
-          const phaseSectionKey = `phase_${phase}`;
-
-          return (
-            <div key={phase} className="space-y-3">
-              <Collapsible
-                open={openSections[phaseSectionKey] !== false}
-                onOpenChange={() => toggleSection(phaseSectionKey)}
-              >
-                <Card className="border-l-primary border-l-4">
-                  <CollapsibleTrigger asChild>
-                    <CardHeader className="hover:bg-accent/30 cursor-pointer">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <ChevronDown
-                            className={`h-4 w-4 transition-transform ${openSections[phaseSectionKey] !== false ? "" : "-rotate-90"}`}
-                          />
-                          {phase === "no_phase"
-                            ? "Sin Fase"
-                            : getPhaseLabel(phase as ProjectPhase)}
-                        </CardTitle>
-                        <span className="text-foreground font-semibold">
-                          {formatCurrency(phaseTotal)}
-                        </span>
-                      </div>
-                    </CardHeader>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <CardContent className="space-y-3 pt-0">
-                      {categoryOrder.map((category) => {
-                        const lines = phaseData[category] || [];
-                        if (lines.length === 0) return null;
-
-                        const categoryTotal = lines.reduce(
-                          (sum, line) => sum + Number(line.estimated_amount),
-                          0
-                        );
-                        const categorySectionKey = `${phaseSectionKey}_${category}`;
-
-                        return (
-                          <Collapsible
-                            key={category}
-                            open={openSections[categorySectionKey] !== false}
-                            onOpenChange={() =>
-                              toggleSection(categorySectionKey)
-                            }
-                          >
-                            <Card className="ml-4">
-                              <CollapsibleTrigger asChild>
-                                <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
-                                  <div className="flex items-center justify-between">
-                                    <CardTitle className="flex items-center gap-2 text-sm">
-                                      <ChevronDown
-                                        className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
-                                      />
-                                      {getBudgetCategoryLabel(category)}
-                                    </CardTitle>
-                                    <span className="text-foreground text-sm font-semibold">
-                                      {formatCurrency(categoryTotal)}
-                                    </span>
-                                  </div>
-                                </CardHeader>
-                              </CollapsibleTrigger>
-                              <CollapsibleContent>
-                                <CardContent className="pt-0">
-                                  <Table>
-                                    <TableHeader>
-                                      <TableRow>
-                                        <TableHead>Concepto</TableHead>
-                                        <TableHead>Descripción</TableHead>
-                                        <TableHead className="text-right">
-                                          Importe
-                                        </TableHead>
-                                        <TableHead className="w-[80px]"></TableHead>
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {lines.map((line) => (
-                                        <TableRow key={line.id}>
-                                          <TableCell className="font-medium">
-                                            {getBudgetSubcategoryLabel(
-                                              category,
-                                              line.subcategory
-                                            )}
-                                          </TableCell>
-                                          <TableCell className="text-muted-foreground">
-                                            {line.description || "-"}
-                                          </TableCell>
-                                          <TableCell className="text-right font-semibold">
-                                            {formatCurrency(
-                                              Number(line.estimated_amount)
-                                            )}
-                                          </TableCell>
-                                          <TableCell>
-                                            {!readOnly && (
-                                              <div className="flex justify-end">
-                                                <DropdownMenu>
-                                                  <DropdownMenuTrigger asChild>
-                                                    <Button
-                                                      variant="ghost"
-                                                      size="icon"
-                                                      aria-label="Acciones de la partida"
-                                                    >
-                                                      <MoreVertical className="h-4 w-4" />
-                                                    </Button>
-                                                  </DropdownMenuTrigger>
-                                                  <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem
-                                                      onClick={() =>
-                                                        handleEditBudgetLine(
-                                                          line
-                                                        )
-                                                      }
-                                                    >
-                                                      <Pencil className="mr-2 h-4 w-4" />
-                                                      Editar
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                      onClick={() =>
-                                                        handleDeleteBudgetLine(
-                                                          line.id
-                                                        )
-                                                      }
-                                                      className="text-destructive"
-                                                    >
-                                                      <Trash2 className="mr-2 h-4 w-4" />
-                                                      Eliminar
-                                                    </DropdownMenuItem>
-                                                  </DropdownMenuContent>
-                                                </DropdownMenu>
-                                              </div>
-                                            )}
-                                          </TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
-                                </CardContent>
-                              </CollapsibleContent>
-                            </Card>
-                          </Collapsible>
-                        );
-                      })}
-                    </CardContent>
-                  </CollapsibleContent>
-                </Card>
-              </Collapsible>
+        {/* Grand Total Summary */}
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="pt-6">
+            <h4 className="text-muted-foreground mb-2 font-medium">
+              Total Presupuesto
+            </h4>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-muted-foreground text-xs">
+                  Partidas: {formatCurrency(totalBudgetLinesEstimated)}
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  Productos: {formatCurrency(totalItemsPrice)}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-0.5">
+                <p className="text-primary text-3xl font-bold">
+                  {formatCurrency(grandTotal)}
+                </p>
+              </div>
             </div>
-          );
-        })}
+            {(() => {
+              const taxRate = project?.tax_rate != null ? project.tax_rate : 0;
+              const taxAmount = grandTotal * (taxRate / 100);
+              const totalWithTax = grandTotal + taxAmount;
+              if (taxRate === 0) return null;
+              return (
+                <div className="flex items-center justify-between pt-2">
+                  <p className="text-muted-foreground text-xs">
+                    Impuesto ({taxRate}%): {formatCurrency(taxAmount)}
+                  </p>
+                  <p className="text-muted-foreground text-xs font-medium">
+                    Con impuestos: {formatCurrency(totalWithTax)}
+                  </p>
+                </div>
+              );
+            })()}
+          </CardContent>
+        </Card>
 
         {/* Products Section */}
         <Collapsible
@@ -816,25 +700,176 @@ export function ProjectBudget({
           </Card>
         </Collapsible>
 
-        {/* Grand Total Summary */}
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-muted-foreground text-sm">
-                  Total Presupuesto
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  Partidas: {formatCurrency(totalBudgetLinesEstimated)} +
-                  Productos: {formatCurrency(totalItemsPrice)}
-                </p>
-              </div>
-              <p className="text-primary text-3xl font-bold">
-                {formatCurrency(grandTotal)}
-              </p>
+        {/* Budget Lines by Phase and Category */}
+        {phaseOrder.map((phase) => {
+          const phaseData = budgetLinesByPhaseAndCategory[phase];
+          if (!phaseData) return null;
+
+          // Check if this phase has any lines
+          const hasLines = Object.values(phaseData).some(
+            (lines) => lines.length > 0
+          );
+          if (!hasLines) return null;
+
+          const phaseTotal = Object.values(phaseData).reduce(
+            (sum, lines) =>
+              sum +
+              lines.reduce(
+                (lineSum, line) => lineSum + Number(line.estimated_amount),
+                0
+              ),
+            0
+          );
+
+          const phaseSectionKey = `phase_${phase}`;
+
+          return (
+            <div key={phase} className="space-y-3">
+              <Collapsible
+                open={openSections[phaseSectionKey] !== false}
+                onOpenChange={() => toggleSection(phaseSectionKey)}
+              >
+                <Card className="border-l-primary border-l-4">
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="hover:bg-accent/30 cursor-pointer">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform ${openSections[phaseSectionKey] !== false ? "" : "-rotate-90"}`}
+                          />
+                          {phase === "no_phase"
+                            ? "Sin Fase"
+                            : getPhaseLabel(phase as ProjectPhase)}
+                        </CardTitle>
+                        <span className="text-foreground font-semibold">
+                          {formatCurrency(phaseTotal)}
+                        </span>
+                      </div>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <CardContent className="space-y-3 pt-0">
+                      {categoryOrder.map((category) => {
+                        const lines = phaseData[category] || [];
+                        if (lines.length === 0) return null;
+
+                        const categoryTotal = lines.reduce(
+                          (sum, line) => sum + Number(line.estimated_amount),
+                          0
+                        );
+                        const categorySectionKey = `${phaseSectionKey}_${category}`;
+
+                        return (
+                          <Collapsible
+                            key={category}
+                            open={openSections[categorySectionKey] !== false}
+                            onOpenChange={() =>
+                              toggleSection(categorySectionKey)
+                            }
+                          >
+                            <Card className="ml-4">
+                              <CollapsibleTrigger asChild>
+                                <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
+                                  <div className="flex items-center justify-between">
+                                    <CardTitle className="flex items-center gap-2 text-sm">
+                                      <ChevronDown
+                                        className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
+                                      />
+                                      {getBudgetCategoryLabel(category)}
+                                    </CardTitle>
+                                    <span className="text-foreground text-sm font-semibold">
+                                      {formatCurrency(categoryTotal)}
+                                    </span>
+                                  </div>
+                                </CardHeader>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent>
+                                <CardContent className="pt-0">
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead>Concepto</TableHead>
+                                        <TableHead>Descripción</TableHead>
+                                        <TableHead className="text-right">
+                                          Importe
+                                        </TableHead>
+                                        <TableHead className="w-[80px]"></TableHead>
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {lines.map((line) => (
+                                        <TableRow key={line.id}>
+                                          <TableCell className="font-medium">
+                                            {getBudgetSubcategoryLabel(
+                                              category,
+                                              line.subcategory
+                                            )}
+                                          </TableCell>
+                                          <TableCell className="text-muted-foreground">
+                                            {line.description || "-"}
+                                          </TableCell>
+                                          <TableCell className="text-right font-semibold">
+                                            {formatCurrency(
+                                              Number(line.estimated_amount)
+                                            )}
+                                          </TableCell>
+                                          <TableCell>
+                                            {!readOnly && (
+                                              <div className="flex justify-end">
+                                                <DropdownMenu>
+                                                  <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="icon"
+                                                      aria-label="Acciones de la partida"
+                                                    >
+                                                      <MoreVertical className="h-4 w-4" />
+                                                    </Button>
+                                                  </DropdownMenuTrigger>
+                                                  <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                      onClick={() =>
+                                                        handleEditBudgetLine(
+                                                          line
+                                                        )
+                                                      }
+                                                    >
+                                                      <Pencil className="mr-2 h-4 w-4" />
+                                                      Editar
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                      onClick={() =>
+                                                        handleDeleteBudgetLine(
+                                                          line.id
+                                                        )
+                                                      }
+                                                      className="text-destructive"
+                                                    >
+                                                      <Trash2 className="mr-2 h-4 w-4" />
+                                                      Eliminar
+                                                    </DropdownMenuItem>
+                                                  </DropdownMenuContent>
+                                                </DropdownMenu>
+                                              </div>
+                                            )}
+                                          </TableCell>
+                                        </TableRow>
+                                      ))}
+                                    </TableBody>
+                                  </Table>
+                                </CardContent>
+                              </CollapsibleContent>
+                            </Card>
+                          </Collapsible>
+                        );
+                      })}
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
             </div>
-          </CardContent>
-        </Card>
+          );
+        })}
 
         {/* Dialogs */}
         <AddItemDialog
