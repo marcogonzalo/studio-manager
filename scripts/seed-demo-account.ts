@@ -405,7 +405,7 @@ async function main() {
         supplier_id: supplierIds[1],
         order_number: "OC-A2",
         order_date: new Date().toISOString().slice(0, 10),
-        status: "pending",
+        status: "draft",
       },
       {
         user_id: userId,

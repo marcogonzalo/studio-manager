@@ -56,9 +56,9 @@ const STATUS_LABELS: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-foreground",
   sent: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
-  confirmed: "bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary",
-  received:
+  confirmed:
     "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300",
+  received: "bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary",
   cancelled:
     "bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive",
 };
@@ -209,9 +209,11 @@ export function ProjectPurchases({
       disabled={disabled}
       disabledMessage="Las órdenes de compra no están incluidas en tu plan actual."
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <CardTitle>Órdenes de Compra</CardTitle>
+          <h3 className="text-lg font-medium">
+            Órdenes de compra y fabricación
+          </h3>
           {!readOnly && (
             <div className="flex gap-2">
               <Button onClick={handleCreateNew} disabled={loading}>
