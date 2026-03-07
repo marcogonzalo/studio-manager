@@ -11,7 +11,7 @@
 - **Planes:** Base / Pro / Studio. Consumibles y modalidades, `plan-copy.ts`, `plan-capability.ts`, restricciones por plan, cambio de plan en `/settings/plan`.
 - **Marca y marketing:** Veta, logos light/dark, tipografía Montserrat. Páginas marketing (home, about, pricing, contact, planes), SEO, sitemap, robots, OG, MailerSend contacto, dominio veta.pro.
 - **UI/UX y a11y:** Tema natural/pastel, dark mode OKLCH, animaciones (Framer Motion), skeletons, skip link, una h1 por página, focus-visible, `prefers-reduced-motion`, loading por ruta.
-- **PDF:** Presupuestos con `@react-pdf/renderer` (espacios, costes adicionales, opciones de filtrado).
+- **PDF:** Presupuestos con `@react-pdf/renderer` (espacios, costes adicionales, opciones de filtrado). Para planes basic/plus: cabecera con logo Veta (light) y nombre, pie en cada página "Document generated with Veta - www.veta.pro" con logo en miniatura (issue #95).
 - **Cuenta:** Perfil, personalización (/customization), Mi cuenta (email, zona peligro, eliminar cuenta, cambiar email). Legal (términos, privacidad, **Cookies**: explicación, necesarias/Supabase, estadísticas/GA4-GTM-Vercel, personalización, marketing, no clasificadas). Plantillas email Supabase.
 - **Seguridad:** Headers (CSP, X-Frame-Options, etc.), validación ownership en uploads, OWASP documentado.
 - **Analytics:** GTM, GA4, gestión de cookies propia (banner + Consent Mode v2), CSP ajustada para terceros.

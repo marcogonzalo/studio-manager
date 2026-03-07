@@ -16,7 +16,9 @@ export async function generateProjectPDF(
   budgetLines: ProjectBudgetLine[],
   taxRate: number = 0,
   architectName?: string,
-  architectEmail?: string
+  architectEmail?: string,
+  /** When true (pdf_export_mode basic/plus), show Veta header and footer in the PDF. */
+  showVetaBranding: boolean = false
 ) {
   // Dynamic import to avoid Vite resolution issues
   const { pdf } = await import("@react-pdf/renderer");
@@ -31,6 +33,7 @@ export async function generateProjectPDF(
     taxRate,
     architectName,
     architectEmail,
+    showVetaBranding,
   });
 
   // Type assertion to satisfy react-pdf's type requirements

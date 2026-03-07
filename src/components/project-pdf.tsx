@@ -269,7 +269,50 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontStyle: "italic",
   },
+  vetaHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    borderBottomStyle: "solid",
+  },
+  vetaHeaderLogo: {
+    width: 32,
+    height: 24,
+    objectFit: "contain",
+  },
+  vetaHeaderName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.primary,
+  },
+  vetaFooter: {
+    marginTop: 24,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    borderTopStyle: "solid",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  vetaFooterLogo: {
+    width: 16,
+    height: 12,
+    objectFit: "contain",
+  },
+  vetaFooterText: {
+    fontSize: 8,
+    color: colors.textLight,
+  },
 });
+
+/** Logo Veta (light) for PDF header/footer. Resolves to current origin when PDF is generated in the browser. */
+const VETA_LOGO_LIGHT_SRC = "/img/veta-light.webp";
 
 interface ProjectPDFProps {
   project: Project & {
@@ -285,6 +328,8 @@ interface ProjectPDFProps {
   taxRate?: number;
   architectName?: string;
   architectEmail?: string;
+  /** When true (pdf_export_mode basic or plus), show Veta logo and name in header and branding footer. */
+  showVetaBranding?: boolean;
 }
 
 // Helper function to get category label
@@ -307,6 +352,7 @@ export function ProjectPDF({
   taxRate = 0,
   architectName,
   architectEmail,
+  showVetaBranding = false,
 }: ProjectPDFProps) {
   // Filter out excluded items
   const includedItems = items.filter((item) => !item.is_excluded);
@@ -378,6 +424,16 @@ export function ProjectPDF({
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {showVetaBranding && (
+          <View style={styles.vetaHeader}>
+            <Image
+              src={VETA_LOGO_LIGHT_SRC}
+              style={styles.vetaHeaderLogo}
+              cache={false}
+            />
+            <Text style={styles.vetaHeaderName}>Veta</Text>
+          </View>
+        )}
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Presupuesto de {project.name}</Text>
@@ -702,6 +758,18 @@ export function ProjectPDF({
             </View>
           </View>
         </View>
+        {showVetaBranding && (
+          <View style={styles.vetaFooter} fixed>
+            <Image
+              src={VETA_LOGO_LIGHT_SRC}
+              style={styles.vetaFooterLogo}
+              cache={false}
+            />
+            <Text style={styles.vetaFooterText}>
+              Document generated with Veta - www.veta.pro
+            </Text>
+          </View>
+        )}
       </Page>
     </Document>
   );

@@ -84,10 +84,13 @@ export function ProjectBudget({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
-  const { user } = useAuth();
+  const { user, effectivePlan } = useAuth();
   const printFilterOptionsEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "full",
   });
+  const showVetaBranding =
+    effectivePlan?.config?.pdf_export_mode === "basic" ||
+    effectivePlan?.config?.pdf_export_mode === "plus";
   const supabase = getSupabaseClient();
   const { budgetLines, refetch: refetchBudgetLines } = useProjectBudgetLines(
     projectId,
@@ -262,7 +265,8 @@ export function ProjectBudget({
         linesToPdf,
         taxRate,
         architectName,
-        architectEmail
+        architectEmail,
+        showVetaBranding
       );
       const blob = await asPdf.toBlob();
       const url = URL.createObjectURL(blob);
