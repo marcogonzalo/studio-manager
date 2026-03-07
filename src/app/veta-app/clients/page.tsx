@@ -186,9 +186,12 @@ export default function ClientsPage() {
           </Card>
         ) : (
           clients.map((client) => (
-            <Card key={client.id} className="transition-shadow hover:shadow-md">
-              <CardContent className="flex items-start justify-between gap-2 p-4">
-                <div className="min-w-0 flex-1">
+            <Card
+              key={client.id}
+              className="relative transition-shadow hover:shadow-md"
+            >
+              <CardContent className="p-4">
+                <div className="min-w-0 pr-10">
                   <p className="text-foreground truncate font-medium">
                     {client.full_name}
                   </p>
@@ -203,17 +206,23 @@ export default function ClientsPage() {
                     </p>
                   )}
                 </div>
+              </CardContent>
+              <div
+                className="absolute right-3 bottom-3 z-10"
+                style={{ inset: "auto 0.75rem 0.75rem auto" }}
+              >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8"
                       aria-label="Acciones del cliente"
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" side="top">
                     <DropdownMenuItem onClick={() => handleEdit(client)}>
                       <Pencil className="mr-2 h-4 w-4" />
                       Editar
@@ -227,7 +236,7 @@ export default function ClientsPage() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </CardContent>
+              </div>
             </Card>
           ))
         )}
