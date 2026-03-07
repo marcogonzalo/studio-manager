@@ -321,7 +321,7 @@ function ProjectDetailContent() {
             <TabsTrigger value="spaces">Espacios</TabsTrigger>
             <TabsTrigger value="quotation">Presupuesto</TabsTrigger>
             <TabsTrigger value="expenses" disabled={costsDisabled}>
-              Control Costos
+              Control de costes
             </TabsTrigger>
             <TabsTrigger value="purchases" disabled={purchasesDisabled}>
               Compras

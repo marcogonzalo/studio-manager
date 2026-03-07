@@ -60,14 +60,15 @@ export function ProjectDocuments({
       disabledMessage="Los documentos no están incluidos en tu plan actual."
     >
       <div className="space-y-6">
-        {!readOnly && (
-          <div className="flex justify-end">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium">Documentos</h3>
+          {!readOnly && (
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Añadir documento
             </Button>
-          </div>
-        )}
+          )}
+        </div>
 
         {documents.length === 0 ? (
           <Card>

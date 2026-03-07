@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import type { Space } from "@/types";
-import { Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 interface Image {
   id: string;
@@ -39,11 +38,8 @@ export function SpaceImagesDialog({
   const supabase = getSupabaseClient();
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(false);
-  const imageRowCreatedForUploadRef = useRef(false);
-  const imageIdForUpload = useMemo(
-    () => (open ? crypto.randomUUID() : ""),
-    [open]
-  );
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [expandedImage, setExpandedImage] = useState<Image | null>(null);
 
   const fetchImages = async () => {
     const { data } = await supabase
@@ -58,45 +54,6 @@ export function SpaceImagesDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when open or space.id changes only
   }, [open, space.id]);
 
-  const ensureImageRowBeforeUpload = useCallback(async () => {
-    if (imageRowCreatedForUploadRef.current) return;
-    const { error } = await supabase.from("space_images").insert([
-      {
-        id: imageIdForUpload,
-        space_id: space.id,
-        url: "",
-        description: "Render",
-      },
-    ]);
-    if (error) throw error;
-    imageRowCreatedForUploadRef.current = true;
-  }, [imageIdForUpload, space.id, supabase]);
-
-  const handleUploadSuccess = async (
-    url: string,
-    fileSizeBytes?: number,
-    assetId?: string
-  ) => {
-    setLoading(true);
-    try {
-      if (imageRowCreatedForUploadRef.current) {
-        const update: Record<string, unknown> = { url };
-        if (fileSizeBytes != null) update.file_size_bytes = fileSizeBytes;
-        if (assetId != null) update.asset_id = assetId;
-        await supabase
-          .from("space_images")
-          .update(update)
-          .eq("id", imageIdForUpload)
-          .eq("space_id", space.id);
-        imageRowCreatedForUploadRef.current = false;
-        toast.success("Imagen añadida");
-        fetchImages();
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("space_images").delete().eq("id", id);
     if (!error) {
@@ -105,47 +62,63 @@ export function SpaceImagesDialog({
     }
   };
 
+  const createRowForUpload = useCallback(async () => {
+    const id = crypto.randomUUID();
+    const { error } = await supabase.from("space_images").insert([
+      {
+        id,
+        space_id: space.id,
+        url: "",
+        description: "Render",
+      },
+    ]);
+    if (error) throw error;
+    return id;
+  }, [space.id, supabase]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>Renders - {space.name}</DialogTitle>
-          <DialogDescription>Visualizaciones del espacio.</DialogDescription>
-        </DialogHeader>
-
-        <div className="mb-4 flex flex-col gap-2">
-          {imageIdForUpload && projectId ? (
-            <SpaceImageUpload
-              projectId={projectId}
-              spaceId={space.id}
-              imageId={imageIdForUpload}
-              onBeforeUpload={ensureImageRowBeforeUpload}
-              onUploadSuccess={handleUploadSuccess}
-              onUploadError={(msg) => toast.error(msg)}
-              disabled={!canAddRenders}
-            />
-          ) : (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <DialogTitle>Renders - {space.name}</DialogTitle>
+              <DialogDescription>
+                Visualizaciones del espacio.
+              </DialogDescription>
             </div>
-          )}
-          {!canAddRenders && (
-            <p className="text-muted-foreground text-xs">
-              No disponible en tu plan.{" "}
-              <Link href="/pricing" className="underline">
-                Mejora tu plan
-              </Link>{" "}
-              para subir renders.
-            </p>
-          )}
-        </div>
+            <div className="flex shrink-0 justify-end">
+              {canAddRenders ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setAddModalOpen(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Agregar imágenes
+                </Button>
+              ) : (
+                <p className="text-muted-foreground text-right text-xs">
+                  No disponible en tu plan.{" "}
+                  <Link href="/pricing" className="underline">
+                    Mejora tu plan
+                  </Link>{" "}
+                  para subir renders.
+                </p>
+              )}
+            </div>
+          </div>
+        </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           {images.map((img) => (
-            <div
+            <button
               key={img.id}
-              className="group relative aspect-video overflow-hidden rounded-md border"
+              type="button"
+              className="group focus-visible:ring-ring relative aspect-video overflow-hidden rounded-md border bg-transparent p-0 text-left transition-opacity hover:opacity-95 focus:outline-none focus-visible:ring-2"
+              onClick={() => setExpandedImage(img)}
+              aria-label={`Ampliar ${img.description}`}
             >
               <Image
                 src={img.url}
@@ -154,17 +127,25 @@ export function SpaceImagesDialog({
                 className="object-cover"
                 sizes="(max-width: 768px) 50vw, 33vw"
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+              <div
+                className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
+                aria-hidden
+              >
                 <Button
+                  type="button"
                   variant="destructive"
                   size="icon"
-                  onClick={() => handleDelete(img.id)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDelete(img.id);
+                  }}
                   aria-label="Eliminar imagen"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
+            </button>
           ))}
           {images.length === 0 && (
             <div className="text-muted-foreground col-span-full py-10 text-center">
@@ -173,6 +154,69 @@ export function SpaceImagesDialog({
           )}
         </div>
       </DialogContent>
+
+      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Agregar imágenes</DialogTitle>
+            <DialogDescription>
+              Selecciona una o varias imágenes para subir a este espacio.
+            </DialogDescription>
+          </DialogHeader>
+          {projectId && (
+            <SpaceImageUpload
+              projectId={projectId}
+              spaceId={space.id}
+              imageId=""
+              multiple
+              getImageIdForUpload={createRowForUpload}
+              onUploadSuccess={async (
+                url,
+                fileSizeBytes,
+                assetId,
+                imageIdUsed
+              ) => {
+                if (imageIdUsed) {
+                  const update: Record<string, unknown> = { url };
+                  if (fileSizeBytes != null)
+                    update.file_size_bytes = fileSizeBytes;
+                  if (assetId != null) update.asset_id = assetId;
+                  await supabase
+                    .from("space_images")
+                    .update(update)
+                    .eq("id", imageIdUsed)
+                    .eq("space_id", space.id);
+                  toast.success("Imagen añadida");
+                }
+                fetchImages();
+              }}
+              onUploadError={(msg) => toast.error(msg)}
+              disabled={!canAddRenders}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!expandedImage}
+        onOpenChange={(o) => !o && setExpandedImage(null)}
+      >
+        <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-hidden border-0 bg-black/95 p-2 sm:max-w-[90vw]">
+          {expandedImage && (
+            <div className="relative flex min-h-[200px] items-center justify-center">
+              <Image
+                src={expandedImage.url}
+                alt={expandedImage.description}
+                width={1200}
+                height={675}
+                className="max-h-[85vh] w-auto max-w-full object-contain"
+                sizes="90vw"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

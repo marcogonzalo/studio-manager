@@ -196,13 +196,13 @@ export function ProjectCostControl({
 
   // Get bar color based on deviation
   const getDeviationBarColor = (percentage: number) => {
-    if (percentage < 100) return "bg-primary";
-    if (percentage <= 101) return "bg-yellow-500";
+    if (percentage <= 100) return "bg-primary";
+    if (percentage > 100 && percentage <= 101) return "bg-yellow-500";
     return "bg-destructive";
   };
 
   const getDeviationTextColor = (percentage: number) => {
-    if (percentage < 100) return "text-primary";
+    if (percentage <= 100) return "text-primary";
     if (percentage <= 101) return "text-yellow-600 dark:text-yellow-400";
     return "text-destructive";
   };
