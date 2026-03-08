@@ -37,7 +37,7 @@ import {
   getPhaseLabel,
   formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
   fees: "Honorarios",
@@ -192,8 +192,7 @@ export function ProjectPayments({
       disabledMessage="La gestión de pagos no está incluida en tu plan actual."
     >
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">Pagos del Proyecto</h3>
+        <TabSectionHeader title="Pagos del Proyecto">
           <div className="flex gap-2">
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-[200px]">
@@ -215,7 +214,7 @@ export function ProjectPayments({
               </Button>
             )}
           </div>
-        </div>
+        </TabSectionHeader>
 
         {/* Totals summary (like cost control) */}
         <Card>

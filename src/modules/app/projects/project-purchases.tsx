@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { getDemoAccountMessage } from "@/lib/utils";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface PurchaseOrder {
   id: string;
@@ -210,18 +210,13 @@ export function ProjectPurchases({
       disabledMessage="Las órdenes de compra no están incluidas en tu plan actual."
     >
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">
-            Órdenes de compra y fabricación
-          </h3>
+        <TabSectionHeader title="Órdenes de compra y fabricación">
           {!readOnly && (
-            <div className="flex gap-2">
-              <Button onClick={handleCreateNew} disabled={loading}>
-                <Plus className="mr-2 h-4 w-4" /> Nueva Orden
-              </Button>
-            </div>
+            <Button onClick={handleCreateNew} disabled={loading}>
+              <Plus className="mr-2 h-4 w-4" /> Nueva Orden
+            </Button>
           )}
-        </div>
+        </TabSectionHeader>
 
         {orders.length === 0 ? (
           <Card>

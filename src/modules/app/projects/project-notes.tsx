@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getDemoAccountMessage } from "@/lib/utils";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface Note {
   id: string;
@@ -145,7 +145,7 @@ export function ProjectNotes({
       disabledMessage="Las notas no están incluidas en tu plan actual."
     >
       <div className="space-y-6">
-        <h3 className="text-lg font-medium">Notas</h3>
+        <TabSectionHeader title="Notas" />
         <div className="grid gap-6 md:grid-cols-2">
           {!readOnly && (
             <Card className="h-full">

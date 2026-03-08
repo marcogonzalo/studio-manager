@@ -50,7 +50,7 @@ import {
 } from "@/lib/utils";
 
 import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 export function ProjectCostControl({
   projectId,
@@ -267,20 +267,16 @@ export function ProjectCostControl({
         disabledMessage="El control de costes no está incluido en tu plan actual."
       >
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h3 className="text-lg font-medium">Control de Costes</h3>
-              <p className="text-muted-foreground text-sm">
-                Seguimiento interno de estimado vs real
-              </p>
-            </div>
+          <TabSectionHeader
+            title="Control de Costes"
+            subtitle="Seguimiento interno de estimado vs real"
+          >
             {!readOnly && (
               <Button onClick={handleAddBudgetLine} disabled={!canEdit}>
                 <Plus className="mr-2 h-4 w-4" /> Nueva Partida
               </Button>
             )}
-          </div>
+          </TabSectionHeader>
 
           {/* Cost Totalization Summary */}
           <Card>

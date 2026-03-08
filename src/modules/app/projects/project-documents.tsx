@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DocumentDialog } from "@/components/dialogs/document-dialog";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface Document {
   id: string;
@@ -60,15 +60,14 @@ export function ProjectDocuments({
       disabledMessage="Los documentos no están incluidos en tu plan actual."
     >
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium">Documentos</h3>
+        <TabSectionHeader title="Documentos">
           {!readOnly && (
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Añadir documento
             </Button>
           )}
-        </div>
+        </TabSectionHeader>
 
         {documents.length === 0 ? (
           <Card>

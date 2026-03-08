@@ -73,7 +73,7 @@ import type {
   BudgetCategory,
   ProjectPhase,
 } from "@/types";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 export function ProjectBudget({
   projectId,
@@ -472,13 +472,8 @@ export function ProjectBudget({
       disabledMessage="El presupuesto no está incluido en tu plan actual."
     >
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h3 className="text-lg font-medium">Presupuesto</h3>
-          </div>
+        <TabSectionHeader title="Presupuesto">
           <div className="flex space-x-2">
-            {/* Exportar (PDF) */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -500,7 +495,6 @@ export function ProjectBudget({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            {/* Añadir (Partida, Producto) */}
             {!readOnly && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -522,7 +516,7 @@ export function ProjectBudget({
               </DropdownMenu>
             )}
           </div>
-        </div>
+        </TabSectionHeader>
 
         {/* Grand Total Summary */}
         <Card className="bg-primary/5 border-primary/20">
