@@ -133,42 +133,54 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
               });
               return (
                 <Card key={category}>
-                  <CardContent className="pt-6">
-                    <div className="mb-6 last:mb-0">
-                      <div className="bg-muted/50 flex flex-wrap items-center justify-between gap-2 rounded-t-lg px-3 py-2">
-                        <span className="font-medium">
-                          {getBudgetCategoryLabel(category)}
-                        </span>
-                        <span className="text-muted-foreground text-base">
-                          Subtotal: {formatCurrency(categoryTotal)}
-                        </span>
-                      </div>
-                      <ul className="border-border divide-border divide-y rounded-b-lg border-x">
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      {getBudgetCategoryLabel(category)}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-muted-foreground">
+                            Descripción
+                          </TableHead>
+                          <TableHead>Partida</TableHead>
+                          <TableHead className="text-right">Importe</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {sortedLines.map((line) => (
-                          <li
-                            key={line.id}
-                            className="flex flex-wrap items-start justify-between gap-2 px-3 py-2 text-sm"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium">
-                                {getBudgetSubcategoryLabel(
-                                  category as BudgetCategory,
-                                  line.subcategory
-                                )}
-                              </p>
-                              {line.description && (
-                                <p className="text-muted-foreground text-sm">
-                                  {line.description}
-                                </p>
+                          <TableRow key={line.id}>
+                            <TableCell className="text-muted-foreground max-w-[200px] truncate">
+                              {line.description || "—"}
+                            </TableCell>
+                            <TableCell>
+                              {getBudgetSubcategoryLabel(
+                                category as BudgetCategory,
+                                line.subcategory
                               )}
-                            </div>
-                            <span className="shrink-0 font-medium tabular-nums">
+                            </TableCell>
+                            <TableCell className="text-right font-medium tabular-nums">
                               {formatCurrency(Number(line.estimated_amount))}
-                            </span>
-                          </li>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </ul>
-                    </div>
+                      </TableBody>
+                      <TableFooter>
+                        <TableRow>
+                          <TableCell
+                            colSpan={2}
+                            className="text-muted-foreground text-left"
+                          >
+                            Subtotal
+                          </TableCell>
+                          <TableCell className="text-right font-medium tabular-nums">
+                            {formatCurrency(categoryTotal)}
+                          </TableCell>
+                        </TableRow>
+                      </TableFooter>
+                    </Table>
                   </CardContent>
                 </Card>
               );
@@ -182,8 +194,10 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Espacio</TableHead>
                         <TableHead>Producto</TableHead>
+                        <TableHead className="text-muted-foreground">
+                          Espacio
+                        </TableHead>
                         <TableHead className="text-right">Cantidad</TableHead>
                         <TableHead className="text-right">Precio</TableHead>
                       </TableRow>
@@ -191,11 +205,9 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                     <TableBody>
                       {products.map((p) => (
                         <TableRow key={p.id}>
+                          <TableCell>{p.name}</TableCell>
                           <TableCell className="text-muted-foreground">
                             {p.space_name || "—"}
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {p.name}
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             {p.quantity}
@@ -210,7 +222,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                       <TableRow>
                         <TableCell
                           colSpan={3}
-                          className="text-muted-foreground text-right"
+                          className="text-muted-foreground text-left"
                         >
                           Subtotal productos
                         </TableCell>
@@ -253,7 +265,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between border-t pt-1 text-sm">
                   <span className="text-muted-foreground">Subtotal</span>
                   <span className="tabular-nums">
                     {formatCurrency(subtotal)}

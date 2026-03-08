@@ -316,7 +316,7 @@ function ProjectDetailContent() {
                     Solo lectura
                   </span>
                 </TooltipTrigger>
-                <TooltipContent className="bg-brand-tertiary text-brand-tertiary-foreground">
+                <TooltipContent variant="tertiary">
                   No se pueden editar datos ni añadir contenido.
                 </TooltipContent>
               </Tooltip>

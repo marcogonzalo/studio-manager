@@ -13,13 +13,6 @@ import {
 import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
 
-const PAYMENT_TYPE_LABELS: Record<string, string> = {
-  fees: "Honorarios",
-  purchase_provision: "Provisión de Compras",
-  additional_cost: "Coste Adicional",
-  other: "Otro",
-};
-
 interface PageProps {
   params: Promise<{ token: string }>;
 }
@@ -78,10 +71,13 @@ export default async function ViewProjectPaymentsPage({ params }: PageProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Fecha</TableHead>
-                    <TableHead>Monto</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Referencia</TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Referencia
+                    </TableHead>
                     <TableHead>Descripción</TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Monto
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -90,20 +86,14 @@ export default async function ViewProjectPaymentsPage({ params }: PageProps) {
                       <TableCell>
                         {format(new Date(payment.payment_date), "dd/MM/yyyy")}
                       </TableCell>
-                      <TableCell className="font-semibold tabular-nums">
-                        {formatCurrency(Number(payment.amount), currency)}
-                      </TableCell>
-                      <TableCell>
-                        <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium">
-                          {PAYMENT_TYPE_LABELS[payment.payment_type] ??
-                            payment.payment_type}
-                        </span>
-                      </TableCell>
                       <TableCell className="text-muted-foreground max-w-[12rem] truncate">
                         {payment.reference_number ?? "—"}
                       </TableCell>
                       <TableCell className="text-muted-foreground max-w-[16rem] truncate">
                         {payment.description ?? "—"}
+                      </TableCell>
+                      <TableCell className="font-semibold tabular-nums">
+                        {formatCurrency(Number(payment.amount), currency)}
                       </TableCell>
                     </TableRow>
                   ))}

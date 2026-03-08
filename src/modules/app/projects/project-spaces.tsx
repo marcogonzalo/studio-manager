@@ -145,27 +145,25 @@ export function ProjectSpaces({
                           className="flex-1"
                           onClick={() => openProducts(space)}
                         >
-                          <Package className="h-4 w-4 lg:mr-2" />
-                          <span className="hidden lg:inline">Productos</span>
+                          <Package className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Productos del espacio</TooltipContent>
+                      <TooltipContent variant="tertiary">
+                        Productos del espacio
+                      </TooltipContent>
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span className="flex-1">
-                          <Button
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => openImages(space)}
-                            disabled={!canAddRenders}
-                          >
-                            <ImageIcon className="h-4 w-4 lg:mr-2" />
-                            <span className="hidden lg:inline">Renders</span>
-                          </Button>
-                        </span>
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => openImages(space)}
+                          disabled={!canAddRenders}
+                        >
+                          <ImageIcon className="h-4 w-4" />
+                        </Button>
                       </TooltipTrigger>
-                      <TooltipContent>
+                      <TooltipContent variant="tertiary">
                         {!canAddRenders ? (
                           <p>
                             No disponible en tu plan.{" "}
