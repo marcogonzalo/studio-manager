@@ -18,13 +18,14 @@ export async function generateProjectPDF(
   architectName?: string,
   architectEmail?: string,
   /** When true (pdf_export_mode basic/plus), show Veta header and footer in the PDF. */
-  showVetaBranding: boolean = false
+  showVetaBranding: boolean = false,
+  /** Data URL (base64) o URL absoluta del logo Veta. Preferir data URL para que la imagen se incruste y no falle por CORS. */
+  vetaLogoUrl?: string
 ) {
-  // Dynamic import to avoid Vite resolution issues
+  // Dynamic import: tras cambiar project-pdf.tsx, haz refresh completo (F5) para cargar el chunk nuevo
   const { pdf } = await import("@react-pdf/renderer");
   const { ProjectPDF } = await import("@/components/project-pdf");
 
-  // Use React.createElement instead of JSX to avoid static analysis
   const React = await import("react");
   const doc = React.createElement(ProjectPDF, {
     project,
@@ -34,6 +35,7 @@ export async function generateProjectPDF(
     architectName,
     architectEmail,
     showVetaBranding,
+    vetaLogoUrl,
   });
 
   // Type assertion to satisfy react-pdf's type requirements

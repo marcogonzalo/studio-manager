@@ -240,7 +240,7 @@ export function ProjectBudget({
       if (user?.id) {
         const { data: settings } = await supabase
           .from("account_settings")
-          .select("public_name")
+          .select("public_name, public_email")
           .eq("user_id", user.id)
           .single();
         const { data: profile } = await supabase
@@ -249,7 +249,8 @@ export function ProjectBudget({
           .eq("id", user.id)
           .single();
         architectName = settings?.public_name?.trim() || undefined;
-        architectEmail = profile?.email?.trim() || undefined;
+        architectEmail =
+          settings?.public_email?.trim() || profile?.email?.trim() || undefined;
       }
       const taxRate =
         project.tax_rate !== null && project.tax_rate !== undefined
@@ -259,6 +260,35 @@ export function ProjectBudget({
       const itemsToPdf = option === "lines" ? [] : includedItems;
       const linesToPdf = option === "products" ? [] : budgetLines;
 
+      // Logo como data URL para que react-pdf lo incruste sin depender de fetch/CORS
+      let vetaLogoDataUrl: string | undefined;
+      if (typeof window !== "undefined" && showVetaBranding) {
+        try {
+          const logoRes = await fetch(
+            `${window.location.origin}/img/veta-logo.png`
+          );
+          if (logoRes.ok) {
+            const blob = await logoRes.blob();
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+            // Solo pasar data URLs válidas para evitar RangeError en react-pdf toBlob()
+            if (
+              typeof dataUrl === "string" &&
+              dataUrl.startsWith("data:image/") &&
+              dataUrl.includes(",")
+            ) {
+              vetaLogoDataUrl = dataUrl;
+            }
+          }
+        } catch {
+          // Sin fallback a URL: react-pdf haría otro fetch y podría repetir "Failed to fetch"
+          vetaLogoDataUrl = undefined;
+        }
+      }
       const asPdf = await generateProjectPDF(
         project,
         itemsToPdf,
@@ -266,7 +296,8 @@ export function ProjectBudget({
         taxRate,
         architectName,
         architectEmail,
-        showVetaBranding
+        showVetaBranding,
+        vetaLogoDataUrl
       );
       const blob = await asPdf.toBlob();
       const url = URL.createObjectURL(blob);
@@ -588,6 +619,7 @@ export function ProjectBudget({
                                 width={32}
                                 height={32}
                                 className="object-cover"
+                                style={{ width: "auto", height: "auto" }}
                                 alt={item.product?.name || item.name}
                               />
                             </button>
