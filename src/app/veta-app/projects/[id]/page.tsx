@@ -202,11 +202,11 @@ function ProjectDetailContent() {
   async function fetchShareLinkStatus() {
     if (!id) return;
     const { data } = await supabase
-      .from("project_share_links")
-      .select("is_enabled")
-      .eq("project_id", id)
-      .maybeSingle();
-    setShareViewEnabled(data?.is_enabled ?? false);
+      .from("projects")
+      .select("is_public_enabled")
+      .eq("id", id)
+      .single();
+    setShareViewEnabled(data?.is_public_enabled ?? false);
   }
 
   useEffect(() => {
