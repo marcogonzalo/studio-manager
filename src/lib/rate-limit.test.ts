@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { checkRateLimit, getClientIp, getRouteGroup } from "./rate-limit";
+import {
+  checkRateLimit,
+  getClientIp,
+  getRouteGroup,
+  maskShareToken,
+  maskViewProjectPath,
+} from "./rate-limit";
 
 describe("getRouteGroup", () => {
   it("returns auth for /api/auth", () => {
@@ -27,6 +33,35 @@ describe("getRouteGroup", () => {
     expect(getRouteGroup("/contact", "POST")).toBe("contact");
     expect(getRouteGroup("/contact", "GET")).toBeNull();
     expect(getRouteGroup("/contact")).toBeNull();
+  });
+  it("returns view-project for /view-project/*", () => {
+    expect(getRouteGroup("/view-project/abc123")).toBe("view-project");
+    expect(getRouteGroup("/view-project/abc123/products")).toBe("view-project");
+    expect(getRouteGroup("/view-project/xyz/costs", "GET")).toBe(
+      "view-project"
+    );
+  });
+});
+
+describe("maskShareToken", () => {
+  it("masks long token with first 4 and last 4", () => {
+    expect(maskShareToken("a1b2c3d4e5f6g7h8i9j0")).toBe("a1b2…i9j0");
+  });
+  it("returns *** for short or empty token", () => {
+    expect(maskShareToken("")).toBe("***");
+    expect(maskShareToken("short")).toBe("***");
+    expect(maskShareToken("12345678")).toBe("***");
+  });
+});
+
+describe("maskViewProjectPath", () => {
+  it("masks token in view-project path", () => {
+    expect(maskViewProjectPath("/view-project/abc123def456/products")).toBe(
+      "/view-project/abc1…f456/products"
+    );
+  });
+  it("returns path unchanged when not view-project", () => {
+    expect(maskViewProjectPath("/api/auth")).toBe("/api/auth");
   });
 });
 

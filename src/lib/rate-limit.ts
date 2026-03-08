@@ -10,13 +10,19 @@ export const RATE_LIMIT_MESSAGE =
 
 const WINDOW_MS = 60_000;
 
-type RouteGroup = "auth" | "upload" | "account-delete" | "contact";
+type RouteGroup =
+  | "auth"
+  | "upload"
+  | "account-delete"
+  | "contact"
+  | "view-project";
 
 const LIMITS: Record<RouteGroup, number> = {
   auth: 10,
   upload: 20,
   "account-delete": 5,
   contact: 5,
+  "view-project": 120,
 };
 
 interface Entry {
@@ -78,6 +84,7 @@ export function getRouteGroup(
   if (pathname.startsWith("/api/upload")) return "upload";
   if (pathname === "/api/account/delete") return "account-delete";
   if (pathname === "/contact" && method === "POST") return "contact";
+  if (pathname.startsWith("/view-project/")) return "view-project";
   return null;
 }
 
@@ -103,4 +110,21 @@ export function getClientIp(request: Request): string {
 /** For use in Server Actions where only headers() is available. */
 export function getClientIpFromHeaders(headers: Headers): string {
   return getIpFromHeaders(headers);
+}
+
+/**
+ * Mask share token for logging (never log the full token).
+ * Returns e.g. "a1b2…x9z0" so logs can identify the path without exposing the secret.
+ */
+export function maskShareToken(token: string): string {
+  if (!token || token.length <= 8) return "***";
+  return `${token.slice(0, 4)}…${token.slice(-4)}`;
+}
+
+/** Path with token masked for logging (e.g. /view-project/a1b2…x9z0/products). */
+export function maskViewProjectPath(pathname: string): string {
+  const match = pathname.match(/^\/view-project\/([^/]+)(\/.*)?$/);
+  if (!match) return pathname;
+  const [, token, rest = ""] = match;
+  return `/view-project/${maskShareToken(token)}${rest}`;
 }
