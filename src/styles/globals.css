@@ -183,7 +183,7 @@
       background-color 0.3s ease,
       color 0.3s ease;
   }
-  /* Viñeta sutil en modo oscuro (look tipo cine). Desactivada en /veta-app (body.veta-app). */
+  /* Viñeta sutil en modo oscuro (look tipo cine) */
   html.dark body {
     position: relative;
   }

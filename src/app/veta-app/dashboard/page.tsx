@@ -300,32 +300,33 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <AnimatedSection duration={0.4}>
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <div className="flex items-start gap-3">
-            <LayoutDashboard className="text-primary mt-1 h-8 w-8" />
-            <div>
-              <h1 className="text-foreground text-3xl font-bold tracking-tight">
-                Hola,{" "}
-                {getFirstName(
-                  profile?.full_name ??
-                    (user?.user_metadata?.full_name as string | undefined)
-                )}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Aquí tienes un resumen de tu estudio de diseño.
-              </p>
-            </div>
+      <AnimatedSection
+        duration={0.4}
+        className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center"
+      >
+        <div className="flex items-start gap-3">
+          <LayoutDashboard className="text-primary mt-1 h-8 w-8" />
+          <div>
+            <h1 className="text-foreground text-3xl font-bold tracking-tight">
+              Hola,{" "}
+              {getFirstName(
+                profile?.full_name ??
+                  (user?.user_metadata?.full_name as string | undefined)
+              )}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Aquí tienes un resumen de tu estudio de diseño.
+            </p>
           </div>
-          <Button
-            asChild
-            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 animate-glow shadow-lg transition-all hover:scale-105"
-          >
-            <Link href={appPath("/projects")}>
-              <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
-            </Link>
-          </Button>
         </div>
+        <Button
+          asChild
+          className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 animate-glow shadow-lg transition-all hover:scale-105"
+        >
+          <Link href={appPath("/projects")}>
+            <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
+          </Link>
+        </Button>
       </AnimatedSection>
 
       {!onboardingComplete && <OnboardingChecklist steps={onboardingSteps} />}

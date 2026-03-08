@@ -117,19 +117,17 @@ export function ProjectSpaces({
               return (
                 <Card key={space.id} className="relative overflow-hidden">
                   {firstImageUrl && (
-                    <>
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          backgroundImage: `url(${firstImageUrl})`,
-                          backgroundRepeat: "no-repeat",
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                          opacity: 0.15,
-                        }}
-                        aria-hidden
-                      />
-                    </>
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        backgroundImage: `url(${firstImageUrl})`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        opacity: 0.15,
+                      }}
+                      aria-hidden
+                    />
                   )}
                   <CardHeader className="relative z-10">
                     <CardTitle>{space.name}</CardTitle>

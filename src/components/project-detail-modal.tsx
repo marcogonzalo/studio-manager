@@ -61,66 +61,68 @@ export function ProjectDetailModal({
             Información del proyecto. Usa Editar para modificar.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-2 sm:grid-cols-2">
+        <dl className="grid gap-4 py-2 sm:grid-cols-2">
           <div className="sm:col-span-2">
-            <p className="text-muted-foreground text-sm">Nombre del Proyecto</p>
-            <p className="font-medium">{project.name}</p>
+            <dt className="text-muted-foreground text-sm">
+              Nombre del Proyecto
+            </dt>
+            <dd className="font-medium">{project.name}</dd>
           </div>
           <div className="sm:col-span-2">
-            <p className="text-muted-foreground text-sm">Cliente</p>
-            <p className="font-medium">{project.client?.full_name ?? "—"}</p>
+            <dt className="text-muted-foreground text-sm">Cliente</dt>
+            <dd className="font-medium">{project.client?.full_name ?? "—"}</dd>
           </div>
           <div className="sm:col-span-2">
-            <p className="text-muted-foreground text-sm">Dirección</p>
-            <p className="font-medium">{project.address ?? "—"}</p>
+            <dt className="text-muted-foreground text-sm">Dirección</dt>
+            <dd className="font-medium">{project.address ?? "—"}</dd>
           </div>
           <div className="sm:col-span-2">
-            <p className="text-muted-foreground text-sm">Descripción</p>
-            <p className="font-medium whitespace-pre-wrap">
+            <dt className="text-muted-foreground text-sm">Descripción</dt>
+            <dd className="font-medium whitespace-pre-wrap">
               {project.description ?? "—"}
-            </p>
+            </dd>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm">Fase del Proyecto</p>
-            <p className="font-medium">
+            <dt className="text-muted-foreground text-sm">Fase del Proyecto</dt>
+            <dd className="font-medium">
               {project.phase ? getPhaseLabel(project.phase) : "—"}
-            </p>
+            </dd>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm">Estado</p>
-            <p className="font-medium">
+            <dt className="text-muted-foreground text-sm">Estado</dt>
+            <dd className="font-medium">
               {getProjectStatusLabel(project.status)}
-            </p>
+            </dd>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm">Fecha Inicio</p>
-            <p className="font-medium">
+            <dt className="text-muted-foreground text-sm">Fecha Inicio</dt>
+            <dd className="font-medium">
               {startDate ? formatDate(startDate) : "No definida"}
-            </p>
+            </dd>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm">
+            <dt className="text-muted-foreground text-sm">
               Fecha Estimada de Entrega
-            </p>
-            <p className="font-medium">
+            </dt>
+            <dd className="font-medium">
               {endDate ? formatDate(endDate) : "No definida"}
-            </p>
+            </dd>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm">Moneda</p>
-            <p className="font-medium">
+            <dt className="text-muted-foreground text-sm">Moneda</dt>
+            <dd className="font-medium">
               {project.currency && CURRENCIES[project.currency]
                 ? CURRENCIES[project.currency]
                 : "—"}
-            </p>
+            </dd>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm">Impuesto (%)</p>
-            <p className="font-medium">
+            <dt className="text-muted-foreground text-sm">Impuesto (%)</dt>
+            <dd className="font-medium">
               {project.tax_rate != null ? String(project.tax_rate) : "—"}
-            </p>
+            </dd>
           </div>
-        </div>
+        </dl>
         <DialogFooter>
           {!readOnly && (
             <Button type="button" onClick={handleEdit}>

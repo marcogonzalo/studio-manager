@@ -37,22 +37,20 @@ export function HomeStatsSection() {
           staggerDelay={0.15}
         >
           {stats.map((stat) => (
-            <StaggerItem key={stat.label}>
-              <div className="text-center">
-                <div className="bg-primary/10 text-primary mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
-                  <stat.icon className="h-6 w-6" />
-                </div>
-                <div className="text-3xl font-bold tracking-tight sm:text-4xl">
-                  <AnimatedCounter
-                    target={stat.value}
-                    suffix={stat.suffix}
-                    duration={2.5}
-                  />
-                </div>
-                <p className="text-muted-foreground mt-2 text-sm font-medium">
-                  {stat.label}
-                </p>
+            <StaggerItem key={stat.label} className="text-center">
+              <div className="bg-primary/10 text-primary mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
+                <stat.icon className="h-6 w-6" />
               </div>
+              <div className="text-3xl font-bold tracking-tight sm:text-4xl">
+                <AnimatedCounter
+                  target={stat.value}
+                  suffix={stat.suffix}
+                  duration={2.5}
+                />
+              </div>
+              <p className="text-muted-foreground mt-2 text-sm font-medium">
+                {stat.label}
+              </p>
             </StaggerItem>
           ))}
         </StaggerContainer>

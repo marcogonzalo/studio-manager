@@ -249,63 +249,59 @@ function ProjectDetailContent() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="w-[fit-content] self-start">
-              <Select value={id} onValueChange={handleProjectSwitch}>
-                <SelectTrigger className="text-muted-foreground h-auto min-h-12 w-[fit-content] max-w-full border-0 bg-transparent py-2 pr-16 text-left text-2xl font-bold shadow-none focus:ring-0 sm:text-3xl [&>svg]:ml-0 [&>svg]:h-8 [&>svg]:w-8">
-                  <SelectValue>
-                    <span
-                      className={
-                        project.status === "completed" ||
-                        project.status === "cancelled"
-                          ? "text-muted-foreground"
-                          : undefined
-                      }
-                    >
-                      {project.name}
-                    </span>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {activeProjects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      <span className="font-medium">{p.name}</span>
-                      {p.status !== "active" && (
-                        <span className="text-muted-foreground ml-2 text-xs">
-                          {getProjectStatusLabel(p.status)}
-                        </span>
-                      )}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize">
-                {getProjectStatusLabel(project.status)}
-              </span>
-              {isReadOnly && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="bg-muted text-muted-foreground inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-                        Solo lectura
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          <div className="w-[fit-content] self-start">
+            <Select value={id} onValueChange={handleProjectSwitch}>
+              <SelectTrigger className="text-muted-foreground h-auto min-h-12 w-[fit-content] max-w-full border-0 bg-transparent py-2 pr-16 text-left text-2xl font-bold shadow-none focus:ring-0 sm:text-3xl [&>svg]:ml-0 [&>svg]:h-8 [&>svg]:w-8">
+                <SelectValue>
+                  <span
+                    className={
+                      project.status === "completed" ||
+                      project.status === "cancelled"
+                        ? "text-muted-foreground"
+                        : undefined
+                    }
+                  >
+                    {project.name}
+                  </span>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {activeProjects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    <span className="font-medium">{p.name}</span>
+                    {p.status !== "active" && (
+                      <span className="text-muted-foreground ml-2 text-xs">
+                        {getProjectStatusLabel(p.status)}
                       </span>
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-brand-tertiary text-brand-tertiary-foreground">
-                      No se pueden editar datos ni añadir contenido.
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-              {project.phase && (
-                <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-                  {getPhaseLabel(project.phase)}
-                </span>
-              )}
-            </div>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+          <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize">
+            {getProjectStatusLabel(project.status)}
+          </span>
+          {isReadOnly && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="bg-muted text-muted-foreground inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                    Solo lectura
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="bg-brand-tertiary text-brand-tertiary-foreground">
+                  No se pueden editar datos ni añadir contenido.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {project.phase && (
+            <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+              {getPhaseLabel(project.phase)}
+            </span>
+          )}
         </div>
         <Button
           variant="outline"
