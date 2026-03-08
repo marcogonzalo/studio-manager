@@ -68,7 +68,7 @@ export default function CustomizationPage() {
 
   const formPresupuesto = useForm<PublicProfileFormValues>({
     resolver: zodResolver(publicProfileFormSchema),
-    defaultValues: { public_name: "" },
+    defaultValues: { public_name: "", email: "" },
   });
 
   const formDefaults = useForm<DefaultsFormValues>({
@@ -89,10 +89,10 @@ export default function CustomizationPage() {
       if (profileError) throw profileError;
       setProfile(profileData);
 
-      // Fetch account settings for customization fields (email = profile.email)
+      // Fetch account settings (public_email independiente del email de login)
       const { data: settingsData, error: settingsError } = await supabase
         .from("account_settings")
-        .select("default_tax_rate, default_currency, public_name")
+        .select("default_tax_rate, default_currency, public_name, public_email")
         .eq("user_id", user.id)
         .single();
 
@@ -102,6 +102,7 @@ export default function CustomizationPage() {
           default_tax_rate: null,
           default_currency: "EUR",
           public_name: null,
+          public_email: null,
         });
       } else if (settingsError) {
         throw settingsError;
@@ -109,6 +110,7 @@ export default function CustomizationPage() {
 
       formPresupuesto.reset({
         public_name: settingsData?.public_name ?? "",
+        email: (settingsData?.public_email ?? profileData?.email)?.trim() ?? "",
       });
       formDefaults.reset({
         default_tax_rate:
@@ -164,6 +166,7 @@ export default function CustomizationPage() {
         .from("account_settings")
         .update({
           public_name: values.public_name?.trim() || null,
+          public_email: values.email?.trim() || null,
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id);
@@ -268,20 +271,34 @@ export default function CustomizationPage() {
                     </FormItem>
                   )}
                 />
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <Mail className="h-4 w-4" />
-                    Correo público
-                  </div>
-                  <p className="text-muted-foreground text-sm">
-                    {profile?.email ?? "—"}
-                  </p>
-                  {!isBasePlan && (
-                    <p className="text-muted-foreground text-xs">
-                      Se usa el correo de tu perfil en los PDF de presupuestos
-                    </p>
+                <FormField
+                  control={formPresupuesto.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        Correo público
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Ej. contacto@tuestudio.com"
+                          className={INPUT_CONFIG_STANDARD_CLASS}
+                          {...field}
+                          value={field.value ?? ""}
+                          disabled={isBasePlan}
+                        />
+                      </FormControl>
+                      {!isBasePlan && (
+                        <p className="text-muted-foreground text-xs">
+                          Este correo aparecerá en los PDF de presupuestos
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
+                />
                 <Button
                   type="submit"
                   disabled={

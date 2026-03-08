@@ -62,6 +62,22 @@ async function main() {
   );
   console.log("Profile set: Veta Demo, demo@veta.pro");
 
+  // 1c) Configuración de cuenta: nombre público, correo público, moneda e impuesto por defecto
+  await admin.from("account_settings").upsert(
+    {
+      user_id: userId,
+      public_name: "Veta Demo Studio",
+      public_email: DEMO_EMAIL,
+      default_currency: "EUR",
+      default_tax_rate: 21,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" }
+  );
+  console.log(
+    "Account settings set: public_name Veta Demo Studio, public_email demo@veta.pro, default_currency EUR, default_tax_rate 21"
+  );
+
   // 2) Assign Studio plan (get plan id, insert plan_assignments)
   const { data: studioPlan, error: planErr } = await admin
     .from("plans")

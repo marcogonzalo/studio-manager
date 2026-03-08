@@ -21,9 +21,21 @@ export const customizationFormSchema = z.object({
 
 export type CustomizationFormValues = z.infer<typeof customizationFormSchema>;
 
-/** Schema for Presupuesto card (public name; email comes from profile). */
+/** Schema for Presupuesto card (public name and public email). */
 export const publicProfileFormSchema = z.object({
   public_name: z.string().optional(),
+  email: z
+    .string()
+    .optional()
+    .refine(
+      (val) =>
+        !val ||
+        val.trim() === "" ||
+        z.string().email().safeParse(val.trim()).success,
+      {
+        message: "Correo no válido",
+      }
+    ),
 });
 
 /** Schema for Valores por defecto card. */
