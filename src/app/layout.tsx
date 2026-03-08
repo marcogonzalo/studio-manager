@@ -103,6 +103,12 @@ export default async function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning className={montserrat.variable}>
       <head>
+        {/* Aplicar tema antes del primer pintado para evitar que la 404 (y el resto) pierda formato al hidratar (next-themes aplica la clase después). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('theme');var s=window.matchMedia('(prefers-color-scheme: dark)').matches;var v=!t||t==='system'?(s?'dark':'light'):t;document.documentElement.classList.add(v);})();`,
+          }}
+        />
         {/* Preconnect to third-party origins (faster TTFB, keeps third-party budget &lt; 200 KB). */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
 

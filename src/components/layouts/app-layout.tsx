@@ -139,6 +139,7 @@ function SidebarContent({
   setIsMobileOpen,
   isCollapsed,
   setIsCollapsed,
+  className,
 }: {
   collapsed?: boolean;
   user: ReturnType<typeof useAuth>["user"];
@@ -149,6 +150,8 @@ function SidebarContent({
   setIsMobileOpen: (open: boolean) => void;
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
+  /** Clases adicionales para el contenedor raíz (ej. en desktop: md:fixed md:w-64) */
+  className?: string;
 }) {
   const { theme, setTheme } = useTheme();
   const [themeMounted, setThemeMounted] = useState(false);
@@ -219,7 +222,12 @@ function SidebarContent({
   };
 
   return (
-    <div className="bg-sidebar border-border relative flex h-full flex-col border-r">
+    <div
+      className={cn(
+        "bg-sidebar border-border relative flex h-full flex-col border-r",
+        className
+      )}
+    >
       <div
         className={cn(
           "flex items-center gap-2 p-6",
@@ -602,24 +610,21 @@ export default function AppLayoutClient({
       )}
       <div className="bg-background text-foreground flex min-h-screen">
         {/* Desktop Sidebar */}
-        <div
+        <SidebarContent
+          collapsed={isCollapsed}
+          user={user}
+          profileFullName={profileFullName}
+          effectivePlan={effectivePlan}
+          signOut={signOut}
+          pathname={pathname}
+          setIsMobileOpen={setIsMobileOpen}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
           className={cn(
             "z-50 hidden shadow-sm transition-all duration-300 md:fixed md:inset-y-0 md:flex md:flex-col print:hidden",
             isCollapsed ? "md:w-16" : "md:w-64"
           )}
-        >
-          <SidebarContent
-            collapsed={isCollapsed}
-            user={user}
-            profileFullName={profileFullName}
-            effectivePlan={effectivePlan}
-            signOut={signOut}
-            pathname={pathname}
-            setIsMobileOpen={setIsMobileOpen}
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-          />
-        </div>
+        />
 
         {/* Mobile Sidebar */}
         <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
@@ -669,47 +674,46 @@ export default function AppLayoutClient({
           tabIndex={-1}
           className={cn(
             "flex-1 overflow-x-hidden p-4 transition-all duration-300 md:p-5 print:ml-0 print:p-0",
-            isCollapsed ? "md:ml-16" : "md:ml-64"
+            isCollapsed ? "md:ml-16" : "md:ml-64",
+            "animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500"
           )}
         >
-          <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500">
-            {(pathname.includes("/settings") ||
-              pathname === appPath("/settings/customization")) && (
-              <nav
-                aria-label="Breadcrumb"
-                className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"
-              >
-                <ol className="flex flex-wrap items-center gap-1.5">
-                  {getSettingsBreadcrumbs(pathname).map((item, i) => (
-                    <li key={i} className="flex items-center gap-1.5">
-                      {i > 0 && (
-                        <ChevronRight
-                          className="h-4 w-4 shrink-0 opacity-60"
-                          aria-hidden
-                        />
-                      )}
-                      {item.href ? (
-                        <Link
-                          href={item.href}
-                          className="hover:text-foreground transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      ) : (
-                        <span
-                          className="text-foreground font-medium"
-                          aria-current="page"
-                        >
-                          {item.label}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              </nav>
-            )}
-            {children}
-          </div>
+          {(pathname.includes("/settings") ||
+            pathname === appPath("/settings/customization")) && (
+            <nav
+              aria-label="Breadcrumb"
+              className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"
+            >
+              <ol className="flex flex-wrap items-center gap-1.5">
+                {getSettingsBreadcrumbs(pathname).map((item, i) => (
+                  <li key={i} className="flex items-center gap-1.5">
+                    {i > 0 && (
+                      <ChevronRight
+                        className="h-4 w-4 shrink-0 opacity-60"
+                        aria-hidden
+                      />
+                    )}
+                    {item.href ? (
+                      <Link
+                        href={item.href}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <span
+                        className="text-foreground font-medium"
+                        aria-current="page"
+                      >
+                        {item.label}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )}
+          {children}
         </main>
       </div>
     </TooltipProvider>

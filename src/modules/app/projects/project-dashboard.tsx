@@ -30,7 +30,7 @@ import type {
   ProjectPhase,
   BudgetCategory,
 } from "@/types";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface PurchaseOrderCoverage {
   id: string;
@@ -316,7 +316,7 @@ export function ProjectDashboard({
       disabledMessage="El resumen no está incluido en tu plan actual."
     >
       <div className="space-y-6">
-        <h3 className="text-lg font-medium">Resumen</h3>
+        <TabSectionHeader title="Resumen" />
         {/* KPIs */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <KPICard

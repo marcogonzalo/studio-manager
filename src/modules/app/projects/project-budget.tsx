@@ -73,7 +73,7 @@ import type {
   BudgetCategory,
   ProjectPhase,
 } from "@/types";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 export function ProjectBudget({
   projectId,
@@ -471,223 +471,231 @@ export function ProjectBudget({
       disabled={disabled}
       disabledMessage="El presupuesto no está incluido en tu plan actual."
     >
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h3 className="text-lg font-medium">Presupuesto</h3>
-          </div>
-          <div className="flex space-x-2">
-            {/* Exportar (PDF) */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="shrink-0 print:hidden"
-                  aria-label="Exportar"
-                >
-                  Exportar
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => setIsPrintOptionsOpen(true)}
-                  disabled={isGeneratingPDF || !project}
-                >
-                  <Printer className="mr-2 h-4 w-4" />
-                  {isGeneratingPDF ? "Generando PDF..." : "Exportar PDF"}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {/* Añadir (Partida, Producto) */}
-            {!readOnly && (
+      <TooltipProvider>
+        <div className="space-y-6">
+          <TabSectionHeader title="Presupuesto">
+            <div className="flex space-x-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button className="shrink-0 print:hidden" aria-label="Añadir">
-                    Añadir
+                  <Button
+                    variant="outline"
+                    className="shrink-0 print:hidden"
+                    aria-label="Exportar"
+                  >
+                    Exportar
                     <ChevronDown className="ml-2 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleAddBudgetLine}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Nueva Partida
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleAddItem}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Añadir Producto
+                  <DropdownMenuItem
+                    onClick={() => setIsPrintOptionsOpen(true)}
+                    disabled={isGeneratingPDF || !project}
+                  >
+                    <Printer className="mr-2 h-4 w-4" />
+                    {isGeneratingPDF ? "Generando PDF..." : "Exportar PDF"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            )}
-          </div>
-        </div>
-
-        {/* Grand Total Summary */}
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="pt-6">
-            <h4 className="text-muted-foreground mb-2 font-medium">
-              Total Presupuesto
-            </h4>
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-muted-foreground text-xs">
-                  Partidas: {formatCurrency(totalBudgetLinesEstimated)}
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  Productos: {formatCurrency(totalItemsPrice)}
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-0.5">
-                <p className="text-primary text-3xl font-bold">
-                  {formatCurrency(grandTotal)}
-                </p>
-              </div>
+              {!readOnly && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className="shrink-0 print:hidden"
+                      aria-label="Añadir"
+                    >
+                      Añadir
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleAddBudgetLine}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Nueva Partida
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleAddItem}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Añadir Producto
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
-            {(() => {
-              const taxRate = project?.tax_rate != null ? project.tax_rate : 0;
-              const taxAmount = grandTotal * (taxRate / 100);
-              const totalWithTax = grandTotal + taxAmount;
-              if (taxRate === 0) return null;
-              return (
-                <div className="flex items-center justify-between pt-2">
-                  <p className="text-muted-foreground text-xs">
-                    Impuesto ({taxRate}%): {formatCurrency(taxAmount)}
-                  </p>
-                  <p className="text-muted-foreground text-xs font-medium">
-                    Con impuestos: {formatCurrency(totalWithTax)}
-                  </p>
-                </div>
-              );
-            })()}
-          </CardContent>
-        </Card>
+          </TabSectionHeader>
 
-        {/* Products Section */}
-        <Collapsible
-          open={openSections.products}
-          onOpenChange={() => toggleSection("products")}
-        >
-          <Card className="border-l-primary border-l-4">
-            <CollapsibleTrigger asChild>
-              <CardHeader className="hover:bg-accent/30 cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform ${openSections.products ? "" : "-rotate-90"}`}
-                    />
-                    Mobiliario y Productos
-                  </CardTitle>
-                  <span className="text-foreground font-semibold">
-                    {formatCurrency(totalItemsPrice)}
-                  </span>
+          {/* Grand Total Summary */}
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="pt-6">
+              <h4 className="text-muted-foreground mb-2 font-medium">
+                Total Presupuesto
+              </h4>
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-muted-foreground text-xs">
+                    Partidas: {formatCurrency(totalBudgetLinesEstimated)}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    Productos: {formatCurrency(totalItemsPrice)}
+                  </p>
                 </div>
-              </CardHeader>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <CardContent className="pt-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">Img</TableHead>
-                      <TableHead>Ítem</TableHead>
-                      <TableHead>Ubicación</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="text-right">Cant.</TableHead>
-                      <TableHead className="text-right">Costo Unit.</TableHead>
-                      <TableHead className="text-right">Precio Venta</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                      <TableHead className="w-[80px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {includedItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>
-                          {item.image_url && (
-                            <button
-                              type="button"
-                              className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
-                              onClick={() => {
-                                setSelectedItem(item);
-                                setIsProductModalOpen(true);
-                              }}
-                            >
-                              <Image
-                                src={item.image_url}
-                                width={32}
-                                height={32}
-                                className="object-cover"
-                                style={{ width: "auto", height: "auto" }}
-                                alt={item.product?.name || item.name}
-                              />
-                            </button>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">
-                            {item.product?.name || item.name}
-                          </div>
-                          {item.product?.reference_code && (
-                            <div className="text-muted-foreground mt-1 font-mono text-xs">
-                              Ref: {item.product.reference_code}
+                <div className="flex flex-col items-end gap-0.5">
+                  <p className="text-primary text-3xl font-bold">
+                    {formatCurrency(grandTotal)}
+                  </p>
+                </div>
+              </div>
+              {(() => {
+                const taxRate =
+                  project?.tax_rate != null ? project.tax_rate : 0;
+                const taxAmount = grandTotal * (taxRate / 100);
+                const totalWithTax = grandTotal + taxAmount;
+                if (taxRate === 0) return null;
+                return (
+                  <div className="flex items-center justify-between pt-2">
+                    <p className="text-muted-foreground text-xs">
+                      Impuesto ({taxRate}%): {formatCurrency(taxAmount)}
+                    </p>
+                    <p className="text-muted-foreground text-xs font-medium">
+                      Con impuestos: {formatCurrency(totalWithTax)}
+                    </p>
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
+
+          {/* Products Section */}
+          <Collapsible
+            open={openSections.products}
+            onOpenChange={() => toggleSection("products")}
+          >
+            <Card className="border-l-primary border-l-4">
+              <CollapsibleTrigger asChild>
+                <CardHeader className="hover:bg-accent/30 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${openSections.products ? "" : "-rotate-90"}`}
+                      />
+                      Mobiliario y Productos
+                    </CardTitle>
+                    <span className="text-foreground font-semibold">
+                      {formatCurrency(totalItemsPrice)}
+                    </span>
+                  </div>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="pt-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]">Img</TableHead>
+                        <TableHead>Ítem</TableHead>
+                        <TableHead>Ubicación</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Cant.</TableHead>
+                        <TableHead className="text-right">
+                          Costo Unit.
+                        </TableHead>
+                        <TableHead className="text-right">
+                          Precio Venta
+                        </TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className="w-[80px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {includedItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            {item.image_url && (
+                              <button
+                                type="button"
+                                className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
+                                onClick={() => {
+                                  setSelectedItem(item);
+                                  setIsProductModalOpen(true);
+                                }}
+                              >
+                                <Image
+                                  src={item.image_url}
+                                  width={32}
+                                  height={32}
+                                  className="object-cover"
+                                  style={{ width: "auto", height: "auto" }}
+                                  alt={item.product?.name || item.name}
+                                />
+                              </button>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">
+                              {item.product?.name || item.name}
                             </div>
-                          )}
-                          <div className="text-muted-foreground text-xs">
-                            {item.product?.supplier?.name || "-"}
-                          </div>
-                        </TableCell>
-                        <TableCell>{item.space?.name || "General"}</TableCell>
-                        <TableCell>
-                          {(() => {
-                            const statusDisplay = getStatusDisplay(item.status);
-                            const Icon = statusDisplay.icon;
-                            const po = item.purchase_order;
-                            const isOrderedNotReceived =
-                              item.status === "ordered" && po;
-                            const deliveryInfo =
-                              isOrderedNotReceived &&
-                              (po.delivery_date || po.delivery_deadline)
-                                ? po.delivery_date
-                                  ? `Entrega: ${new Date(po.delivery_date).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })}`
-                                  : `Entrega: ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
-                                : null;
-                            const statusLabel =
-                              deliveryInfo ?? statusDisplay.label;
-                            return (
-                              <TooltipProvider>
+                            {item.product?.reference_code && (
+                              <div className="text-muted-foreground mt-1 font-mono text-xs">
+                                Ref: {item.product.reference_code}
+                              </div>
+                            )}
+                            <div className="text-muted-foreground text-xs">
+                              {item.product?.supplier?.name || "-"}
+                            </div>
+                          </TableCell>
+                          <TableCell>{item.space?.name || "General"}</TableCell>
+                          <TableCell>
+                            {(() => {
+                              const statusDisplay = getStatusDisplay(
+                                item.status
+                              );
+                              const Icon = statusDisplay.icon;
+                              const po = item.purchase_order;
+                              const isOrderedNotReceived =
+                                item.status === "ordered" && po;
+                              const deliveryInfo =
+                                isOrderedNotReceived &&
+                                (po.delivery_date || po.delivery_deadline)
+                                  ? po.delivery_date
+                                    ? `Entrega: ${new Date(po.delivery_date).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })}`
+                                    : `Entrega: ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
+                                  : null;
+                              const statusLabel =
+                                deliveryInfo ?? statusDisplay.label;
+                              return (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <div className="flex items-center justify-center">
+                                    <span className="flex items-center justify-center">
                                       <Icon
                                         className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
                                       />
-                                    </div>
+                                    </span>
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     <p>{statusLabel}</p>
                                   </TooltipContent>
                                 </Tooltip>
-                              </TooltipProvider>
-                            );
-                          })()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {item.quantity}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-right">
-                          {formatCurrency(item.unit_cost)}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {formatCurrency(item.unit_price)}
-                        </TableCell>
-                        <TableCell className="text-right font-bold">
-                          {formatCurrency(item.unit_price * item.quantity)}
-                        </TableCell>
-                        <TableCell>
-                          {!readOnly && (
-                            <div className="flex justify-end">
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {item.quantity}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-right">
+                            {formatCurrency(item.unit_cost)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatCurrency(item.unit_price)}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {formatCurrency(item.unit_price * item.quantity)}
+                          </TableCell>
+                          <TableCell
+                            className={
+                              !readOnly
+                                ? "flex items-center justify-end"
+                                : undefined
+                            }
+                          >
+                            {!readOnly && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
@@ -714,144 +722,148 @@ export function ProjectBudget({
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {items.length === 0 && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={9}
-                          className="text-muted-foreground py-8 text-center"
-                        >
-                          No hay productos añadidos.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
-
-        {/* Budget Lines by Phase and Category */}
-        {phaseOrder.map((phase) => {
-          const phaseData = budgetLinesByPhaseAndCategory[phase];
-          if (!phaseData) return null;
-
-          // Check if this phase has any lines
-          const hasLines = Object.values(phaseData).some(
-            (lines) => lines.length > 0
-          );
-          if (!hasLines) return null;
-
-          const phaseTotal = Object.values(phaseData).reduce(
-            (sum, lines) =>
-              sum +
-              lines.reduce(
-                (lineSum, line) => lineSum + Number(line.estimated_amount),
-                0
-              ),
-            0
-          );
-
-          const phaseSectionKey = `phase_${phase}`;
-
-          return (
-            <div key={phase} className="space-y-3">
-              <Collapsible
-                open={openSections[phaseSectionKey] !== false}
-                onOpenChange={() => toggleSection(phaseSectionKey)}
-              >
-                <Card className="border-l-primary border-l-4">
-                  <CollapsibleTrigger asChild>
-                    <CardHeader className="hover:bg-accent/30 cursor-pointer">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <ChevronDown
-                            className={`h-4 w-4 transition-transform ${openSections[phaseSectionKey] !== false ? "" : "-rotate-90"}`}
-                          />
-                          {phase === "no_phase"
-                            ? "Sin Fase"
-                            : getPhaseLabel(phase as ProjectPhase)}
-                        </CardTitle>
-                        <span className="text-foreground font-semibold">
-                          {formatCurrency(phaseTotal)}
-                        </span>
-                      </div>
-                    </CardHeader>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <CardContent className="space-y-3 pt-0">
-                      {categoryOrder.map((category) => {
-                        const lines = phaseData[category] || [];
-                        if (lines.length === 0) return null;
-
-                        const categoryTotal = lines.reduce(
-                          (sum, line) => sum + Number(line.estimated_amount),
-                          0
-                        );
-                        const categorySectionKey = `${phaseSectionKey}_${category}`;
-
-                        return (
-                          <Collapsible
-                            key={category}
-                            open={openSections[categorySectionKey] !== false}
-                            onOpenChange={() =>
-                              toggleSection(categorySectionKey)
-                            }
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {items.length === 0 && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={9}
+                            className="text-muted-foreground py-8 text-center"
                           >
-                            <Card className="ml-4">
-                              <CollapsibleTrigger asChild>
-                                <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
-                                  <div className="flex items-center justify-between">
-                                    <CardTitle className="flex items-center gap-2 text-sm">
-                                      <ChevronDown
-                                        className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
-                                      />
-                                      {getBudgetCategoryLabel(category)}
-                                    </CardTitle>
-                                    <span className="text-foreground text-sm font-semibold">
-                                      {formatCurrency(categoryTotal)}
-                                    </span>
-                                  </div>
-                                </CardHeader>
-                              </CollapsibleTrigger>
-                              <CollapsibleContent>
-                                <CardContent className="pt-0">
-                                  <Table>
-                                    <TableHeader>
-                                      <TableRow>
-                                        <TableHead>Concepto</TableHead>
-                                        <TableHead>Descripción</TableHead>
-                                        <TableHead className="text-right">
-                                          Importe
-                                        </TableHead>
-                                        <TableHead className="w-[80px]"></TableHead>
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {lines.map((line) => (
-                                        <TableRow key={line.id}>
-                                          <TableCell className="font-medium">
-                                            {getBudgetSubcategoryLabel(
-                                              category,
-                                              line.subcategory
-                                            )}
-                                          </TableCell>
-                                          <TableCell className="text-muted-foreground">
-                                            {line.description || "-"}
-                                          </TableCell>
-                                          <TableCell className="text-right font-semibold">
-                                            {formatCurrency(
-                                              Number(line.estimated_amount)
-                                            )}
-                                          </TableCell>
-                                          <TableCell>
-                                            {!readOnly && (
-                                              <div className="flex justify-end">
+                            No hay productos añadidos.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+
+          {/* Budget Lines by Phase and Category */}
+          {phaseOrder.map((phase) => {
+            const phaseData = budgetLinesByPhaseAndCategory[phase];
+            if (!phaseData) return null;
+
+            // Check if this phase has any lines
+            const hasLines = Object.values(phaseData).some(
+              (lines) => lines.length > 0
+            );
+            if (!hasLines) return null;
+
+            const phaseTotal = Object.values(phaseData).reduce(
+              (sum, lines) =>
+                sum +
+                lines.reduce(
+                  (lineSum, line) => lineSum + Number(line.estimated_amount),
+                  0
+                ),
+              0
+            );
+
+            const phaseSectionKey = `phase_${phase}`;
+
+            return (
+              <div key={phase} className="space-y-3">
+                <Collapsible
+                  open={openSections[phaseSectionKey] !== false}
+                  onOpenChange={() => toggleSection(phaseSectionKey)}
+                >
+                  <Card className="border-l-primary border-l-4">
+                    <CollapsibleTrigger asChild>
+                      <CardHeader className="hover:bg-accent/30 cursor-pointer">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="flex items-center gap-2 text-base">
+                            <ChevronDown
+                              className={`h-4 w-4 transition-transform ${openSections[phaseSectionKey] !== false ? "" : "-rotate-90"}`}
+                            />
+                            {phase === "no_phase"
+                              ? "Sin Fase"
+                              : getPhaseLabel(phase as ProjectPhase)}
+                          </CardTitle>
+                          <span className="text-foreground font-semibold">
+                            {formatCurrency(phaseTotal)}
+                          </span>
+                        </div>
+                      </CardHeader>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <CardContent className="space-y-3 pt-0">
+                        {categoryOrder.map((category) => {
+                          const lines = phaseData[category] || [];
+                          if (lines.length === 0) return null;
+
+                          const categoryTotal = lines.reduce(
+                            (sum, line) => sum + Number(line.estimated_amount),
+                            0
+                          );
+                          const categorySectionKey = `${phaseSectionKey}_${category}`;
+
+                          return (
+                            <Collapsible
+                              key={category}
+                              open={openSections[categorySectionKey] !== false}
+                              onOpenChange={() =>
+                                toggleSection(categorySectionKey)
+                              }
+                            >
+                              <Card className="ml-4">
+                                <CollapsibleTrigger asChild>
+                                  <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
+                                    <div className="flex items-center justify-between">
+                                      <CardTitle className="flex items-center gap-2 text-sm">
+                                        <ChevronDown
+                                          className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
+                                        />
+                                        {getBudgetCategoryLabel(category)}
+                                      </CardTitle>
+                                      <span className="text-foreground text-sm font-semibold">
+                                        {formatCurrency(categoryTotal)}
+                                      </span>
+                                    </div>
+                                  </CardHeader>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                  <CardContent className="pt-0">
+                                    <Table>
+                                      <TableHeader>
+                                        <TableRow>
+                                          <TableHead>Concepto</TableHead>
+                                          <TableHead>Descripción</TableHead>
+                                          <TableHead className="text-right">
+                                            Importe
+                                          </TableHead>
+                                          <TableHead className="w-[80px]"></TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {lines.map((line) => (
+                                          <TableRow key={line.id}>
+                                            <TableCell className="font-medium">
+                                              {getBudgetSubcategoryLabel(
+                                                category,
+                                                line.subcategory
+                                              )}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                              {line.description || "-"}
+                                            </TableCell>
+                                            <TableCell className="text-right font-semibold">
+                                              {formatCurrency(
+                                                Number(line.estimated_amount)
+                                              )}
+                                            </TableCell>
+                                            <TableCell
+                                              className={
+                                                !readOnly
+                                                  ? "flex items-center justify-end"
+                                                  : undefined
+                                              }
+                                            >
+                                              {!readOnly && (
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
                                                     <Button
@@ -886,82 +898,82 @@ export function ProjectBudget({
                                                     </DropdownMenuItem>
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
-                                              </div>
-                                            )}
-                                          </TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
-                                </CardContent>
-                              </CollapsibleContent>
-                            </Card>
-                          </Collapsible>
-                        );
-                      })}
-                    </CardContent>
-                  </CollapsibleContent>
-                </Card>
-              </Collapsible>
-            </div>
-          );
-        })}
+                                              )}
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </CardContent>
+                                </CollapsibleContent>
+                              </Card>
+                            </Collapsible>
+                          );
+                        })}
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+              </div>
+            );
+          })}
 
-        {/* Dialogs */}
-        <AddItemDialog
-          open={isItemDialogOpen}
-          onOpenChange={(open) => {
-            setIsItemDialogOpen(open);
-            if (!open) setEditingItem(null);
-          }}
-          projectId={projectId}
-          item={editingItem}
-          onSuccess={() => {
-            setIsItemDialogOpen(false);
-            setEditingItem(null);
-            fetchData();
-          }}
-        />
+          {/* Dialogs */}
+          <AddItemDialog
+            open={isItemDialogOpen}
+            onOpenChange={(open) => {
+              setIsItemDialogOpen(open);
+              if (!open) setEditingItem(null);
+            }}
+            projectId={projectId}
+            item={editingItem}
+            onSuccess={() => {
+              setIsItemDialogOpen(false);
+              setEditingItem(null);
+              fetchData();
+            }}
+          />
 
-        <BudgetLineDialog
-          open={isBudgetLineDialogOpen}
-          onOpenChange={(open) => {
-            setIsBudgetLineDialogOpen(open);
-            if (!open) setEditingBudgetLine(null);
-          }}
-          projectId={projectId}
-          budgetLine={editingBudgetLine}
-          onSuccess={() => {
-            setIsBudgetLineDialogOpen(false);
-            setEditingBudgetLine(null);
-            fetchData();
-          }}
-        />
+          <BudgetLineDialog
+            open={isBudgetLineDialogOpen}
+            onOpenChange={(open) => {
+              setIsBudgetLineDialogOpen(open);
+              if (!open) setEditingBudgetLine(null);
+            }}
+            projectId={projectId}
+            budgetLine={editingBudgetLine}
+            onSuccess={() => {
+              setIsBudgetLineDialogOpen(false);
+              setEditingBudgetLine(null);
+              fetchData();
+            }}
+          />
 
-        <ProductDetailModal
-          open={isProductModalOpen}
-          onOpenChange={setIsProductModalOpen}
-          projectItem={selectedItem}
-          projectId={projectId}
-          onEdit={
-            readOnly
-              ? undefined
-              : () => {
-                  setIsProductModalOpen(false);
-                  setEditingItem(selectedItem);
-                  setIsItemDialogOpen(true);
-                }
-          }
-        />
+          <ProductDetailModal
+            open={isProductModalOpen}
+            onOpenChange={setIsProductModalOpen}
+            projectItem={selectedItem}
+            projectId={projectId}
+            onEdit={
+              readOnly
+                ? undefined
+                : () => {
+                    setIsProductModalOpen(false);
+                    setEditingItem(selectedItem);
+                    setIsItemDialogOpen(true);
+                  }
+            }
+          />
 
-        <BudgetPrintOptionsDialog
-          open={isPrintOptionsOpen}
-          onOpenChange={setIsPrintOptionsOpen}
-          onConfirm={handleGeneratePDF}
-          isGenerating={isGeneratingPDF}
-          printFilterOptionsEnabled={printFilterOptionsEnabled}
-        />
-      </div>
+          <BudgetPrintOptionsDialog
+            open={isPrintOptionsOpen}
+            onOpenChange={setIsPrintOptionsOpen}
+            onConfirm={handleGeneratePDF}
+            isGenerating={isGeneratingPDF}
+            printFilterOptionsEnabled={printFilterOptionsEnabled}
+          />
+        </div>
+      </TooltipProvider>
     </ProjectTabContent>
   );
 }

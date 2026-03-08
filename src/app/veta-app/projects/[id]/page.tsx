@@ -7,16 +7,17 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Project } from "@/types";
 import { appPath } from "@/lib/app-paths";
-import { getPhaseLabel, formatDate, getProjectStatusLabel } from "@/lib/utils";
+import { getPhaseLabel, getProjectStatusLabel } from "@/lib/utils";
 import { ProjectNotes } from "@/modules/app/projects/project-notes";
 import { ProjectPurchases } from "@/modules/app/projects/project-purchases";
 import { ProjectSpaces } from "@/modules/app/projects/project-spaces";
@@ -26,6 +27,7 @@ import { ProjectDocuments } from "@/modules/app/projects/project-documents";
 import { ProjectPayments } from "@/modules/app/projects/project-payments";
 import { ProjectDashboard } from "@/modules/app/projects/project-dashboard";
 import { ProjectDialog } from "@/components/project-dialog";
+import { ProjectDetailModal } from "@/components/project-detail-modal";
 import {
   Tooltip,
   TooltipContent,
@@ -33,7 +35,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { Pencil, ChevronDown } from "lucide-react";
+import { FileText } from "lucide-react";
 
 const VALID_TABS = [
   "overview",
@@ -52,8 +54,12 @@ function ProjectDetailContent() {
   const router = useRouter();
   const id = params.id as string;
   const [project, setProject] = useState<Project | null>(null);
+  const [activeProjects, setActiveProjects] = useState<
+    { id: string; name: string; status: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const tabFromUrl = searchParams.get("tab");
   const initialTab =
     tabFromUrl && VALID_TABS.includes(tabFromUrl as (typeof VALID_TABS)[number])
@@ -167,6 +173,27 @@ function ProjectDetailContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when id changes only
   }, [id]);
 
+  async function fetchActiveProjects() {
+    const { data, error } = await supabase
+      .from("projects")
+      .select("id, name, status")
+      .or(`status.eq.active,id.eq.${id}`)
+      .order("status", { ascending: true })
+      .order("name");
+    if (!error && data) {
+      const list = data as { id: string; name: string; status: string }[];
+      const deduped = list.filter(
+        (p, i, arr) => arr.findIndex((x) => x.id === p.id) === i
+      );
+      setActiveProjects(deduped);
+    }
+  }
+
+  useEffect(() => {
+    if (id) fetchActiveProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when id changes only
+  }, [id]);
+
   // Scroll to active tab when it changes (rAF to avoid forced reflow)
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -214,105 +241,77 @@ function ProjectDetailContent() {
   const isReadOnly =
     project.status === "completed" || project.status === "cancelled";
 
+  const handleProjectSwitch = (projectId: string) => {
+    if (projectId === id) return;
+    router.push(appPath(`/projects/${projectId}`));
+  };
+
   return (
     <div className="space-y-6">
-      <Collapsible>
-        <div className="flex items-center justify-between">
-          <CollapsibleTrigger className="group flex-1 text-left">
-            <div
-              className={
-                project.status === "completed" || project.status === "cancelled"
-                  ? "text-muted-foreground"
-                  : undefined
-              }
-            >
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-                  {project.name}
-                  <ChevronDown className="text-muted-foreground h-5 w-5 transition-transform group-data-[state=open]:rotate-180" />
-                </h1>
-                <div className="flex items-center gap-2">
-                  <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize">
-                    {getProjectStatusLabel(project.status)}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+          <div className="w-[fit-content] self-start">
+            <Select value={id} onValueChange={handleProjectSwitch}>
+              <SelectTrigger className="text-muted-foreground h-auto min-h-12 w-[fit-content] max-w-full border-0 bg-transparent py-2 pr-16 text-left text-2xl font-bold shadow-none focus:ring-0 sm:text-3xl [&>svg]:ml-0 [&>svg]:h-8 [&>svg]:w-8">
+                <SelectValue>
+                  <span
+                    className={
+                      project.status === "completed" ||
+                      project.status === "cancelled"
+                        ? "text-muted-foreground"
+                        : undefined
+                    }
+                  >
+                    {project.name}
                   </span>
-                  {isReadOnly && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="bg-muted text-muted-foreground inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-                            Solo lectura
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent className="bg-brand-tertiary text-brand-tertiary-foreground">
-                          No se pueden editar datos ni añadir contenido.
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                  {project.phase && (
-                    <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-                      {getPhaseLabel(project.phase)}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <p className="text-muted-foreground">
-                {project.client?.full_name}
-              </p>
-            </div>
-          </CollapsibleTrigger>
-          {!isReadOnly && (
-            <Button
-              variant="outline"
-              onClick={() => setIsEditDialogOpen(true)}
-              className="shrink-0"
-            >
-              <Pencil className="mr-2 h-4 w-4" />
-              Editar
-            </Button>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {activeProjects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    <span className="font-medium">{p.name}</span>
+                    {p.status !== "active" && (
+                      <span className="text-muted-foreground ml-2 text-xs">
+                        {getProjectStatusLabel(p.status)}
+                      </span>
+                    )}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize">
+            {getProjectStatusLabel(project.status)}
+          </span>
+          {isReadOnly && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="bg-muted text-muted-foreground inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+                    Solo lectura
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="bg-brand-tertiary text-brand-tertiary-foreground">
+                  No se pueden editar datos ni añadir contenido.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {project.phase && (
+            <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+              {getPhaseLabel(project.phase)}
+            </span>
           )}
         </div>
-
-        <CollapsibleContent className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Detalles del Proyecto</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-4">
-              {project.address && (
-                <div className="md:col-span-2">
-                  <p className="text-muted-foreground text-sm">Dirección</p>
-                  <p className="font-medium">{project.address}</p>
-                </div>
-              )}
-              <div>
-                <p className="text-muted-foreground text-sm">Fecha Inicio</p>
-                <p className="font-medium">
-                  {project.start_date
-                    ? formatDate(project.start_date)
-                    : "No definida"}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">
-                  Fecha Estimada de Entrega
-                </p>
-                <p className="font-medium">
-                  {project.end_date
-                    ? formatDate(project.end_date)
-                    : "No definida"}
-                </p>
-              </div>
-              {project.description && (
-                <div className="md:col-span-4">
-                  <p className="text-muted-foreground text-sm">Descripción</p>
-                  <p className="font-medium">{project.description}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </CollapsibleContent>
-      </Collapsible>
+        <Button
+          variant="outline"
+          onClick={() => setIsDetailModalOpen(true)}
+          className="shrink-0"
+        >
+          <FileText className="mr-2 h-4 w-4" />
+          Detalle
+        </Button>
+      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTabAndUrl}>
         <div className="scrollbar-hide -mx-4 overflow-x-auto px-4">
@@ -414,6 +413,13 @@ function ProjectDetailContent() {
         </TabsContent>
       </Tabs>
 
+      <ProjectDetailModal
+        open={isDetailModalOpen}
+        onOpenChange={setIsDetailModalOpen}
+        project={project}
+        onEdit={() => setIsEditDialogOpen(true)}
+        readOnly={isReadOnly}
+      />
       <ProjectDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
@@ -421,6 +427,7 @@ function ProjectDetailContent() {
         onSuccess={() => {
           setIsEditDialogOpen(false);
           fetchProject();
+          fetchActiveProjects();
         }}
       />
     </div>

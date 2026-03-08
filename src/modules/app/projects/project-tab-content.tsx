@@ -5,6 +5,32 @@ import { appPath } from "@/lib/app-paths";
 import { Button } from "@/components/ui/button";
 
 /**
+ * Encabezado estándar de sección (título + acciones opcionales).
+ * Altura mínima fija para que no cambie al mostrar/ocultar botones.
+ */
+export function TabSectionHeader({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-h-[48px] justify-between gap-4">
+      <div className="space-y-1">
+        <h3 className="text-lg font-medium">{title}</h3>
+        {subtitle && (
+          <p className="text-muted-foreground text-sm">{subtitle}</p>
+        )}
+      </div>
+      {children != null && <div className="shrink-0">{children}</div>}
+    </div>
+  );
+}
+
+/**
  * Wrapper estándar para el contenido de cada pestaña de proyecto.
  * - readOnly: no se usa aquí; cada tab oculta botones de edición cuando readOnly.
  * - disabled: cuando la funcionalidad no está en el plan, muestra el contenido

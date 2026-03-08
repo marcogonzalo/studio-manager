@@ -24,7 +24,7 @@ import { SpaceImagesDialog } from "@/components/dialogs/space-images-dialog";
 import { SpaceProductsDialog } from "@/components/dialogs/space-products-dialog";
 
 import type { Space } from "@/types";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 export function ProjectSpaces({
   projectId,
@@ -103,14 +103,13 @@ export function ProjectSpaces({
         disabledMessage="Los espacios no están incluidos en tu plan actual."
       >
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Espacios del Proyecto</h3>
+          <TabSectionHeader title="Espacios del Proyecto">
             {!readOnly && (
               <Button onClick={() => setIsDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" /> Nuevo Espacio
               </Button>
             )}
-          </div>
+          </TabSectionHeader>
 
           <div className="grid gap-4 md:grid-cols-3">
             {spaces.map((space) => {
@@ -118,52 +117,24 @@ export function ProjectSpaces({
               return (
                 <Card key={space.id} className="relative overflow-hidden">
                   {firstImageUrl && (
-                    <>
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          backgroundImage: `url(${firstImageUrl})`,
-                          backgroundRepeat: "no-repeat",
-                          backgroundSize: "cover",
-                          backgroundPosition: "center",
-                          opacity: 0.85,
-                        }}
-                        aria-hidden
-                      />
-                      <div
-                        className="absolute inset-0"
-                        aria-hidden
-                        style={{ backgroundColor: "rgba(245, 245, 220, 0.75)" }}
-                      />
-                    </>
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        backgroundImage: `url(${firstImageUrl})`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        opacity: 0.15,
+                      }}
+                      aria-hidden
+                    />
                   )}
                   <CardHeader className="relative z-10">
-                    <CardTitle
-                      style={
-                        firstImageUrl
-                          ? {
-                              textShadow:
-                                "0 0 12px rgba(255,255,255,0.9), 0 0 24px rgba(255,255,255,0.6)",
-                            }
-                          : undefined
-                      }
-                    >
-                      {space.name}
-                    </CardTitle>
+                    <CardTitle>{space.name}</CardTitle>
                   </CardHeader>
                   <CardContent className="relative z-10">
-                    <p
-                      className="text-muted-foreground text-sm"
-                      style={
-                        firstImageUrl
-                          ? {
-                              textShadow:
-                                "0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255,255,255,0.5)",
-                            }
-                          : undefined
-                      }
-                    >
-                      {space.description || "Sin descripción"}
+                    <p className="text-muted-foreground text-sm">
+                      {space.description || ""}
                     </p>
                   </CardContent>
                   <CardFooter className="relative z-10 flex gap-2">
