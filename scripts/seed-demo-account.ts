@@ -6,9 +6,14 @@
  * Flow: get or create demo user → assign Studio plan → delete existing demo data → insert seed data.
  */
 
+import { randomBytes } from "crypto";
 import { createClient } from "@supabase/supabase-js";
 
 const DEMO_EMAIL = "demo@veta.pro";
+
+function generateShareToken(): string {
+  return randomBytes(24).toString("hex");
+}
 
 function getEnv(name: string): string {
   const v = process.env[name];
@@ -253,7 +258,7 @@ async function main() {
   const supplierIds = (suppliers ?? []).map((s) => s.id);
   if (supplierIds.length < 7) throw new Error("Failed to create suppliers");
 
-  const { data: projects } = await admin
+  const { data: projects, error: projectsError } = await admin
     .from("projects")
     .insert([
       {
@@ -281,8 +286,25 @@ async function main() {
       },
     ])
     .select("id");
+  if (projectsError)
+    throw new Error(`Failed to create projects: ${projectsError.message}`);
   const projIds = (projects ?? []).map((p) => p.id);
   if (projIds.length < 2) throw new Error("Failed to create projects");
+
+  // Habilitar vista pública en el proyecto activo (Proyecto A) si la tabla tiene token/is_public_enabled
+  const activeProjectToken = generateShareToken();
+  const { error: updatePublicError } = await admin
+    .from("projects")
+    .update({ token: activeProjectToken, is_public_enabled: true })
+    .eq("id", projIds[0]);
+  if (updatePublicError) {
+    console.warn(
+      "Vista pública no actualizada (¿migración project token aplicada?):",
+      updatePublicError.message
+    );
+  } else {
+    console.log("Proyecto activo con vista pública habilitada");
+  }
 
   // Espacios: proyecto activo = Despacho + Salón (con imágenes); proyecto B = uno
   const { data: spaces } = await admin
