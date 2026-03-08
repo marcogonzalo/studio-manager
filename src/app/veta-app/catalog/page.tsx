@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProductDialog } from "@/components/dialogs/product-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
@@ -47,6 +48,9 @@ export default function CatalogPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const [lightboxAlt, setLightboxAlt] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const supabase = getSupabaseClient();
@@ -236,8 +240,14 @@ export default function CatalogPage() {
                   type="button"
                   className="bg-muted focus-visible:ring-ring relative h-24 w-24 shrink-0 overflow-hidden rounded-md transition-opacity hover:opacity-90 focus-visible:ring-2"
                   onClick={() => {
-                    setSelectedProduct(p);
-                    setIsProductModalOpen(true);
+                    if (p.image_url) {
+                      setLightboxSrc(p.image_url);
+                      setLightboxAlt(p.name);
+                      setLightboxOpen(true);
+                    } else {
+                      setSelectedProduct(p);
+                      setIsProductModalOpen(true);
+                    }
                   }}
                   aria-label={`Ver imagen de ${p.name}`}
                   style={
@@ -261,9 +271,16 @@ export default function CatalogPage() {
                   )}
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className="text-foreground line-clamp-2 font-medium">
+                  <button
+                    type="button"
+                    className="text-foreground line-clamp-2 w-full text-left font-medium hover:underline"
+                    onClick={() => {
+                      setSelectedProduct(p);
+                      setIsProductModalOpen(true);
+                    }}
+                  >
                     {p.name}
-                  </p>
+                  </button>
                   {p.supplier?.name && (
                     <p className="text-muted-foreground mt-1 truncate text-sm">
                       {p.supplier.name}
@@ -331,6 +348,13 @@ export default function CatalogPage() {
         product={selectedProduct}
         open={isProductModalOpen}
         onOpenChange={setIsProductModalOpen}
+      />
+
+      <ImageLightbox
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+        src={lightboxSrc}
+        alt={lightboxAlt}
       />
 
       <ConfirmDeleteDialog

@@ -10,6 +10,23 @@ interface CookieToSet {
   options?: CookieOptions;
 }
 
+/**
+ * Returns a same-origin path for redirect, or null if invalid. Prevents open redirect
+ * (e.g. redirect=https://evil.com). Only allows paths starting with / and without "//".
+ */
+function getSafeRedirectPath(raw: string | null): string | null {
+  if (!raw || typeof raw !== "string") return null;
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    return null;
+  }
+  const pathOnly = decoded.split("?")[0]?.trim() ?? "";
+  if (pathOnly.startsWith("/") && !pathOnly.includes("//")) return pathOnly;
+  return null;
+}
+
 const PUBLIC_ROUTES = [
   "/",
   "/about",
@@ -28,7 +45,8 @@ function isPublicPath(pathname: string): boolean {
     PUBLIC_ROUTES.some((route) => pathname === route) ||
     pathname === "/callback" ||
     pathname === "/auth/complete" ||
-    pathname.startsWith("/plan-")
+    pathname.startsWith("/plan-") ||
+    pathname.startsWith("/view-project/")
   );
 }
 
@@ -58,9 +76,8 @@ export async function updateSession(request: NextRequest) {
         if (pathname === "/sign-in") {
           const url = request.nextUrl.clone();
           const redirectTo = request.nextUrl.searchParams.get("redirect");
-          url.pathname = redirectTo
-            ? decodeURIComponent(redirectTo)
-            : `${APP_BASE}/dashboard`;
+          url.pathname =
+            getSafeRedirectPath(redirectTo) ?? `${APP_BASE}/dashboard`;
           url.searchParams.delete("redirect");
           const redirectRes = NextResponse.redirect(url);
           res.cookies

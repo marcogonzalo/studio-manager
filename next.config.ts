@@ -99,6 +99,27 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Redirect legacy Spanish view-project routes to English
+  async redirects() {
+    return [
+      {
+        source: "/view-project/:token/productos",
+        destination: "/view-project/:token/products",
+        permanent: true,
+      },
+      {
+        source: "/view-project/:token/costes",
+        destination: "/view-project/:token/costs",
+        permanent: true,
+      },
+      {
+        source: "/view-project/:token/pagos",
+        destination: "/view-project/:token/payments",
+        permanent: true,
+      },
+    ];
+  },
+
   // Restrict image optimization to trusted origins (A05); no hostname: "**"
   images: {
     remotePatterns: [

@@ -35,7 +35,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { FileText } from "lucide-react";
+import { FileText, Eye, EyeOff } from "lucide-react";
+import { ProjectShareDialog } from "@/components/dialogs/project-share-dialog";
 
 const VALID_TABS = [
   "overview",
@@ -60,6 +61,10 @@ function ProjectDetailContent() {
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [shareViewEnabled, setShareViewEnabled] = useState<boolean | null>(
+    null
+  );
   const tabFromUrl = searchParams.get("tab");
   const initialTab =
     tabFromUrl && VALID_TABS.includes(tabFromUrl as (typeof VALID_TABS)[number])
@@ -194,6 +199,26 @@ function ProjectDetailContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when id changes only
   }, [id]);
 
+  async function fetchShareLinkStatus() {
+    if (!id) return;
+    const { data } = await supabase
+      .from("projects")
+      .select("is_public_enabled")
+      .eq("id", id)
+      .single();
+    setShareViewEnabled(data?.is_public_enabled ?? false);
+  }
+
+  useEffect(() => {
+    if (id) fetchShareLinkStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when id changes only
+  }, [id]);
+
+  function handleShareDialogOpenChange(open: boolean) {
+    setIsShareDialogOpen(open);
+    if (!open) fetchShareLinkStatus();
+  }
+
   // Scroll to active tab when it changes (rAF to avoid forced reflow)
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -303,6 +328,18 @@ function ProjectDetailContent() {
             </span>
           )}
         </div>
+        <Button
+          variant="outline"
+          onClick={() => setIsShareDialogOpen(true)}
+          className="shrink-0"
+        >
+          {shareViewEnabled ? (
+            <Eye className="mr-2 h-4 w-4" />
+          ) : (
+            <EyeOff className="mr-2 h-4 w-4" />
+          )}
+          Vista pública
+        </Button>
         <Button
           variant="outline"
           onClick={() => setIsDetailModalOpen(true)}
@@ -419,6 +456,11 @@ function ProjectDetailContent() {
         project={project}
         onEdit={() => setIsEditDialogOpen(true)}
         readOnly={isReadOnly}
+      />
+      <ProjectShareDialog
+        open={isShareDialogOpen}
+        onOpenChange={handleShareDialogOpenChange}
+        projectId={id}
       />
       <ProjectDialog
         open={isEditDialogOpen}
