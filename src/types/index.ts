@@ -40,6 +40,8 @@ export interface Profile {
 export interface AccountSettings {
   user_id: string;
   public_name?: string;
+  /** Correo público para presupuestos (independiente del email de login). */
+  public_email?: string | null;
   default_tax_rate?: number;
   default_currency?: string;
   updated_at?: string;

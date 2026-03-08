@@ -11,6 +11,10 @@ import {
   getContactFormToEmail,
   getDefaultFrom,
 } from "@/lib/email/mailersend";
+import {
+  getDemoAccessEmailHtml,
+  getDemoAccessEmailText,
+} from "@/lib/email/templates/demo-access";
 import { appPath } from "@/lib/app-paths";
 
 const DEMO_EMAIL = "demo@veta.pro";
@@ -88,14 +92,8 @@ export async function POST(request: NextRequest) {
       subject: "Tu enlace para probar la demo de Veta",
       from: from.email,
       fromName: from.name,
-      html: `
-        <p>Hola,</p>
-        <p>Has solicitado acceder a la demo de Veta. Usa el siguiente enlace para entrar (válido durante un tiempo limitado):</p>
-        <p><a href="${actionLink}">Acceder a la demo de Veta</a></p>
-        <p>Si no has solicitado este enlace, puedes ignorar este correo.</p>
-        <p>— Equipo Veta</p>
-      `,
-      text: `Hola,\n\nHas solicitado acceder a la demo de Veta. Usa este enlace para entrar (válido durante un tiempo limitado):\n\n${actionLink}\n\nSi no has solicitado este enlace, puedes ignorar este correo.\n\n— Equipo Veta`,
+      html: getDemoAccessEmailHtml(actionLink),
+      text: getDemoAccessEmailText(actionLink),
     });
 
     if (!sendResult.success) {

@@ -6,13 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
 import { GtmScript } from "@/components/gtm";
-import {
-  consentStateToGtmPayload,
-  ConsentStatus,
-  ConsentType,
-  getDefaultGtmConsent,
-  loadStoredConsent,
-} from "@/lib/consent";
+import { CONSENT_STORAGE_KEY, getDefaultGtmConsent } from "@/lib/consent";
 import {
   JsonLd,
   organizationJsonLd,
@@ -103,15 +97,8 @@ export default async function RootLayout({
     }
   }
 
-  function getGtmInitializationConsentScript(): Record<
-    ConsentType,
-    ConsentStatus
-  > {
-    const storedConsent = loadStoredConsent();
-    return storedConsent
-      ? consentStateToGtmPayload(storedConsent)
-      : getDefaultGtmConsent(true);
-  }
+  // Default consent when no stored preference (e.g. first visit or EU). Injected so inline script can use it.
+  const defaultDeniedPayload = getDefaultGtmConsent(true);
 
   return (
     <html lang="es" suppressHydrationWarning className={montserrat.variable}>
@@ -119,6 +106,7 @@ export default async function RootLayout({
         {/* Preconnect to third-party origins (faster TTFB, keeps third-party budget &lt; 200 KB). */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
 
+        {/* Consent default must be read from localStorage in the browser so returning users who already accepted get analytics_storage: granted before GTM/GA runs. Server cannot read localStorage, so we inject default-denied and let this script override from storage. */}
         <script
           id="gtm-consent-default"
           dangerouslySetInnerHTML={{
@@ -126,7 +114,29 @@ export default async function RootLayout({
 window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 window.gtag = gtag;
-gtag('consent', 'default', ${JSON.stringify(getGtmInitializationConsentScript())});
+(function(){
+  var key = ${JSON.stringify(CONSENT_STORAGE_KEY)};
+  var defaultDenied = ${JSON.stringify(defaultDeniedPayload)};
+  try {
+    var raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
+    if (raw) {
+      var p = JSON.parse(raw);
+      gtag('consent', 'default', {
+        ad_storage: p.marketing ? 'granted' : 'denied',
+        ad_user_data: p.marketing ? 'granted' : 'denied',
+        ad_personalization: p.marketing ? 'granted' : 'denied',
+        analytics_storage: p.analytics ? 'granted' : 'denied',
+        functionality_storage: 'granted',
+        personalization_storage: p.personalization ? 'granted' : 'denied',
+        security_storage: 'granted'
+      });
+    } else {
+      gtag('consent', 'default', defaultDenied);
+    }
+  } catch (e) {
+    gtag('consent', 'default', defaultDenied);
+  }
+})();
 gtag('set', 'ads_data_redaction', true);
 gtag('set', 'url_passthrough', false);
           `.trim(),

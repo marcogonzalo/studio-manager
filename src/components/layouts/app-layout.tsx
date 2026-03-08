@@ -572,6 +572,11 @@ export default function AppLayoutClient({
     setOnboardingModalOpen(false);
   };
 
+  useEffect(() => {
+    document.body.classList.add("veta-app");
+    return () => document.body.classList.remove("veta-app");
+  }, []);
+
   if (loading) {
     return (
       <div className="flex h-screen flex-col p-6">
