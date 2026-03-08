@@ -49,60 +49,56 @@ export default async function ViewProjectPaymentsPage({ params }: PageProps) {
 
   return (
     <ViewProjectShell token={token} showBack title="Pagos">
-      <div className="mx-auto w-full max-w-4xl space-y-4">
-        {payments.length === 0 ? (
-          <Card>
-            <CardContent className="text-muted-foreground py-12 text-center">
-              No hay pagos registrados.
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="p-0">
-              <div className="border-border flex justify-end border-b px-4 py-3">
-                <span className="text-muted-foreground text-sm">
-                  Total:{" "}
-                  <span className="text-foreground font-semibold">
-                    {formatCurrency(totalAmount, currency)}
-                  </span>
+      {payments.length === 0 ? (
+        <Card>
+          <CardContent className="text-muted-foreground py-12 text-center">
+            No hay pagos registrados.
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <div className="border-border flex justify-end border-b px-4 py-3">
+              <span className="text-muted-foreground text-sm">
+                Total:{" "}
+                <span className="text-foreground font-semibold">
+                  {formatCurrency(totalAmount, currency)}
                 </span>
-              </div>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead className="text-muted-foreground">
-                      Referencia
-                    </TableHead>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead className="text-muted-foreground">
-                      Monto
-                    </TableHead>
+              </span>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead className="text-muted-foreground">
+                    Referencia
+                  </TableHead>
+                  <TableHead>Descripción</TableHead>
+                  <TableHead className="text-muted-foreground">Monto</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {payments.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell>
+                      {format(new Date(payment.payment_date), "dd/MM/yyyy")}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground max-w-[12rem] truncate">
+                      {payment.reference_number ?? "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground max-w-[16rem] truncate">
+                      {payment.description ?? "—"}
+                    </TableCell>
+                    <TableCell className="font-semibold tabular-nums">
+                      {formatCurrency(Number(payment.amount), currency)}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payments.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell>
-                        {format(new Date(payment.payment_date), "dd/MM/yyyy")}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground max-w-[12rem] truncate">
-                        {payment.reference_number ?? "—"}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground max-w-[16rem] truncate">
-                        {payment.description ?? "—"}
-                      </TableCell>
-                      <TableCell className="font-semibold tabular-nums">
-                        {formatCurrency(Number(payment.amount), currency)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
-      </div>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </ViewProjectShell>
   );
 }

@@ -39,11 +39,8 @@ export default async function ViewProjectProductsPage({ params }: PageProps) {
   }[];
 
   return (
-    <ViewProjectShell token={token} showBack>
-      <div className="mx-auto w-full max-w-4xl space-y-4">
-        <h1 className="text-foreground text-xl font-semibold">Productos</h1>
-        <ViewProjectProductsClient products={products} currency={currency} />
-      </div>
+    <ViewProjectShell token={token} title="Productos" showBack>
+      <ViewProjectProductsClient products={products} currency={currency} />
     </ViewProjectShell>
   );
 }
