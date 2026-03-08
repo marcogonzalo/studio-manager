@@ -214,7 +214,9 @@ function SidebarContent({
       return (
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>{wrapped}</TooltipTrigger>
-          <TooltipContent side="right">{item.name}</TooltipContent>
+          <TooltipContent side="right" variant="tertiary">
+            {item.name}
+          </TooltipContent>
         </Tooltip>
       );
     }
@@ -315,7 +317,9 @@ function SidebarContent({
                       )}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="right">{oppositeLabel}</TooltipContent>
+                  <TooltipContent side="right" variant="tertiary">
+                    {oppositeLabel}
+                  </TooltipContent>
                 </Tooltip>
               ) : (
                 <Button
@@ -355,7 +359,9 @@ function SidebarContent({
                   <Rocket className="h-4 w-4 shrink-0" />
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right">Mejorar plan</TooltipContent>
+              <TooltipContent side="right" variant="tertiary">
+                Mejorar plan
+              </TooltipContent>
             </Tooltip>
           ) : (
             <Link
@@ -438,7 +444,7 @@ function SidebarContent({
                 </DropdownMenuContent>
               </DropdownMenu>
             </TooltipTrigger>
-            <TooltipContent side="right">
+            <TooltipContent side="right" variant="tertiary">
               {getDisplayName(user, profileFullName)}
             </TooltipContent>
           </Tooltip>

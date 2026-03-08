@@ -669,7 +669,7 @@ export function ProjectBudget({
                                       />
                                     </span>
                                   </TooltipTrigger>
-                                  <TooltipContent>
+                                  <TooltipContent variant="tertiary">
                                     <p>{statusLabel}</p>
                                   </TooltipContent>
                                 </Tooltip>
