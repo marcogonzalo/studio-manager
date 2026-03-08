@@ -18,7 +18,7 @@ export function TabSectionHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="-mb-3 flex min-h-[48px] justify-between gap-4">
+    <div className="flex min-h-[48px] justify-between gap-4">
       <div className="space-y-1">
         <h3 className="text-lg font-medium">{title}</h3>
         {subtitle && (
