@@ -36,12 +36,12 @@ export function ViewProjectShell({
             </Link>
           </div>
         )}
-        {title && (
-          <h1 className="text-foreground mb-4 text-xl font-semibold">
-            {title}
-          </h1>
-        )}
-        {children}
+        <div className="mx-auto w-full max-w-4xl space-y-4">
+          {title && (
+            <h1 className="text-foreground text-xl font-semibold">{title}</h1>
+          )}
+          {children}
+        </div>
       </main>
     </div>
   );
