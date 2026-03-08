@@ -77,8 +77,8 @@ export function ViewProjectProductsClient({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {spaceProducts.map((p) => (
-                    <Card key={p.id}>
-                      <CardContent className="flex gap-4 p-4">
+                    <Card key={p.id} className="flex min-h-[10rem] flex-col">
+                      <CardContent className="flex flex-1 gap-4 p-4">
                         <div className="min-w-0 flex-1">
                           <p className="text-foreground line-clamp-2 font-medium">
                             {p.name}
@@ -96,7 +96,7 @@ export function ViewProjectProductsClient({
                         </div>
                         <button
                           type="button"
-                          className="bg-muted focus-visible:ring-ring relative min-h-20 w-[30%] shrink-0 self-stretch overflow-hidden rounded-md transition-opacity hover:opacity-90 focus-visible:ring-2"
+                          className="bg-muted focus-visible:ring-ring relative h-full w-[30%] shrink-0 overflow-hidden rounded-md transition-opacity hover:opacity-90 focus-visible:ring-2"
                           onClick={() => openLightbox(p.image_url, p.name)}
                           aria-label={`Ver imagen de ${p.name}`}
                           style={
