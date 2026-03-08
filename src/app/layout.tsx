@@ -6,10 +6,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
 import { GtmScript } from "@/components/gtm";
-import {
-  CONSENT_STORAGE_KEY,
-  getDefaultGtmConsent,
-} from "@/lib/consent";
+import { CONSENT_STORAGE_KEY, getDefaultGtmConsent } from "@/lib/consent";
 import {
   JsonLd,
   organizationJsonLd,

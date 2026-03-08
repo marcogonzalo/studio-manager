@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const PRODUCTION_CSP =
-  "https://*.supabase.co https://*.backblazeb2.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://va.vercel-scripts.com https://vercel.live";
+  "https://*.supabase.co https://*.backblazeb2.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://fonts.gstatic.com https://va.vercel-scripts.com https://vercel.live";
 
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
@@ -74,11 +74,11 @@ const nextConfig: NextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://va.vercel-scripts.com https://vercel.live",
               "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
               "img-src 'self' data: https: blob:",
-              "font-src 'self' data:",
-              // connect-src: Supabase, Backblaze, GTM/GA4; in dev add local Supabase + HMR
+              "font-src 'self' data: https://fonts.gstatic.com",
+              // connect-src: Supabase, Backblaze, GTM/GA4, PDF fonts; blob: para react-pdf
               process.env.NODE_ENV === "production"
-                ? "connect-src 'self' " + PRODUCTION_CSP
-                : "connect-src 'self' http://localhost:54321 http://127.0.0.1:54321 ws://localhost:3000 ws://127.0.0.1:3000 " +
+                ? "connect-src 'self' blob: " + PRODUCTION_CSP
+                : "connect-src 'self' blob: http://localhost:54321 http://127.0.0.1:54321 ws://localhost:3000 ws://127.0.0.1:3000 " +
                   PRODUCTION_CSP,
               "frame-src 'self' https://www.googletagmanager.com",
               "frame-ancestors 'none'",
