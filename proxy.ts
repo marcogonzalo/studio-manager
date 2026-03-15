@@ -7,7 +7,7 @@ import {
 } from "@/lib/rate-limit";
 import { updateSession } from "@/lib/supabase/middleware";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const routeGroup = getRouteGroup(pathname, request.method);
   if (routeGroup) {
