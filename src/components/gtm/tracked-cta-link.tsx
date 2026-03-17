@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { pushCtaClick } from "@/lib/gtm";
 
 type TrackedCtaLinkProps = React.ComponentProps<typeof Link> & {

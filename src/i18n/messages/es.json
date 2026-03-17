@@ -1,0 +1,105 @@
+{
+  "Common": {
+    "skipToContent": "Saltar al contenido",
+    "openMenu": "Abrir menú"
+  },
+  "Header": {
+    "features": "Características",
+    "pricing": "Precios",
+    "about": "Nosotros",
+    "signIn": "Iniciar Sesión",
+    "startFree": "Comenzar Gratis"
+  },
+  "Footer": {
+    "description": "La plataforma para gestión de proyectos de arquitectura de diseño interior.",
+    "product": "Producto",
+    "features": "Características",
+    "pricing": "Precios",
+    "basePlan": "Plan Base",
+    "proPlan": "Plan Pro",
+    "studioPlan": "Plan Studio",
+    "tryDemo": "Probar demo",
+    "company": "Empresa",
+    "about": "Nosotros",
+    "contact": "Contacto",
+    "legal": "Legal",
+    "termsAndPrivacy": "Términos y Privacidad",
+    "copyright": "Todos los derechos reservados."
+  },
+  "HomePage": {
+    "badge": "Diseñado para profesionales del diseño interior",
+    "title": "Tus proyectos de interiorismo",
+    "titleHighlight": "sin complicaciones",
+    "subtitle": "La plataforma todo-en-uno para arquitectos e interioristas. Administra proyectos, clientes, proveedores y presupuestos desde un solo lugar y toma el control.",
+    "startFree": "Comenzar Gratis",
+    "viewFeatures": "Ver Características",
+    "trialInfo": "30 días de prueba gratis. Sin tarjeta, sin compromiso. Cancela cuando quieras.",
+    "metaTitle": "Veta - Gestión de proyectos de diseño interior",
+    "metaDescription": "Plataforma todo-en-uno para estudios de diseño interior: gestiona proyectos, clientes, proveedores, catálogos y presupuestos desde un solo lugar. Prueba gratis.",
+    "ogTitle": "Veta - Gestión de proyectos de diseño interior",
+    "ogDescription": "Plataforma todo-en-uno para estudios de diseño interior: proyectos, clientes, proveedores y presupuestos. Prueba gratis.",
+    "twitterTitle": "Veta - Gestión de proyectos de diseño interior",
+    "twitterDescription": "Plataforma todo-en-uno para estudios de diseño interior. Prueba gratis."
+  },
+  "Stats": {
+    "projectsLabel": "Proyectos gestionables",
+    "timeSavedLabel": "Tiempo ahorrado en gestión",
+    "allInOneLabel": "De tu proyecto en un solo lugar"
+  },
+  "Features": {
+    "sectionTitle": "Todo lo que necesitas",
+    "sectionTitleHighlight": "para tu estudio",
+    "sectionSubtitle": "Herramientas diseñadas específicamente para profesionales del diseño interior.",
+    "projectManagement": "Gestión de Proyectos",
+    "projectManagementDesc": "Organiza tus proyectos de diseño interior con espacios, presupuestos y seguimiento de fases.",
+    "clients": "Clientes",
+    "clientsDesc": "Mantén toda la información de tus clientes organizada y accesible en un solo lugar.",
+    "productCatalog": "Catálogo de Productos",
+    "productCatalogDesc": "Gestiona tu catálogo de productos con imágenes, precios y referencias de proveedores.",
+    "suppliers": "Proveedores",
+    "suppliersDesc": "Administra tus proveedores y mantén un historial de compras y pedidos.",
+    "costControl": "Control de Costos",
+    "costControlDesc": "Visualiza gastos, ingresos y márgenes de cada proyecto en tiempo real.",
+    "export": "Exporta",
+    "exportDesc": "Genera presupuestos y documentos profesionales para tus clientes."
+  },
+  "Benefits": {
+    "sectionTitle": "¿Por qué",
+    "sectionTitleHighlight": "elegir Veta",
+    "sectionSubtitle": "Simplificamos la gestión de tu estudio de arquitectura e interiorismo para que puedas enfocarte en lo que mejor sabes hacer: diseñar espacios increíbles.",
+    "benefit1": "Interfaz pensada para arquitectos y diseñadores de interior",
+    "benefit2": "Acceso en todo momento desde cualquier dispositivo",
+    "benefit3": "Gestión de datos responsable y segura (normativa RGPD)",
+    "benefit4": "Mejoras y actualizaciones constantes",
+    "benefit5": "Escucha activa para responder a tus requerimientos",
+    "benefit6": "Planes con precio fijo y adaptables a tus necesidades",
+    "tryFree": "Prueba Gratis"
+  },
+  "Testimonials": {
+    "sectionTitle": "Lo que dicen",
+    "sectionTitleHighlight": "nuestros usuarios"
+  },
+  "CtaBeforeFaq": {
+    "title": "¿Listo para transformar tu estudio?",
+    "subtitle": "Únete a los profesionales del diseño interior que ya confían en Veta.",
+    "startFree": "Comenzar Gratis",
+    "contactSales": "Hablar con Ventas"
+  },
+  "Faq": {
+    "sectionTitle": "Preguntas",
+    "sectionTitleHighlight": "frecuentes",
+    "question1": "¿Qué es Veta?",
+    "answer1": "Veta es un software de gestión de proyectos de interiorismo diseñado para centralizar toda tu operativa en un solo lugar. Con nuestra plataforma, puedes gestionar la relación con clientes y proveedores, además de crear un catálogo de productos digital reutilizable para agilizar tus diseños. Veta te permite mantener presupuestos de interiorismo actualizados en tiempo real ante cualquier cambio, facilitando el control de órdenes de compra, costes y pagos, y el seguimiento financiero de cada obra. Al optimizar las tareas administrativas, con Veta ganas tiempo para lo que de verdad importa: aportar valor creativo a tus proyectos de arquitectura de interiores.",
+    "question2": "¿Para quién es Veta?",
+    "answer2": "Veta es una herramienta digital diseñada específicamente para profesionales del sector Contract y Residencial: interioristas, estudios y diseñadores freelance que buscan profesionalizar su gestión y dejar de usar hojas de cálculo dispersas; estudios de diseño de interiores que necesitan centralizar la comunicación, delegar tareas y controlar la rentabilidad de varios proyectos simultáneos; arquitectos de interiores que requieren un control técnico y financiero riguroso sobre las compras a proveedores y presupuestos de obra; y project managers de diseño, especialistas en la ejecución que demandan una herramienta ágil para gestionar órdenes de compra y pagos.",
+    "question3": "¿Cómo empiezo?",
+    "answer3": "Comenzar a optimizar tus proyectos de interiorismo es muy sencillo y no requiere compromiso inicial: regístrate gratis y crea tu cuenta base en segundos sin necesidad de introducir tu tarjeta de crédito; explora las herramientas configurando tus primeros clientes y creando tu catálogo de productos; y elige tu ritmo manteniéndote en el plan gratuito el tiempo que necesites o escalando a los planes Pro o Studio cuando tu volumen de proyectos y equipo lo requieran.",
+    "question4": "¿Mis datos están seguros?",
+    "answer4": "La seguridad de tu información es nuestra prioridad. En Veta implementamos protocolos de protección de datos de nivel bancario para que tu estudio de interiorismo opere con total tranquilidad: cumplimos estrictamente con el Reglamento General de Protección de Datos (RGPD), garantizando la privacidad de tu base de datos en todo momento; solo tú y las personas autorizadas de tu equipo tenéis acceso a la plataforma mediante credenciales protegidas; y como titular puedes ejercer tus derechos de acceso, rectificación o supresión de datos de forma sencilla y directa."
+  },
+  "CtaFinal": {
+    "title": "Comienza hoy mismo",
+    "subtitle": "Únete a los profesionales del diseño interior que ya están transformando su forma de trabajar.",
+    "startFree": "Comenzar Gratis"
+  }
+}

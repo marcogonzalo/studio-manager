@@ -1,0 +1,105 @@
+{
+  "Common": {
+    "skipToContent": "Skip to content",
+    "openMenu": "Open menu"
+  },
+  "Header": {
+    "features": "Features",
+    "pricing": "Pricing",
+    "about": "About",
+    "signIn": "Sign In",
+    "startFree": "Start Free"
+  },
+  "Footer": {
+    "description": "The platform for interior design and architecture project management.",
+    "product": "Product",
+    "features": "Features",
+    "pricing": "Pricing",
+    "basePlan": "Base Plan",
+    "proPlan": "Pro Plan",
+    "studioPlan": "Studio Plan",
+    "tryDemo": "Try Demo",
+    "company": "Company",
+    "about": "About",
+    "contact": "Contact",
+    "legal": "Legal",
+    "termsAndPrivacy": "Terms & Privacy",
+    "copyright": "All rights reserved."
+  },
+  "HomePage": {
+    "badge": "Designed for interior design professionals",
+    "title": "Your interior design projects",
+    "titleHighlight": "without complications",
+    "subtitle": "The all-in-one platform for architects and interior designers. Manage projects, clients, suppliers, and budgets from one place and take control.",
+    "startFree": "Start Free",
+    "viewFeatures": "View Features",
+    "trialInfo": "30-day free trial. No credit card, no commitment. Cancel anytime.",
+    "metaTitle": "Veta - Interior Design Project Management",
+    "metaDescription": "All-in-one platform for interior design studios: manage projects, clients, suppliers, catalogs, and budgets from one place. Try it free.",
+    "ogTitle": "Veta - Interior Design Project Management",
+    "ogDescription": "All-in-one platform for interior design studios: projects, clients, suppliers, and budgets. Try it free.",
+    "twitterTitle": "Veta - Interior Design Project Management",
+    "twitterDescription": "All-in-one platform for interior design studios. Try it free."
+  },
+  "Stats": {
+    "projectsLabel": "Manageable projects",
+    "timeSavedLabel": "Time saved in management",
+    "allInOneLabel": "Of your project in one place"
+  },
+  "Features": {
+    "sectionTitle": "Everything you need",
+    "sectionTitleHighlight": "for your studio",
+    "sectionSubtitle": "Tools designed specifically for interior design professionals.",
+    "projectManagement": "Project Management",
+    "projectManagementDesc": "Organize your interior design projects with spaces, budgets, and phase tracking.",
+    "clients": "Clients",
+    "clientsDesc": "Keep all your client information organized and accessible in one place.",
+    "productCatalog": "Product Catalog",
+    "productCatalogDesc": "Manage your product catalog with images, prices, and supplier references.",
+    "suppliers": "Suppliers",
+    "suppliersDesc": "Manage your suppliers and maintain a history of purchases and orders.",
+    "costControl": "Cost Control",
+    "costControlDesc": "Visualize expenses, income, and margins for each project in real-time.",
+    "export": "Export",
+    "exportDesc": "Generate professional budgets and documents for your clients."
+  },
+  "Benefits": {
+    "sectionTitle": "Why",
+    "sectionTitleHighlight": "choose Veta",
+    "sectionSubtitle": "We simplify the management of your architecture and interior design studio so you can focus on what you do best: designing incredible spaces.",
+    "benefit1": "Interface designed for architects and interior designers",
+    "benefit2": "Access anytime from any device",
+    "benefit3": "Responsible and secure data management (GDPR compliant)",
+    "benefit4": "Constant improvements and updates",
+    "benefit5": "Active listening to respond to your requirements",
+    "benefit6": "Fixed-price plans adaptable to your needs",
+    "tryFree": "Try Free"
+  },
+  "Testimonials": {
+    "sectionTitle": "What",
+    "sectionTitleHighlight": "our users say"
+  },
+  "CtaBeforeFaq": {
+    "title": "Ready to transform your studio?",
+    "subtitle": "Join the interior design professionals who already trust Veta.",
+    "startFree": "Start Free",
+    "contactSales": "Talk to Sales"
+  },
+  "Faq": {
+    "sectionTitle": "Frequently",
+    "sectionTitleHighlight": "asked questions",
+    "question1": "What is Veta?",
+    "answer1": "Veta is interior design project management software designed to centralize all your operations in one place. With our platform, you can manage relationships with clients and suppliers, as well as create a reusable digital product catalog to streamline your designs. Veta allows you to keep interior design budgets updated in real-time with any changes, facilitating control of purchase orders, costs and payments, and financial tracking of each project. By optimizing administrative tasks, Veta gives you time for what really matters: bringing creative value to your interior architecture projects.",
+    "question2": "Who is Veta for?",
+    "answer2": "Veta is a digital tool designed specifically for professionals in the Contract and Residential sectors: interior designers, studios, and freelance designers looking to professionalize their management and stop using scattered spreadsheets; interior design studios that need to centralize communication, delegate tasks, and control the profitability of multiple simultaneous projects; interior architects who require rigorous technical and financial control over supplier purchases and project budgets; and design project managers, execution specialists who demand an agile tool to manage purchase orders and payments.",
+    "question3": "How do I get started?",
+    "answer3": "Starting to optimize your interior design projects is very simple and requires no initial commitment: sign up for free and create your base account in seconds without needing to enter your credit card; explore the tools by setting up your first clients and creating your product catalog; and choose your pace by staying on the free plan as long as you need or scaling to Pro or Studio plans when your project volume and team require it.",
+    "question4": "Is my data secure?",
+    "answer4": "The security of your information is our priority. At Veta we implement bank-level data protection protocols so your interior design studio can operate with complete peace of mind: we strictly comply with the General Data Protection Regulation (GDPR), guaranteeing the privacy of your database at all times; only you and authorized members of your team have access to the platform through protected credentials; and as the owner you can exercise your rights of access, rectification, or deletion of data in a simple and direct way."
+  },
+  "CtaFinal": {
+    "title": "Start today",
+    "subtitle": "Join the interior design professionals who are already transforming the way they work.",
+    "startFree": "Start Free"
+  }
+}

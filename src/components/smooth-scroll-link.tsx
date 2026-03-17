@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { useCallback } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 const SMOOTH_SCROLL_DURATION_MS = 1500; // 0.5s slower than default ~1s

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Menu } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { pushCtaClick } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -15,16 +16,19 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-
-const navLinks = [
-  { href: "/#features", label: "Características" },
-  { href: "/pricing", label: "Precios" },
-  { href: "/about", label: "Nosotros" },
-];
+import { LanguageToggle } from "@/components/language-toggle";
 
 export function MarketingHeader() {
+  const t = useTranslations("Header");
+  const tCommon = useTranslations("Common");
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const navLinks = [
+    { href: "/#features", label: t("features") },
+    { href: "/pricing", label: t("pricing") },
+    { href: "/about", label: t("about") },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,6 +66,7 @@ export function MarketingHeader() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <LanguageToggle />
           <ThemeToggle />
           <div className="hidden md:flex md:items-center md:gap-3">
             <Button variant="ghost" asChild>
@@ -70,12 +75,12 @@ export function MarketingHeader() {
                 onClick={() =>
                   pushCtaClick({
                     cta_location: "header",
-                    cta_text: "Iniciar Sesión",
+                    cta_text: t("signIn"),
                     destination_url: "/sign-in",
                   })
                 }
               >
-                Iniciar Sesión
+                {t("signIn")}
               </Link>
             </Button>
             <Button asChild className="hidden sm:inline-flex">
@@ -84,19 +89,23 @@ export function MarketingHeader() {
                 onClick={() =>
                   pushCtaClick({
                     cta_location: "header",
-                    cta_text: "Comenzar Gratis",
+                    cta_text: t("startFree"),
                     destination_url: "/sign-up",
                   })
                 }
               >
-                Comenzar Gratis
+                {t("startFree")}
               </Link>
             </Button>
           </div>
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon" aria-label="Abrir menú">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={tCommon("openMenu")}
+              >
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -122,13 +131,13 @@ export function MarketingHeader() {
                       onClick={() => {
                         pushCtaClick({
                           cta_location: "header_mobile",
-                          cta_text: "Iniciar Sesión",
+                          cta_text: t("signIn"),
                           destination_url: "/sign-in",
                         });
                         setOpen(false);
                       }}
                     >
-                      Iniciar Sesión
+                      {t("signIn")}
                     </Link>
                   </Button>
                   <Button asChild className="justify-start">
@@ -137,13 +146,13 @@ export function MarketingHeader() {
                       onClick={() => {
                         pushCtaClick({
                           cta_location: "header_mobile",
-                          cta_text: "Comenzar Gratis",
+                          cta_text: t("startFree"),
                           destination_url: "/sign-up",
                         });
                         setOpen(false);
                       }}
                     >
-                      Comenzar Gratis
+                      {t("startFree")}
                     </Link>
                   </Button>
                 </div>
