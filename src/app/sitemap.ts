@@ -14,14 +14,32 @@ const BASE_URL =
 
 const publicRoutes = [
   { path: "/", priority: 1, changeFrequency: "weekly" as const },
-  { path: "/about", priority: 0.8, changeFrequency: "monthly" as const },
-  { path: "/pricing", priority: 0.9, changeFrequency: "weekly" as const },
-  { path: "/contact", priority: 0.8, changeFrequency: "monthly" as const },
+  { path: "/en", priority: 1, changeFrequency: "weekly" as const },
+  { path: "/precios", priority: 0.9, changeFrequency: "weekly" as const },
+  { path: "/en/pricing", priority: 0.9, changeFrequency: "weekly" as const },
+  {
+    path: "/sobre-veta",
+    priority: 0.8,
+    changeFrequency: "monthly" as const,
+  },
+  {
+    path: "/en/about-veta",
+    priority: 0.8,
+    changeFrequency: "monthly" as const,
+  },
+  { path: "/contacto", priority: 0.8, changeFrequency: "monthly" as const },
+  { path: "/en/contact", priority: 0.8, changeFrequency: "monthly" as const },
+  { path: "/demo", priority: 0.8, changeFrequency: "monthly" as const },
+  { path: "/en/demo", priority: 0.8, changeFrequency: "monthly" as const },
   { path: "/legal", priority: 0.5, changeFrequency: "yearly" as const },
-  { path: "/sign-in", priority: 0.6, changeFrequency: "monthly" as const },
-  { path: "/sign-up", priority: 0.6, changeFrequency: "monthly" as const },
+  { path: "/en/legal", priority: 0.5, changeFrequency: "yearly" as const },
   {
     path: "/plan-base-primer-proyecto-interiorismo",
+    priority: 0.7,
+    changeFrequency: "monthly" as const,
+  },
+  {
+    path: "/en/base-plan-first-interior-design-project",
     priority: 0.7,
     changeFrequency: "monthly" as const,
   },
@@ -31,7 +49,17 @@ const publicRoutes = [
     changeFrequency: "monthly" as const,
   },
   {
+    path: "/en/pro-plan-for-independent-interior-designers",
+    priority: 0.7,
+    changeFrequency: "monthly" as const,
+  },
+  {
     path: "/plan-studio-empresas-arquitectura-diseno-interior",
+    priority: 0.7,
+    changeFrequency: "monthly" as const,
+  },
+  {
+    path: "/en/studio-plan-for-architecture-and-interior-design-firms",
     priority: 0.7,
     changeFrequency: "monthly" as const,
   },

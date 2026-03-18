@@ -9,15 +9,15 @@ import { pushCtaClick } from "@/lib/gtm";
 
 const PLAN_LINKS = [
   {
-    href: "/plan-base-primer-proyecto-interiorismo" as const,
+    href: "/plan-base" as const,
     key: "basePlan" as const,
   },
   {
-    href: "/plan-pro-independientes-diseno-interior" as const,
+    href: "/plan-pro" as const,
     key: "proPlan" as const,
   },
   {
-    href: "/plan-studio-empresas-arquitectura-diseno-interior" as const,
+    href: "/plan-studio" as const,
     key: "studioPlan" as const,
   },
 ] as const;

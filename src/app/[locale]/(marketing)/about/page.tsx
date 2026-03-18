@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { Users, Target, Heart, Award, Linkedin, Sparkles } from "lucide-react";
@@ -17,14 +16,22 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "About" });
+  const canonical = locale === "es" ? "/sobre-veta" : "/en/about-veta";
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/about" },
+    alternates: {
+      canonical,
+      languages: {
+        es: "/sobre-veta",
+        en: "/en/about-veta",
+        "x-default": "/sobre-veta",
+      },
+    },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
-      url: "/about",
+      url: canonical,
     },
     twitter: {
       card: "summary_large_image",
@@ -175,7 +182,7 @@ export default async function AboutPage({
             <h3 className="text-foreground mt-2 font-semibold">
               {t("creatorName")}
             </h3>
-            <Link
+            <a
               href="https://www.linkedin.com/in/marcogonzalo"
               target="_blank"
               rel="noopener noreferrer"
@@ -183,7 +190,7 @@ export default async function AboutPage({
               className="text-primary mt-2 inline-flex items-center gap-2 text-sm font-medium transition-colors hover:underline"
             >
               <Linkedin className="h-5 w-5" />
-            </Link>
+            </a>
             <p className="text-muted-foreground mt-4">{t("creatorBio")}</p>
           </AnimatedSection>
         </div>

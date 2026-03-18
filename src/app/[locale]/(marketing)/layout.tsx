@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { useTranslations } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { VetaLogo } from "@/components/veta-logo";
@@ -32,7 +31,6 @@ export const metadata: Metadata = {
 
 async function Footer() {
   const t = await getTranslations("Footer");
-  const tCommon = await getTranslations("Common");
 
   return (
     <footer className="border-border bg-muted/30 relative border-t">
@@ -70,7 +68,7 @@ async function Footer() {
               </li>
               <li>
                 <Link
-                  href="/plan-base-primer-proyecto-interiorismo"
+                  href="/plan-base"
                   className="hover:text-foreground transition-colors"
                 >
                   {t("basePlan")}
@@ -78,7 +76,7 @@ async function Footer() {
               </li>
               <li>
                 <Link
-                  href="/plan-pro-independientes-diseno-interior"
+                  href="/plan-pro"
                   className="hover:text-foreground transition-colors"
                 >
                   {t("proPlan")}
@@ -86,7 +84,7 @@ async function Footer() {
               </li>
               <li>
                 <Link
-                  href="/plan-studio-empresas-arquitectura-diseno-interior"
+                  href="/plan-studio"
                   className="hover:text-foreground transition-colors"
                 >
                   {t("studioPlan")}

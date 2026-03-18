@@ -36,14 +36,22 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Pricing" });
+  const canonical = locale === "es" ? "/precios" : "/en/pricing";
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/pricing" },
+    alternates: {
+      canonical,
+      languages: {
+        es: "/precios",
+        en: "/en/pricing",
+        "x-default": "/precios",
+      },
+    },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
-      url: "/pricing",
+      url: canonical,
     },
     twitter: {
       card: "summary_large_image",
@@ -121,7 +129,7 @@ export default async function PricingPage({
     { question: t("faq4Question"), answer: t("faq4Answer") },
   ];
 
-  const pricingUrl = `${baseUrl}/pricing`;
+  const pricingUrl = `${baseUrl}${locale === "es" ? "/precios" : "/en/pricing"}`;
   return (
     <>
       <JsonLd data={faqPageJsonLd(faqs, pricingUrl)} />

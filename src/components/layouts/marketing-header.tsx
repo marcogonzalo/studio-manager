@@ -25,10 +25,13 @@ export function MarketingHeader() {
   const [scrolled, setScrolled] = useState(false);
 
   const navLinks = [
-    { href: "/#features", label: t("features") },
-    { href: "/pricing", label: t("pricing") },
-    { href: "/about", label: t("about") },
-  ];
+    {
+      href: { pathname: "/", hash: "features" } as const,
+      label: t("features"),
+    },
+    { href: "/pricing" as const, label: t("pricing") },
+    { href: "/about" as const, label: t("about") },
+  ] as const;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,7 +59,7 @@ export function MarketingHeader() {
         <nav className="hidden items-center gap-6 md:flex">
           {navLinks.map((link) => (
             <Link
-              key={link.href}
+              key={link.label}
               href={link.href}
               className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
             >
@@ -116,7 +119,7 @@ export function MarketingHeader() {
               <nav className="mt-8 flex flex-col gap-4">
                 {navLinks.map((link) => (
                   <Link
-                    key={link.href}
+                    key={link.label}
                     href={link.href}
                     onClick={() => setOpen(false)}
                     className="text-muted-foreground hover:text-foreground text-lg font-medium transition-colors"

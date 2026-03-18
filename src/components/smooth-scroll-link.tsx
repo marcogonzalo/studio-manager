@@ -106,8 +106,18 @@ export function AnchorToHash({
       </SmoothScrollLink>
     );
   }
+  // next-intl's Link typing is strict about allowed pathnames; convert
+  // hash-only hrefs to UrlObject so TS/Next accepts them.
+  type LinkHref = React.ComponentProps<typeof Link>["href"];
+
+  const linkHref: LinkHref = href.startsWith("/#")
+    ? { pathname: "/", hash: href.slice(2) }
+    : href.startsWith("#")
+      ? { pathname, hash: href.slice(1) }
+      : (href as LinkHref);
+
   return (
-    <Link href={href} className={className} {...props}>
+    <Link href={linkHref} className={className} {...props}>
       {children}
     </Link>
   );

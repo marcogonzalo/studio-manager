@@ -5,13 +5,12 @@ import { Link } from "@/i18n/routing";
 import {
   Check,
   Sparkles,
-  ArrowRight,
-  Building2,
-  Users,
-  Infinity,
-  Headphones,
-  FileText,
+  Zap,
   Shield,
+  ArrowRight,
+  FileText,
+  FolderKanban,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,17 +32,26 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "PlanStudio" });
+  const t = await getTranslations({ locale, namespace: "PlanBase" });
+  const canonical =
+    locale === "es"
+      ? "/plan-base-primer-proyecto-interiorismo"
+      : "/en/base-plan-first-interior-design-project";
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
     alternates: {
-      canonical: "/plan-studio-empresas-arquitectura-diseno-interior",
+      canonical,
+      languages: {
+        es: "/plan-base-primer-proyecto-interiorismo",
+        en: "/en/base-plan-first-interior-design-project",
+        "x-default": "/plan-base-primer-proyecto-interiorismo",
+      },
     },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
-      url: "/plan-studio-empresas-arquitectura-diseno-interior",
+      url: canonical,
     },
     twitter: {
       card: "summary_large_image",
@@ -53,25 +61,18 @@ export async function generateMetadata({
   };
 }
 
-const highlightIcons = [
-  Building2,
-  FileText,
-  Infinity,
-  Headphones,
-  Users,
-  Shield,
-] as const;
+const highlightIcons = [FolderKanban, FileText, BarChart3, Shield] as const;
 
-export default async function PlanStudioPage({
+export default async function PlanBasePage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("PlanStudio");
+  const t = await getTranslations("PlanBase");
   const tPlanCopy = await getTranslations("PlanCopy");
-  const features = getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
+  const features = getCommercialFeatures(getPlanConfigForDisplay("BASE"), {
     include: COMPACT_FEATURE_KEYS,
   }).map((item) => translatePlanCopyItem(item, tPlanCopy));
 
@@ -86,8 +87,6 @@ export default async function PlanStudioPage({
     { title: t("highlight2Title"), text: t("highlight2Text") },
     { title: t("highlight3Title"), text: t("highlight3Text") },
     { title: t("highlight4Title"), text: t("highlight4Text") },
-    { title: t("highlight5Title"), text: t("highlight5Text") },
-    { title: t("highlight6Title"), text: t("highlight6Text") },
   ].map((item, i) => ({ ...item, icon: highlightIcons[i] }));
 
   return (
@@ -100,7 +99,7 @@ export default async function PlanStudioPage({
         <div className="relative container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto max-w-3xl text-center">
             <div className="text-primary border-primary/30 bg-primary/10 mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
-              <Sparkles className="h-4 w-4" />
+              <Zap className="h-4 w-4" />
               {t("badge")}
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
@@ -113,12 +112,12 @@ export default async function PlanStudioPage({
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">
-                  {t("tryStudioCta")}
+                  {t("createAccount")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/pricing">{t("viewPricing")}</Link>
+                <Link href="/pricing">{t("viewAllPlans")}</Link>
               </Button>
             </div>
           </AnimatedSection>
@@ -172,7 +171,7 @@ export default async function PlanStudioPage({
             </p>
           </AnimatedSection>
 
-          <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-2">
             {highlights.map((item) => (
               <AnimatedSection key={item.title} className="flex gap-4">
                 <div className="bg-primary/10 text-primary flex h-12 w-12 shrink-0 items-center justify-center rounded-lg">
@@ -180,9 +179,7 @@ export default async function PlanStudioPage({
                 </div>
                 <div>
                   <h3 className="font-semibold">{item.title}</h3>
-                  <p className="text-muted-foreground mt-1 text-sm">
-                    {item.text}
-                  </p>
+                  <p className="text-muted-foreground mt-1">{item.text}</p>
                 </div>
               </AnimatedSection>
             ))}
@@ -227,15 +224,12 @@ export default async function PlanStudioPage({
             <p className="text-muted-foreground mt-4 text-lg">
               {t("ctaSubtitle")}
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <div className="mt-8">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">
-                  {t("ctaButton")}
+                  {t("createAccount")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/contact">{t("contactSales")}</Link>
               </Button>
             </div>
           </AnimatedSection>

@@ -62,17 +62,25 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "HomePage" });
+  const canonical = locale === "es" ? "/" : "/en";
 
   return {
     title: {
       absolute: t("metaTitle"),
     },
     description: t("metaDescription"),
-    alternates: { canonical: `/${locale}` },
+    alternates: {
+      canonical,
+      languages: {
+        es: "/",
+        en: "/en",
+        "x-default": "/",
+      },
+    },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
-      url: `/${locale}`,
+      url: canonical,
     },
     twitter: {
       card: "summary_large_image",
@@ -98,6 +106,7 @@ export default async function HomePage({
 
   const t = await getTranslations("HomePage");
   const tFaq = await getTranslations("Faq");
+  const homeUrl = `${baseUrl}${locale === "es" ? "" : "/en"}`;
 
   const homeFaqs = [
     {
@@ -120,7 +129,7 @@ export default async function HomePage({
 
   return (
     <>
-      <JsonLd data={faqPageJsonLd(homeFaqs, baseUrl)} />
+      <JsonLd data={faqPageJsonLd(homeFaqs, homeUrl)} />
 
       {/* Hero Section – momento hero: badge → título → subtítulo → CTAs con delays escalonados */}
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-28">

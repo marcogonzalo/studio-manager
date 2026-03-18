@@ -102,9 +102,110 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Workaround for default-locale "as-needed" 404s:
+  // We rewrite ES slugs without "/es" prefix to the internal "/es/*" routes.
+  // This keeps the browser URL clean ("/precios", "/sign-in", etc.) while
+  // letting the actual Next.js pages under `src/app/[locale]` render.
+  async rewrites() {
+    return [
+      { source: "/sign-in", destination: "/es/sign-in" },
+      { source: "/sign-up", destination: "/es/sign-up" },
+      { source: "/auth/complete", destination: "/es/auth/complete" },
+
+      { source: "/precios", destination: "/es/pricing" },
+      { source: "/sobre-veta", destination: "/es/about" },
+      { source: "/contacto", destination: "/es/contact" },
+      { source: "/demo", destination: "/es/demo" },
+      { source: "/legal", destination: "/es/legal" },
+
+      {
+        source: "/plan-base-primer-proyecto-interiorismo",
+        destination: "/es/plan-base",
+      },
+      {
+        source: "/plan-pro-independientes-diseno-interior",
+        destination: "/es/plan-pro",
+      },
+      {
+        source: "/plan-studio-empresas-arquitectura-diseno-interior",
+        destination: "/es/plan-studio",
+      },
+
+      // EN: translate plan landing slugs to internal plan keys.
+      {
+        source: "/en/base-plan-first-interior-design-project",
+        destination: "/en/plan-base",
+      },
+      {
+        source: "/en/pro-plan-for-independent-interior-designers",
+        destination: "/en/plan-pro",
+      },
+      {
+        source: "/en/studio-plan-for-architecture-and-interior-design-firms",
+        destination: "/en/plan-studio",
+      },
+    ];
+  },
+
   // Redirect legacy Spanish view-project routes to English
   async redirects() {
     return [
+      // i18n: remove legacy "/es" prefix duplicates (ES default without prefix)
+      { source: "/es", destination: "/", permanent: true },
+      // next-intl "as-needed" locale switches may generate localized-but-redundant
+      // ES slugs like "/es/precios". Redirect them to the canonical default-locale
+      // paths without the "/es" prefix.
+      { source: "/es/precios", destination: "/precios", permanent: true },
+      {
+        source: "/es/sobre-veta",
+        destination: "/sobre-veta",
+        permanent: true,
+      },
+      { source: "/es/contacto", destination: "/contacto", permanent: true },
+      { source: "/es/demo", destination: "/demo", permanent: true },
+      { source: "/es/legal", destination: "/legal", permanent: true },
+      { source: "/es/pricing", destination: "/precios", permanent: true },
+      { source: "/es/about", destination: "/sobre-veta", permanent: true },
+      { source: "/es/contact", destination: "/contacto", permanent: true },
+      {
+        source: "/es/plan-base-primer-proyecto-interiorismo",
+        destination: "/plan-base-primer-proyecto-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/plan-pro-independientes-diseno-interior",
+        destination: "/plan-pro-independientes-diseno-interior",
+        permanent: true,
+      },
+      {
+        source: "/es/plan-studio-empresas-arquitectura-diseno-interior",
+        destination: "/plan-studio-empresas-arquitectura-diseno-interior",
+        permanent: true,
+      },
+
+      // i18n: legacy no-locale Spanish slugs (keep ES as canonical default)
+      { source: "/pricing", destination: "/precios", permanent: true },
+      { source: "/about", destination: "/sobre-veta", permanent: true },
+      { source: "/contact", destination: "/contacto", permanent: true },
+
+      // i18n: legacy English plan slugs were Spanish; redirect to translated slugs
+      {
+        source: "/en/plan-base-primer-proyecto-interiorismo",
+        destination: "/en/base-plan-first-interior-design-project",
+        permanent: true,
+      },
+      {
+        source: "/en/plan-pro-independientes-diseno-interior",
+        destination: "/en/pro-plan-for-independent-interior-designers",
+        permanent: true,
+      },
+      {
+        source: "/en/plan-studio-empresas-arquitectura-diseno-interior",
+        destination:
+          "/en/studio-plan-for-architecture-and-interior-design-firms",
+        permanent: true,
+      },
+
       {
         source: "/view-project/:token/productos",
         destination: "/view-project/:token/products",

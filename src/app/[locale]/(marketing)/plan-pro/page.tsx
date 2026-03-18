@@ -34,14 +34,25 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "PlanPro" });
+  const canonical =
+    locale === "es"
+      ? "/plan-pro-independientes-diseno-interior"
+      : "/en/pro-plan-for-independent-interior-designers";
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/plan-pro-independientes-diseno-interior" },
+    alternates: {
+      canonical,
+      languages: {
+        es: "/plan-pro-independientes-diseno-interior",
+        en: "/en/pro-plan-for-independent-interior-designers",
+        "x-default": "/plan-pro-independientes-diseno-interior",
+      },
+    },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
-      url: "/plan-pro-independientes-diseno-interior",
+      url: canonical,
     },
     twitter: {
       card: "summary_large_image",

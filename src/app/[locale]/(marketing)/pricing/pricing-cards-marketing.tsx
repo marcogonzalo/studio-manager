@@ -125,8 +125,7 @@ export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
                     ? `${formatCurrency(Number(plan.annualPrice), currency, { maxFractionDigits: 0 })}/año`
                     : null;
 
-                const isFreePlan =
-                  plan.currency == null && !showAnnual;
+                const isFreePlan = plan.currency == null && !showAnnual;
                 const priceNum = isFreePlan ? NaN : Number(displayPrice);
                 const priceDisplay =
                   isFreePlan || !Number.isFinite(priceNum)
@@ -202,9 +201,13 @@ export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
                         >
                           <Link
                             id={`select-plan-${plan.planCode}`}
-                            href={`/sign-up?plan=${plan.planCode}${
-                              isAnnual ? "&billing=annual" : ""
-                            }`}
+                            href={{
+                              pathname: "/sign-up",
+                              query: {
+                                plan: plan.planCode,
+                                ...(isAnnual ? { billing: "annual" } : {}),
+                              },
+                            }}
                             onClick={() =>
                               pushSelectPlan({
                                 plan_code: plan.planCode,

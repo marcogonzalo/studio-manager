@@ -25,14 +25,22 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Contact" });
+  const canonical = locale === "es" ? "/contacto" : "/en/contact";
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/contact" },
+    alternates: {
+      canonical,
+      languages: {
+        es: "/contacto",
+        en: "/en/contact",
+        "x-default": "/contacto",
+      },
+    },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
-      url: "/contact",
+      url: canonical,
     },
     twitter: {
       card: "summary_large_image",

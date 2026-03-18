@@ -41,7 +41,7 @@ const PUBLIC_ROUTES = [
 ];
 
 function isPublicPath(pathname: string): boolean {
-  // Remove locale prefix if present (e.g., /en/about -> /about, /en -> /)
+  // Remove locale prefix if present (e.g., /en/about-veta -> /about, /en -> /)
   let pathnameWithoutLocale = pathname.replace(/^\/(en|es)/, "");
   // If removing locale leaves empty string, it means it was just /en or /es (homepage)
   if (pathnameWithoutLocale === "") {

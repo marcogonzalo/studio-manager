@@ -11,14 +11,22 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Legal" });
+  const canonical = locale === "es" ? "/legal" : "/en/legal";
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/legal" },
+    alternates: {
+      canonical,
+      languages: {
+        es: "/legal",
+        en: "/en/legal",
+        "x-default": "/legal",
+      },
+    },
     openGraph: {
       title: t("ogTitle"),
       description: t("ogDescription"),
-      url: "/legal",
+      url: canonical,
     },
     twitter: {
       card: "summary_large_image",

@@ -20,6 +20,7 @@ export async function proxy(request: NextRequest) {
     const ip = getClientIp(request);
     const { allowed, resetAt } = checkRateLimit(ip, routeGroup);
     if (!allowed) {
+      // If logging rate-limit events for view-project, use maskViewProjectPath(pathname) so the share token is never logged in full.
       const retryAfter = Math.ceil((resetAt - Date.now()) / 1000);
       return new Response(JSON.stringify({ error: RATE_LIMIT_MESSAGE }), {
         status: 429,
