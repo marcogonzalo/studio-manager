@@ -2,11 +2,13 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
 import { pushDemoAccess } from "@/lib/gtm";
 
 function AuthCompleteContent() {
+  const t = useTranslations("Common");
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "error">("loading");
 
@@ -15,11 +17,15 @@ function AuthCompleteContent() {
       searchParams.get("next")?.replace(/^\/+/, "") || appPath("/dashboard");
     const redirectPath = next.startsWith("/") ? next : `/${next}`;
     const isDemoAccess = searchParams.get("demo") === "1";
+    const pathname =
+      typeof window !== "undefined" ? window.location.pathname : "";
+    const localeMatch = pathname.match(/^\/(en|es)\//);
+    const locale = localeMatch ? localeMatch[1] : "es";
 
     const hash =
       typeof window !== "undefined" ? window.location.hash.slice(1) : "";
     if (!hash) {
-      window.location.href = `/sign-in?error=${encodeURIComponent("No se recibió el enlace de acceso.")}&redirect=${encodeURIComponent(redirectPath)}`;
+      window.location.href = `/${locale}/sign-in?error=${encodeURIComponent("No se recibió el enlace de acceso.")}&redirect=${encodeURIComponent(redirectPath)}`;
       return;
     }
 
@@ -29,7 +35,7 @@ function AuthCompleteContent() {
 
     if (!accessToken || !refreshToken) {
       setStatus("error");
-      window.location.href = `/sign-in?error=${encodeURIComponent("Enlace inválido o expirado.")}&redirect=${encodeURIComponent(redirectPath)}`;
+      window.location.href = `/${locale}/sign-in?error=${encodeURIComponent("Enlace inválido o expirado.")}&redirect=${encodeURIComponent(redirectPath)}`;
       return;
     }
 
@@ -43,7 +49,7 @@ function AuthCompleteContent() {
       })
       .catch(() => {
         setStatus("error");
-        window.location.href = `/sign-in?error=${encodeURIComponent("No se pudo iniciar sesión.")}&redirect=${encodeURIComponent(redirectPath)}`;
+        window.location.href = `/${locale}/sign-in?error=${encodeURIComponent("No se pudo iniciar sesión.")}&redirect=${encodeURIComponent(redirectPath)}`;
       });
   }, [searchParams]);
 
@@ -51,7 +57,7 @@ function AuthCompleteContent() {
 
   return (
     <p className="text-muted-foreground text-center text-sm">
-      Iniciando sesión…
+      {t("signingIn")}
     </p>
   );
 }
@@ -61,15 +67,18 @@ function AuthCompleteContent() {
  * Used by demo magic link and any flow that redirects with #access_token=...
  * Reads hash, sets session, then redirects to `next` or dashboard.
  */
+function AuthCompleteFallback() {
+  const t = useTranslations("Common");
+  return (
+    <p className="text-muted-foreground text-center text-sm">
+      {t("signingIn")}
+    </p>
+  );
+}
+
 export default function AuthCompletePage() {
   return (
-    <Suspense
-      fallback={
-        <p className="text-muted-foreground text-center text-sm">
-          Iniciando sesión…
-        </p>
-      }
-    >
+    <Suspense fallback={<AuthCompleteFallback />}>
       <AuthCompleteContent />
     </Suspense>
   );

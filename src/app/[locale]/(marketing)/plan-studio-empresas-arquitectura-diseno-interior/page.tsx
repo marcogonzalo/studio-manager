@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import {
   Check,
@@ -23,83 +24,43 @@ import {
   getCommercialFeatures,
   getPlanConfigForDisplay,
   COMPACT_FEATURE_KEYS,
+  translatePlanCopyItem,
 } from "@/lib/plan-copy";
 
-export const metadata: Metadata = {
-  title: "Plan Studio | Gestión de proyectos para estudios de diseño interior",
-  description:
-    "Plan Studio de Veta: gestión de proyectos e interiorismo a escala. Hasta 50 proyectos activos, gestión de presupuestos con tu marca (white label), soporte prioritario. Para estudios de arquitectura de diseño interior con equipo y ritmo continuo.",
-  alternates: {
-    canonical: "/plan-studio-empresas-arquitectura-diseno-interior",
-  },
-  openGraph: {
-    title: "Plan Studio - Estudios de arquitectura de diseño interior | Veta",
-    description:
-      "Gestión de proyectos y gestión de presupuestos para estudios de diseño interior. 50 proyectos, marca propia, soporte prioritario, 100 GB.",
-    url: "/plan-studio-empresas-arquitectura-diseno-interior",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Plan Studio - Interiorismo y estudios | Veta",
-    description:
-      "Gestión de proyectos de diseño interior para estudios: múltiples proyectos, equipo, gestión de presupuestos con tu marca.",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "PlanStudio" });
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: {
+      canonical: "/plan-studio-empresas-arquitectura-diseno-interior",
+    },
+    openGraph: {
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+      url: "/plan-studio-empresas-arquitectura-diseno-interior",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("twitterTitle"),
+      description: t("twitterDescription"),
+    },
+  };
+}
 
-const pains = [
-  {
-    title: "El ritmo no para: cierro un proyecto y entro en otro",
-    description:
-      "Con Studio la gestión de proyectos de diseño interior escala: hasta 50 proyectos activos. Misma herramienta para todo el equipo: gestión de presupuestos, costes, pagos y documentos. Interiorismo sin cuellos de botella.",
-  },
-  {
-    title: "Somos varios y necesitamos una sola fuente de verdad",
-    description:
-      "Un único espacio para proyectos, clientes, proveedores y gestión de presupuestos. Estudios de arquitectura de diseño interior con el equipo alineado, sin duplicar datos ni perder el hilo.",
-  },
-  {
-    title: "Queremos presupuestos con nuestra marca y soporte de verdad",
-    description:
-      "Gestión de presupuestos con tu marca (white label), configuración de moneda e impuesto por proyecto y soporte prioritario. Para estudios de diseño interior e interiorismo que no pueden parar.",
-  },
-];
-
-const features = getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
-  include: COMPACT_FEATURE_KEYS,
-});
-
-const highlights = [
-  {
-    icon: Building2,
-    title: "Hasta 50 proyectos activos",
-    text: "Gestión de proyectos de diseño interior a ritmo alto: múltiples proyectos en paralelo para estudios de interiorismo con flujo constante.",
-  },
-  {
-    icon: FileText,
-    title: "Gestión de presupuestos con tu marca",
-    text: "White label: exporta presupuestos con tu identidad. Esencial en arquitectura de diseño interior con equipo.",
-  },
-  {
-    icon: Infinity,
-    title: "100 GB de almacenamiento",
-    text: "Renders, documentos y archivos de muchos proyectos sin preocuparte por el espacio.",
-  },
-  {
-    icon: Headphones,
-    title: "Soporte prioritario",
-    text: "Atención prioritaria cuando lo necesites. Tu estudio no puede esperar.",
-  },
-  {
-    icon: Users,
-    title: "Para todo el equipo",
-    text: "Una cuenta, todos los proyectos. Colaboración y visibilidad compartida.",
-  },
-  {
-    icon: Shield,
-    title: "Moneda e impuesto por proyecto",
-    text: "Configuración de moneda e impuesto por proyecto para adaptar cada presupuesto al cliente o al país.",
-  },
-];
+const highlightIcons = [
+  Building2,
+  FileText,
+  Infinity,
+  Headphones,
+  Users,
+  Shield,
+] as const;
 
 export default async function PlanStudioPage({
   params,
@@ -108,9 +69,29 @@ export default async function PlanStudioPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("PlanStudio");
+  const tPlanCopy = await getTranslations("PlanCopy");
+  const features = getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
+    include: COMPACT_FEATURE_KEYS,
+  }).map((item) => translatePlanCopyItem(item, tPlanCopy));
+
+  const pains = [
+    { title: t("pain1Title"), description: t("pain1Desc") },
+    { title: t("pain2Title"), description: t("pain2Desc") },
+    { title: t("pain3Title"), description: t("pain3Desc") },
+  ];
+
+  const highlights = [
+    { title: t("highlight1Title"), text: t("highlight1Text") },
+    { title: t("highlight2Title"), text: t("highlight2Text") },
+    { title: t("highlight3Title"), text: t("highlight3Text") },
+    { title: t("highlight4Title"), text: t("highlight4Text") },
+    { title: t("highlight5Title"), text: t("highlight5Text") },
+    { title: t("highlight6Title"), text: t("highlight6Text") },
+  ].map((item, i) => ({ ...item, icon: highlightIcons[i] }));
+
   return (
     <>
-      {/* Hero */}
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-32">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
         <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
@@ -120,27 +101,24 @@ export default async function PlanStudioPage({
           <AnimatedSection className="mx-auto max-w-3xl text-center">
             <div className="text-primary border-primary/30 bg-primary/10 mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
               <Sparkles className="h-4 w-4" />
-              Plan Studio · Para estudios consolidados
+              {t("badge")}
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Estudio que no para.{" "}
-              <span className="text-primary">Una herramienta que acompaña</span>
+              {t("heroTitle")}{" "}
+              <span className="text-primary">{t("heroTitleHighlight")}</span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Para equipos y estudios de arquitectura y de diseño interior con
-              múltiples proyectos, gestión de presupuestos totalmente adaptados
-              a la marca y capacidad para proyectos internacionales con
-              configuración de monedas e impuestos.
+              {t("heroSubtitle")}
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">
-                  Prueba Studio 30 días gratis
+                  {t("tryStudioCta")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/pricing">Ver precios y comparativa</Link>
+                <Link href="/pricing">{t("viewPricing")}</Link>
               </Button>
             </div>
           </AnimatedSection>
@@ -152,17 +130,14 @@ export default async function PlanStudioPage({
         aria-hidden
       />
 
-      {/* Pains → Solución */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Si tu estudio vive esto, Studio es vuestro plan
+              {t("painsTitle")}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Los proyectos abren y cierran constantemente, tienes clientes en
-              distintos países que requieren adaptación a su moneda y quieres
-              más capacidad y personalización para escalar.
+              {t("painsSubtitle")}
             </p>
           </AnimatedSection>
 
@@ -186,17 +161,14 @@ export default async function PlanStudioPage({
         </div>
       </section>
 
-      {/* Qué incluye */}
       <section className="py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Gestión de proyectos y presupuestos para el estudio completo
+              {t("highlightsTitle")}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Estudios de diseño interior: más proyectos, gestión de
-              presupuestos con tu marca, más almacenamiento y soporte
-              prioritario.
+              {t("highlightsSubtitle")}
             </p>
           </AnimatedSection>
 
@@ -221,7 +193,7 @@ export default async function PlanStudioPage({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Check className="text-primary h-5 w-5" />
-                  Incluido en Studio
+                  {t("includedTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -239,7 +211,6 @@ export default async function PlanStudioPage({
         </div>
       </section>
 
-      {/* CTA final */}
       <section className="relative overflow-hidden py-20">
         <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent" />
         <div className="bg-primary/10 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
@@ -248,25 +219,23 @@ export default async function PlanStudioPage({
           <AnimatedSection className="mx-auto max-w-2xl text-center">
             <div className="text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
               <Sparkles className="h-4 w-4" />
-              30 días gratis · Soporte prioritario
+              {t("ctaBadge")}
             </div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Escala con tu estudio. Nosotros te acompañamos.
+              {t("ctaTitle")}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Prueba el plan Studio 30 días sin coste. Gestión de proyectos y
-              gestión de presupuestos para estudios de diseño interior e
-              interiorismo. Si necesitas condiciones específicas, hablamos.
+              {t("ctaSubtitle")}
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">
-                  Probar Studio 30 días gratis
+                  {t("ctaButton")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/contact">Hablar con ventas</Link>
+                <Link href="/contact">{t("contactSales")}</Link>
               </Button>
             </div>
           </AnimatedSection>

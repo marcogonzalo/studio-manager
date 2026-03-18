@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
@@ -13,18 +14,19 @@ export default async function AuthLayout({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("Common");
   return (
     <div className="bg-background flex min-h-screen flex-col items-center justify-center p-4">
       <GtmPageView />
       <a href="#main-content" className="skip-link">
-        Saltar al contenido
+        {t("skipToContent")}
       </a>
       <div className="flex w-full max-w-md flex-col items-center">
         <div className="mb-4 flex w-full items-center gap-4">
           <Link
             href="/"
             className="text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Volver al inicio"
+            aria-label={t("backToHome")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>

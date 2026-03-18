@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   JsonLd,
@@ -12,6 +13,7 @@ import {
   COMPACT_FEATURE_KEYS,
   getCommercialFeatures,
   getPlanConfigForDisplay,
+  translatePlanCopyItem,
 } from "@/lib/plan-copy";
 import {
   AnimatedSection,
@@ -27,98 +29,29 @@ const baseUrl =
 
 const PRICING_CURRENCY = "EUR";
 
-export const metadata: Metadata = {
-  title: "Precios y planes Base, Pro y Studio",
-  description:
-    "Planes flexibles para estudios de diseño interior: Base gratis, Pro y Studio con más capacidad. Precio fijo, sin costes ocultos. Prueba 30 días gratis.",
-  alternates: { canonical: "/pricing" },
-  openGraph: {
-    title: "Precios - Planes Base, Pro y Studio | Veta",
-    description:
-      "Planes flexibles para estudios de diseño interior. Comienza gratis, escala cuando lo necesites.",
-    url: "/pricing",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Precios - Planes para diseño interior | Veta",
-    description:
-      "Planes flexibles para estudios de diseño interior. Comienza gratis.",
-  },
-};
-
-const plans = [
-  {
-    name: "Base",
-    planCode: "BASE" as const,
-    description: "Plan gratuito con límites básicos",
-    price: "Gratis",
-    priceNote: "/siempre",
-    annualPrice: null as string | null,
-    annualNote: null as string | null,
-    currency: null as string | null,
-    features: getCommercialFeatures(getPlanConfigForDisplay("BASE"), {
-      include: COMPACT_FEATURE_KEYS,
-    }),
-    cta: "Comenzar Gratis",
-    ctaVariant: "outline" as const,
-    popular: false,
-  },
-  {
-    name: "Pro",
-    planCode: "PRO" as const,
-    description: "Plan para profesionales independientes",
-    price: "25",
-    priceNote: "/mes",
-    annualPrice: "250",
-    annualNote: "2 meses gratis",
-    currency: PRICING_CURRENCY,
-    features: getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
-      include: COMPACT_FEATURE_KEYS,
-    }),
-    cta: "Prueba 30 días gratis",
-    ctaVariant: "default" as const,
-    popular: true,
-  },
-  {
-    name: "Studio",
-    planCode: "STUDIO" as const,
-    description: "Plan para estudios de arquitectura",
-    price: "75",
-    priceNote: "/mes",
-    annualPrice: "750",
-    annualNote: "2 meses gratis",
-    currency: PRICING_CURRENCY,
-    features: getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
-      include: COMPACT_FEATURE_KEYS,
-    }),
-    cta: "Prueba 30 días gratis",
-    ctaVariant: "outline" as const,
-    popular: false,
-  },
-];
-
-const faqs = [
-  {
-    question: "¿Puedo cambiar de plan en cualquier momento?",
-    answer:
-      "Sí, puedes actualizar o degradar tu plan en cualquier momento. Los cambios se aplican inmediatamente. El plan anterior perderá vigencia automáticamente.",
-  },
-  {
-    question: "¿Qué métodos de pago aceptan?",
-    answer:
-      "Aceptamos todas las tarjetas de crédito y débito principales (Visa, Mastercard, American Express), así como transferencias bancarias para planes anuales.",
-  },
-  {
-    question: "¿Hay descuento por pago anual?",
-    answer:
-      "Sí, ofrecemos un 17% de descuento en todos los planes al pagar anualmente. Esto equivale a un ahorro de 2 meses de costes.",
-  },
-  {
-    question: "¿Qué pasa con mis datos si cancelo?",
-    answer:
-      "Los planes se mantienen hasta el final del período. Al finalizar el plan, tus datos permanecen accesibles pero tu actividad queda limitada a lo estipulado en el plan base.",
-  },
-];
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Pricing" });
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: { canonical: "/pricing" },
+    openGraph: {
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+      url: "/pricing",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("twitterTitle"),
+      description: t("twitterDescription"),
+    },
+  };
+}
 
 export default async function PricingPage({
   params,
@@ -127,6 +60,66 @@ export default async function PricingPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("Pricing");
+  const tPlanCopy = await getTranslations("PlanCopy");
+
+  const plans = [
+    {
+      name: t("planBaseName"),
+      planCode: "BASE" as const,
+      description: t("planBaseDesc"),
+      price: t("planBasePrice"),
+      priceNote: t("planBasePriceNote"),
+      annualPrice: null as string | null,
+      annualNote: null as string | null,
+      currency: null as string | null,
+      features: getCommercialFeatures(getPlanConfigForDisplay("BASE"), {
+        include: COMPACT_FEATURE_KEYS,
+      }).map((item) => translatePlanCopyItem(item, tPlanCopy)),
+      cta: t("planBaseCta"),
+      ctaVariant: "outline" as const,
+      popular: false,
+    },
+    {
+      name: t("planProName"),
+      planCode: "PRO" as const,
+      description: t("planProDesc"),
+      price: "25",
+      priceNote: t("planProPriceNote"),
+      annualPrice: "250",
+      annualNote: t("planProAnnualNote"),
+      currency: PRICING_CURRENCY,
+      features: getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
+        include: COMPACT_FEATURE_KEYS,
+      }).map((item) => translatePlanCopyItem(item, tPlanCopy)),
+      cta: t("planProCta"),
+      ctaVariant: "default" as const,
+      popular: true,
+    },
+    {
+      name: t("planStudioName"),
+      planCode: "STUDIO" as const,
+      description: t("planStudioDesc"),
+      price: "75",
+      priceNote: t("planStudioPriceNote"),
+      annualPrice: "750",
+      annualNote: t("planStudioAnnualNote"),
+      currency: PRICING_CURRENCY,
+      features: getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
+        include: COMPACT_FEATURE_KEYS,
+      }).map((item) => translatePlanCopyItem(item, tPlanCopy)),
+      cta: t("planStudioCta"),
+      ctaVariant: "outline" as const,
+      popular: false,
+    },
+  ];
+
+  const faqs = [
+    { question: t("faq1Question"), answer: t("faq1Answer") },
+    { question: t("faq2Question"), answer: t("faq2Answer") },
+    { question: t("faq3Question"), answer: t("faq3Answer") },
+    { question: t("faq4Question"), answer: t("faq4Answer") },
+  ];
 
   const pricingUrl = `${baseUrl}/pricing`;
   return (
@@ -134,7 +127,6 @@ export default async function PricingPage({
       <JsonLd data={faqPageJsonLd(faqs, pricingUrl)} />
       <JsonLd data={softwareApplicationPricingJsonLd(pricingUrl)} />
 
-      {/* Hero Section */}
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-32">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
         <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
@@ -143,37 +135,33 @@ export default async function PricingPage({
         <div className="relative container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto max-w-3xl text-center">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Planes simples,{" "}
-              <span className="text-primary">precios transparentes</span>
+              {t("heroTitle")}{" "}
+              <span className="text-primary">{t("heroTitleHighlight")}</span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Elige el plan que mejor se adapte a tu momento profesional. Sin
-              sorpresas, sin costes ocultos.
+              {t("heroSubtitle")}
             </p>
           </AnimatedSection>
         </div>
       </section>
 
-      {/* Franja decorativa (como la del footer) entre hero y contenido */}
       <div
         className="via-primary/40 h-1 w-full bg-gradient-to-r from-transparent to-transparent"
         aria-hidden
       />
 
-      {/* Pricing Cards */}
       <PricingCardsMarketing plans={plans} />
 
       <PricingSecondaryCtas />
 
-      {/* FAQ Section */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Preguntas Frecuentes
+              {t("faqTitle")}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              ¿Tienes dudas? Aquí respondemos las más comunes.
+              {t("faqSubtitle")}
             </p>
           </AnimatedSection>
 

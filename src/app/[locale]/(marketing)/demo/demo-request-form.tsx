@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { pushDemoRequest } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,14 +19,16 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const formSchema = z.object({
-  email: z.string().email("Introduce un correo válido"),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 export function DemoRequestForm() {
+  const t = useTranslations("DemoRequestForm");
   const [sent, setSent] = useState(false);
+
+  const formSchema = z.object({
+    email: z.string().email(t("emailInvalid")),
+  });
+
+  type FormValues = z.infer<typeof formSchema>;
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "" },
@@ -43,16 +46,14 @@ export function DemoRequestForm() {
         success?: boolean;
       };
       if (!res.ok) {
-        toast.error(data.error ?? "Error al solicitar el enlace");
+        toast.error(data.error ?? t("errorRequest"));
         return;
       }
       pushDemoRequest();
       setSent(true);
-      toast.success(
-        "Revisa tu correo. Te hemos enviado un enlace para acceder a la demo."
-      );
+      toast.success(t("successToast"));
     } catch {
-      toast.error("Error de conexión. Inténtalo de nuevo.");
+      toast.error(t("errorConnection"));
     }
   }
 
@@ -60,11 +61,7 @@ export function DemoRequestForm() {
     return (
       <Card>
         <CardContent className="pt-6">
-          <p className="text-muted-foreground text-center">
-            Revisa tu correo electrónico. Te hemos enviado un enlace para
-            acceder a la demo de Veta. El enlace es válido durante un máximo de
-            1 hora.
-          </p>
+          <p className="text-muted-foreground text-center">{t("sentTitle")}</p>
         </CardContent>
       </Card>
     );
@@ -73,10 +70,8 @@ export function DemoRequestForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Probar la demo</CardTitle>
-        <p className="text-muted-foreground text-sm">
-          Introduce tu correo y te enviaremos el enlace para acceder a la demo.
-        </p>
+        <CardTitle>{t("title")}</CardTitle>
+        <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -89,12 +84,12 @@ export function DemoRequestForm() {
               name="email"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>Correo electrónico</FormLabel>
+                  <FormLabel>{t("emailLabel")}</FormLabel>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="tu@email.com"
+                        placeholder={t("emailPlaceholder")}
                         autoComplete="email"
                         className="sm:min-w-[200px]"
                         {...field}
@@ -106,8 +101,8 @@ export function DemoRequestForm() {
                       className="shrink-0"
                     >
                       {form.formState.isSubmitting
-                        ? "Enviando…"
-                        : "Recibir enlace de demo"}
+                        ? t("submitting")
+                        : t("submit")}
                     </Button>
                   </div>
                   <FormMessage />
@@ -116,10 +111,7 @@ export function DemoRequestForm() {
             />
           </form>
         </Form>
-        <p className="text-muted-foreground mt-4 text-sm">
-          Al enviar tu correo aceptas recibir un mensaje de nuestro equipo para
-          conocer tu experiencia en la aplicación.
-        </p>
+        <p className="text-muted-foreground mt-4 text-sm">{t("privacyNote")}</p>
       </CardContent>
     </Card>
   );

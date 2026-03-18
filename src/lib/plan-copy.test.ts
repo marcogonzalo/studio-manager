@@ -1,16 +1,32 @@
 import { describe, expect, it } from "vitest";
+import esMessages from "@/i18n/messages/es.json";
 import {
   COMPACT_FEATURE_KEYS,
+  createPlanCopyT,
   getCommercialFeatures,
   getPlanConfigForDisplay,
   STATIC_PLAN_CONFIGS,
+  translatePlanCopyItem,
 } from "./plan-copy";
+
+const tPlanCopy = createPlanCopyT(
+  esMessages.PlanCopy as Record<string, string>
+);
+
+function translatedFeatures(
+  config: Parameters<typeof getCommercialFeatures>[0],
+  options?: Parameters<typeof getCommercialFeatures>[1]
+): string[] {
+  return getCommercialFeatures(config, options).map((item) =>
+    translatePlanCopyItem(item, tPlanCopy)
+  );
+}
 
 describe("plan-copy", () => {
   describe("getCommercialFeatures", () => {
     it("returns consumibles and modality copy for BASE", () => {
       const config = getPlanConfigForDisplay("BASE");
-      const features = getCommercialFeatures(config);
+      const features = translatedFeatures(config);
       expect(features).toContain("1 proyecto activo");
       expect(features).toContain("10 clientes");
       expect(features).toContain("50 proveedores");
@@ -23,7 +39,7 @@ describe("plan-copy", () => {
 
     it("returns correct copy for PRO including plus modalities", () => {
       const config = getPlanConfigForDisplay("PRO");
-      const features = getCommercialFeatures(config);
+      const features = translatedFeatures(config);
       expect(features).toContain("5 proyectos activos");
       expect(features).toContain("Clientes ilimitados");
       expect(features).toContain("10 GB de almacenamiento");
@@ -34,7 +50,7 @@ describe("plan-copy", () => {
 
     it("returns correct copy for STUDIO including full modalities", () => {
       const config = getPlanConfigForDisplay("STUDIO");
-      const features = getCommercialFeatures(config);
+      const features = translatedFeatures(config);
       expect(features).toContain("50 proyectos activos");
       expect(features).toContain("100 GB de almacenamiento");
       expect(features).toContain(
@@ -45,7 +61,7 @@ describe("plan-copy", () => {
     });
 
     it("omits projects consumible when projects_limit is 0", () => {
-      const features = getCommercialFeatures({
+      const features = translatedFeatures({
         ...STATIC_PLAN_CONFIGS.BASE,
         projects_limit: 0,
       });
@@ -53,7 +69,7 @@ describe("plan-copy", () => {
     });
 
     it("uses effective_storage_limit_mb when present", () => {
-      const features = getCommercialFeatures({
+      const features = translatedFeatures({
         ...STATIC_PLAN_CONFIGS.PRO,
         effective_storage_limit_mb: 20480,
       });
@@ -70,8 +86,8 @@ describe("plan-copy", () => {
 
     it("with include returns only selected keys in standard order", () => {
       const config = getPlanConfigForDisplay("PRO");
-      const full = getCommercialFeatures(config);
-      const compact = getCommercialFeatures(config, {
+      const full = translatedFeatures(config);
+      const compact = translatedFeatures(config, {
         include: COMPACT_FEATURE_KEYS,
       });
       expect(compact.length).toBeLessThan(full.length);

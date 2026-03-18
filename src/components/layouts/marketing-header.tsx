@@ -111,7 +111,7 @@ export function MarketingHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-64">
               <SheetHeader className="sr-only">
-                <SheetTitle>Menú de navegación</SheetTitle>
+                <SheetTitle>{tCommon("menuTitle")}</SheetTitle>
               </SheetHeader>
               <nav className="mt-8 flex flex-col gap-4">
                 {navLinks.map((link) => (

@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { SignUpForm } from "../sign-up-form";
 
-export const metadata: Metadata = {
-  title: "Crea tu cuenta",
-  description:
-    "Regístrate en Veta. Plataforma de gestión de proyectos de diseño interior. Prueba gratis.",
-  alternates: { canonical: "/sign-up" },
-  robots: { index: true, follow: true },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "SignUp" });
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: { canonical: "/sign-up" },
+    robots: { index: true, follow: true },
+  };
+}
 
 type SearchParams = Promise<{
   redirect?: string;

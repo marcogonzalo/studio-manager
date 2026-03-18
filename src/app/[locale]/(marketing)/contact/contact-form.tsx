@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { pushContact } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,33 +25,28 @@ const EMAIL_MAX = 150;
 const SUBJECT_MAX = 100;
 const MESSAGE_MAX = 1000;
 
-const formSchema = z.object({
-  name: z
-    .string()
-    .min(2, "El nombre debe tener al menos 2 caracteres")
-    .max(NAME_MAX, "El nombre es demasiado largo"),
-  email: z
-    .string()
-    .email("Email inválido")
-    .max(EMAIL_MAX, "El email es demasiado largo"),
-  subject: z
-    .string()
-    .min(5, "El asunto debe tener al menos 5 caracteres")
-    .max(SUBJECT_MAX, "El asunto es demasiado largo"),
-  message: z
-    .string()
-    .min(10, "El mensaje debe tener al menos 10 caracteres")
-    .max(MESSAGE_MAX, "El mensaje es demasiado largo"),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 export function ContactForm() {
+  const t = useTranslations("ContactForm");
   const [formTimestamp] = useState(() => Date.now());
   const [state, formAction, isPending] = useActionState(
     submitContactForm,
     null as ContactFormState | null
   );
+
+  const formSchema = z.object({
+    name: z.string().min(2, t("nameMin")).max(NAME_MAX, t("nameMax")),
+    email: z.string().email(t("emailInvalid")).max(EMAIL_MAX, t("emailMax")),
+    subject: z
+      .string()
+      .min(5, t("subjectMin"))
+      .max(SUBJECT_MAX, t("subjectMax")),
+    message: z
+      .string()
+      .min(10, t("messageMin"))
+      .max(MESSAGE_MAX, t("messageMax")),
+  });
+
+  type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -68,24 +64,23 @@ export function ContactForm() {
         lead_source: "contact_form",
         lead_status: "Form submitted",
       });
-      toast.success("Mensaje enviado correctamente. Te responderemos pronto.");
+      toast.success(t("successToast"));
       form.reset();
     }
     if (state?.error) {
       toast.error(state.error);
     }
-  }, [state, form]);
+  }, [state, form, t]);
 
   return (
     <CardContent className="pt-6">
       <Form {...form}>
         <form action={formAction} className="space-y-6">
-          {/* Anti-spam: honeypot (hidden from users, bots fill it) and form timestamp */}
           <div
             className="absolute top-0 -left-[9999px] h-0 w-0 overflow-hidden"
             aria-hidden="true"
           >
-            <label htmlFor="website">No rellenar</label>
+            <label htmlFor="website">{t("honeypotLabel")}</label>
             <input
               id="website"
               type="text"
@@ -101,11 +96,11 @@ export function ContactForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="name">Nombre</FormLabel>
+                  <FormLabel htmlFor="name">{t("nameLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       id="name"
-                      placeholder="Tu nombre"
+                      placeholder={t("namePlaceholder")}
                       {...field}
                       disabled={isPending}
                     />
@@ -119,7 +114,7 @@ export function ContactForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor="email">Email</FormLabel>
+                  <FormLabel htmlFor="email">{t("emailLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       id="email"
@@ -140,11 +135,11 @@ export function ContactForm() {
             name="subject"
             render={({ field }) => (
               <FormItem>
-                <FormLabel htmlFor="subject">Asunto</FormLabel>
+                <FormLabel htmlFor="subject">{t("subjectLabel")}</FormLabel>
                 <FormControl>
                   <Input
                     id="subject"
-                    placeholder="¿En qué podemos ayudarte?"
+                    placeholder={t("subjectPlaceholder")}
                     {...field}
                     disabled={isPending}
                   />
@@ -160,7 +155,7 @@ export function ContactForm() {
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between gap-2">
-                  <FormLabel htmlFor="message">Mensaje</FormLabel>
+                  <FormLabel htmlFor="message">{t("messageLabel")}</FormLabel>
                   <span className="text-muted-foreground text-xs tabular-nums">
                     {field.value.length} / {MESSAGE_MAX}
                   </span>
@@ -169,7 +164,7 @@ export function ContactForm() {
                   <textarea
                     id="message"
                     rows={5}
-                    placeholder="Cuéntanos más detalles..."
+                    placeholder={t("messagePlaceholder")}
                     className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     {...field}
                     disabled={isPending}
@@ -181,7 +176,7 @@ export function ContactForm() {
           />
 
           <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? "Enviando..." : "Enviar Mensaje"}
+            {isPending ? t("submitting") : t("submit")}
           </Button>
         </form>
       </Form>

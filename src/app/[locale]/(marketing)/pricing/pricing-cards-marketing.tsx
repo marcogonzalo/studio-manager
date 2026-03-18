@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { Check, X, ArrowRight } from "lucide-react";
 import { pushSelectPlan, pushViewPricing } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ export type PlanItem = {
 };
 
 export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
+  const t = useTranslations("PricingCards");
   const [isAnnual, setIsAnnual] = useState(false);
 
   useEffect(() => {
@@ -55,7 +57,6 @@ export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
           className="flex flex-col items-center"
           staggerDelay={0.12}
         >
-          {/* Billing period switch */}
           <StaggerItem className="mt-8 mb-12 flex w-full justify-center">
             <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-6">
               <span
@@ -63,13 +64,13 @@ export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
                   !isAnnual ? "text-foreground" : "text-muted-foreground"
                 }`}
               >
-                Mensual
+                {t("monthly")}
               </span>
               <button
                 type="button"
                 role="switch"
                 aria-checked={isAnnual}
-                aria-label="Cambiar a plan anual"
+                aria-label={t("switchToAnnual")}
                 onClick={() => setIsAnnual((v) => !v)}
                 className="bg-background hover:bg-muted/80 border-primary/30 focus-visible:ring-ring relative inline-flex h-10 w-20 shrink-0 cursor-pointer items-center rounded-full border-2 shadow-inner transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
@@ -91,7 +92,7 @@ export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
                       : "text-muted-foreground"
                   }`}
                 >
-                  Anual
+                  {t("annual")}
                 </span>
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -100,7 +101,7 @@ export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
                       : "bg-primary/10 text-primary"
                   }`}
                 >
-                  Ahorro {ANNUAL_SAVINGS_PERCENT}% (2 meses)
+                  {t("savings", { percent: ANNUAL_SAVINGS_PERCENT })}
                 </span>
               </div>
             </div>
@@ -124,6 +125,16 @@ export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
                     ? `${formatCurrency(Number(plan.annualPrice), currency, { maxFractionDigits: 0 })}/año`
                     : null;
 
+                const isFreePlan =
+                  plan.currency == null && !showAnnual;
+                const priceNum = isFreePlan ? NaN : Number(displayPrice);
+                const priceDisplay =
+                  isFreePlan || !Number.isFinite(priceNum)
+                    ? plan.price
+                    : formatCurrency(priceNum, currency, {
+                        maxFractionDigits: displayPriceDecimals,
+                      });
+
                 return (
                   <StaggerItem key={plan.name} className="h-full">
                     <Card
@@ -136,7 +147,7 @@ export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
                       {plan.popular && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                           <span className="bg-primary text-primary-foreground shadow-primary/25 rounded-full px-3 py-1 text-xs font-semibold shadow-lg">
-                            Recomendado
+                            {t("recommended")}
                           </span>
                         </div>
                       )}
@@ -148,25 +159,17 @@ export function PricingCardsMarketing({ plans }: { plans: PlanItem[] }) {
                         <div className="mb-6 text-center">
                           <div className="flex items-baseline justify-center gap-1">
                             <span className="text-primary text-4xl font-bold">
-                              {plan.price === "Gratis" && !showAnnual
-                                ? plan.price
-                                : formatCurrency(
-                                    Number(displayPrice),
-                                    currency,
-                                    {
-                                      maxFractionDigits: displayPriceDecimals,
-                                    }
-                                  )}
+                              {priceDisplay}
                             </span>
                             {showAnnual && (
                               <span className="text-muted-foreground text-lg font-medium">
-                                /mes
+                                {t("perMonth")}
                               </span>
                             )}
                           </div>
                           {annualPriceText && (
                             <p className="text-muted-foreground mt-1 text-sm">
-                              {annualPriceText} - Ahorra 2 meses
+                              {annualPriceText} - {t("saveTwoMonths")}
                             </p>
                           )}
                         </div>

@@ -98,14 +98,20 @@ export async function GET(request: NextRequest) {
         error.message,
         error.code
       );
-      const authUrl = new URL("/sign-in", origin);
+      const pathname = request.nextUrl.pathname;
+      const localeMatch = pathname.match(/^\/(en|es)\//);
+      const locale = localeMatch ? localeMatch[1] : "es";
+      const authUrl = new URL(`/${locale}/sign-in`, origin);
       authUrl.searchParams.set("error", friendlyMessage);
       authUrl.searchParams.set("redirect", redirectPath);
       return NextResponse.redirect(authUrl.toString());
     }
   }
 
-  const authUrl = new URL("/sign-in", origin);
+  const pathname = request.nextUrl.pathname;
+  const localeMatch = pathname.match(/^\/(en|es)\//);
+  const locale = localeMatch ? localeMatch[1] : "es";
+  const authUrl = new URL(`/${locale}/sign-in`, origin);
   authUrl.searchParams.set(
     "error",
     "No se recibió el código de acceso. Por favor, intenta acceder nuevamente."

@@ -96,9 +96,16 @@ export default function SettingsAccountPage() {
 
   async function onChangeEmail(values: ChangeEmailValues) {
     try {
+      const locale =
+        typeof document !== "undefined"
+          ? (document.cookie
+              .split("; ")
+              .find((r) => r.startsWith("NEXT_LOCALE="))
+              ?.split("=")[1] ?? "es")
+          : "es";
       const redirectTo =
         typeof window !== "undefined"
-          ? `${window.location.origin}/sign-in?email_updated=1`
+          ? `${window.location.origin}/${locale}/sign-in?email_updated=1`
           : undefined;
       const { error } = await supabase.auth.updateUser(
         { email: values.new_email.trim().toLowerCase() },
@@ -194,7 +201,14 @@ export default function SettingsAccountPage() {
       deleteForm.reset();
       toast.success("Cuenta eliminada");
       await signOut();
-      router.push("/sign-in");
+      const locale =
+        typeof document !== "undefined"
+          ? (document.cookie
+              .split("; ")
+              .find((r) => r.startsWith("NEXT_LOCALE="))
+              ?.split("=")[1] ?? "es")
+          : "es";
+      router.push(`/${locale}/sign-in`);
     } catch (err) {
       reportError(err, "Delete account:");
       toast.error("Error al eliminar la cuenta");

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { appPath } from "@/lib/app-paths";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,15 +31,11 @@ import { pushSignUp } from "@/lib/gtm";
 const VALID_PLAN_CODES = ["BASE", "PRO", "STUDIO"] as const;
 type PlanCode = (typeof VALID_PLAN_CODES)[number];
 
-const signUpSchema = z.object({
-  email: z.string().email("Email inválido"),
-  fullName: z.string().optional(),
-  acceptTerms: z.boolean().refine((val) => val === true, {
-    message: "Debes aceptar los términos de uso y privacidad",
-  }),
-});
-
-type SignUpValues = z.infer<typeof signUpSchema>;
+type SignUpValues = {
+  email: string;
+  fullName?: string;
+  acceptTerms: boolean;
+};
 
 type SignUpFormProps = {
   redirectTo?: string | null;
@@ -51,6 +48,8 @@ export function SignUpForm({
   planParam = null,
   billingParam = null,
 }: SignUpFormProps) {
+  const t = useTranslations("SignUp");
+  const locale = useLocale();
   const planFromUrl: PlanCode | null =
     planParam && VALID_PLAN_CODES.includes(planParam as PlanCode)
       ? (planParam as PlanCode)
@@ -61,6 +60,14 @@ export function SignUpForm({
   const [selectedPlan, setSelectedPlan] = useState<PlanCode>(
     planFromUrl ?? "BASE"
   );
+
+  const signUpSchema = z.object({
+    email: z.string().email(t("emailInvalid")),
+    fullName: z.string().optional(),
+    acceptTerms: z.boolean().refine((val) => val === true, {
+      message: t("acceptTermsError"),
+    }),
+  });
 
   useEffect(() => {
     if (planFromUrl) setSelectedPlan(planFromUrl);
@@ -86,7 +93,7 @@ export function SignUpForm({
     setLoading(true);
     try {
       const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
+      const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
 
       const response = await fetch("/api/auth/magic-link", {
         method: "POST",
@@ -114,12 +121,9 @@ export function SignUpForm({
         billing_period: billingPeriod,
       });
       setEmailSent(true);
-      toast.success(
-        "Revisa tu correo electrónico. Te hemos enviado un enlace para completar tu registro."
-      );
+      toast.success(t("toastSuccess"));
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Ocurrió un error";
+      const message = error instanceof Error ? error.message : t("toastError");
       toast.error(message);
     } finally {
       setLoading(false);
@@ -134,7 +138,7 @@ export function SignUpForm({
     setLoading(true);
     try {
       const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
+      const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
 
       const response = await fetch("/api/auth/magic-link", {
         method: "POST",
@@ -154,10 +158,10 @@ export function SignUpForm({
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || "Failed to resend magic link");
       }
-      toast.success("Enlace reenviado. Revisa tu correo nuevamente.");
+      toast.success(t("toastResend"));
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : "Error al reenviar el enlace";
+        error instanceof Error ? error.message : t("toastResendError");
       toast.error(message);
     } finally {
       setLoading(false);
@@ -169,22 +173,20 @@ export function SignUpForm({
       <Card className="w-full">
         <CardHeader>
           <h1 className="text-2xl leading-none font-semibold tracking-tight">
-            Revisa tu correo
+            {t("emailSentTitle")}
           </h1>
           <CardDescription>
-            Te hemos enviado un enlace mágico a{" "}
+            {t("emailSentDescription")}{" "}
             <strong>{form.getValues("email")}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-muted-foreground text-sm">
-              Haz clic en el enlace del correo para completar tu registro. El
-              enlace expirará en unos minutos.
+              {t("emailSentClick")}
             </p>
             <p className="text-muted-foreground text-sm">
-              Si no recibes el correo, revisa tu carpeta de spam o intenta
-              nuevamente.
+              {t("emailSentNoEmail")}
             </p>
           </div>
         </CardContent>
@@ -197,7 +199,7 @@ export function SignUpForm({
               form.reset();
             }}
           >
-            Volver
+            {t("back")}
           </Button>
           <Button
             variant="link"
@@ -205,7 +207,7 @@ export function SignUpForm({
             onClick={handleResend}
             disabled={loading}
           >
-            {loading ? "Reenviando..." : "Reenviar enlace"}
+            {loading ? t("resending") : t("resend")}
           </Button>
         </CardFooter>
       </Card>
@@ -216,11 +218,9 @@ export function SignUpForm({
     <Card className="w-full">
       <CardHeader>
         <h1 className="text-2xl leading-none font-semibold tracking-tight">
-          Crea tu cuenta
+          {t("title")}
         </h1>
-        <CardDescription>
-          Ingresa tu correo y te enviaremos un enlace para crear tu cuenta.
-        </CardDescription>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -230,9 +230,9 @@ export function SignUpForm({
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre Completo</FormLabel>
+                  <FormLabel>{t("fullNameLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Juan Pérez" {...field} />
+                    <Input placeholder={t("fullNamePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -243,9 +243,13 @@ export function SignUpForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("emailLabel")}</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="tu@email.com" {...field} />
+                    <Input
+                      type="email"
+                      placeholder={t("emailPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -266,14 +270,14 @@ export function SignUpForm({
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel className="font-normal">
-                      He leído y estoy conforme con los{" "}
+                      {t("acceptTermsPrefix")}{" "}
                       <Link
                         href="/legal"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary underline hover:no-underline"
                       >
-                        términos de uso y privacidad
+                        {t("termsLink")}
                       </Link>
                     </FormLabel>
                     <FormMessage />
@@ -286,7 +290,7 @@ export function SignUpForm({
               className="w-full"
               disabled={loading || !isEmailValid || !form.watch("acceptTerms")}
             >
-              {loading ? "Enviando..." : "Enviar enlace de registro"}
+              {loading ? t("submitting") : t("submit")}
             </Button>
           </form>
         </Form>
@@ -296,13 +300,13 @@ export function SignUpForm({
           href="/sign-in"
           className="text-muted-foreground hover:text-foreground text-center text-sm transition-colors"
         >
-          ¿Ya tienes cuenta? Inicia sesión
+          {t("hasAccount")}
         </Link>
         <Link
           href="/"
           className="text-muted-foreground hover:text-foreground text-center text-sm transition-colors"
         >
-          Volver al inicio
+          {t("backToHome")}
         </Link>
       </CardFooter>
     </Card>

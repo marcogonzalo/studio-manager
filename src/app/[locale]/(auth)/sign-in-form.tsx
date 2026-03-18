@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
 import { Button } from "@/components/ui/button";
@@ -28,13 +29,11 @@ import {
 import { toast } from "sonner";
 import { pushLogin } from "@/lib/gtm";
 
-const signInSchema = z.object({
-  email: z.string().email("Email inválido"),
-});
-
-type SignInValues = z.infer<typeof signInSchema>;
+type SignInValues = { email: string };
 
 export function SignInForm() {
+  const t = useTranslations("SignIn");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect");
   const errorParam = searchParams.get("error");
@@ -42,6 +41,10 @@ export function SignInForm() {
 
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+
+  const signInSchema = z.object({
+    email: z.string().email(t("emailInvalid")),
+  });
 
   useEffect(() => {
     if (errorParam) {
@@ -53,11 +56,9 @@ export function SignInForm() {
     if (emailUpdated !== "1") return;
     const supabase = getSupabaseClient();
     supabase.auth.signOut().then(() => {
-      toast.success(
-        "El cambio de correo se ha realizado. Ya puedes iniciar sesión con tu nueva dirección."
-      );
+      toast.success(t("toastEmailUpdated"));
     });
-  }, [emailUpdated]);
+  }, [emailUpdated, t]);
 
   const form = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -75,7 +76,7 @@ export function SignInForm() {
     setLoading(true);
     try {
       const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}&type=login`;
+      const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=login`;
 
       const response = await fetch("/api/auth/magic-link", {
         method: "POST",
@@ -92,12 +93,9 @@ export function SignInForm() {
       }
       pushLogin({ method: "magic_link" });
       setEmailSent(true);
-      toast.success(
-        "Revisa tu correo electrónico. Te hemos enviado un enlace para iniciar sesión."
-      );
+      toast.success(t("toastSuccess"));
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Ocurrió un error";
+      const message = error instanceof Error ? error.message : t("toastError");
       toast.error(message);
     } finally {
       setLoading(false);
@@ -111,7 +109,7 @@ export function SignInForm() {
     setLoading(true);
     try {
       const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/callback?next=${encodeURIComponent(finalRedirect)}&type=login`;
+      const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=login`;
 
       const response = await fetch("/api/auth/magic-link", {
         method: "POST",
@@ -127,10 +125,10 @@ export function SignInForm() {
         throw new Error(errorData.error || "Failed to resend magic link");
       }
       pushLogin({ method: "magic_link" });
-      toast.success("Enlace reenviado. Revisa tu correo nuevamente.");
+      toast.success(t("toastResend"));
     } catch (error: unknown) {
       const message =
-        error instanceof Error ? error.message : "Error al reenviar el enlace";
+        error instanceof Error ? error.message : t("toastResendError");
       toast.error(message);
     } finally {
       setLoading(false);
@@ -142,22 +140,20 @@ export function SignInForm() {
       <Card className="w-full">
         <CardHeader>
           <h1 className="text-2xl leading-none font-semibold tracking-tight">
-            Revisa tu correo
+            {t("emailSentTitle")}
           </h1>
           <CardDescription>
-            Te hemos enviado un enlace mágico a{" "}
+            {t("emailSentDescription")}{" "}
             <strong>{form.getValues("email")}</strong>
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <p className="text-muted-foreground text-sm">
-              Haz clic en el enlace del correo para iniciar sesión. El enlace
-              expirará en unos minutos.
+              {t("emailSentClick")}
             </p>
             <p className="text-muted-foreground text-sm">
-              Si no recibes el correo, revisa tu carpeta de spam o intenta
-              nuevamente.
+              {t("emailSentNoEmail")}
             </p>
           </div>
         </CardContent>
@@ -170,7 +166,7 @@ export function SignInForm() {
               form.reset();
             }}
           >
-            Volver
+            {t("back")}
           </Button>
           <Button
             variant="link"
@@ -178,7 +174,7 @@ export function SignInForm() {
             onClick={handleResend}
             disabled={loading}
           >
-            {loading ? "Reenviando..." : "Reenviar enlace"}
+            {loading ? t("resending") : t("resend")}
           </Button>
         </CardFooter>
       </Card>
@@ -189,12 +185,10 @@ export function SignInForm() {
     <Card className="w-full">
       <CardHeader>
         <h1 className="text-2xl leading-none font-semibold tracking-tight">
-          Inicia sesión
+          {t("title")}
         </h1>
         <CardDescription>
-          {redirectTo
-            ? "Tu sesión ha caducado. Por favor, inicia sesión para continuar."
-            : "Ingresa tu correo para enviarte el enlace de inicio de sesión."}
+          {redirectTo ? t("descriptionSessionExpired") : t("description")}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -205,9 +199,13 @@ export function SignInForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("emailLabel")}</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="tu@email.com" {...field} />
+                    <Input
+                      type="email"
+                      placeholder={t("emailPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -218,7 +216,7 @@ export function SignInForm() {
               className="w-full"
               disabled={loading || !isEmailValid}
             >
-              {loading ? "Enviando..." : "Enviar enlace mágico"}
+              {loading ? t("submitting") : t("submit")}
             </Button>
           </form>
         </Form>
@@ -228,13 +226,13 @@ export function SignInForm() {
           href="/sign-up"
           className="text-muted-foreground hover:text-foreground text-center text-sm transition-colors"
         >
-          ¿No tienes cuenta? Regístrate
+          {t("noAccount")}
         </Link>
         <Link
           href="/"
           className="text-muted-foreground hover:text-foreground text-center text-sm transition-colors"
         >
-          Volver al inicio
+          {t("backToHome")}
         </Link>
       </CardFooter>
     </Card>

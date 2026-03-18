@@ -9,25 +9,28 @@ import {
   StaggerItem,
 } from "@/components/ui/animated-section";
 
-const testimonials = [
-  {
-    quote:
-      "La gestión de clientes, proveedores y catálogo en un solo sitio ha simplificado mucho el trabajo en los proyectos de diseño interior. Recomendable para independientes o estudios que quieren optimizar su gestión de proyectos.",
-    author: "FH Interiorismo",
-    role: "Estudio de arquitectura interior",
-    url: "https://instagram.com/fh.interiorismo",
-  },
-  {
-    quote:
-      "Con Veta hemos dejado de perder horas en hojas de cálculo. Los presupuestos por espacios y el control de costes nos permiten organizarnos y enfocarnos en el diseño.",
-    author: "EM Estilo Creativo",
-    role: "Diseño de interiores y estilismo",
-    url: "https://emestilocreativo.com/",
-  },
-];
+const TESTIMONIAL_URLS = [
+  "https://instagram.com/fh.interiorismo",
+  "https://emestilocreativo.com/",
+] as const;
 
 export function HomeTestimonialsSection() {
   const t = useTranslations("Testimonials");
+
+  const testimonials = [
+    {
+      quote: t("quote1"),
+      author: t("author1"),
+      role: t("role1"),
+      url: TESTIMONIAL_URLS[0],
+    },
+    {
+      quote: t("quote2"),
+      author: t("author2"),
+      role: t("role2"),
+      url: TESTIMONIAL_URLS[1],
+    },
+  ];
 
   return (
     <section className="bg-muted/30 py-20">

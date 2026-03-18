@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import {
   Check,
@@ -23,84 +24,41 @@ import {
   getCommercialFeatures,
   getPlanConfigForDisplay,
   COMPACT_FEATURE_KEYS,
+  translatePlanCopyItem,
 } from "@/lib/plan-copy";
 
-export const metadata: Metadata = {
-  title:
-    "Plan Pro | Gestión de proyectos de diseño interior con varios encargos",
-  description:
-    "Plan Pro de Veta: gestión de proyectos e interiorismo a escala. 5 proyectos activos, gestión de presupuestos personalizada, control de costes, pedidos y pagos. Para arquitectura de diseño interior con cartera de proyectos.",
-  alternates: { canonical: "/plan-pro-independientes-diseno-interior" },
-  openGraph: {
-    title:
-      "Plan Pro - Gestión de proyectos de diseño interior | Varios encargos | Veta",
-    description:
-      "Gestión de proyectos y gestión de presupuestos para profesionales de diseño interior. 5 proyectos activos, control de costes y pagos.",
-    url: "/plan-pro-independientes-diseno-interior",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Plan Pro - Diseño interior con varios proyectos | Veta",
-    description:
-      "Gestión de proyectos de diseño interior con gestión de presupuestos, costes y pagos. Interiorismo profesional.",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "PlanPro" });
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: { canonical: "/plan-pro-independientes-diseno-interior" },
+    openGraph: {
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+      url: "/plan-pro-independientes-diseno-interior",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t("twitterTitle"),
+      description: t("twitterDescription"),
+    },
+  };
+}
 
-const pains = [
-  {
-    title:
-      "Varios proyectos de diseño interior a la vez y se me escapa el control",
-    description:
-      "Con Pro tienes hasta 5 proyectos activos en paralelo. Gestión de proyectos y gestión de presupuestos por encargo: costes y pagos. Una sola herramienta para tu interiorismo, todo bajo control.",
-  },
-  {
-    title: "Proyectos más grandes y no sé si estoy ganando o perdiendo",
-    description:
-      "Control de costes y márgenes por proyecto: ves en tiempo real gastos, ingresos y margen. Pedidos de compra y seguimiento de pagos. Esencial en arquitectura de diseño interior con encargos grandes.",
-  },
-  {
-    title: "Necesito profesionalizar la gestión del dinero",
-    description:
-      "Gestión de presupuestos personalizada, control de pagos y pedidos a proveedores. Todo lo que un profesional de diseño interior con cartera necesita para facturar y cobrar con tranquilidad.",
-  },
-];
-
-const features = getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
-  include: COMPACT_FEATURE_KEYS,
-});
-
-const highlights = [
-  {
-    icon: Layers,
-    title: "5 proyectos activos",
-    text: "Gestión de proyectos de diseño interior con varios encargos en paralelo sin cambiar de herramienta ni de contexto.",
-  },
-  {
-    icon: BarChart3,
-    title: "Costes y márgenes",
-    text: "Sabe en todo momento cuánto gastas, cuánto facturas y cuánto ganas por proyecto.",
-  },
-  {
-    icon: Receipt,
-    title: "Pedidos de compra y pagos",
-    text: "Registra pedidos a proveedores y el estado de pagos para no perder el hilo.",
-  },
-  {
-    icon: Globe,
-    title: "Incluir o excluir productos del presupuesto",
-    text: "Activa o desactiva productos del proyecto y del presupuesto para adaptar cada oferta sin borrar líneas.",
-  },
-  {
-    icon: FileText,
-    title: "Gestión de presupuestos personalizada",
-    text: "Exporta presupuestos adaptados a cada proyecto y cliente. Clave en interiorismo profesional.",
-  },
-  {
-    icon: Wallet,
-    title: "10 GB de almacenamiento",
-    text: "Sube renders, documentos y archivos sin que tu cuenta se quede corta.",
-  },
-];
+const highlightIcons = [
+  Layers,
+  BarChart3,
+  Receipt,
+  Globe,
+  FileText,
+  Wallet,
+] as const;
 
 export default async function PlanProPage({
   params,
@@ -109,9 +67,29 @@ export default async function PlanProPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("PlanPro");
+  const tPlanCopy = await getTranslations("PlanCopy");
+  const features = getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
+    include: COMPACT_FEATURE_KEYS,
+  }).map((item) => translatePlanCopyItem(item, tPlanCopy));
+
+  const pains = [
+    { title: t("pain1Title"), description: t("pain1Desc") },
+    { title: t("pain2Title"), description: t("pain2Desc") },
+    { title: t("pain3Title"), description: t("pain3Desc") },
+  ];
+
+  const highlights = [
+    { title: t("highlight1Title"), text: t("highlight1Text") },
+    { title: t("highlight2Title"), text: t("highlight2Text") },
+    { title: t("highlight3Title"), text: t("highlight3Text") },
+    { title: t("highlight4Title"), text: t("highlight4Text") },
+    { title: t("highlight5Title"), text: t("highlight5Text") },
+    { title: t("highlight6Title"), text: t("highlight6Text") },
+  ].map((item, i) => ({ ...item, icon: highlightIcons[i] }));
+
   return (
     <>
-      {/* Hero */}
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-32">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
         <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
@@ -121,28 +99,24 @@ export default async function PlanProPage({
           <AnimatedSection className="mx-auto max-w-3xl text-center">
             <div className="text-primary border-primary/30 bg-primary/10 mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
               <Sparkles className="h-4 w-4" />
-              Plan Pro · El más elegido
+              {t("badge")}
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              Varios proyectos, un solo control.{" "}
-              <span className="text-primary">
-                Sin perder el norte del dinero
-              </span>
+              {t("heroTitle")}{" "}
+              <span className="text-primary">{t("heroTitleHighlight")}</span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              Para profesionales de diseño interior e interiorismo que ya
-              facturan y quieren gestión de proyectos y gestión de presupuestos
-              con control total del flujo de dinero.
+              {t("heroSubtitle")}
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">
-                  Prueba Pro 30 días gratis
+                  {t("tryProCta")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/pricing">Ver precios y comparativa</Link>
+                <Link href="/pricing">{t("viewPricing")}</Link>
               </Button>
             </div>
           </AnimatedSection>
@@ -154,17 +128,14 @@ export default async function PlanProPage({
         aria-hidden
       />
 
-      {/* Pains → Solución */}
       <section className="bg-muted/30 py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Si te identificas con esto, Pro es tu plan
+              {t("painsTitle")}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Tengo una cartera de proyectos y quiero controlar el flujo del
-              dinero para no volver a preguntarme &quot;¿en este proyecto gano o
-              pierdo?&quot;
+              {t("painsSubtitle")}
             </p>
           </AnimatedSection>
 
@@ -188,16 +159,14 @@ export default async function PlanProPage({
         </div>
       </section>
 
-      {/* Qué incluye */}
       <section className="py-20">
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Gestión de proyectos y de presupuestos en un solo sitio
+              {t("highlightsTitle")}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Costes, márgenes, pedidos, pagos y gestión de presupuestos para
-              diseño interior. Todo para dominar la economía de tus proyectos.
+              {t("highlightsSubtitle")}
             </p>
           </AnimatedSection>
 
@@ -222,7 +191,7 @@ export default async function PlanProPage({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Check className="text-primary h-5 w-5" />
-                  Incluido en Pro
+                  {t("includedTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -240,7 +209,6 @@ export default async function PlanProPage({
         </div>
       </section>
 
-      {/* CTA final */}
       <section className="relative overflow-hidden py-20">
         <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent" />
         <div className="bg-primary/10 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
@@ -249,19 +217,18 @@ export default async function PlanProPage({
           <AnimatedSection className="mx-auto max-w-2xl text-center">
             <div className="text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
               <Sparkles className="h-4 w-4" />
-              30 días gratis · Sin permanencia
+              {t("ctaBadge")}
             </div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              Gestión de proyectos de diseño interior sin improvisar.
+              {t("ctaTitle")}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              Prueba el plan Pro 30 días sin coste. Si encaja con el ritmo de
-              tus proyectos, te quedas. Si no, sin compromiso.
+              {t("ctaSubtitle")}
             </p>
             <div className="mt-8">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">
-                  Probar Pro 30 días gratis
+                  {t("ctaButton")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
