@@ -205,7 +205,7 @@ export function AddItemDialog({
           space_id: item.space_id || "none",
           supplier_id: item.supplier_id || "none",
           name: item.name || "",
-          description: productData.description,
+          description: item.description || productData.description,
           reference_code: productData.reference_code,
           reference_url: productData.reference_url,
           category: productData.category,
@@ -433,6 +433,7 @@ export function AddItemDialog({
             : values.space_id,
         product_id: finalProductId,
         name: values.name,
+        description: values.description || "",
         quantity: values.quantity,
         unit_cost: values.unit_cost,
         markup: values.markup,
@@ -466,7 +467,6 @@ export function AddItemDialog({
         ) {
           const productUpdate: Record<string, unknown> = {
             name: values.name,
-            description: values.description || "",
             reference_code: values.reference_code || "",
             reference_url: values.reference_url || null,
             category: values.category || "",
@@ -739,23 +739,6 @@ export function AddItemDialog({
 
                   <FormField
                     control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descripción</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Descripción del producto..."
-                            {...field}
-                            className="bg-background"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
                     name="reference_url"
                     render={({ field }) => (
                       <FormItem>
@@ -904,6 +887,24 @@ export function AddItemDialog({
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descripción para este proyecto</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Detalles del producto para este proyecto"
+                        {...field}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="grid grid-cols-4 gap-4">
                 <FormField

@@ -16,6 +16,7 @@ interface ProductRow {
   id: string;
   name: string;
   description: string;
+  internal_reference: string | null;
   quantity: number;
   unit_price: number;
   total_price: number;
@@ -86,6 +87,11 @@ export function ViewProjectProductsClient({
                           <p className="text-muted-foreground mt-1 text-xs">
                             {(STATUS_LABELS[p.status] ?? p.status) || "—"}
                           </p>
+                          {p.internal_reference && (
+                            <p className="text-muted-foreground mt-1 font-mono text-xs">
+                              Cód.: {p.internal_reference}
+                            </p>
+                          )}
                           <p className="text-foreground mt-4 text-sm font-semibold tabular-nums">
                             Cantidad: {p.quantity}
                           </p>

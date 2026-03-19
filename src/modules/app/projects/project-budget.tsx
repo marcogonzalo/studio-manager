@@ -632,9 +632,9 @@ export function ProjectBudget({
                             <div className="font-medium">
                               {item.product?.name || item.name}
                             </div>
-                            {item.product?.reference_code && (
+                            {item.internal_reference && (
                               <div className="text-muted-foreground mt-1 font-mono text-xs">
-                                Ref: {item.product.reference_code}
+                                Cód.: {item.internal_reference}
                               </div>
                             )}
                             <div className="text-muted-foreground text-xs">

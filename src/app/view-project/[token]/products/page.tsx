@@ -30,6 +30,7 @@ export default async function ViewProjectProductsPage({ params }: PageProps) {
     id: string;
     name: string;
     description: string;
+    internal_reference: string | null;
     quantity: number;
     unit_price: number;
     total_price: number;
