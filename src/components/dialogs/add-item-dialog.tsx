@@ -43,6 +43,8 @@ import { usePlanCapability } from "@/lib/use-plan-capability";
 import { SupplierDialog } from "./supplier-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
+const MAX_PRODUCT_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+
 const formSchema = z.object({
   product_id: z.string().optional(),
   space_id: z.string().optional(),
@@ -86,7 +88,7 @@ export function AddItemDialog({
 }: AddItemDialogProps) {
   const { user } = useAuth();
   const excludeFromBudgetOptionEnabled = usePlanCapability("pdf_export_mode", {
-    minModality: "full",
+    minModality: "plus",
   });
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
@@ -297,6 +299,13 @@ export function AddItemDialog({
 
   async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
+      if (
+        pendingImageFile &&
+        pendingImageFile.size > MAX_PRODUCT_IMAGE_SIZE_BYTES
+      ) {
+        throw new Error("La imagen no puede superar 5MB");
+      }
+
       // Validar que el proveedor sea obligatorio cuando se crea un nuevo producto
       if (
         activeTab === "new" &&
@@ -380,7 +389,16 @@ export function AddItemDialog({
             assetId?: string;
           };
           if (!res.ok) {
-            await supabase.from("products").delete().eq("id", newProduct.id);
+            const { error: rollbackError } = await supabase
+              .from("products")
+              .delete()
+              .eq("id", newProduct.id);
+            if (rollbackError) {
+              reportError(
+                rollbackError,
+                "Error rolling back product after upload failure:"
+              );
+            }
             toast.error(uploadJson.error ?? "Error al subir la imagen");
             setPendingImageFile(null);
             throw new Error(uploadJson.error ?? "Error al subir la imagen");
@@ -498,7 +516,7 @@ export function AddItemDialog({
         });
         return;
       }
-      toast.error("Error al guardar");
+      toast.error(error instanceof Error ? error.message : "Error al guardar");
     }
   }
 
