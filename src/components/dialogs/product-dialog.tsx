@@ -38,6 +38,8 @@ import { SupplierDialog } from "./supplier-dialog";
 import { ProductImageUpload } from "@/components/product-image-upload";
 import { Plus } from "lucide-react";
 
+const MAX_PRODUCT_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+
 const formSchema = z.object({
   name: z.string().min(2, "Nombre requerido"),
   reference_code: z.string().optional(),
@@ -179,6 +181,13 @@ export function ProductDialog({
 
   async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
+      if (
+        pendingImageFile &&
+        pendingImageFile.size > MAX_PRODUCT_IMAGE_SIZE_BYTES
+      ) {
+        throw new Error("La imagen no puede superar 5MB");
+      }
+
       // Convert empty strings to null for optional fields to avoid overwriting existing data
       const data: Record<string, unknown> = {
         name: values.name,
@@ -283,7 +292,16 @@ export function ProductDialog({
             assetId?: string;
           };
           if (!res.ok) {
-            await supabase.from("products").delete().eq("id", newId);
+            const { error: rollbackError } = await supabase
+              .from("products")
+              .delete()
+              .eq("id", newId);
+            if (rollbackError) {
+              reportError(
+                rollbackError,
+                "Error rolling back product after upload failure:"
+              );
+            }
             reportError(
               new Error(uploadJson.error ?? "Error al subir la imagen")
             );
