@@ -86,7 +86,7 @@ export function AddItemDialog({
 }: AddItemDialogProps) {
   const { user } = useAuth();
   const excludeFromBudgetOptionEnabled = usePlanCapability("pdf_export_mode", {
-    minModality: "full",
+    minModality: "plus",
   });
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
