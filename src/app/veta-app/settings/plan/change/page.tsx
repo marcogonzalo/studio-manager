@@ -25,7 +25,7 @@ import {
   getPlanConfigForDisplay,
   translatePlanCopyItem,
 } from "@/lib/plan-copy";
-import esMessages from "@/i18n/messages/es.json";
+import esMarketingMessages from "@/i18n/messages/es/marketing.json";
 import { getSupabaseClient } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import { getErrorMessage, reportError } from "@/lib/utils";
@@ -51,7 +51,7 @@ interface PlanOption {
 }
 
 const tPlanCopy = createPlanCopyT(
-  esMessages.PlanCopy as Record<string, string>
+  esMarketingMessages.PlanCopy as Record<string, string>
 );
 
 const PLANS: PlanOption[] = [
