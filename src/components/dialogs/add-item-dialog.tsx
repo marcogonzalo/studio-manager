@@ -31,7 +31,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Image as ImageIcon, Plus, Search } from "lucide-react";
 import Image from "next/image";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ProductImageUpload } from "@/components/product-image-upload";
@@ -205,7 +205,7 @@ export function AddItemDialog({
           space_id: item.space_id || "none",
           supplier_id: item.supplier_id || "none",
           name: item.name || "",
-          description: productData.description,
+          description: item.description || productData.description,
           reference_code: productData.reference_code,
           reference_url: productData.reference_url,
           category: productData.category,
@@ -278,7 +278,7 @@ export function AddItemDialog({
       form.setValue("product_id", "custom");
       setSelectedProduct(null);
       // Limpiar solo campos de producto, mantener campos de project_item si ya tienen valores
-      form.setValue("description", "");
+      if (!isEditing) form.setValue("description", "");
       form.setValue("reference_code", "");
       form.setValue("reference_url", "");
       form.setValue("category", "");
@@ -288,7 +288,7 @@ export function AddItemDialog({
       form.setValue("product_id", "");
       setSelectedProduct(null);
       // Limpiar campos de producto cuando vuelve a catálogo
-      form.setValue("description", "");
+      if (!isEditing) form.setValue("description", "");
       form.setValue("reference_code", "");
       form.setValue("reference_url", "");
       form.setValue("category", "");
@@ -433,6 +433,7 @@ export function AddItemDialog({
             : values.space_id,
         product_id: finalProductId,
         name: values.name,
+        description: values.description || "",
         quantity: values.quantity,
         unit_cost: values.unit_cost,
         markup: values.markup,
@@ -466,7 +467,6 @@ export function AddItemDialog({
         ) {
           const productUpdate: Record<string, unknown> = {
             name: values.name,
-            description: values.description || "",
             reference_code: values.reference_code || "",
             reference_url: values.reference_url || null,
             category: values.category || "",
@@ -590,7 +590,7 @@ export function AddItemDialog({
                           </div>
 
                           {filteredProducts.length > 0 ? (
-                            <div className="bg-background grid max-h-[300px] grid-cols-2 gap-3 overflow-y-auto rounded-md border p-2 md:grid-cols-3 lg:grid-cols-4">
+                            <div className="bg-background grid max-h-[300px] grid-cols-2 gap-3 overflow-y-auto rounded-md border p-2 sm:grid-cols-3 lg:grid-cols-3">
                               {filteredProducts.map((product) => (
                                 <button
                                   key={product.id}
@@ -599,13 +599,13 @@ export function AddItemDialog({
                                     field.onChange(product.id);
                                     handleProductSelect(product.id);
                                   }}
-                                  className={`overflow-hidden rounded-lg border-2 transition-all hover:shadow-md ${
+                                  className={`flex min-h-32 w-full items-center gap-4 overflow-hidden rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md ${
                                     field.value === product.id
                                       ? "border-primary bg-primary/10"
                                       : "border-border bg-card"
                                   }`}
                                 >
-                                  <div className="bg-secondary/30 dark:bg-muted relative aspect-square">
+                                  <div className="bg-secondary/30 dark:bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
                                     {product.image_url ? (
                                       <div className="group relative h-full w-full">
                                         <Image
@@ -629,16 +629,22 @@ export function AddItemDialog({
                                         </button>
                                       </div>
                                     ) : (
-                                      <div className="text-muted-foreground flex h-full w-full items-center justify-center text-xs">
-                                        Sin imagen
+                                      <div className="text-muted-foreground flex h-full w-full items-center justify-center">
+                                        <ImageIcon
+                                          className="h-6 w-6"
+                                          aria-hidden
+                                        />
+                                        <span className="sr-only">
+                                          Sin imagen
+                                        </span>
                                       </div>
                                     )}
                                   </div>
-                                  <div className="p-2">
-                                    <div className="mb-1 line-clamp-2 text-sm font-medium">
+                                  <div className="min-w-0 flex-1 text-left">
+                                    <div className="mb-1 line-clamp-2 text-left text-sm font-medium">
                                       {product.name}
                                     </div>
-                                    <div className="text-muted-foreground text-xs">
+                                    <div className="text-muted-foreground line-clamp-1 text-left text-xs">
                                       {product.supplier?.name ||
                                         "Sin proveedor"}
                                     </div>
@@ -736,23 +742,6 @@ export function AddItemDialog({
                       )}
                     />
                   </div>
-
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descripción</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Descripción del producto..."
-                            {...field}
-                            className="bg-background"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
 
                   <FormField
                     control={form.control}
@@ -979,6 +968,24 @@ export function AddItemDialog({
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descripción para este proyecto</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Detalles del producto para este proyecto"
+                        {...field}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
