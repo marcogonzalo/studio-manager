@@ -278,7 +278,7 @@ export function AddItemDialog({
       form.setValue("product_id", "custom");
       setSelectedProduct(null);
       // Limpiar solo campos de producto, mantener campos de project_item si ya tienen valores
-      form.setValue("description", "");
+      if (!isEditing) form.setValue("description", "");
       form.setValue("reference_code", "");
       form.setValue("reference_url", "");
       form.setValue("category", "");
@@ -288,7 +288,7 @@ export function AddItemDialog({
       form.setValue("product_id", "");
       setSelectedProduct(null);
       // Limpiar campos de producto cuando vuelve a catálogo
-      form.setValue("description", "");
+      if (!isEditing) form.setValue("description", "");
       form.setValue("reference_code", "");
       form.setValue("reference_url", "");
       form.setValue("category", "");
