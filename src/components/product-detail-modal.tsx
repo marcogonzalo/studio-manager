@@ -40,7 +40,10 @@ export function ProductDetailModal({
 
   if (!displayProduct) return null;
 
-  const imageUrl = projectItem?.image_url || product?.image_url;
+  // Si el item del proyecto no tiene imagen, caer al image_url del producto del catálogo.
+  // En la mayoría de llamadas, el modal recibe `projectItem` y no `product` como prop.
+  const catalogImageUrl = projectItem?.product?.image_url || product?.image_url;
+  const imageUrl = projectItem?.image_url || catalogImageUrl;
   const name = projectItem?.name || product?.name;
   const description = projectItem?.description || product?.description || "";
   const referenceCode =

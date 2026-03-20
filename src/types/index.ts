@@ -255,5 +255,6 @@ export interface ProjectItem {
     reference_code?: string;
     reference_url?: string;
     category?: string;
+    image_url?: string;
   };
 }

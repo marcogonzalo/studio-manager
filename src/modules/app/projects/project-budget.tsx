@@ -147,7 +147,7 @@ export function ProjectBudget({
       const { data: itemsData, error: itemsError } = await supabase
         .from("project_items")
         .select(
-          "*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
+          "*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category, image_url), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
         )
         .eq("project_id", projectId)
         .order("created_at");
@@ -608,25 +608,32 @@ export function ProjectBudget({
                       {includedItems.map((item) => (
                         <TableRow key={item.id}>
                           <TableCell>
-                            {item.image_url && (
-                              <button
-                                type="button"
-                                className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
-                                onClick={() => {
-                                  setSelectedItem(item);
-                                  setIsProductModalOpen(true);
-                                }}
-                              >
-                                <Image
-                                  src={item.image_url}
-                                  width={32}
-                                  height={32}
-                                  className="object-cover"
-                                  style={{ width: "auto", height: "auto" }}
-                                  alt={item.product?.name || item.name}
-                                />
-                              </button>
-                            )}
+                            {(() => {
+                              const imageSrc =
+                                item.image_url || item.product?.image_url;
+
+                              if (!imageSrc) return null;
+
+                              return (
+                                <button
+                                  type="button"
+                                  className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
+                                  onClick={() => {
+                                    setSelectedItem(item);
+                                    setIsProductModalOpen(true);
+                                  }}
+                                >
+                                  <Image
+                                    src={imageSrc}
+                                    width={32}
+                                    height={32}
+                                    className="object-cover"
+                                    style={{ width: "auto", height: "auto" }}
+                                    alt={item.product?.name || item.name}
+                                  />
+                                </button>
+                              );
+                            })()}
                           </TableCell>
                           <TableCell>
                             <div className="font-medium">
