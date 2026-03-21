@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProductDialog } from "@/components/dialogs/product-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
-import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
@@ -48,9 +47,6 @@ export default function CatalogPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
-  const [lightboxAlt, setLightboxAlt] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const supabase = getSupabaseClient();
@@ -233,21 +229,28 @@ export default function CatalogPage() {
           products.map((p) => (
             <Card
               key={p.id}
-              className="relative transition-shadow hover:shadow-md"
+              className="relative cursor-pointer transition-shadow hover:shadow-md"
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                setSelectedProduct(p);
+                setIsProductModalOpen(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                setSelectedProduct(p);
+                setIsProductModalOpen(true);
+              }}
             >
               <CardContent className="flex gap-4 p-4">
                 <button
                   type="button"
                   className="bg-muted focus-visible:ring-ring relative h-24 w-24 shrink-0 overflow-hidden rounded-md transition-opacity hover:opacity-90 focus-visible:ring-2"
-                  onClick={() => {
-                    if (p.image_url) {
-                      setLightboxSrc(p.image_url);
-                      setLightboxAlt(p.name);
-                      setLightboxOpen(true);
-                    } else {
-                      setSelectedProduct(p);
-                      setIsProductModalOpen(true);
-                    }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedProduct(p);
+                    setIsProductModalOpen(true);
                   }}
                   aria-label={`Ver imagen de ${p.name}`}
                   style={
@@ -274,7 +277,8 @@ export default function CatalogPage() {
                   <button
                     type="button"
                     className="text-foreground line-clamp-2 w-full text-left font-medium hover:underline"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedProduct(p);
                       setIsProductModalOpen(true);
                     }}
@@ -305,13 +309,15 @@ export default function CatalogPage() {
                       size="icon"
                       className="h-8 w-8"
                       aria-label="Acciones del producto"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" side="top">
                     <DropdownMenuItem
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setEditingProduct(p);
                         setIsDialogOpen(true);
                       }}
@@ -320,7 +326,10 @@ export default function CatalogPage() {
                       Editar
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handleDeleteClick(p)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(p);
+                      }}
                       className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -348,13 +357,6 @@ export default function CatalogPage() {
         product={selectedProduct}
         open={isProductModalOpen}
         onOpenChange={setIsProductModalOpen}
-      />
-
-      <ImageLightbox
-        open={lightboxOpen}
-        onOpenChange={setLightboxOpen}
-        src={lightboxSrc}
-        alt={lightboxAlt}
       />
 
       <ConfirmDeleteDialog
