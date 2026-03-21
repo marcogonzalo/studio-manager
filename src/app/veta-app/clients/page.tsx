@@ -188,7 +188,15 @@ export default function ClientsPage() {
           clients.map((client) => (
             <Card
               key={client.id}
-              className="relative transition-shadow hover:shadow-md"
+              className="relative cursor-pointer transition-shadow hover:shadow-md"
+              role="button"
+              tabIndex={0}
+              onClick={() => handleEdit(client)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                handleEdit(client);
+              }}
             >
               <CardContent className="p-4">
                 <div className="min-w-0 pr-10">
@@ -218,17 +226,26 @@ export default function ClientsPage() {
                       size="icon"
                       className="h-8 w-8"
                       aria-label="Acciones del cliente"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" side="top">
-                    <DropdownMenuItem onClick={() => handleEdit(client)}>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(client);
+                      }}
+                    >
                       <Pencil className="mr-2 h-4 w-4" />
                       Editar
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handleDeleteClick(client)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(client);
+                      }}
                       className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />

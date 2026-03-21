@@ -69,6 +69,10 @@ export default function SuppliersPage() {
   }, [searchDebounced]);
 
   const handleDeleteClick = (s: Supplier) => setDeleteTarget(s);
+  const handleEdit = (supplier: Supplier) => {
+    setEditingSupplier(supplier);
+    setIsDialogOpen(true);
+  };
 
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
@@ -180,9 +184,20 @@ export default function SuppliersPage() {
           </Card>
         ) : (
           suppliers.map((s) => (
-            <Card key={s.id} className="transition-shadow hover:shadow-md">
-              <CardContent className="flex items-start justify-between gap-2 p-4">
-                <div className="min-w-0 flex-1">
+            <Card
+              key={s.id}
+              className="relative cursor-pointer transition-shadow hover:shadow-md"
+              role="button"
+              tabIndex={0}
+              onClick={() => handleEdit(s)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                handleEdit(s);
+              }}
+            >
+              <CardContent className="p-4">
+                <div className="min-w-0 pr-10">
                   <p className="text-foreground font-medium">{s.name}</p>
                   {s.contact_name && (
                     <p className="text-muted-foreground mt-0.5 text-sm">
@@ -211,28 +226,38 @@ export default function SuppliersPage() {
                     </a>
                   )}
                 </div>
+              </CardContent>
+              <div
+                className="absolute right-3 bottom-3 z-10"
+                style={{ inset: "auto 0.75rem 0.75rem auto" }}
+              >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8"
                       aria-label="Acciones del proveedor"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" side="top">
                     <DropdownMenuItem
-                      onClick={() => {
-                        setEditingSupplier(s);
-                        setIsDialogOpen(true);
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(s);
                       }}
                     >
                       <Pencil className="mr-2 h-4 w-4" />
                       Editar
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handleDeleteClick(s)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(s);
+                      }}
                       className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
@@ -240,7 +265,7 @@ export default function SuppliersPage() {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </CardContent>
+              </div>
             </Card>
           ))
         )}
