@@ -329,7 +329,7 @@ function ProjectDetailContent() {
           )}
         </div>
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => setIsShareDialogOpen(true)}
           className="shrink-0"
         >

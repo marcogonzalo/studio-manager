@@ -128,8 +128,10 @@
       --popover-foreground: oklch(0.98 0.008 95);
 
       /* Secondary/accent (L 0.17): elevación con ≥4.5:1 para texto 0.98 */
-      --secondary: oklch(0.17 0.02 82);
-      --secondary-foreground: oklch(0.98 0.008 95);
+      --secondary: oklch(0.35 0.15 100); /* Versión oscura: tono profundo */
+      --secondary-foreground: oklch(
+        0.98 0.008 95
+      ); /* Texto claro para contraste en fondo oscuro */
       --accent: oklch(0.17 0.025 85);
       --accent-foreground: oklch(0.98 0.008 95);
 
