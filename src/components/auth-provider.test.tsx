@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { AuthProvider, useAuth } from "./auth-provider";
-import { createMockUser, createMockSession } from "@/test/mocks/supabase";
+import { createMockUser, createMockSession } from "@/tests/mocks/supabase";
 import type { Session } from "@supabase/supabase-js";
 
 // Mock the supabase module using hoisted mocks
