@@ -2,95 +2,89 @@
 
 import { useLocale } from "next-intl";
 import { Globe2 } from "lucide-react";
-import { usePathname, useRouter } from "@/i18n/routing";
 import { routing } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/i18n/config";
 
+type Locales = "en" | "es";
+type PathnamesMap = Record<string, Partial<Record<Locales, string>>>;
+
+function normalizePath(p: string): string {
+  if (!p) return "/";
+  if (p === "/") return "/";
+  return p.replace(/\/+$/, "");
+}
+
+/**
+ * Builds the canonical destination URL for a locale switch.
+ *
+ * Strategy (localePrefix: "as-needed"):
+ *  - ES (default): no prefix → "/precios", "/"
+ *  - EN: "/en" prefix → "/en/pricing", "/en"
+ *
+ * We resolve the destination by:
+ * 1. Stripping the current locale prefix from window.location.pathname.
+ * 2. Finding the route key whose current-locale slug matches that path.
+ * 3. Looking up the new-locale slug for that route key.
+ * 4. Prepending "/en" only when the new locale is not the default.
+ */
+function buildDestinationUrl(
+  currentFullPath: string,
+  currentLocale: Locales,
+  newLocale: Locales,
+  defaultLocale: string
+): string {
+  const pathnames = routing.pathnames as unknown as PathnamesMap;
+
+  // Strip current locale prefix to get the locale-agnostic path segment.
+  const currentPrefix = `/${currentLocale}`;
+  let pathWithoutPrefix = currentFullPath;
+  if (pathWithoutPrefix === currentPrefix) {
+    pathWithoutPrefix = "/";
+  } else if (pathWithoutPrefix.startsWith(`${currentPrefix}/`)) {
+    pathWithoutPrefix = pathWithoutPrefix.slice(currentPrefix.length);
+  }
+  pathWithoutPrefix = normalizePath(pathWithoutPrefix);
+
+  // Find the route key whose current-locale slug matches the stripped path.
+  const routeKey = Object.keys(pathnames).find((key) => {
+    const slug = pathnames[key]?.[currentLocale];
+    return slug !== undefined && normalizePath(slug) === pathWithoutPrefix;
+  });
+
+  // Resolve the destination slug for the new locale.
+  const destinationSlug =
+    routeKey !== undefined
+      ? normalizePath(pathnames[routeKey]?.[newLocale] ?? "/")
+      : pathWithoutPrefix;
+
+  // Apply "as-needed" prefix: default locale has no prefix.
+  if (newLocale === defaultLocale) {
+    return destinationSlug;
+  }
+  return destinationSlug === "/"
+    ? `/${newLocale}`
+    : `/${newLocale}${destinationSlug}`;
+}
+
 export function LanguageToggle() {
   const locale = useLocale() as Locale;
-  const router = useRouter();
-  const pathname = usePathname();
 
   const toggleLocale = () => {
     const newLocale: Locale = locale === "en" ? "es" : "en";
-
-    // next-intl "as-needed" should omit the default-locale prefix, but when
-    // switching from /en/... it can sometimes generate redundant URLs like
-    // "/es/precios". We build the destination URL explicitly from routing
-    // pathnames and the "as-needed" prefix strategy.
     const currentFullPath =
-      typeof window !== "undefined" ? window.location.pathname : "";
+      typeof window !== "undefined" ? window.location.pathname : "/";
 
-    const normalizePath = (p: string): string => {
-      // Remove trailing slashes except for root "/"
-      if (!p) return "/";
-      if (p === "/") return "/";
-      return p.replace(/\/+$/, "");
-    };
+    const destination = buildDestinationUrl(
+      currentFullPath,
+      locale,
+      newLocale,
+      routing.defaultLocale
+    );
 
-    // Base path without any locale prefix (e.g. "/pricing" instead of "/en/pricing")
-    // Used both for routeKey matching and as fallback navigation.
-    let pathWithoutLocalePrefix = currentFullPath || pathname;
-    {
-      const currentLocalePrefix = `/${locale}`;
-      if (pathWithoutLocalePrefix === currentLocalePrefix) {
-        pathWithoutLocalePrefix = "/";
-      } else if (
-        pathWithoutLocalePrefix.startsWith(`${currentLocalePrefix}/`)
-      ) {
-        pathWithoutLocalePrefix = pathWithoutLocalePrefix.slice(
-          currentLocalePrefix.length
-        );
-      }
-
-      pathWithoutLocalePrefix = normalizePath(pathWithoutLocalePrefix);
-    }
-
-    if (currentFullPath) {
-      type ReplaceHref = Parameters<typeof router.replace>[0];
-
-      // Current locale might or might not have a prefix in the URL:
-      // - ES default: "/precios" (no "/es")
-      // - EN: "/en/pricing"
-
-      type Locales = "en" | "es";
-      const pathnames = routing.pathnames as unknown as Record<
-        string,
-        Partial<Record<Locales, string>>
-      >;
-
-      const routeKey = Object.keys(pathnames).find((key) => {
-        const localizedPath = pathnames[key]?.[locale];
-        if (!localizedPath) return false;
-        return normalizePath(localizedPath) === pathWithoutLocalePrefix;
-      });
-
-      if (routeKey) {
-        const destinationPathname = pathnames[routeKey]?.[newLocale];
-
-        if (typeof destinationPathname === "string") {
-          const normalizedDestination = normalizePath(destinationPathname);
-          const isDefaultLocale = newLocale === routing.defaultLocale;
-          const destinationFullPath = isDefaultLocale
-            ? normalizedDestination
-            : normalizedDestination === "/"
-              ? `/${newLocale}`
-              : `/${newLocale}${normalizedDestination}`;
-
-          type ReplaceHref = Parameters<typeof router.replace>[0];
-          router.replace(destinationFullPath as ReplaceHref);
-          return;
-        }
-      }
-    }
-
-    // Fallback: use the path without locale prefix, so next-intl can apply
-    // the correct "/en" prefix only when needed (defaultLocale stays unprefixed).
-    type ReplaceHref = Parameters<typeof router.replace>[0];
-    router.replace(pathWithoutLocalePrefix as ReplaceHref, {
-      locale: newLocale,
-    });
+    // Navigate using the browser directly to avoid next-intl re-applying
+    // locale prefix logic on top of the already-resolved canonical URL.
+    window.location.href = destination;
   };
 
   return (

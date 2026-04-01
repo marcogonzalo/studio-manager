@@ -102,22 +102,22 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Workaround for default-locale "as-needed" 404s:
-  // We rewrite ES slugs without "/es" prefix to the internal "/es/*" routes.
-  // This keeps the browser URL clean ("/precios", "/sign-in", etc.) while
-  // letting the actual Next.js pages under `src/app/[locale]` render.
+  // Explicit rewrites map localized URL slugs to the internal Next.js filesystem
+  // paths under src/app/[locale]/. The proxy/middleware (next-intl) runs first
+  // and handles these rewrites internally; these afterFiles entries act as a
+  // reliable fallback in case the middleware rewrite does not apply (e.g. dev
+  // mode Turbopack inconsistencies).
   async rewrites() {
     return [
-      { source: "/sign-in", destination: "/es/sign-in" },
-      { source: "/sign-up", destination: "/es/sign-up" },
-      { source: "/auth/complete", destination: "/es/auth/complete" },
-
+      // ES: map localized slugs to internal [locale] filesystem paths.
       { source: "/precios", destination: "/es/pricing" },
       { source: "/sobre-veta", destination: "/es/about" },
       { source: "/contacto", destination: "/es/contact" },
       { source: "/demo", destination: "/es/demo" },
       { source: "/legal", destination: "/es/legal" },
-
+      { source: "/sign-in", destination: "/es/sign-in" },
+      { source: "/sign-up", destination: "/es/sign-up" },
+      { source: "/auth/complete", destination: "/es/auth/complete" },
       {
         source: "/plan-base-primer-proyecto-interiorismo",
         destination: "/es/plan-base",
@@ -130,8 +130,7 @@ const nextConfig: NextConfig = {
         source: "/plan-studio-empresas-arquitectura-diseno-interior",
         destination: "/es/plan-studio",
       },
-
-      // EN: translate plan landing slugs to internal plan keys.
+      // EN: map plan landing slugs to internal plan directory names.
       {
         source: "/en/base-plan-first-interior-design-project",
         destination: "/en/plan-base",
