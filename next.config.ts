@@ -130,6 +130,8 @@ const nextConfig: NextConfig = {
         source: "/plan-studio-empresas-arquitectura-diseno-interior",
         destination: "/es/plan-studio",
       },
+      // EN: about-veta localized URL -> internal `/en/about` directory
+      { source: "/en/about-veta", destination: "/en/about" },
       // EN: map plan landing slugs to internal plan directory names.
       {
         source: "/en/base-plan-first-interior-design-project",
@@ -186,6 +188,9 @@ const nextConfig: NextConfig = {
       { source: "/pricing", destination: "/precios", permanent: true },
       { source: "/about", destination: "/sobre-veta", permanent: true },
       { source: "/contact", destination: "/contacto", permanent: true },
+
+      // i18n: EN about canonicalization
+      { source: "/en/about", destination: "/en/about-veta", permanent: true },
 
       // i18n: legacy English plan slugs were Spanish; redirect to translated slugs
       {
