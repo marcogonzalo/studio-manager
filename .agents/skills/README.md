@@ -56,13 +56,13 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
-## 5. veta-db-migrations (pendiente)
+## 5. veta-db-migrations (implementada)
 
-**Objetivo:** Flujo seguro de migraciones: solo local, nunca producción desde dev.
+**Objetivo:** Flujo seguro de migraciones: solo local por defecto, esquema versionado en `supabase/migrations`, RLS y tipos alineados con la app.
 
 **Cuándo usar:** Al crear migraciones, ejecutar `db push`, `db reset` o tocar esquema de Supabase.
 
-**Contenido:** `npm run db:push` = solo `--local`, no usar `supabase link` a producción, `db reset` solo con autorización explícita, reparar estado con `migration repair`.
+**Contenido:** `npm run db:push` / `db:reset` con `--local`; convención de nombres de migración; RLS en tablas nuevas; actualizar tipos TS; sin operaciones implícitas contra producción; `migration repair` solo con criterio. Ver `SKILL.md` en `.agents/skills/veta-db-migrations/`.
 
 ---
 
@@ -76,13 +76,13 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
-## 7. veta-frontend-components (pendiente)
+## 7. veta-frontend-components (implementada)
 
-**Objetivo:** Componentes UI, tema (light/dark), animaciones y convenciones Tailwind/Shadcn del proyecto.
+**Objetivo:** Componentes UI, tema con `next-themes`, animaciones y convenciones Tailwind v4 / Shadcn del proyecto.
 
 **Cuándo usar:** Al crear o modificar componentes, estilos, animaciones o integración con Shadcn.
 
-**Contenido:** Variables CSS en `globals.css`, `AnimatedSection`/`StaggerContainer`, duraciones y easing, Select sin `value=""`, dark mode por defecto.
+**Contenido:** `src/styles/globals.css` y tokens semánticos; `ThemeProvider` en `src/app/layout.tsx`; `AnimatedSection` / `StaggerContainer` / `StaggerItem`; alineación con `.cursor/rules/02-frontend.mdc`; Select sin `value=""` (detalle en `veta-forms-validation`). Ver `SKILL.md` en `.agents/skills/veta-frontend-components/`.
 
 ---
 
@@ -105,11 +105,9 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 | veta-testing                | Implementada | Alta      |
 | veta-multilanguage-views    | Implementada | Alta      |
 | veta-marketing-i18n-content | Implementada | Alta      |
-| veta-db-migrations          | Pendiente    | Media     |
+| veta-db-migrations          | Implementada | Media     |
 | veta-app-routing            | Implementada | Media     |
-| veta-frontend-components    | Pendiente    | Media     |
+| veta-frontend-components    | Implementada | Media     |
 | veta-security-owasp         | Implementada | Alta      |
 
-**Skills con `SKILL.md` en `.agents/skills/` (implementadas aquí):** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-app-routing`, `veta-security-owasp`.
-
-**Aún sin carpeta / skill en el repo:** `veta-db-migrations`, `veta-frontend-components` (pendientes hasta añadir su `SKILL.md`).
+**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`.
