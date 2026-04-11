@@ -165,7 +165,6 @@ const nextConfig: NextConfig = {
       { source: "/es/contacto", destination: "/contacto", permanent: true },
       { source: "/es/demo", destination: "/demo", permanent: true },
       { source: "/es/legal", destination: "/legal", permanent: true },
-      { source: "/es/pricing", destination: "/precios", permanent: true },
       { source: "/es/about", destination: "/sobre-veta", permanent: true },
       { source: "/es/contact", destination: "/contacto", permanent: true },
       {
