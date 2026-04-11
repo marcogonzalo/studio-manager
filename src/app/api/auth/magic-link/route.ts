@@ -5,6 +5,11 @@ import {
   getClientIp,
   RATE_LIMIT_MESSAGE,
 } from "@/lib/rate-limit";
+import { defaultLocale, type Locale } from "@/i18n/config";
+import {
+  isAppLocale,
+  resolveLocaleFromAcceptLanguage,
+} from "@/lib/resolve-locale-from-accept-language";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,7 +30,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, emailRedirectTo, data } = body;
+    const { email, emailRedirectTo, data, lang: bodyLang } = body;
+
+    let resolvedLang: Locale = defaultLocale;
+    if (isAppLocale(bodyLang)) {
+      resolvedLang = bodyLang;
+    } else {
+      resolvedLang = resolveLocaleFromAcceptLanguage(
+        request.headers.get("accept-language")
+      );
+    }
+
+    const mergedData =
+      typeof data === "object" && data !== null && !Array.isArray(data)
+        ? { ...data, lang: resolvedLang }
+        : { lang: resolvedLang };
 
     if (!email || typeof email !== "string") {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
@@ -46,7 +65,7 @@ export async function POST(request: NextRequest) {
       email,
       options: {
         emailRedirectTo,
-        ...(data && { data }),
+        data: mergedData,
       },
     });
 

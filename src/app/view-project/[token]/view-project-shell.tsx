@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { VetaLogo } from "@/components/veta-logo";
 import { ThemeToggleSimple } from "@/components/theme-toggle-simple";
 
@@ -13,13 +16,15 @@ export function ViewProjectShell({
   title?: string;
   children: React.ReactNode;
 }) {
+  const t = useTranslations("ViewProject");
+
   return (
     <div className="bg-background flex min-h-screen flex-col">
       <header className="border-border flex items-center justify-between border-b px-4 py-3">
         <Link
           href="/"
           className="flex items-center gap-2"
-          aria-label="Veta - Inicio"
+          aria-label={t("homeAria")}
         >
           <VetaLogo height={28} />
         </Link>
@@ -32,7 +37,7 @@ export function ViewProjectShell({
               href={`/view-project/${token}`}
               className="text-muted-foreground hover:text-foreground text-sm"
             >
-              ← Volver al proyecto
+              {t("backToProject")}
             </Link>
           </div>
         )}

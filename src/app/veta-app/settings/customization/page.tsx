@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +37,7 @@ import Link from "next/link";
 import {
   Coins,
   FileSpreadsheet,
+  Globe,
   Mail,
   Percent,
   SlidersHorizontal,
@@ -51,11 +54,15 @@ import type { Profile } from "@/types";
 import {
   publicProfileFormSchema,
   defaultsFormSchema,
+  languageFormSchema,
   type PublicProfileFormValues,
   type DefaultsFormValues,
+  type LanguageFormValues,
 } from "./schema";
 
 export default function CustomizationPage() {
+  const router = useRouter();
+  const tLang = useTranslations("SettingsLanguage");
   const { user, effectivePlan } = useAuth();
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const supabase = getSupabaseClient();
@@ -76,6 +83,11 @@ export default function CustomizationPage() {
     defaultValues: { default_tax_rate: "", default_currency: "EUR" },
   });
 
+  const formLanguage = useForm<LanguageFormValues>({
+    resolver: zodResolver(languageFormSchema),
+    defaultValues: { lang: "es", date_format: "DD/MM/YYYY" },
+  });
+
   const fetchProfile = async () => {
     if (!user?.id) return;
     try {
@@ -92,19 +104,29 @@ export default function CustomizationPage() {
       // Fetch account settings (public_email independiente del email de login)
       const { data: settingsData, error: settingsError } = await supabase
         .from("account_settings")
-        .select("default_tax_rate, default_currency, public_name, public_email")
+        .select(
+          "default_tax_rate, default_currency, public_name, public_email, lang, date_format"
+        )
         .eq("user_id", user.id)
         .single();
 
       if (settingsError && settingsError.code === "PGRST116") {
-        await supabase.from("account_settings").insert({
-          user_id: user.id,
-          default_tax_rate: null,
-          default_currency: "EUR",
-          public_name: null,
-          public_email: null,
-        });
-      } else if (settingsError) {
+        const { error: insertError } = await supabase
+          .from("account_settings")
+          .insert({
+            user_id: user.id,
+            default_tax_rate: null,
+            default_currency: "EUR",
+            public_name: null,
+            public_email: null,
+            lang: "es",
+            date_format: "DD/MM/YYYY",
+          });
+        if (insertError) throw insertError;
+        await fetchProfile();
+        return;
+      }
+      if (settingsError) {
         throw settingsError;
       }
 
@@ -118,6 +140,18 @@ export default function CustomizationPage() {
             ? settingsData.default_tax_rate.toString()
             : "",
         default_currency: settingsData?.default_currency ?? "EUR",
+      });
+      formLanguage.reset({
+        lang:
+          settingsData?.lang === "en" || settingsData?.lang === "es"
+            ? settingsData.lang
+            : "es",
+        date_format:
+          settingsData?.date_format === "YYYY-MM-DD" ||
+          settingsData?.date_format === "MM/DD/YYYY" ||
+          settingsData?.date_format === "DD/MM/YYYY"
+            ? settingsData.date_format
+            : "DD/MM/YYYY",
       });
     } catch (err) {
       reportError(err, "Error fetching personalization:");
@@ -179,6 +213,27 @@ export default function CustomizationPage() {
     }
   }
 
+  async function onSubmitLanguage(values: LanguageFormValues) {
+    if (!user?.id) return;
+    try {
+      const { error } = await supabase
+        .from("account_settings")
+        .update({
+          lang: values.lang,
+          date_format: values.date_format,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      toast.success("Idioma y formato guardados");
+      router.refresh();
+      fetchProfile();
+    } catch (e) {
+      reportError(e, "Error saving language settings:");
+      toast.error("Error al guardar: " + getErrorMessage(e));
+    }
+  }
+
   async function onSubmitDefaults(values: DefaultsFormValues) {
     if (!user?.id) return;
     try {
@@ -220,6 +275,84 @@ export default function CustomizationPage() {
       </div>
 
       <div className="flex flex-col gap-8">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Globe className="text-primary h-5 w-5" />
+              <CardTitle>{tLang("sectionTitle")}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Form {...formLanguage}>
+              <form
+                onSubmit={formLanguage.handleSubmit(onSubmitLanguage)}
+                className="space-y-6"
+              >
+                <FormField
+                  control={formLanguage.control}
+                  name="lang"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{tLang("langLabel")}</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={INPUT_CONFIG_STANDARD_CLASS}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="es">{tLang("langEs")}</SelectItem>
+                          <SelectItem value="en">{tLang("langEn")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={formLanguage.control}
+                  name="date_format"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{tLang("dateFormatLabel")}</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={INPUT_CONFIG_STANDARD_CLASS}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="YYYY-MM-DD">
+                            {tLang("dateFormatYMD")}
+                          </SelectItem>
+                          <SelectItem value="MM/DD/YYYY">
+                            {tLang("dateFormatMDY")}
+                          </SelectItem>
+                          <SelectItem value="DD/MM/YYYY">
+                            {tLang("dateFormatDMY")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit">Guardar</Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+
         <Card data-onboarding-target="public-profile">
           <CardHeader>
             <div className="flex items-center gap-2">

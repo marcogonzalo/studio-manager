@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrencyWithLang } from "@/lib/formatting";
+import type { Locale } from "@/i18n/config";
 import { Image as ImageIcon } from "lucide-react";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -28,10 +30,13 @@ interface ProductRow {
 export function ViewProjectProductsClient({
   products,
   currency,
+  locale,
 }: {
   products: ProductRow[];
   currency: string;
+  locale: Locale;
 }) {
+  const t = useTranslations("ViewProject");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState("");
@@ -63,7 +68,7 @@ export function ViewProjectProductsClient({
         {products.length === 0 ? (
           <Card>
             <CardContent className="text-muted-foreground py-12 text-center">
-              No hay productos visibles en este proyecto.
+              {t("noProductsVisible")}
             </CardContent>
           </Card>
         ) : (
@@ -89,15 +94,19 @@ export function ViewProjectProductsClient({
                           </p>
                           {p.internal_reference && (
                             <p className="text-muted-foreground mt-1 font-mono text-xs">
-                              Cód.: {p.internal_reference}
+                              {t("productRefLabel")} {p.internal_reference}
                             </p>
                           )}
                           <p className="text-foreground mt-4 text-sm font-semibold tabular-nums">
-                            Cantidad: {p.quantity}
+                            {t("productQuantityLabel")} {p.quantity}
                           </p>
                           <p className="text-foreground mt-2 text-sm font-semibold tabular-nums">
-                            Precio:{" "}
-                            {formatCurrency(Number(p.unit_price), currency)}
+                            {t("productPriceLabel")}{" "}
+                            {formatCurrencyWithLang(
+                              Number(p.unit_price),
+                              currency,
+                              locale
+                            )}
                           </p>
                         </div>
                         <button

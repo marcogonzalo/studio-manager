@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getDemoAccountMessage } from "@/lib/utils";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,7 +43,7 @@ import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { appPath } from "@/lib/app-paths";
-import { formatDate, getProjectStatusLabel } from "@/lib/utils";
+import { getProjectStatusLabel } from "@/lib/utils";
 
 import type { Project } from "@/types";
 
@@ -68,6 +69,7 @@ type StatusFilter = "all" | "active" | "completed" | "cancelled";
 type SortOption = "status" | "created_at" | "end_date";
 
 export default function ProjectsPage() {
+  const { formatDate } = useAppFormatting();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   useOnboardingHighlight("project", !loading);

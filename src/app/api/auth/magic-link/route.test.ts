@@ -95,6 +95,7 @@ describe("POST /api/auth/magic-link", () => {
       email: "test@example.com",
       options: {
         emailRedirectTo: "http://localhost/callback",
+        data: { lang: "es" },
       },
     });
   });
@@ -125,7 +126,31 @@ describe("POST /api/auth/magic-link", () => {
         data: {
           full_name: "Test User",
           signup_plan: "PRO",
+          lang: "es",
         },
+      },
+    });
+  });
+
+  it("uses body.lang when valid", async () => {
+    mockSignInWithOtp.mockResolvedValue({ error: null });
+
+    const request = new NextRequest("http://localhost/api/auth/magic-link", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "test@example.com",
+        emailRedirectTo: "http://localhost/callback",
+        lang: "en",
+      }),
+    });
+
+    await POST(request);
+
+    expect(mockSignInWithOtp).toHaveBeenCalledWith({
+      email: "test@example.com",
+      options: {
+        emailRedirectTo: "http://localhost/callback",
+        data: { lang: "en" },
       },
     });
   });

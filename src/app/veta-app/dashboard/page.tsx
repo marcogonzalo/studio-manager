@@ -30,11 +30,12 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { useOnboardingStatus } from "@/lib/use-onboarding-status";
 import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
-import { reportError, formatDate, getProjectStatusLabel } from "@/lib/utils";
+import { reportError, getProjectStatusLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Project, Profile } from "@/types";
 
@@ -100,6 +101,7 @@ function getFirstName(fullName: string | null | undefined): string {
 }
 
 export default function DashboardPage() {
+  const { formatDate } = useAppFormatting();
   const { user } = useAuth();
   const { steps: onboardingSteps, allComplete: onboardingComplete } =
     useOnboardingStatus();

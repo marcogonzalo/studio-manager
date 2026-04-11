@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -9,12 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  CURRENCIES,
-  formatDate,
-  getPhaseLabel,
-  getProjectStatusLabel,
-} from "@/lib/utils";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
+import { CURRENCIES, getProjectStatusLabel } from "@/lib/utils";
 import type { Project } from "@/types";
 import { Pencil } from "lucide-react";
 
@@ -34,6 +31,10 @@ export function ProjectDetailModal({
   onEdit,
   readOnly = false,
 }: ProjectDetailModalProps) {
+  const { formatDate } = useAppFormatting();
+  const tPhases = useTranslations("Phases");
+  const tVP = useTranslations("ViewProject");
+
   if (!project) return null;
 
   const handleEdit = () => {
@@ -85,7 +86,7 @@ export function ProjectDetailModal({
           <div>
             <dt className="text-muted-foreground text-sm">Fase del Proyecto</dt>
             <dd className="font-medium">
-              {project.phase ? getPhaseLabel(project.phase) : "—"}
+              {project.phase ? tPhases(project.phase) : "—"}
             </dd>
           </div>
           <div>
@@ -97,7 +98,7 @@ export function ProjectDetailModal({
           <div>
             <dt className="text-muted-foreground text-sm">Fecha Inicio</dt>
             <dd className="font-medium">
-              {startDate ? formatDate(startDate) : "No definida"}
+              {startDate ? formatDate(startDate) : tVP("dateNotSet")}
             </dd>
           </div>
           <div>
@@ -105,7 +106,7 @@ export function ProjectDetailModal({
               Fecha Estimada de Entrega
             </dt>
             <dd className="font-medium">
-              {endDate ? formatDate(endDate) : "No definida"}
+              {endDate ? formatDate(endDate) : tVP("dateNotSet")}
             </dd>
           </div>
           <div>

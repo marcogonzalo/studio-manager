@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/components/auth-provider";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,7 @@ import { Rocket, FolderKanban, Users, Truck, ShoppingBag } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { PlanConfig } from "@/types";
 import { appPath } from "@/lib/app-paths";
-import { reportError, formatDate } from "@/lib/utils";
+import { reportError } from "@/lib/utils";
 
 const PLAN_DISPLAY_NAMES: Record<string, string> = {
   BASE: "Base",
@@ -87,6 +88,7 @@ function formatBytes(bytes: number): string {
 }
 
 export default function SettingsPlanPage() {
+  const { formatDate } = useAppFormatting();
   const { user, effectivePlan, planLoading } = useAuth();
   const supabase = getSupabaseClient();
   const [history, setHistory] = useState<PlanAssignmentRow[]>([]);

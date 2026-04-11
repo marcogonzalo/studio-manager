@@ -75,6 +75,8 @@ async function main() {
       public_email: DEMO_EMAIL,
       default_currency: "EUR",
       default_tax_rate: 21,
+      lang: "en",
+      date_format: "MM/DD/YYYY",
       updated_at: new Date().toISOString(),
     },
     { onConflict: "user_id" }
