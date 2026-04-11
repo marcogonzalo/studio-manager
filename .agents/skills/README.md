@@ -6,7 +6,7 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
-## 1. veta-supabase-rls (pendiente)
+## 1. veta-supabase-rls (implementada)
 
 **Objetivo:** Uso correcto del cliente Supabase (cliente vs servidor), RLS y tipos.
 
@@ -16,7 +16,7 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
-## 2. veta-forms-validation (pendiente)
+## 2. veta-forms-validation (implementada)
 
 **Objetivo:** Formularios con react-hook-form + Zod y reglas de Shadcn (Select sin `value=""`).
 
@@ -26,7 +26,7 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
-## 3. veta-testing (pendiente)
+## 3. veta-testing (implementada)
 
 **Objetivo:** Tests con Vitest y React Testing Library, TDD y mocks del proyecto.
 
@@ -90,13 +90,15 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 | Skill                       | Estado       | Prioridad |
 | --------------------------- | ------------ | --------- |
-| veta-supabase-rls           | Pendiente    | Alta      |
-| veta-forms-validation       | Pendiente    | Alta      |
-| veta-testing                | Pendiente    | Alta      |
+| veta-supabase-rls           | Implementada | Alta      |
+| veta-forms-validation       | Implementada | Alta      |
+| veta-testing                | Implementada | Alta      |
 | veta-multilanguage-views    | Implementada | Alta      |
 | veta-marketing-i18n-content | Implementada | Alta      |
 | veta-db-migrations          | Pendiente    | Media     |
 | veta-app-routing            | Implementada | Media     |
 | veta-frontend-components    | Pendiente    | Media     |
 
-**Skills implementadas en este índice:** `veta-multilanguage-views`, `veta-marketing-i18n-content` y `veta-app-routing`. El resto figura como pendiente hasta que se formalice su SKILL.md y su uso en el flujo del equipo.
+**Skills con `SKILL.md` en `.agents/skills/` (implementadas aquí):** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-app-routing`.
+
+**Aún sin carpeta / skill en el repo:** `veta-db-migrations`, `veta-frontend-components` (pendientes hasta añadir su `SKILL.md`).
