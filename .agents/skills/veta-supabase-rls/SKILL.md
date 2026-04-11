@@ -20,7 +20,7 @@ description: Use Supabase client correctly in the Veta project (browser vs serve
 - Always check `error` from Supabase calls. Surface errors to the user (e.g. toast) when appropriate.
 
 ```ts
-const { data, error } = await supabase.from('table').select();
+const { data, error } = await supabase.from("table").select();
 if (error) {
   // handle: toast.error(error.message) or return error response
 }

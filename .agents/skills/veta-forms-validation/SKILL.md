@@ -22,13 +22,18 @@ description: Build and validate forms with react-hook-form and Zod in the Veta p
 - **Wrong:** `<SelectItem value="">No option</SelectItem>`.
 
 ```tsx
-<Select value={field.value ?? undefined} onValueChange={(v) => field.onChange(v ?? undefined)}>
+<Select
+  value={field.value ?? undefined}
+  onValueChange={(v) => field.onChange(v ?? undefined)}
+>
   <SelectTrigger>
     <SelectValue placeholder="Select option" />
   </SelectTrigger>
   <SelectContent>
     {options.map((opt) => (
-      <SelectItem key={opt.id} value={opt.id}>{opt.name}</SelectItem>
+      <SelectItem key={opt.id} value={opt.id}>
+        {opt.name}
+      </SelectItem>
     ))}
   </SelectContent>
 </Select>
