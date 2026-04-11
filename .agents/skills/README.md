@@ -1,8 +1,8 @@
 # Skills propuestas para el proyecto Veta
 
-Este documento describe las skills de Cursor recomendadas para mejorar el proceso de desarrollo del proyecto (Next.js 16, React 19, Supabase, Tailwind v4, Vitest).
+Este documento describe las skills del proyecto (estándar Agent Skills, cargadas por Cursor) para el desarrollo de Veta (Next.js 16, React 19, Supabase, Tailwind v4, Vitest).
 
-Las **reglas** (`.cursor/rules/`) ya cubren estándares generales; las **skills** añaden procedimientos y contexto que el agente aplica cuando detecta tareas concretas (por descripción y triggers).
+Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cursor/rules/`) cubren estándares generales; las **skills** añaden procedimientos y contexto que el agente aplica cuando detecta tareas concretas (por descripción y triggers).
 
 ---
 
@@ -88,15 +88,15 @@ Las **reglas** (`.cursor/rules/`) ya cubren estándares generales; las **skills*
 
 ## Resumen
 
-| Skill                      | Estado      | Prioridad |
-|----------------------------|-------------|-----------|
-| veta-supabase-rls          | Pendiente   | Alta      |
-| veta-forms-validation      | Pendiente   | Alta      |
-| veta-testing               | Pendiente   | Alta      |
-| veta-multilanguage-views   | Implementada| Alta      |
-| veta-marketing-i18n-content| Implementada| Alta      |
-| veta-db-migrations         | Pendiente   | Media     |
-| veta-app-routing           | Implementada| Media     |
-| veta-frontend-components   | Pendiente   | Media     |
+| Skill                       | Estado       | Prioridad |
+| --------------------------- | ------------ | --------- |
+| veta-supabase-rls           | Pendiente    | Alta      |
+| veta-forms-validation       | Pendiente    | Alta      |
+| veta-testing                | Pendiente    | Alta      |
+| veta-multilanguage-views    | Implementada | Alta      |
+| veta-marketing-i18n-content | Implementada | Alta      |
+| veta-db-migrations          | Pendiente    | Media     |
+| veta-app-routing            | Implementada | Media     |
+| veta-frontend-components    | Pendiente    | Media     |
 
 **Skills implementadas en este índice:** `veta-multilanguage-views`, `veta-marketing-i18n-content` y `veta-app-routing`. El resto figura como pendiente hasta que se formalice su SKILL.md y su uso en el flujo del equipo.
