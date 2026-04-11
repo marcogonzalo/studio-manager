@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/animated-section";
 
 const TESTIMONIAL_URLS = [
-  "https://instagram.com/fh.interiorismo",
+  "https://www.fhinteriorismo.com/",
   "https://emestilocreativo.com/",
 ] as const;
 
