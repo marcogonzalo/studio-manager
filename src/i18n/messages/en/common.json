@@ -4,6 +4,10 @@
     "openMenu": "Open menu",
     "backToHome": "Back to home",
     "menuTitle": "Navigation menu",
-    "signingIn": "Signing in…"
+    "signingIn": "Signing in…",
+    "themeMenuLabel": "Toggle color theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System"
   }
 }
