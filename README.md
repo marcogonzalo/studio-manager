@@ -197,7 +197,8 @@ interior-design-project/
 │   ├── migrations/        # Database migrations
 │   └── config.toml        # Supabase configuration
 ├── memory-bank/           # Project documentation
-├── .cursor/rules/         # Development rules and guidelines
+├── .agents/skills/        # Agent Skills (SKILL.md per skill)
+├── .cursor/rules/         # Cursor rules (.mdc)
 └── ...
 ```
 
