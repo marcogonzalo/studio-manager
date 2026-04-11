@@ -96,18 +96,29 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
+## 9. veta-marketing-strategy-seo-geo (implementada)
+
+**Objetivo:** Contenido de marketing con nivel estratégico para **SEO** y **GEO** (visibilidad en búsqueda clásica y en respuestas citadas / motores generativos), alineado a **buyer personas** en `memory-bank/buyerPersona.md` y a marca/keywords en `memory-bank/productContext.md`.
+
+**Cuándo usar:** Blog, ampliación de copy público, piezas de ayuda o producto “privadas” (app, emails), guías o revisiones de posicionamiento y mensaje por persona (Elena, Javi, Beatriz).
+
+**Contenido:** Intención de búsqueda, E-E-A-T, enlazado interno, estructura extractiva para IA; matriz de mensaje por persona; separación blog / marketing público / UI privada; checklist; remite a `veta-marketing-i18n-content` y `veta-multilanguage-views` para implementación ES+EN y SEO técnico. Ver `SKILL.md` en `.agents/skills/veta-marketing-strategy-seo-geo/`.
+
+---
+
 ## Resumen
 
-| Skill                       | Estado       | Prioridad |
-| --------------------------- | ------------ | --------- |
-| veta-supabase-rls           | Implementada | Alta      |
-| veta-forms-validation       | Implementada | Alta      |
-| veta-testing                | Implementada | Alta      |
-| veta-multilanguage-views    | Implementada | Alta      |
-| veta-marketing-i18n-content | Implementada | Alta      |
-| veta-db-migrations          | Implementada | Media     |
-| veta-app-routing            | Implementada | Media     |
-| veta-frontend-components    | Implementada | Media     |
-| veta-security-owasp         | Implementada | Alta      |
+| Skill                           | Estado       | Prioridad |
+| ------------------------------- | ------------ | --------- |
+| veta-supabase-rls               | Implementada | Alta      |
+| veta-forms-validation           | Implementada | Alta      |
+| veta-testing                    | Implementada | Alta      |
+| veta-multilanguage-views        | Implementada | Alta      |
+| veta-marketing-i18n-content     | Implementada | Alta      |
+| veta-db-migrations              | Implementada | Media     |
+| veta-app-routing                | Implementada | Media     |
+| veta-frontend-components        | Implementada | Media     |
+| veta-security-owasp             | Implementada | Alta      |
+| veta-marketing-strategy-seo-geo | Implementada | Media     |
 
-**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`.
+**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`, `veta-marketing-strategy-seo-geo`.
