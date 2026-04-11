@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const PRODUCTION_CSP =
   "https://*.supabase.co https://*.backblazeb2.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://fonts.gstatic.com https://va.vercel-scripts.com https://vercel.live";
@@ -99,9 +102,113 @@ const nextConfig: NextConfig = {
     ];
   },
 
+  // Explicit rewrites map localized URL slugs to the internal Next.js filesystem
+  // paths under src/app/[locale]/. The proxy/middleware (next-intl) runs first
+  // and handles these rewrites internally; these afterFiles entries act as a
+  // reliable fallback in case the middleware rewrite does not apply (e.g. dev
+  // mode Turbopack inconsistencies).
+  async rewrites() {
+    return [
+      // ES: map localized slugs to internal [locale] filesystem paths.
+      { source: "/precios", destination: "/es/pricing" },
+      { source: "/sobre-veta", destination: "/es/about" },
+      { source: "/contacto", destination: "/es/contact" },
+      { source: "/demo", destination: "/es/demo" },
+      { source: "/legal", destination: "/es/legal" },
+      { source: "/sign-in", destination: "/es/sign-in" },
+      { source: "/sign-up", destination: "/es/sign-up" },
+      { source: "/auth/complete", destination: "/es/auth/complete" },
+      {
+        source: "/plan-base-primer-proyecto-interiorismo",
+        destination: "/es/plan-base",
+      },
+      {
+        source: "/plan-pro-independientes-diseno-interior",
+        destination: "/es/plan-pro",
+      },
+      {
+        source: "/plan-studio-empresas-arquitectura-diseno-interior",
+        destination: "/es/plan-studio",
+      },
+      // EN: about-veta localized URL -> internal `/en/about` directory
+      { source: "/en/about-veta", destination: "/en/about" },
+      // EN: map plan landing slugs to internal plan directory names.
+      {
+        source: "/en/base-plan-first-interior-design-project",
+        destination: "/en/plan-base",
+      },
+      {
+        source: "/en/pro-plan-for-independent-interior-designers",
+        destination: "/en/plan-pro",
+      },
+      {
+        source: "/en/studio-plan-for-architecture-and-interior-design-firms",
+        destination: "/en/plan-studio",
+      },
+    ];
+  },
+
   // Redirect legacy Spanish view-project routes to English
   async redirects() {
     return [
+      // i18n: remove legacy "/es" prefix duplicates (ES default without prefix)
+      { source: "/es", destination: "/", permanent: true },
+      // next-intl "as-needed" locale switches may generate localized-but-redundant
+      // ES slugs like "/es/precios". Redirect them to the canonical default-locale
+      // paths without the "/es" prefix.
+      { source: "/es/precios", destination: "/precios", permanent: true },
+      {
+        source: "/es/sobre-veta",
+        destination: "/sobre-veta",
+        permanent: true,
+      },
+      { source: "/es/contacto", destination: "/contacto", permanent: true },
+      { source: "/es/demo", destination: "/demo", permanent: true },
+      { source: "/es/legal", destination: "/legal", permanent: true },
+      { source: "/es/about", destination: "/sobre-veta", permanent: true },
+      { source: "/es/contact", destination: "/contacto", permanent: true },
+      {
+        source: "/es/plan-base-primer-proyecto-interiorismo",
+        destination: "/plan-base-primer-proyecto-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/plan-pro-independientes-diseno-interior",
+        destination: "/plan-pro-independientes-diseno-interior",
+        permanent: true,
+      },
+      {
+        source: "/es/plan-studio-empresas-arquitectura-diseno-interior",
+        destination: "/plan-studio-empresas-arquitectura-diseno-interior",
+        permanent: true,
+      },
+
+      // i18n: legacy no-locale Spanish slugs (keep ES as canonical default)
+      { source: "/pricing", destination: "/precios", permanent: true },
+      { source: "/about", destination: "/sobre-veta", permanent: true },
+      { source: "/contact", destination: "/contacto", permanent: true },
+
+      // i18n: EN about canonicalization
+      { source: "/en/about", destination: "/en/about-veta", permanent: true },
+
+      // i18n: legacy English plan slugs were Spanish; redirect to translated slugs
+      {
+        source: "/en/plan-base-primer-proyecto-interiorismo",
+        destination: "/en/base-plan-first-interior-design-project",
+        permanent: true,
+      },
+      {
+        source: "/en/plan-pro-independientes-diseno-interior",
+        destination: "/en/pro-plan-for-independent-interior-designers",
+        permanent: true,
+      },
+      {
+        source: "/en/plan-studio-empresas-arquitectura-diseno-interior",
+        destination:
+          "/en/studio-plan-for-architecture-and-interior-design-firms",
+        permanent: true,
+      },
+
       {
         source: "/view-project/:token/productos",
         destination: "/view-project/:token/products",
@@ -161,4 +268,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

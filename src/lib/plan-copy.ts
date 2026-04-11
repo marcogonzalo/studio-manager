@@ -1,54 +1,92 @@
 /**
  * Mapeo plan → copy comercial.
  * Fuente única para /pricing y /settings/plan (change). Ver docs/plan-copy-mapping.md.
+ * Devuelve claves de traducción (PlanCopyItem) para que el caller las reemplace con t().
  */
 
 import type { PlanConfig, PlanFeatureModality } from "@/types";
 
-// --- Consumibles: copy por valor ---
+/** Ítem que debe traducirse con el namespace PlanCopy: clave sola o clave + params para interpolación */
+export type PlanCopyItem =
+  | string
+  | { key: string; params?: Record<string, string | number> };
 
-function formatProjectsLimit(n: number): string | null {
-  if (n === 0) return null;
-  if (n === 1) return "1 proyecto activo";
-  if (n === -1) return "Proyectos ilimitados";
-  return `${n} proyectos activos`;
+/**
+ * Traduce un PlanCopyItem usando la función t del namespace PlanCopy.
+ * @example translatePlanCopyItem("projectsOne", t) => t("projectsOne")
+ * @example translatePlanCopyItem({ key: "projectsCount", params: { count: 5 } }, t) => t("projectsCount", { count: 5 })
+ */
+export function translatePlanCopyItem(
+  item: PlanCopyItem,
+  t: (key: string, params?: Record<string, string | number>) => string
+): string {
+  if (typeof item === "string") return t(item);
+  return t(item.key, item.params);
 }
 
-function formatClientsLimit(n: number): string | null {
-  if (n === 0) return null;
-  if (n === -1) return "Clientes ilimitados";
-  return `${n} clientes`;
+/**
+ * Crea una función t para traducir PlanCopyItem a partir de un objeto de mensajes (p. ej. namespace PlanCopy).
+ * Útil en entornos sin next-intl (p. ej. veta-app) usando mensajes por defecto.
+ */
+export function createPlanCopyT(
+  messages: Record<string, string>
+): (key: string, params?: Record<string, string | number>) => string {
+  return (key: string, params?: Record<string, string | number>) => {
+    let msg = messages[key];
+    if (msg == null) return key;
+    if (params) {
+      for (const [k, v] of Object.entries(params))
+        msg = msg.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+    }
+    return msg;
+  };
 }
 
-function formatSuppliersLimit(n: number): string | null {
+// --- Consumibles: claves de traducción (namespace PlanCopy) ---
+
+function formatProjectsLimit(n: number): PlanCopyItem | null {
   if (n === 0) return null;
-  if (n === -1) return "Proveedores ilimitados";
-  return `${n} proveedores`;
+  if (n === 1) return "projectsOne";
+  if (n === -1) return "projectsUnlimited";
+  return { key: "projectsCount", params: { count: n } };
 }
 
-function formatCatalogProductsLimit(n: number): string | null {
+function formatClientsLimit(n: number): PlanCopyItem | null {
   if (n === 0) return null;
-  if (n === -1) return "Productos ilimitados";
-  return `${n} productos en catálogo`;
+  if (n === -1) return "clientsUnlimited";
+  return { key: "clientsCount", params: { count: n } };
 }
 
-function formatStorageLimitMb(n: number): string | null {
+function formatSuppliersLimit(n: number): PlanCopyItem | null {
   if (n === 0) return null;
-  if (n === -1) return "Almacenamiento ilimitado";
-  if (n === 500) return "500 MB de almacenamiento";
-  if (n === 10240) return "10 GB de almacenamiento";
-  if (n === 102400) return "100 GB de almacenamiento";
-  if (n >= 1024) return `${(n / 1024).toFixed(0)} GB de almacenamiento`;
-  return `${n} MB de almacenamiento`;
+  if (n === -1) return "suppliersUnlimited";
+  return { key: "suppliersCount", params: { count: n } };
 }
 
-// --- Modalidades: copy por columna y nivel (none → no se emite) ---
+function formatCatalogProductsLimit(n: number): PlanCopyItem | null {
+  if (n === 0) return null;
+  if (n === -1) return "catalogUnlimited";
+  return { key: "catalogCount", params: { count: n } };
+}
 
-type ModalityCopy = Partial<
+function formatStorageLimitMb(n: number): PlanCopyItem | null {
+  if (n === 0) return null;
+  if (n === -1) return "storageUnlimited";
+  if (n === 500) return "storage500";
+  if (n === 10240) return "storage10Gb";
+  if (n === 102400) return "storage100Gb";
+  if (n >= 1024)
+    return { key: "storageGb", params: { gb: (n / 1024).toFixed(0) } };
+  return { key: "storageMb", params: { mb: n } };
+}
+
+// --- Modalidades: claves de traducción (namespace PlanCopy) ---
+
+type ModalityCopyKey = Partial<
   Record<Exclude<PlanFeatureModality, "none">, string>
 >;
 
-const MODALITY_COPY: Record<
+const MODALITY_COPY_KEYS: Record<
   keyof Pick<
     PlanConfig,
     | "pdf_export_mode"
@@ -61,56 +99,56 @@ const MODALITY_COPY: Record<
     | "summary"
     | "support_level"
   >,
-  ModalityCopy
+  ModalityCopyKey
 > = {
   pdf_export_mode: {
-    basic: "Exportación de presupuesto en PDF",
-    plus: "Presupuesto personalizado",
-    full: "Presupuesto personalizable con marca propia (white label)",
+    basic: "pdfExportBasic",
+    plus: "pdfExportPlus",
+    full: "pdfExportFull",
   },
   multi_currency_per_project: {
-    basic: "Única moneda para toda la cuenta",
-    plus: "Única moneda e impuesto en toda la cuenta",
-    full: "Moneda e impuesto por proyecto",
+    basic: "multiCurrencyBasic",
+    plus: "multiCurrencyPlus",
+    full: "multiCurrencyFull",
   },
   purchase_orders: {
-    basic: "Pedidos de compra",
-    plus: "Pedidos de compra",
-    full: "Pedidos de compra",
+    basic: "purchaseOrdersBasic",
+    plus: "purchaseOrdersPlus",
+    full: "purchaseOrdersFull",
   },
   costs_management: {
-    basic: "Control de costes",
-    plus: "Control de costes y márgenes",
-    full: "Control de costes y márgenes",
+    basic: "costsBasic",
+    plus: "costsPlus",
+    full: "costsFull",
   },
   payments_management: {
-    basic: "Control de pagos",
-    plus: "Control de pagos",
-    full: "Control de pagos",
+    basic: "paymentsBasic",
+    plus: "paymentsPlus",
+    full: "paymentsFull",
   },
   documents: {
-    basic: "Subida de renders y documentos",
-    plus: "Subida de renders y documentos",
-    full: "Subida de renders y documentos",
+    basic: "documentsBasic",
+    plus: "documentsPlus",
+    full: "documentsFull",
   },
   notes: {
-    basic: "Notas de proyecto",
-    plus: "Notas de proyecto",
-    full: "Notas de proyecto",
+    basic: "notesBasic",
+    plus: "notesPlus",
+    full: "notesFull",
   },
   summary: {
-    basic: "Resumen de estado de proyecto",
-    plus: "Resumen de estado de proyecto",
-    full: "Resumen de estado de proyecto",
+    basic: "summaryBasic",
+    plus: "summaryPlus",
+    full: "summaryFull",
   },
   support_level: {
-    basic: "Soporte por email",
-    plus: "Soporte por email",
-    full: "Soporte prioritario",
+    basic: "supportBasic",
+    plus: "supportPlus",
+    full: "supportFull",
   },
 };
 
-const MODALITY_ORDER: (keyof typeof MODALITY_COPY)[] = [
+const MODALITY_ORDER: (keyof typeof MODALITY_COPY_KEYS)[] = [
   "pdf_export_mode",
   "costs_management",
   "payments_management",
@@ -137,7 +175,7 @@ const CONSUMABLE_KEYS = [
  */
 export type PlanFeatureKey =
   | (typeof CONSUMABLE_KEYS)[number]
-  | keyof typeof MODALITY_COPY;
+  | keyof typeof MODALITY_COPY_KEYS;
 
 /** Subconjunto típico para vista compacta: proyectos, almacenamiento, presupuesto, soporte */
 export const COMPACT_FEATURE_KEYS: PlanFeatureKey[] = [
@@ -163,13 +201,13 @@ export const ALL_FEATURE_KEYS: PlanFeatureKey[] = [
   ...MODALITY_ORDER,
 ];
 
-function copyForModality(
-  key: keyof typeof MODALITY_COPY,
+function copyKeyForModality(
+  key: keyof typeof MODALITY_COPY_KEYS,
   modality: PlanFeatureModality | undefined
 ): string | null {
   if (!modality || modality === "none") return null;
-  const copy = MODALITY_COPY[key][modality];
-  return copy ?? null;
+  const copyKey = MODALITY_COPY_KEYS[key][modality];
+  return copyKey ?? null;
 }
 
 export interface GetCommercialFeaturesOptions {
@@ -181,26 +219,24 @@ export interface GetCommercialFeaturesOptions {
 }
 
 /**
- * Genera el array de textos comerciales para un plan a partir de su config.
+ * Genera el array de ítems de traducción (PlanCopyItem) para un plan a partir de su config.
  * Orden: consumibles (proyectos, clientes, proveedores, productos, almacenamiento), luego modalidades.
+ * Traducir cada ítem con translatePlanCopyItem(item, t) usando getTranslations("PlanCopy") o useTranslations("PlanCopy").
  *
  * Con `options.include` puedes restringir qué features se muestran para hacer la vista más compacta.
- * @example
- * getCommercialFeatures(config) // todas
- * getCommercialFeatures(config, { include: COMPACT_FEATURE_KEYS }) // solo proyectos, almacenamiento, presupuesto, soporte
  */
 export function getCommercialFeatures(
   config: PlanConfig,
   options?: GetCommercialFeaturesOptions
-): string[] {
+): PlanCopyItem[] {
   const includeSet =
     options?.include == null ? null : new Set<PlanFeatureKey>(options.include);
 
-  const out: string[] = [];
+  const out: PlanCopyItem[] = [];
 
   const consumibleResults: {
     key: (typeof CONSUMABLE_KEYS)[number];
-    copy: string | null;
+    copy: PlanCopyItem | null;
   }[] = [
     {
       key: "projects_limit",
@@ -232,8 +268,8 @@ export function getCommercialFeatures(
 
   for (const key of MODALITY_ORDER) {
     if (includeSet !== null && !includeSet.has(key)) continue;
-    const copy = copyForModality(key, config[key]);
-    if (copy) out.push(copy);
+    const copyKey = copyKeyForModality(key, config[key]);
+    if (copyKey) out.push(copyKey);
   }
 
   return out;

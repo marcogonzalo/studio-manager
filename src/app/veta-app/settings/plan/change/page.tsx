@@ -20,9 +20,12 @@ import {
 } from "@/components/ui/collapsible";
 import {
   COMPACT_FEATURE_KEYS,
+  createPlanCopyT,
   getCommercialFeatures,
   getPlanConfigForDisplay,
+  translatePlanCopyItem,
 } from "@/lib/plan-copy";
+import esMarketingMessages from "@/i18n/messages/es/marketing.json";
 import { getSupabaseClient } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import { getErrorMessage, reportError } from "@/lib/utils";
@@ -47,6 +50,10 @@ interface PlanOption {
   popular: boolean;
 }
 
+const tPlanCopy = createPlanCopyT(
+  esMarketingMessages.PlanCopy as Record<string, string>
+);
+
 const PLANS: PlanOption[] = [
   {
     name: "Pro",
@@ -57,7 +64,7 @@ const PLANS: PlanOption[] = [
     currency: PRICING_CURRENCY,
     features: getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
       include: COMPACT_FEATURE_KEYS,
-    }),
+    }).map((item) => translatePlanCopyItem(item, tPlanCopy)),
     popular: true,
   },
   {
@@ -69,7 +76,7 @@ const PLANS: PlanOption[] = [
     currency: PRICING_CURRENCY,
     features: getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
       include: COMPACT_FEATURE_KEYS,
-    }),
+    }).map((item) => translatePlanCopyItem(item, tPlanCopy)),
     popular: false,
   },
 ];

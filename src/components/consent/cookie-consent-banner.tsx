@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -29,6 +30,7 @@ function saveConsent(state: ConsentState): void {
 }
 
 export function CookieConsentBanner() {
+  const t = useTranslations("CookieConsent");
   const [visible, setVisible] = React.useState(false);
   const [customOpen, setCustomOpen] = React.useState(false);
   const [customState, setCustomState] =
@@ -77,17 +79,14 @@ export function CookieConsentBanner() {
     <>
       <div
         role="dialog"
-        aria-label="Preferencias de cookies"
+        aria-label={t("ariaLabel")}
         className={cn(
           "border-border bg-card text-card-foreground fixed right-0 bottom-0 left-0 z-50 border-t shadow-lg",
           "animate-in slide-in-from-bottom duration-300"
         )}
       >
         <div className="container mx-auto max-w-4xl px-4 py-4 text-right">
-          <p className="text-muted-foreground mb-4 text-sm">
-            Usamos cookies para analítica, publicidad y mejorar la experiencia.
-            Puedes aceptar todas, rechazarlas o personalizar.
-          </p>
+          <p className="text-muted-foreground mb-4 text-sm">{t("intro")}</p>
           <div className="flex flex-col flex-wrap items-stretch justify-end gap-3 sm:flex-row sm:items-center">
             <Button
               onClick={() => setCustomOpen(true)}
@@ -95,7 +94,7 @@ export function CookieConsentBanner() {
               size="sm"
               className="h-10 w-full sm:h-8 sm:w-auto"
             >
-              Personalizar
+              {t("customize")}
             </Button>
             <Button
               onClick={handleRejectAll}
@@ -103,14 +102,14 @@ export function CookieConsentBanner() {
               size="sm"
               className="h-10 w-full sm:h-8 sm:w-auto"
             >
-              Rechazar todo
+              {t("rejectAll")}
             </Button>
             <Button
               onClick={handleAcceptAll}
               size="sm"
               className="h-10 w-full sm:h-8 sm:w-auto"
             >
-              Aceptar todo
+              {t("acceptAll")}
             </Button>
           </div>
         </div>
@@ -120,22 +119,19 @@ export function CookieConsentBanner() {
         <SheetContent
           side="bottom"
           className="rounded-t-2xl"
-          closeLabel="Cerrar"
+          closeLabel={t("close")}
         >
           <SheetHeader>
-            <SheetTitle>Preferencias de cookies</SheetTitle>
-            <SheetDescription>
-              Elige qué categorías de cookies quieres permitir. Las necesarias
-              son siempre activas.
-            </SheetDescription>
+            <SheetTitle>{t("title")}</SheetTitle>
+            <SheetDescription>{t("description")}</SheetDescription>
           </SheetHeader>
           <div className="space-y-4 py-6">
             <label className="border-border bg-muted/30 flex items-center gap-3 rounded-lg border px-4 py-3">
               <Checkbox checked disabled />
               <div>
-                <span className="font-medium">Necesarias</span>
+                <span className="font-medium">{t("necessary")}</span>
                 <p className="text-muted-foreground text-xs">
-                  Sesión, seguridad y funcionamiento básico. Siempre activas.
+                  {t("necessaryDesc")}
                 </p>
               </div>
             </label>
@@ -147,10 +143,9 @@ export function CookieConsentBanner() {
                 }
               />
               <div>
-                <span className="font-medium">Analítica</span>
+                <span className="font-medium">{t("analytics")}</span>
                 <p className="text-muted-foreground text-xs">
-                  Nos ayudan a entender cómo usas la web (p. ej. visitas,
-                  páginas).
+                  {t("analyticsDesc")}
                 </p>
               </div>
             </label>
@@ -162,9 +157,9 @@ export function CookieConsentBanner() {
                 }
               />
               <div>
-                <span className="font-medium">Marketing</span>
+                <span className="font-medium">{t("marketing")}</span>
                 <p className="text-muted-foreground text-xs">
-                  Publicidad y medición de campañas (Google Ads, etc.).
+                  {t("marketingDesc")}
                 </p>
               </div>
             </label>
@@ -176,18 +171,20 @@ export function CookieConsentBanner() {
                 }
               />
               <div>
-                <span className="font-medium">Personalización</span>
+                <span className="font-medium">{t("personalization")}</span>
                 <p className="text-muted-foreground text-xs">
-                  Contenido y recomendaciones adaptados a ti.
+                  {t("personalizationDesc")}
                 </p>
               </div>
             </label>
           </div>
           <SheetFooter>
             <Button variant="outline" onClick={() => setCustomOpen(false)}>
-              Cancelar
+              {t("cancel")}
             </Button>
-            <Button onClick={handleCustomizeSave}>Guardar preferencias</Button>
+            <Button onClick={handleCustomizeSave}>
+              {t("savePreferences")}
+            </Button>
           </SheetFooter>
         </SheetContent>
       </Sheet>
