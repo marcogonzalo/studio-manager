@@ -41,8 +41,8 @@ description: >-
 
 4. Sitemap and robots
    - Update `src/app/sitemap.ts` to include only indexable routes for both locales:
-     - ES: `/`, `/precios`, `/nosotros`, `/contacto`, `/demo`, `/legal`, `/plan-...`
-     - EN: `/en`, `/en/pricing`, `/en/about`, `/en/contact`, `/en/demo`, `/en/legal`, `/en/plan-...`
+     - ES: `/`, `/precios`, `/sobre-veta`, `/contacto`, `/demo`, `/legal`, `/plan-...`
+     - EN: `/en`, `/en/pricing`, `/en/about-veta`, `/en/contact`, `/en/demo`, `/en/legal`, `/en/plan-...`
    - Dev-only route: `src/app/[locale]/(marketing)/test-error/layout.tsx` should export:
      - `robots: { index: false, follow: false }`
    - Ensure `test-error` is excluded from `sitemap.ts`.
@@ -62,7 +62,7 @@ description: >-
 
 - `GET /` (ES home) -> 200
 - `GET /precios`, `/nosotros`, `/contacto`, `/demo`, `/legal` -> 200
-- `GET /en`, `/en/pricing`, `/en/about`, `/en/contact`, `/en/demo`, `/en/legal` -> 200
+- `GET /en`, `/en/pricing`, `/en/about-veta`, `/en/contact`, `/en/demo`, `/en/legal` -> 200
 - Plan pages:
   - `GET /plan-base-primer-proyecto-interiorismo` -> 200
   - `GET /plan-pro-independientes-diseno-interior` -> 200
