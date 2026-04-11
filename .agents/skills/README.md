@@ -86,6 +86,16 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
+## 8. veta-security-owasp (implementada)
+
+**Objetivo:** Revisar e implementar controles alineados con OWASP Top 10: validación e inyección en formularios y API, rutas privadas y `PUBLIC_ROUTES`, sesión en Route Handlers, RLS/IDOR y SSRF.
+
+**Cuándo usar:** Cambios en formularios, Server Actions, `src/app/api/**`, nuevas rutas, auditorías de seguridad o peticiones explícitas de hardening / OWASP.
+
+**Contenido:** Checklist formularios + Zod en servidor; API con `getUser()` y 401 (middleware no bloquea `/api/*` sin sesión); vistas bajo `veta-app` y middleware; tabla OWASP ↔ prácticas Veta; enlaces a `veta-forms-validation`, `veta-supabase-rls`, `veta-app-routing` y `.cursor/rules/01-security.mdc`.
+
+---
+
 ## Resumen
 
 | Skill                       | Estado       | Prioridad |
@@ -98,7 +108,8 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 | veta-db-migrations          | Pendiente    | Media     |
 | veta-app-routing            | Implementada | Media     |
 | veta-frontend-components    | Pendiente    | Media     |
+| veta-security-owasp         | Implementada | Alta      |
 
-**Skills con `SKILL.md` en `.agents/skills/` (implementadas aquí):** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-app-routing`.
+**Skills con `SKILL.md` en `.agents/skills/` (implementadas aquí):** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-app-routing`, `veta-security-owasp`.
 
 **Aún sin carpeta / skill en el repo:** `veta-db-migrations`, `veta-frontend-components` (pendientes hasta añadir su `SKILL.md`).
