@@ -8,11 +8,26 @@ export default getRequestConfig(async ({ requestLocale }) => {
     locale = routing.defaultLocale;
   }
 
-  const [common, marketing, auth, app] = await Promise.all([
+  const [
+    common,
+    marketing,
+    auth,
+    appCommon,
+    appSettings,
+    appOnboarding,
+    appPages,
+    appViewProject,
+    appDialogs,
+  ] = await Promise.all([
     import(`./messages/${locale}/common.json`),
     import(`./messages/${locale}/marketing.json`),
     import(`./messages/${locale}/auth.json`),
-    import(`./messages/${locale}/app.json`),
+    import(`./messages/${locale}/app-common.json`),
+    import(`./messages/${locale}/app-settings.json`),
+    import(`./messages/${locale}/app-onboarding.json`),
+    import(`./messages/${locale}/app-pages.json`),
+    import(`./messages/${locale}/app-view-project.json`),
+    import(`./messages/${locale}/app-dialogs.json`),
   ]);
 
   return {
@@ -21,7 +36,12 @@ export default getRequestConfig(async ({ requestLocale }) => {
       ...common.default,
       ...marketing.default,
       ...auth.default,
-      ...app.default,
+      ...appCommon.default,
+      ...appSettings.default,
+      ...appOnboarding.default,
+      ...appPages.default,
+      ...appViewProject.default,
+      ...appDialogs.default,
     },
   };
 });

@@ -1,0 +1,50 @@
+{
+  "AppNav": {
+    "dashboard": "Dashboard",
+    "clients": "Clients",
+    "projects": "Projects",
+    "catalog": "Catalog",
+    "suppliers": "Suppliers",
+    "back": "Back",
+    "account": "Account",
+    "customization": "Customization",
+    "yourPlan": "Your plan",
+    "expandSidebar": "Expand sidebar",
+    "collapseSidebar": "Collapse sidebar",
+    "upgradePlanTooltip": "Upgrade plan",
+    "upgradePlanCta": "Upgrade your plan",
+    "theme": "Theme",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
+    "switchToLight": "Switch to light mode",
+    "switchToDark": "Switch to dark mode",
+    "settings": "Settings",
+    "reportBug": "Report a bug",
+    "signOut": "Sign out",
+    "accountMenuAria": "Account and settings"
+  },
+  "AppLayout": {
+    "skipToContent": "Skip to content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "navMenuTitle": "Navigation menu",
+    "navMenuDescription": "Main application navigation",
+    "breadcrumbAria": "Breadcrumb"
+  },
+  "AppSettingsBreadcrumb": {
+    "settings": "Settings",
+    "account": "Account",
+    "yourPlan": "Your plan",
+    "changePlan": "Change plan",
+    "customization": "Customization"
+  },
+  "Phases": {
+    "unassigned": "Unassigned",
+    "diagnosis": "Diagnosis",
+    "design": "Design",
+    "executive": "Executive project",
+    "budget": "Budget",
+    "construction": "Construction",
+    "delivery": "Delivery"
+  }
+}

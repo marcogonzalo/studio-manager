@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +52,7 @@ export function SupplierDialog({
   supplier,
   onSuccess,
 }: SupplierDialogProps) {
+  const t = useTranslations("DialogSupplier");
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -81,7 +83,7 @@ export function SupplierDialog({
       const data = { ...values, user_id: user?.id };
       if (supplier) {
         await supabase.from("suppliers").update(data).eq("id", supplier.id);
-        toast.success("Proveedor actualizado");
+        toast.success(t("toastUpdated"));
         onSuccess();
       } else {
         const { data: newSupplier, error } = await supabase
@@ -91,7 +93,7 @@ export function SupplierDialog({
           .single();
 
         if (error) throw error;
-        toast.success("Proveedor creado");
+        toast.success(t("toastCreated"));
         onSuccess(newSupplier.id);
       }
     } catch (error: unknown) {
@@ -102,7 +104,7 @@ export function SupplierDialog({
         });
         return;
       }
-      toast.error("Error al guardar");
+      toast.error(t("toastSaveError"));
     }
   }
 
@@ -110,7 +112,7 @@ export function SupplierDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{supplier ? "Editar" : "Nuevo"} Proveedor</DialogTitle>
+          <DialogTitle>{supplier ? t("titleEdit") : t("titleNew")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -119,7 +121,7 @@ export function SupplierDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Empresa</FormLabel>
+                  <FormLabel required>{t("companyLabel")}</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -132,7 +134,7 @@ export function SupplierDialog({
               name="contact_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre Contacto</FormLabel>
+                  <FormLabel>{t("contactNameLabel")}</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -146,7 +148,7 @@ export function SupplierDialog({
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t("emailLabel")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -159,7 +161,7 @@ export function SupplierDialog({
                 name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Teléfono</FormLabel>
+                    <FormLabel>{t("phoneLabel")}</FormLabel>
                     <FormControl>
                       <PhoneInput
                         value={field.value}
@@ -177,16 +179,16 @@ export function SupplierDialog({
               name="website"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Sitio Web</FormLabel>
+                  <FormLabel>{t("websiteLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://..." {...field} />
+                    <Input placeholder={t("websitePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="submit">Guardar</Button>
+              <Button type="submit">{t("save")}</Button>
             </DialogFooter>
           </form>
         </Form>

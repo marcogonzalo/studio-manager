@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Check, X, ArrowRight, ChevronDown } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,7 @@ const PLANS: PlanOption[] = [
 ];
 
 export default function ChangePlanPage() {
+  const t = useTranslations("SettingsPlanChange");
   const router = useRouter();
   const { effectivePlan, refetchEffectivePlan } = useAuth();
   const supabase = getSupabaseClient();
@@ -99,11 +101,11 @@ export default function ChangePlanPage() {
       });
       if (error) throw error;
       await refetchEffectivePlan();
-      toast.success("Plan activado correctamente");
+      toast.success(t("toastActivated"));
       router.push(appPath("/settings/plan"));
     } catch (err) {
       reportError(err, "assign_plan:");
-      toast.error("Error al activar el plan: " + getErrorMessage(err));
+      toast.error(`${t("toastActivateError")}: ${getErrorMessage(err)}`);
     } finally {
       setSubmittingPlan(null);
     }
@@ -113,11 +115,10 @@ export default function ChangePlanPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-foreground flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight">
-          Modifica tu plan
+          {t("title")}
         </h1>
         <p className="text-muted-foreground mt-1">
-          Selecciona el plan que se ajusta a tus necesidades. Los cambios se
-          aplican al instante.
+          {t("description")}
         </p>
       </div>
 
@@ -128,7 +129,7 @@ export default function ChangePlanPage() {
             !isAnnual ? "text-foreground" : "text-muted-foreground"
           }`}
         >
-          Mensual
+          {t("monthly")}
         </span>
         <label className="cursor-pointer">
           <input
@@ -136,7 +137,7 @@ export default function ChangePlanPage() {
             checked={isAnnual}
             onChange={(e) => setIsAnnual(e.target.checked)}
             className="sr-only"
-            aria-label="Cambiar a plan anual"
+            aria-label={t("switchAria")}
           />
           <span className="bg-background hover:bg-muted/80 border-primary/30 focus-within:ring-ring relative inline-flex h-10 w-20 shrink-0 cursor-pointer items-center rounded-full border-2 shadow-inner transition-colors focus-within:ring-2 focus-within:ring-offset-2 focus-within:outline-none">
             <span
@@ -156,7 +157,7 @@ export default function ChangePlanPage() {
               isAnnual ? "text-primary-foreground" : "text-muted-foreground"
             }`}
           >
-            Anual
+            {t("annual")}
           </span>
           <span
             className={`rounded-full px-2 py-0.5 text-xs font-medium ${
@@ -165,7 +166,7 @@ export default function ChangePlanPage() {
                 : "bg-primary/10 text-primary"
             }`}
           >
-            Ahorro {ANNUAL_SAVINGS_PERCENT}% (2 meses)
+            {t("annualSavings", { percent: ANNUAL_SAVINGS_PERCENT })}
           </span>
         </div>
       </div>
@@ -181,7 +182,7 @@ export default function ChangePlanPage() {
           const displayPriceDecimals = showAnnual ? 2 : 0;
           const annualPriceText =
             showAnnual && plan.annualPrice != null
-              ? `${formatCurrency(Number(plan.annualPrice), currency, { maxFractionDigits: 0 })}/año`
+              ? `${formatCurrency(Number(plan.annualPrice), currency, { maxFractionDigits: 0 })}/${t("yearShort")}`
               : null;
           const isSubmitting = submittingPlan === plan.planCode;
           const isCurrentPlan = effectivePlan?.plan_code === plan.planCode;
@@ -196,14 +197,14 @@ export default function ChangePlanPage() {
               {isCurrentPlan && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-semibold shadow-lg">
-                    Plan actual
+                    {t("currentPlan")}
                   </span>
                 </div>
               )}
               <CardHeader className="pb-2 text-center">
                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
                 <CardDescription className="mt-1">
-                  Oferta por tiempo limitado
+                  {t("limitedOffer")}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col">
@@ -219,13 +220,13 @@ export default function ChangePlanPage() {
                     </span>
                     {showAnnual && (
                       <span className="text-muted-foreground text-lg font-medium">
-                        /mes
+                        /{t("monthShort")}
                       </span>
                     )}
                   </div>
                   {annualPriceText && (
                     <p className="text-muted-foreground mt-1 text-sm">
-                      {annualPriceText} - Ahorra 2 meses
+                      {t("annualPriceInfo", { annualPrice: annualPriceText })}
                     </p>
                   )}
                 </div>
@@ -236,10 +237,10 @@ export default function ChangePlanPage() {
                   onClick={() => handleAcquire(plan.planCode)}
                 >
                   {isSubmitting ? (
-                    "Activando…"
+                    t("activating")
                   ) : (
                     <>
-                      Adquirir plan
+                      {t("acquirePlan")}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
@@ -259,7 +260,7 @@ export default function ChangePlanPage() {
                       type="button"
                       className="text-muted-foreground hover:text-foreground flex w-full items-center justify-center gap-2 rounded-md py-2 text-sm font-medium transition-colors"
                     >
-                      Más detalles
+                      {t("moreDetails")}
                       <ChevronDown
                         className={`h-4 w-4 transition-transform ${
                           openDetails.includes(plan.planCode)
@@ -298,7 +299,7 @@ export default function ChangePlanPage() {
           href={appPath("/settings/plan")}
           className="underline hover:no-underline"
         >
-          Volver a Plan
+          {t("backToPlan")}
         </Link>
       </p>
     </div>

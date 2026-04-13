@@ -1,0 +1,50 @@
+{
+  "AppNav": {
+    "dashboard": "Dashboard",
+    "clients": "Clientes",
+    "projects": "Proyectos",
+    "catalog": "Catálogo",
+    "suppliers": "Proveedores",
+    "back": "Volver atrás",
+    "account": "Cuenta",
+    "customization": "Personalización",
+    "yourPlan": "Tu plan",
+    "expandSidebar": "Expandir barra lateral",
+    "collapseSidebar": "Minimizar barra lateral",
+    "upgradePlanTooltip": "Mejorar plan",
+    "upgradePlanCta": "Mejora tu plan",
+    "theme": "Tema",
+    "lightMode": "Modo claro",
+    "darkMode": "Modo oscuro",
+    "switchToLight": "Cambiar a modo claro",
+    "switchToDark": "Cambiar a modo oscuro",
+    "settings": "Configuración",
+    "reportBug": "Reportar fallo",
+    "signOut": "Cerrar sesión",
+    "accountMenuAria": "Cuenta y personalización"
+  },
+  "AppLayout": {
+    "skipToContent": "Saltar al contenido",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "navMenuTitle": "Menú de Navegación",
+    "navMenuDescription": "Navegación principal de la aplicación",
+    "breadcrumbAria": "Breadcrumb"
+  },
+  "AppSettingsBreadcrumb": {
+    "settings": "Configuración",
+    "account": "Cuenta",
+    "yourPlan": "Tu plan",
+    "changePlan": "Cambiar plan",
+    "customization": "Personalización"
+  },
+  "Phases": {
+    "unassigned": "No asignada",
+    "diagnosis": "Diagnóstico",
+    "design": "Diseño",
+    "executive": "Proyecto Ejecutivo",
+    "budget": "Presupuestos",
+    "construction": "Obra",
+    "delivery": "Entrega"
+  }
+}

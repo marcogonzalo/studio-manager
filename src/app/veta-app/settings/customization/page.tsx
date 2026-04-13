@@ -63,6 +63,7 @@ import {
 export default function CustomizationPage() {
   const router = useRouter();
   const tLang = useTranslations("SettingsLanguage");
+  const t = useTranslations("SettingsCustomization");
   const { user, effectivePlan } = useAuth();
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const supabase = getSupabaseClient();
@@ -155,7 +156,7 @@ export default function CustomizationPage() {
       });
     } catch (err) {
       reportError(err, "Error fetching personalization:");
-      toast.error("Error al cargar la personalización");
+      toast.error(t("toastLoadError"));
     } finally {
       setLoading(false);
     }
@@ -205,11 +206,11 @@ export default function CustomizationPage() {
         })
         .eq("user_id", user.id);
       if (error) throw error;
-      toast.success("Presupuesto guardado");
+      toast.success(t("toastBudgetSaved"));
       fetchProfile();
     } catch (e) {
       reportError(e, "Error saving public profile:");
-      toast.error("Error al guardar: " + getErrorMessage(e));
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e)}`);
     }
   }
 
@@ -225,12 +226,12 @@ export default function CustomizationPage() {
         })
         .eq("user_id", user.id);
       if (error) throw error;
-      toast.success("Idioma y formato guardados");
+      toast.success(t("toastLanguageSaved"));
       router.refresh();
       fetchProfile();
     } catch (e) {
       reportError(e, "Error saving language settings:");
-      toast.error("Error al guardar: " + getErrorMessage(e));
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e)}`);
     }
   }
 
@@ -251,11 +252,11 @@ export default function CustomizationPage() {
         })
         .eq("user_id", user.id);
       if (error) throw error;
-      toast.success("Valores por defecto guardados");
+      toast.success(t("toastDefaultsSaved"));
       fetchProfile();
     } catch (e) {
       reportError(e, "Error saving defaults:");
-      toast.error("Error al guardar: " + getErrorMessage(e));
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e)}`);
     }
   }
 
@@ -267,10 +268,10 @@ export default function CustomizationPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-foreground text-3xl font-bold tracking-tight">
-          Personalización
+          {t("title")}
         </h1>
         <p className="text-muted-foreground mt-1">
-          Valores por defecto para adaptar tu espacio de trabajo
+          {t("description")}
         </p>
       </div>
 
@@ -347,7 +348,7 @@ export default function CustomizationPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Guardar</Button>
+                <Button type="submit">{t("save")}</Button>
               </form>
             </Form>
           </CardContent>
@@ -357,10 +358,10 @@ export default function CustomizationPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="text-primary h-5 w-5" />
-              <CardTitle>Presupuesto</CardTitle>
+              <CardTitle>{t("budgetTitle")}</CardTitle>
             </div>
             <CardDescription>
-              Personaliza la apariencia del PDF de presupuestos
+              {t("budgetDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -376,7 +377,7 @@ export default function CustomizationPage() {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <User className="h-4 w-4" />
-                        Nombre público
+                        {t("publicNameLabel")}
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -396,8 +397,7 @@ export default function CustomizationPage() {
                       </FormControl>
                       {!isBasePlan && (
                         <p className="text-muted-foreground text-xs">
-                          Este nombre aparecerá como &quot;Arquitecto/a&quot; en
-                          los PDF de presupuestos
+                          {t("publicNameHelp")}
                         </p>
                       )}
                       <FormMessage />
@@ -411,7 +411,7 @@ export default function CustomizationPage() {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Mail className="h-4 w-4" />
-                        Correo público
+                        {t("publicEmailLabel")}
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -425,7 +425,7 @@ export default function CustomizationPage() {
                       </FormControl>
                       {!isBasePlan && (
                         <p className="text-muted-foreground text-xs">
-                          Este correo aparecerá en los PDF de presupuestos
+                          {t("publicEmailHelp")}
                         </p>
                       )}
                       <FormMessage />
@@ -439,14 +439,14 @@ export default function CustomizationPage() {
                   }
                 >
                   {formPresupuesto.formState.isSubmitting
-                    ? "Guardando…"
-                    : "Guardar cambios"}
+                      ? t("saving")
+                      : t("saveChanges")}
                 </Button>
                 {isBasePlan && (
                   <p className="text-muted-foreground text-xs">
-                    Mejora tu plan para poder personalizar tus presupuestos.{" "}
+                    {t("upgradeHint")}{" "}
                     <Link href="/pricing" className="font-medium underline">
-                      Mejora tu plan
+                      {t("upgradeCta")}
                     </Link>
                   </p>
                 )}
@@ -469,11 +469,10 @@ export default function CustomizationPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="text-primary h-5 w-5" />
-              <CardTitle>Valores por defecto</CardTitle>
+              <CardTitle>{t("defaultsTitle")}</CardTitle>
             </div>
             <CardDescription>
-              Se aplicarán al crear nuevos proyectos o productos. Los elementos
-              existentes con valores definidos no se modifican.
+              {t("defaultsDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -484,7 +483,7 @@ export default function CustomizationPage() {
               >
                 <fieldset className="space-y-3">
                   <legend className="text-muted-foreground text-sm font-medium">
-                    Valores sugeridos para nuevos proyectos y productos
+                    {t("defaultsLegend")}
                   </legend>
                   <div className="flex flex-wrap gap-4">
                     <FormField
@@ -494,7 +493,7 @@ export default function CustomizationPage() {
                         <FormItem className="w-[125px]">
                           <FormLabel className="flex items-center gap-2">
                             <Coins className="h-4 w-4" />
-                            Moneda
+                            {t("currencyLabel")}
                           </FormLabel>
                           <Select
                             onValueChange={field.onChange}
@@ -502,7 +501,7 @@ export default function CustomizationPage() {
                           >
                             <FormControl>
                               <SelectTrigger className="h-9 text-sm">
-                                <SelectValue placeholder="Moneda" />
+                                <SelectValue placeholder={t("currencyLabel")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -526,14 +525,14 @@ export default function CustomizationPage() {
                         <FormItem className="w-[125px]">
                           <FormLabel className="flex items-center gap-2">
                             <Percent className="h-4 w-4" />
-                            Impuesto
+                            {t("taxLabel")}
                           </FormLabel>
                           <FormControl>
                             <Input
                               type="number"
                               min="0"
                               step="0.01"
-                              placeholder="Ej: 21"
+                              placeholder={t("taxPlaceholder")}
                               className="h-9 text-sm"
                               {...field}
                               value={field.value ?? ""}
@@ -545,8 +544,7 @@ export default function CustomizationPage() {
                     />
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    Se sugieren al crear un proyecto o producto nuevo. También
-                    para productos del catálogo sin moneda definida.
+                    {t("defaultsHelp")}
                   </p>
                 </fieldset>
 
@@ -555,8 +553,8 @@ export default function CustomizationPage() {
                   disabled={formDefaults.formState.isSubmitting}
                 >
                   {formDefaults.formState.isSubmitting
-                    ? "Guardando…"
-                    : "Guardar cambios"}
+                    ? t("saving")
+                    : t("saveChanges")}
                 </Button>
               </form>
             </Form>

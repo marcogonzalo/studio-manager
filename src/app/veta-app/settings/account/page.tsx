@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -70,6 +71,7 @@ type DeleteAccountValues = z.infer<typeof deleteAccountSchema>;
 type ChangeEmailValues = z.infer<typeof changeEmailSchema>;
 
 export default function SettingsAccountPage() {
+  const t = useTranslations("SettingsAccount");
   const router = useRouter();
   const { user, signOut } = useAuth();
   useOnboardingHighlight("config");
@@ -115,11 +117,11 @@ export default function SettingsAccountPage() {
       setChangeEmailDialogOpen(false);
       changeEmailForm.reset();
       toast.success(
-        "Revisa tu nuevo correo y haz clic en el enlace para confirmar el cambio."
+        t("toastCheckEmail")
       );
     } catch (err) {
       reportError(err, "Change email:");
-      toast.error("Error al cambiar el correo: " + getErrorMessage(err));
+      toast.error(`${t("toastChangeEmailError")}: ${getErrorMessage(err)}`);
     }
   }
 
@@ -139,7 +141,7 @@ export default function SettingsAccountPage() {
       });
     } catch (err) {
       reportError(err, "Error fetching profile:");
-      toast.error("Error al cargar el perfil");
+      toast.error(t("toastLoadError"));
     } finally {
       setProfileLoading(false);
     }
@@ -167,11 +169,11 @@ export default function SettingsAccountPage() {
         .eq("id", user.id);
 
       if (error) throw error;
-      toast.success("Perfil actualizado correctamente");
+      toast.success(t("toastProfileSaved"));
       fetchProfile();
     } catch (err) {
       reportError(err, "Error updating profile:");
-      toast.error("Error al guardar: " + getErrorMessage(err));
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(err)}`);
     }
   }
 
@@ -193,13 +195,13 @@ export default function SettingsAccountPage() {
             duration: 5000,
           });
         } else {
-          toast.error(data.error ?? "Error al eliminar la cuenta");
+          toast.error(data.error ?? t("toastDeleteError"));
         }
         return;
       }
       setDeleteDialogOpen(false);
       deleteForm.reset();
-      toast.success("Cuenta eliminada");
+      toast.success(t("toastDeleted"));
       await signOut();
       const locale =
         typeof document !== "undefined"
@@ -211,7 +213,7 @@ export default function SettingsAccountPage() {
       router.push(`/${locale}/sign-in`);
     } catch (err) {
       reportError(err, "Delete account:");
-      toast.error("Error al eliminar la cuenta");
+      toast.error(t("toastDeleteError"));
     }
   }
 
@@ -223,10 +225,10 @@ export default function SettingsAccountPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-foreground flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight">
-          Cuenta
+          {t("title")}
         </h1>
         <p className="text-muted-foreground mt-1">
-          Correo de acceso y acciones sobre tu cuenta
+          {t("description")}
         </p>
       </div>
 
@@ -235,15 +237,15 @@ export default function SettingsAccountPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <User className="text-primary h-5 w-5" />
-              <CardTitle>Perfil</CardTitle>
+              <CardTitle>{t("profileTitle")}</CardTitle>
             </div>
             <CardDescription>
-              Información que aparece en presupuestos y en la aplicación
+              {t("profileDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {profileLoading ? (
-              <div className="text-muted-foreground text-sm">Cargando…</div>
+              <div className="text-muted-foreground text-sm">{t("loading")}</div>
             ) : (
               <Form {...profileForm}>
                 <form

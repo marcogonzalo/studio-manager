@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,7 @@ export function ProjectShareDialog({
   onOpenChange: (open: boolean) => void;
   projectId: string;
 }) {
+  const t = useTranslations("DialogProjectShare");
   const [link, setLink] = useState<ProjectShareLink | null>(null);
   const [loading, setLoading] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
@@ -57,7 +59,7 @@ export function ProjectShareDialog({
   const handleCopy = useCallback(() => {
     if (!shareUrl) return;
     void navigator.clipboard.writeText(shareUrl).then(() => {
-      toast.success("Enlace copiado al portapapeles");
+      toast.success(t("toastCopied"));
     });
   }, [shareUrl]);
 
@@ -72,7 +74,7 @@ export function ProjectShareDialog({
     }
     if (data) {
       setLink(data);
-      toast.success("Enlace renovado. El anterior deja de funcionar.");
+      toast.success(t("toastRegenerated"));
     }
   }, [projectId]);
 
@@ -93,16 +95,12 @@ export function ProjectShareDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Compartir con el cliente</DialogTitle>
-          <DialogDescription>
-            Quien tenga este enlace podrá ver la información básica del proyecto
-            sin iniciar sesión. Puedes renovar el enlace si crees que está
-            comprometido, o restringir el acceso en cualquier momento.
-          </DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         {loading ? (
           <div className="text-muted-foreground py-6 text-center text-sm">
-            Cargando…
+            {t("loading")}
           </div>
         ) : link ? (
           <div className="space-y-4">
@@ -112,21 +110,19 @@ export function ProjectShareDialog({
                 value={shareUrl}
                 className="font-mono text-sm"
                 onClick={handleCopy}
-                aria-label="URL del enlace compartido"
+                aria-label={t("urlAria")}
               />
               <Button
                 type="button"
                 variant="outline"
                 size="icon"
                 onClick={handleCopy}
-                aria-label="Copiar enlace"
+                aria-label={t("copyAria")}
               >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
-            <p className="text-muted-foreground text-xs">
-              Haz clic en el campo o en el botón para copiar el enlace.
-            </p>
+            <p className="text-muted-foreground text-xs">{t("copyHint")}</p>
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -138,7 +134,7 @@ export function ProjectShareDialog({
                 <RefreshCw
                   className={`mr-2 h-4 w-4 ${regenerating ? "animate-spin" : ""}`}
                 />
-                Renovar enlace
+                {t("regenerate")}
               </Button>
               <Button
                 type="button"
@@ -150,12 +146,12 @@ export function ProjectShareDialog({
                 {link.is_enabled ? (
                   <>
                     <EyeOff className="mr-2 h-4 w-4" />
-                    Restringir acceso
+                    {t("restrictAccess")}
                   </>
                 ) : (
                   <>
                     <Eye className="mr-2 h-4 w-4" />
-                    Publicar vista
+                    {t("publishView")}
                   </>
                 )}
               </Button>

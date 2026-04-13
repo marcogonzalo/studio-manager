@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth-provider";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { PageLoading } from "@/components/loaders/page-loading";
@@ -88,6 +89,7 @@ function formatBytes(bytes: number): string {
 }
 
 export default function SettingsPlanPage() {
+  const t = useTranslations("SettingsPlan");
   const { formatDate } = useAppFormatting();
   const { user, effectivePlan, planLoading } = useAuth();
   const supabase = getSupabaseClient();
@@ -187,8 +189,8 @@ export default function SettingsPlanPage() {
     currentAssignment &&
     currentAssignment.expires_at;
   const expiryLabel = currentAssignment?.next_period_duration
-    ? "Renueva el"
-    : "Finaliza el";
+    ? t("renewsOn")
+    : t("endsOn");
   const expiryDateFormatted = currentAssignment
     ? formatDate(currentAssignment.expires_at, {
         day: "numeric",
@@ -199,16 +201,16 @@ export default function SettingsPlanPage() {
   const periodPillLabel =
     currentPlanCode === "BASE"
       ? "∞"
-      : (DURATION_LABELS[currentAssignment?.duration ?? ""] ?? "—");
+      : (DURATION_LABELS[currentAssignment?.duration ?? ""] ?? t("unknown"));
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-foreground flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight">
-          Tu plan
+          {t("title")}
         </h1>
         <p className="text-muted-foreground mt-1">
-          Plan actual e histórico de planes adquiridos
+          {t("description")}
         </p>
       </div>
 
@@ -216,7 +218,7 @@ export default function SettingsPlanPage() {
         <CardHeader className="flex flex-row flex-wrap items-center gap-4 space-y-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="m-0 flex flex-wrap items-center gap-2 text-lg font-medium">
-              Plan{" "}
+              {t("planLabel")}{" "}
               <span className="text-primary font-bold">{currentPlanLabel}</span>
             </h2>
             {currentAssignment?.next_period_duration != null && (
@@ -233,17 +235,17 @@ export default function SettingsPlanPage() {
           <Button asChild className="ml-auto shrink-0 gap-2">
             <Link href={appPath("/settings/plan/change")}>
               <Rocket className="h-4 w-4" />
-              Mejorar plan
+              {t("upgradePlan")}
             </Link>
           </Button>
         </CardHeader>
         <CardContent className="flex flex-col gap-0">
           <div className="border-border border-t pt-6">
             <h3 className="text-foreground mb-3 text-base font-semibold">
-              Consumibles
+              {t("consumables")}
             </h3>
             {usageLoading ? (
-              <p className="text-muted-foreground text-sm">Cargando…</p>
+              <p className="text-muted-foreground text-sm">{t("loading")}</p>
             ) : (
               <div className="space-y-4">
                 {(
@@ -331,15 +333,15 @@ export default function SettingsPlanPage() {
 
       <div>
         <h2 className="text-foreground mb-3 text-lg font-semibold">
-          Histórico de planes
+          {t("historyTitle")}
         </h2>
         {historyLoading ? (
           <div className="text-muted-foreground text-sm">
-            Cargando histórico…
+            {t("loadingHistory")}
           </div>
         ) : pastHistory.length === 0 ? (
           <p className="text-muted-foreground text-sm">
-            No hay registros de planes anteriores.
+            {t("noHistory")}
           </p>
         ) : (
           <ul className="space-y-2">
@@ -357,14 +359,14 @@ export default function SettingsPlanPage() {
                         <p className="text-muted-foreground text-sm">
                           {durationLabel}
                           {" · "}
-                          Asignado{" "}
+                          {t("assigned")}{" "}
                           {formatDate(row.assigned_at, {
                             day: "numeric",
                             month: "short",
                             year: "numeric",
                           })}
                           {" · "}
-                          Expira{" "}
+                          {t("expires")}{" "}
                           {formatDate(row.expires_at, {
                             day: "numeric",
                             month: "short",

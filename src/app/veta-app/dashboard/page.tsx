@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -101,6 +102,7 @@ function getFirstName(fullName: string | null | undefined): string {
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("DashboardPage");
   const { formatDate } = useAppFormatting();
   const { user } = useAuth();
   const { steps: onboardingSteps, allComplete: onboardingComplete } =
@@ -261,7 +263,7 @@ export default function DashboardPage() {
         confirmedOrdersError ||
         recentError
       ) {
-        toast.error("Error al cargar estadísticas", { id: "dashboard-stats" });
+        toast.error(t("toastLoadError"), { id: "dashboard-stats" });
         return;
       }
 
@@ -288,14 +290,14 @@ export default function DashboardPage() {
       });
     } catch (error) {
       reportError(error, "Error fetching dashboard stats:");
-      toast.error("Error al cargar estadísticas", { id: "dashboard-stats" });
+      toast.error(t("toastLoadError"), { id: "dashboard-stats" });
     } finally {
       setLoading(false);
     }
   };
 
   const formatChange = (change: number) => {
-    if (change === 0) return "Sin cambios";
+    if (change === 0) return t("noChanges");
     const sign = change > 0 ? "+" : "";
     return `${sign}${change}%`;
   };
@@ -310,14 +312,14 @@ export default function DashboardPage() {
           <LayoutDashboard className="text-primary mt-1 h-8 w-8" />
           <div>
             <h1 className="text-foreground text-3xl font-bold tracking-tight">
-              Hola,{" "}
+              {t("hello")}{" "}
               {getFirstName(
                 profile?.full_name ??
                   (user?.user_metadata?.full_name as string | undefined)
               )}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Aquí tienes un resumen de tu estudio de diseño.
+              {t("subtitle")}
             </p>
           </div>
         </div>
@@ -326,7 +328,7 @@ export default function DashboardPage() {
           className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 animate-glow shadow-lg transition-all hover:scale-105"
         >
           <Link href={appPath("/projects")}>
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
+            <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
           </Link>
         </Button>
       </AnimatedSection>

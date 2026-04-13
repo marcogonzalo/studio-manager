@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ import { useDebouncedState } from "@/lib/use-debounced-value";
 import type { Client } from "@/types";
 
 export default function ClientsPage() {
+  const t = useTranslations("ClientsPage");
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   useOnboardingHighlight("client", !loading);
@@ -56,7 +58,7 @@ export default function ClientsPage() {
 
     const { data, error } = await query;
     if (error) {
-      toast.error("Error al cargar clientes", { id: "clients-load" });
+      toast.error(t("toastLoadError"), { id: "clients-load" });
     } else {
       setClients(data || []);
     }
@@ -81,7 +83,7 @@ export default function ClientsPage() {
       const canDelete = await canDeleteClient(id);
       if (!canDelete) {
         toast.error(
-          "No se puede eliminar el cliente porque tiene proyectos asociados"
+          t("toastDeleteBlocked")
         );
         setDeleteTarget(null);
         return;
@@ -94,11 +96,11 @@ export default function ClientsPage() {
             duration: 5000,
           });
         } else {
-          toast.error("Error al eliminar cliente");
+          toast.error(t("toastDeleteError"));
         }
         return;
       }
-      toast.success("Cliente eliminado");
+      toast.success(t("toastDeleted"));
       setDeleteTarget(null);
       fetchClients();
     } finally {
@@ -122,17 +124,17 @@ export default function ClientsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Users className="text-primary h-8 w-8" />
-            <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
           <Button
             onClick={handleCreate}
             {...(clients.length > 0 && { "data-onboarding-target": "client" })}
           >
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Cliente
+            <Plus className="mr-2 h-4 w-4" /> {t("newClient")}
           </Button>
         </div>
         <p className="text-muted-foreground text-sm">
-          Gestiona los contactos y datos de tus clientes.
+          {t("description")}
         </p>
       </div>
 
@@ -144,11 +146,11 @@ export default function ClientsPage() {
           />
           <Input
             type="search"
-            placeholder="Buscar clientes…"
+            placeholder={t("searchPlaceholder")}
             className="pl-8"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Buscar clientes"
+            aria-label={t("searchAria")}
           />
         </div>
       </div>
@@ -174,13 +176,13 @@ export default function ClientsPage() {
                 <Users className="text-muted-foreground h-8 w-8" />
               </div>
               <h3 className="text-foreground mt-4 font-medium">
-                No se encontraron clientes
+                {t("emptyTitle")}
               </h3>
               <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-                Añade tu primer cliente para empezar a asociarlos a proyectos.
+                {t("emptyDescription")}
               </p>
               <Button onClick={handleCreate} className="mt-4">
-                <Plus className="mr-2 h-4 w-4" /> Nuevo Cliente
+                <Plus className="mr-2 h-4 w-4" /> {t("newClient")}
               </Button>
             </CardContent>
           </Card>
@@ -225,7 +227,7 @@ export default function ClientsPage() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      aria-label="Acciones del cliente"
+                      aria-label={t("actionsAria")}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <MoreVertical className="h-4 w-4" />
@@ -239,7 +241,7 @@ export default function ClientsPage() {
                       }}
                     >
                       <Pencil className="mr-2 h-4 w-4" />
-                      Editar
+                      {t("edit")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={(e) => {
@@ -249,7 +251,7 @@ export default function ClientsPage() {
                       className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
+                      {t("delete")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -272,8 +274,8 @@ export default function ClientsPage() {
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="¿Eliminar cliente?"
-        description="Esta acción no se puede deshacer. Si el cliente tiene proyectos asociados no podrá eliminarse."
+        title={t("confirmDeleteTitle")}
+        description={t("confirmDeleteDescription")}
         onConfirm={handleConfirmDelete}
         loading={deleteLoading}
       />
