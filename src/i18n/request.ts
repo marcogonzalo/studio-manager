@@ -18,6 +18,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     appPages,
     appViewProject,
     appDialogs,
+    appProjectModules,
   ] = await Promise.all([
     import(`./messages/${locale}/common.json`),
     import(`./messages/${locale}/marketing.json`),
@@ -28,6 +29,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     import(`./messages/${locale}/app-pages.json`),
     import(`./messages/${locale}/app-view-project.json`),
     import(`./messages/${locale}/app-dialogs.json`),
+    import(`./messages/${locale}/app-project-modules.json`),
   ]);
 
   return {
@@ -42,6 +44,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
       ...appPages.default,
       ...appViewProject.default,
       ...appDialogs.default,
+      ...appProjectModules.default,
     },
   };
 });

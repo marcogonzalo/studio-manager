@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -66,6 +67,7 @@ export function ProjectDashboard({
   readOnly = false,
   disabled = false,
 }: ProjectDashboardProps) {
+  const t = useTranslations("ProjectModuleDashboard");
   const supabase = getSupabaseClient();
   const [project, setProject] = useState<Project | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -313,37 +315,37 @@ export function ProjectDashboard({
   return (
     <ProjectTabContent
       disabled={disabled}
-      disabledMessage="El resumen no está incluido en tu plan actual."
+      disabledMessage={t("disabledMessage")}
     >
       <div className="space-y-6">
-        <TabSectionHeader title="Resumen" />
+        <TabSectionHeader title={t("title")} />
         {/* KPIs */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <KPICard
-            title="Avance"
+            title={t("kpiProgress")}
             value={`${kpis.progress.toFixed(0)}%`}
             subtitle={
-              project?.phase ? getPhaseLabel(project.phase) : "No asignada"
+              project?.phase ? getPhaseLabel(project.phase) : t("unassigned")
             }
             icon={FolderKanban}
             color="primary"
           />
           <KPICard
-            title="Cobertura de Pagos"
+            title={t("kpiPaymentCoverage")}
             value={`${kpis.coverage.toFixed(1)}%`}
             subtitle={`${formatCurrency(totalPaid)} de ${formatCurrency(clientBudget)}`}
             icon={Wallet}
             color="chart-1"
           />
           <KPICard
-            title="Desviación Costes"
+            title={t("kpiCostDeviation")}
             value={`${kpis.deviation >= 0 ? "+" : ""}${kpis.deviation.toFixed(1)}%`}
             subtitle={
               kpis.deviation > 5
-                ? "Sobrecoste"
+                ? t("overcost")
                 : kpis.deviation < -5
-                  ? "Ahorro"
-                  : "En línea"
+                  ? t("saving")
+                  : t("onTrack")
             }
             icon={AlertTriangle}
             color="text-muted-foreground"
@@ -353,21 +355,21 @@ export function ProjectDashboard({
             }
           />
           <KPICard
-            title="Presupuestado"
+            title={t("kpiBudgeted")}
             value={formatCurrency(clientBudget)}
             subtitle={`Productos: ${formatCurrency(totalProductsPrice)} + Partidas: ${formatCurrency(totalBudgetLinesEstimated)}`}
             icon={FileText}
             color="chart-2"
           />
           <KPICard
-            title="Coste total"
+            title={t("kpiTotalCost")}
             value={formatCurrency(totalCosts)}
             subtitle={`Productos: ${formatCurrency(totalProductsCost)} + Partidas: ${formatCurrency(totalBudgetLinesActual)}`}
             icon={Receipt}
             color="chart-3"
           />
           <KPICard
-            title="Margen Bruto"
+            title={t("kpiGrossMargin")}
             value={formatCurrency(margin)}
             subtitle={`${marginPercentage.toFixed(1)}% del presupuesto`}
             icon={TrendingUp}
@@ -380,12 +382,12 @@ export function ProjectDashboard({
           {/* Budget by Category */}
           <Card>
             <CardHeader>
-              <CardTitle>Presupuesto por Categoría</CardTitle>
+              <CardTitle>{t("budgetByCategory")}</CardTitle>
             </CardHeader>
             <CardContent>
               {Object.keys(budgetLinesByCategory).length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  No hay partidas de presupuesto
+                  {t("noBudgetLines")}
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -420,8 +422,8 @@ export function ProjectDashboard({
                           </span>
                         </div>
                         <div className="text-muted-foreground flex justify-between text-xs">
-                          <span>Est: {formatCurrency(data.estimated)}</span>
-                          <span>Real: {formatCurrency(data.actual)}</span>
+                          <span>{t("estimated")}: {formatCurrency(data.estimated)}</span>
+                          <span>{t("actual")}: {formatCurrency(data.actual)}</span>
                         </div>
                         <div className="bg-muted h-1 w-full rounded-full">
                           <div
@@ -443,7 +445,7 @@ export function ProjectDashboard({
                   {/* Products summary */}
                   <div className="space-y-1 border-t pt-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Productos</span>
+                      <span className="text-sm font-medium">{t("products")}</span>
                       <span className="bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary rounded-full px-2 py-1 text-xs">
                         +
                         {(
@@ -451,12 +453,12 @@ export function ProjectDashboard({
                             totalProductsPrice) *
                           100
                         ).toFixed(0)}
-                        % margen
+                        % {t("margin")}
                       </span>
                     </div>
                     <div className="text-muted-foreground flex justify-between text-xs">
-                      <span>Coste: {formatCurrency(totalProductsCost)}</span>
-                      <span>Venta: {formatCurrency(totalProductsPrice)}</span>
+                      <span>{t("cost")}: {formatCurrency(totalProductsCost)}</span>
+                      <span>{t("sale")}: {formatCurrency(totalProductsPrice)}</span>
                     </div>
                   </div>
                 </div>
@@ -467,12 +469,12 @@ export function ProjectDashboard({
           {/* PO Coverage */}
           <Card>
             <CardHeader>
-              <CardTitle>Cobertura de Órdenes de Compra</CardTitle>
+              <CardTitle>{t("purchaseOrderCoverage")}</CardTitle>
             </CardHeader>
             <CardContent>
               {poCoverage.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  No hay órdenes de compra
+                  {t("noPurchaseOrders")}
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -492,10 +494,10 @@ export function ProjectDashboard({
                           }`}
                         >
                           {po.status === "covered"
-                            ? "✓ Cubierta"
+                            ? t("covered")
                             : po.status === "partial"
-                              ? "⚠ Parcial"
-                              : "○ Pendiente"}
+                              ? t("partial")
+                              : t("pending")}
                         </span>
                       </div>
                       <div className="text-muted-foreground flex justify-between text-xs">
@@ -535,7 +537,7 @@ export function ProjectDashboard({
         {/* Alerts */}
         <Card>
           <CardHeader>
-            <CardTitle>Alertas</CardTitle>
+            <CardTitle>{t("alerts")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -545,14 +547,14 @@ export function ProjectDashboard({
                   <AlertTriangle className="mt-0.5 h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                   <div>
                     <p className="text-sm font-medium">
-                      Órdenes de compra pendientes de pago
+                      {t("pendingPurchaseOrdersTitle")}
                     </p>
                     <p className="text-muted-foreground text-xs">
                       {
                         poCoverage.filter((po) => po.status === "pending")
                           .length
                       }{" "}
-                      orden(es) sin cobertura
+                      {t("ordersWithoutCoverage")}
                     </p>
                   </div>
                 </div>
@@ -562,11 +564,11 @@ export function ProjectDashboard({
                   <AlertTriangle className="text-destructive mt-0.5 h-4 w-4" />
                   <div>
                     <p className="text-sm font-medium">
-                      Desviación presupuestaria
+                      {t("budgetDeviationTitle")}
                     </p>
                     <p className="text-muted-foreground text-xs">
                       Los costes reales superan en {kpis.deviation.toFixed(1)}%
-                      el estimado
+                      {t("estimatedSuffix")}
                     </p>
                   </div>
                 </div>
@@ -575,9 +577,9 @@ export function ProjectDashboard({
                 <div className="bg-destructive/10 dark:bg-destructive/20 flex items-start gap-2 rounded p-2">
                   <AlertTriangle className="text-destructive mt-0.5 h-4 w-4" />
                   <div>
-                    <p className="text-sm font-medium">Margen negativo</p>
+                    <p className="text-sm font-medium">{t("negativeMarginTitle")}</p>
                     <p className="text-muted-foreground text-xs">
-                      Los costes superan el presupuesto del cliente en{" "}
+                      {t("negativeMarginDescription")}{" "}
                       {formatCurrency(Math.abs(margin))}
                     </p>
                   </div>
@@ -590,7 +592,7 @@ export function ProjectDashboard({
                   <div className="bg-primary/10 dark:bg-primary/20 flex items-start gap-2 rounded p-2">
                     <CheckCircle2 className="text-primary mt-0.5 h-4 w-4" />
                     <p className="text-sm font-medium">
-                      Todo en orden. No hay alertas.
+                      {t("allGood")}
                     </p>
                   </div>
                 )}

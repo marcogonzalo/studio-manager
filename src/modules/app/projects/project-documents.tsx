@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,6 +31,7 @@ export function ProjectDocuments({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
+  const t = useTranslations("ProjectModuleDocuments");
   const supabase = getSupabaseClient();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -49,7 +51,7 @@ export function ProjectDocuments({
   }, [projectId]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar documento?")) return;
+    if (!confirm(t("confirmDelete"))) return;
     await supabase.from("project_documents").delete().eq("id", id);
     fetchDocs();
   };
@@ -57,14 +59,14 @@ export function ProjectDocuments({
   return (
     <ProjectTabContent
       disabled={disabled}
-      disabledMessage="Los documentos no están incluidos en tu plan actual."
+      disabledMessage={t("disabledMessage")}
     >
       <div className="space-y-6">
-        <TabSectionHeader title="Documentos">
+        <TabSectionHeader title={t("title")}>
           {!readOnly && (
             <Button onClick={() => setIsDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Añadir documento
+              {t("add")}
             </Button>
           )}
         </TabSectionHeader>
@@ -73,10 +75,10 @@ export function ProjectDocuments({
           <Card>
             <CardContent className="py-12 text-center">
               <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-              <p className="text-muted-foreground mb-4">No hay documentos.</p>
+              <p className="text-muted-foreground mb-4">{t("empty")}</p>
               {!readOnly && (
                 <Button onClick={() => setIsDialogOpen(true)} variant="outline">
-                  <Plus className="mr-2 h-4 w-4" /> Añadir primer documento
+                  <Plus className="mr-2 h-4 w-4" /> {t("addFirst")}
                 </Button>
               )}
             </CardContent>
@@ -101,7 +103,7 @@ export function ProjectDocuments({
                         href={doc.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        aria-label="Descargar documento"
+                        aria-label={t("downloadAria")}
                       >
                         <Download className="h-4 w-4" />
                       </a>
@@ -112,7 +114,7 @@ export function ProjectDocuments({
                           <Button
                             variant="ghost"
                             size="icon"
-                            aria-label="Acciones del documento"
+                            aria-label={t("actionsAria")}
                           >
                             <MoreVertical className="h-4 w-4" />
                           </Button>
@@ -123,7 +125,7 @@ export function ProjectDocuments({
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
+                            {t("delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
