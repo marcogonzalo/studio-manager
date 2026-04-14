@@ -25,10 +25,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { getDemoAccountMessage } from "@/lib/utils";
 
-const formSchema = z.object({
-  name: z.string().min(2, "Nombre requerido"),
-  description: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    name: z.string().min(2, t("validationNameRequired")),
+    description: z.string().optional(),
+  });
+}
 
 interface SpaceDialogProps {
   open: boolean;
@@ -45,6 +47,7 @@ export function SpaceDialog({
 }: SpaceDialogProps) {
   const t = useTranslations("DialogSpace");
   const supabase = getSupabaseClient();
+  const formSchema = buildFormSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {

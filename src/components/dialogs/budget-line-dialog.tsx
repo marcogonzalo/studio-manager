@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -49,17 +50,19 @@ import type {
   Supplier,
 } from "@/types";
 
-const formSchema = z.object({
-  category: z.string().min(1, "Categoría requerida"),
-  subcategory: z.string().min(1, "Subcategoría requerida"),
-  description: z.string().optional(),
-  estimated_amount: z.string().transform((v) => parseFloat(v) || 0),
-  actual_amount: z.string().transform((v) => parseFloat(v) || 0),
-  is_internal_cost: z.boolean().default(false),
-  phase: z.string().optional(),
-  supplier_id: z.string().optional(),
-  notes: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    category: z.string().min(1, t("validationCategoryRequired")),
+    subcategory: z.string().min(1, t("validationSubcategoryRequired")),
+    description: z.string().optional(),
+    estimated_amount: z.string().transform((v) => parseFloat(v) || 0),
+    actual_amount: z.string().transform((v) => parseFloat(v) || 0),
+    is_internal_cost: z.boolean().default(false),
+    phase: z.string().optional(),
+    supplier_id: z.string().optional(),
+    notes: z.string().optional(),
+  });
+}
 
 type FormValues = {
   category: string;
@@ -97,7 +100,9 @@ export function BudgetLineDialog({
   onSuccess,
   budgetLine,
 }: BudgetLineDialogProps) {
+  const t = useTranslations("DialogBudgetLine");
   const { user } = useAuth();
+  const formSchema = buildFormSchema(t);
   const advancedCostLineOptionsEnabled = usePlanCapability("costs_management", {
     minModality: "plus",
   });
@@ -190,7 +195,7 @@ export function BudgetLineDialog({
   const onSubmit = async (values: z.infer<typeof formSchema> | FormValues) => {
     try {
       if (!user?.id) {
-        toast.error("No se pudo identificar el usuario");
+        toast.error(t("toastUserError"));
         return;
       }
 
@@ -234,20 +239,17 @@ export function BudgetLineDialog({
             error.code === "42P01" ||
             error.message?.includes("does not exist")
           ) {
-            toast.error(
-              "La tabla project_budget_lines no existe. Por favor, ejecuta las migraciones primero."
-            );
+            toast.error(t("toastTableMissing"));
           } else {
             toast.error(
-              "Error al actualizar la partida: " +
-                (error.message || "Error desconocido")
+              `${t("toastUpdateErrorPrefix")}${error.message || t("unknownError")}`
             );
           }
           reportError(error, "Error updating budget line:");
           return;
         }
 
-        toast.success("Partida actualizada");
+        toast.success(t("toastUpdated"));
         onSuccess();
         onOpenChange(false);
       } else {
@@ -261,20 +263,17 @@ export function BudgetLineDialog({
             error.code === "42P01" ||
             error.message?.includes("does not exist")
           ) {
-            toast.error(
-              "La tabla project_budget_lines no existe. Por favor, ejecuta las migraciones primero."
-            );
+            toast.error(t("toastTableMissing"));
           } else {
             toast.error(
-              "Error al crear la partida: " +
-                (error.message || "Error desconocido")
+              `${t("toastCreateErrorPrefix")}${error.message || t("unknownError")}`
             );
           }
           reportError(error, "Error creating budget line:");
           return;
         }
 
-        toast.success("Partida añadida");
+        toast.success(t("toastCreated"));
         onSuccess();
         onOpenChange(false);
       }
@@ -287,7 +286,9 @@ export function BudgetLineDialog({
         return;
       }
       reportError(error, "Unexpected error in onSubmit:");
-      toast.error("Error inesperado: " + getErrorMessage(error));
+      toast.error(
+        `${t("toastUnexpectedErrorPrefix")}${getErrorMessage(error)}`
+      );
     }
   };
 
@@ -313,7 +314,7 @@ export function BudgetLineDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Editar Partida" : "Nueva Partida"}
+            {isEditing ? t("titleEdit") : t("titleNew")}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -324,14 +325,14 @@ export function BudgetLineDialog({
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>Categoría</FormLabel>
+                    <FormLabel required>{t("categoryLabel")}</FormLabel>
                     <Select
                       onValueChange={handleCategoryChange}
                       value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar categoría" />
+                          <SelectValue placeholder={t("categoryPlaceholder")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -352,7 +353,7 @@ export function BudgetLineDialog({
                 name="subcategory"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>Subcategoría</FormLabel>
+                    <FormLabel required>{t("subcategoryLabel")}</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
@@ -360,7 +361,9 @@ export function BudgetLineDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar subcategoría" />
+                          <SelectValue
+                            placeholder={t("subcategoryPlaceholder")}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -382,10 +385,10 @@ export function BudgetLineDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descripción</FormLabel>
+                  <FormLabel>{t("descriptionLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Descripción detallada de la partida"
+                      placeholder={t("descriptionPlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -400,12 +403,12 @@ export function BudgetLineDialog({
                 name="estimated_amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Importe Estimado</FormLabel>
+                    <FormLabel>{t("estimatedAmountLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder="0.00"
+                        placeholder={t("amountPlaceholder")}
                         {...field}
                         onChange={(e) => {
                           const v = e.target.value;
@@ -418,8 +421,7 @@ export function BudgetLineDialog({
                     </FormControl>
                     {selectedCategory === "own_fees" && (
                       <p className="text-muted-foreground text-xs">
-                        Para honorarios el importe real se rellena con este
-                        valor.
+                        {t("feesHint")}
                       </p>
                     )}
                     <FormMessage />
@@ -432,12 +434,12 @@ export function BudgetLineDialog({
                 name="actual_amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Importe Real</FormLabel>
+                    <FormLabel>{t("actualAmountLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder="0.00"
+                        placeholder={t("amountPlaceholder")}
                         {...field}
                         disabled={
                           !selectedCategory ||
@@ -449,9 +451,9 @@ export function BudgetLineDialog({
                     {!advancedCostLineOptionsEnabled && (
                       <p className="text-muted-foreground text-xs">
                         <Link href="/pricing" className="underline">
-                          Mejora tu plan
+                          {t("upgradePlan")}
                         </Link>{" "}
-                        para activar la gestión de costes.
+                        {t("upgradeCostsSuffix")}
                       </p>
                     )}
                     <FormMessage />
@@ -482,17 +484,16 @@ export function BudgetLineDialog({
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Coste interno</FormLabel>
+                    <FormLabel>{t("internalCostLabel")}</FormLabel>
                     <p className="text-muted-foreground text-sm">
-                      Si está marcado, esta partida NO aparecerá en el
-                      presupuesto del cliente ni en el PDF.
+                      {t("internalCostDescription")}
                     </p>
                     {!advancedCostLineOptionsEnabled && (
                       <p className="text-muted-foreground mt-1 text-xs">
                         <Link href="/pricing" className="underline">
-                          Mejora tu plan
+                          {t("upgradePlan")}
                         </Link>{" "}
-                        para activar la gestión de costes internos.
+                        {t("upgradeInternalCostsSuffix")}
                       </p>
                     )}
                   </div>
@@ -506,7 +507,7 @@ export function BudgetLineDialog({
                 name="phase"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fase</FormLabel>
+                    <FormLabel>{t("phaseLabel")}</FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value || undefined)
@@ -515,7 +516,7 @@ export function BudgetLineDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar fase" />
+                          <SelectValue placeholder={t("phasePlaceholder")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -536,7 +537,7 @@ export function BudgetLineDialog({
                 name="supplier_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Proveedor</FormLabel>
+                    <FormLabel>{t("supplierLabel")}</FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value || undefined)
@@ -545,7 +546,7 @@ export function BudgetLineDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar proveedor" />
+                          <SelectValue placeholder={t("supplierPlaceholder")} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -567,9 +568,9 @@ export function BudgetLineDialog({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notas</FormLabel>
+                  <FormLabel>{t("notesLabel")}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Notas adicionales..." {...field} />
+                    <Textarea placeholder={t("notesPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -582,10 +583,10 @@ export function BudgetLineDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Cancelar
+                {t("cancel")}
               </Button>
               <Button type="submit">
-                {isEditing ? "Actualizar" : "Añadir"}
+                {isEditing ? t("update") : t("add")}
               </Button>
             </DialogFooter>
           </form>

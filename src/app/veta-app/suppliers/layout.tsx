@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Proveedores",
+  title: "Veta",
 };
 
 export default function SuppliersLayout({

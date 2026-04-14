@@ -55,33 +55,6 @@ const tPlanCopy = createPlanCopyT(
   esMarketingMessages.PlanCopy as Record<string, string>
 );
 
-const PLANS: PlanOption[] = [
-  {
-    name: "Pro",
-    planCode: "PRO",
-    description: "Plan profesional con más recursos y funcionalidades",
-    price: "25",
-    annualPrice: "250",
-    currency: PRICING_CURRENCY,
-    features: getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
-      include: COMPACT_FEATURE_KEYS,
-    }).map((item) => translatePlanCopyItem(item, tPlanCopy)),
-    popular: true,
-  },
-  {
-    name: "Studio",
-    planCode: "STUDIO",
-    description: "Plan ilimitado para estudios",
-    price: "75",
-    annualPrice: "750",
-    currency: PRICING_CURRENCY,
-    features: getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
-      include: COMPACT_FEATURE_KEYS,
-    }).map((item) => translatePlanCopyItem(item, tPlanCopy)),
-    popular: false,
-  },
-];
-
 export default function ChangePlanPage() {
   const t = useTranslations("SettingsPlanChange");
   const router = useRouter();
@@ -90,6 +63,32 @@ export default function ChangePlanPage() {
   const [isAnnual, setIsAnnual] = useState(false);
   const [submittingPlan, setSubmittingPlan] = useState<PlanCode | null>(null);
   const [openDetails, setOpenDetails] = useState<PlanCode[]>([]);
+  const plans: PlanOption[] = [
+    {
+      name: t("planProName"),
+      planCode: "PRO",
+      description: t("planProDescription"),
+      price: "25",
+      annualPrice: "250",
+      currency: PRICING_CURRENCY,
+      features: getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
+        include: COMPACT_FEATURE_KEYS,
+      }).map((item) => translatePlanCopyItem(item, tPlanCopy)),
+      popular: true,
+    },
+    {
+      name: t("planStudioName"),
+      planCode: "STUDIO",
+      description: t("planStudioDescription"),
+      price: "75",
+      annualPrice: "750",
+      currency: PRICING_CURRENCY,
+      features: getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
+        include: COMPACT_FEATURE_KEYS,
+      }).map((item) => translatePlanCopyItem(item, tPlanCopy)),
+      popular: false,
+    },
+  ];
 
   async function handleAcquire(planCode: PlanCode) {
     const duration = isAnnual ? "1y" : "1m";
@@ -117,9 +116,7 @@ export default function ChangePlanPage() {
         <h1 className="text-foreground flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight">
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-1">
-          {t("description")}
-        </p>
+        <p className="text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
       {/* Billing period switch - hidden */}
@@ -172,7 +169,7 @@ export default function ChangePlanPage() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-2 md:items-stretch">
-        {PLANS.map((plan) => {
+        {plans.map((plan) => {
           const showAnnual =
             isAnnual && plan.annualPrice != null && plan.currency != null;
           const currency = plan.currency ?? PRICING_CURRENCY;

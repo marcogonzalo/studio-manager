@@ -28,10 +28,12 @@ import { DocumentFileUpload } from "@/components/document-file-upload";
 import { toast } from "sonner";
 import { getDemoAccountMessage } from "@/lib/utils";
 
-const formSchema = z.object({
-  name: z.string().min(1, "Nombre requerido"),
-  file_url: z.string().min(1, "URL o archivo requerido"),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    name: z.string().min(1, t("validationNameRequired")),
+    file_url: z.string().min(1, t("validationFileRequired")),
+  });
+}
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -65,6 +67,7 @@ export function DocumentDialog({
   onSuccess,
 }: DocumentDialogProps) {
   const t = useTranslations("DialogDocument");
+  const formSchema = buildFormSchema(t);
   const [loading, setLoading] = useState(false);
   const uploadedFileUrlRef = useRef<string | null>(null);
   const uploadedFileSizeBytesRef = useRef<number | null>(null);

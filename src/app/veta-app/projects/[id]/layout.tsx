@@ -13,8 +13,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .select("name")
     .eq("id", id)
     .single();
-  const name = data?.name ?? "Proyecto";
-  return { title: `Proyectos > ${name}` };
+  const name = data?.name ?? "Project";
+  return { title: `Veta > ${name}` };
 }
 
 export default function ProjectDetailLayout({

@@ -41,17 +41,19 @@ import { Plus } from "lucide-react";
 
 const MAX_PRODUCT_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
-const formSchema = z.object({
-  name: z.string().min(2, "Nombre requerido"),
-  reference_code: z.string().optional(),
-  reference_url: z.string().optional(),
-  description: z.string().optional(),
-  cost_price: z.string().transform((val) => parseFloat(val) || 0),
-  currency: z.string().optional(),
-  category: z.string().optional(),
-  supplier_id: z.string().optional(),
-  image_url: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    name: z.string().min(2, t("validationNameRequired")),
+    reference_code: z.string().optional(),
+    reference_url: z.string().optional(),
+    description: z.string().optional(),
+    cost_price: z.string().transform((val) => parseFloat(val) || 0),
+    currency: z.string().optional(),
+    category: z.string().optional(),
+    supplier_id: z.string().optional(),
+    image_url: z.string().optional(),
+  });
+}
 
 interface ProductDialogProps {
   open: boolean;
@@ -86,6 +88,7 @@ export function ProductDialog({
   const uploadedAssetIdRef = useRef<string | null>(null);
 
   const productIdForUpload = product?.id ?? "";
+  const formSchema = buildFormSchema(t);
 
   type FormValues = {
     name: string;

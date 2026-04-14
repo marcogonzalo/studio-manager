@@ -6,17 +6,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import type { Product, ProjectItem } from "@/types";
-
-const PO_STATUS_LABELS: Record<string, string> = {
-  draft: "Borrador",
-  sent: "Enviada",
-  confirmed: "Confirmada",
-  received: "Recibida",
-  cancelled: "Cancelada",
-};
 
 interface ProductDetailModalProps {
   open: boolean;
@@ -35,6 +28,14 @@ export function ProductDetailModal({
   onEdit,
   projectId,
 }: ProductDetailModalProps) {
+  const t = useTranslations("ProductDetailModal");
+  const poStatusLabels: Record<string, string> = {
+    draft: t("statusDraft"),
+    sent: t("statusSent"),
+    confirmed: t("statusConfirmed"),
+    received: t("statusReceived"),
+    cancelled: t("statusCancelled"),
+  };
   // Si hay projectItem, usar sus datos; si no, usar product
   const displayProduct = projectItem || product;
 
@@ -55,7 +56,7 @@ export function ProductDetailModal({
   const supplierName =
     projectItem?.product?.supplier?.name ||
     product?.supplier?.name ||
-    "Sin proveedor";
+    t("noSupplier");
   const costPrice = projectItem
     ? projectItem.unit_cost
     : product?.cost_price || 0;
@@ -84,7 +85,7 @@ export function ProductDetailModal({
               </div>
             ) : (
               <div className="bg-secondary/30 dark:bg-muted flex aspect-square items-center justify-center rounded-lg">
-                <span className="text-muted-foreground">Sin imagen</span>
+                <span className="text-muted-foreground">{t("noImage")}</span>
               </div>
             )}
           </div>
@@ -94,7 +95,7 @@ export function ProductDetailModal({
             {description && (
               <div>
                 <h3 className="text-muted-foreground mb-1 text-sm font-medium">
-                  Descripción
+                  {t("description")}
                 </h3>
                 <p className="text-sm whitespace-pre-wrap">{description}</p>
               </div>
@@ -103,25 +104,25 @@ export function ProductDetailModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <h3 className="text-muted-foreground mb-1 text-sm font-medium">
-                  Proveedor
+                  {t("supplier")}
                 </h3>
                 <p className="text-sm">{supplierName}</p>
               </div>
               <div>
                 <h3 className="text-muted-foreground mb-1 text-sm font-medium">
-                  Referencia
+                  {t("reference")}
                 </h3>
                 <p className="font-mono text-sm">{referenceCode || "-"}</p>
               </div>
               <div>
                 <h3 className="text-muted-foreground mb-1 text-sm font-medium">
-                  Categoría
+                  {t("category")}
                 </h3>
                 <p className="text-sm">{category || "-"}</p>
               </div>
               <div>
                 <h3 className="text-muted-foreground mb-1 text-sm font-medium">
-                  Código
+                  {t("code")}
                 </h3>
                 <p className="font-mono text-sm">{internalReference || "-"}</p>
               </div>
@@ -130,7 +131,7 @@ export function ProductDetailModal({
             {referenceUrl && (
               <div>
                 <h3 className="text-muted-foreground mb-1 text-sm font-medium">
-                  URL de Referencia
+                  {t("referenceUrl")}
                 </h3>
                 <a
                   href={referenceUrl}
@@ -146,7 +147,7 @@ export function ProductDetailModal({
             <div className="space-y-3 border-t pt-4">
               <div className="flex justify-between">
                 <span className="text-muted-foreground text-sm font-medium">
-                  Costo Unitario
+                  {t("unitCost")}
                 </span>
                 <span className="font-mono text-sm">
                   ${costPrice.toFixed(2)}
@@ -156,7 +157,7 @@ export function ProductDetailModal({
               {quantity && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground text-sm font-medium">
-                    Cantidad
+                    {t("quantity")}
                   </span>
                   <span className="text-sm">{quantity}</span>
                 </div>
@@ -165,7 +166,7 @@ export function ProductDetailModal({
               {unitPrice && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground text-sm font-medium">
-                    Precio de Venta
+                    {t("salePrice")}
                   </span>
                   <span className="font-mono text-sm">
                     ${unitPrice.toFixed(2)}
@@ -175,7 +176,7 @@ export function ProductDetailModal({
 
               {quantity && unitPrice && (
                 <div className="flex justify-between border-t pt-3">
-                  <span className="font-medium">Total</span>
+                  <span className="font-medium">{t("total")}</span>
                   <span className="text-lg font-bold">
                     ${(unitPrice * quantity).toFixed(2)}
                   </span>
@@ -187,26 +188,30 @@ export function ProductDetailModal({
               projectItem.purchase_order.status !== "cancelled" && (
                 <div className="bg-muted/50 dark:bg-muted/20 space-y-2 rounded-lg border p-4">
                   <h3 className="text-foreground text-sm font-semibold">
-                    Orden de compra
+                    {t("purchaseOrder")}
                   </h3>
                   <div className="space-y-1 text-sm">
                     <p>
-                      <span className="text-muted-foreground">Ref:</span>{" "}
+                      <span className="text-muted-foreground">
+                        {t("poRef")}:
+                      </span>{" "}
                       <span className="font-medium">
                         {projectItem.purchase_order.order_number}
                       </span>
                     </p>
                     <p>
-                      <span className="text-muted-foreground">Estado:</span>{" "}
+                      <span className="text-muted-foreground">
+                        {t("status")}:
+                      </span>{" "}
                       <span className="font-medium">
-                        {PO_STATUS_LABELS[projectItem.purchase_order.status] ??
+                        {poStatusLabels[projectItem.purchase_order.status] ??
                           projectItem.purchase_order.status}
                       </span>
                     </p>
                     {projectItem.purchase_order.delivery_date && (
                       <p>
                         <span className="text-muted-foreground">
-                          Fecha de entrega:
+                          {t("deliveryDate")}:
                         </span>{" "}
                         <span className="font-medium">
                           {new Date(
@@ -223,7 +228,7 @@ export function ProductDetailModal({
                       projectItem.purchase_order.delivery_deadline && (
                         <p>
                           <span className="text-muted-foreground">
-                            Plazo de entrega:
+                            {t("deliveryDeadline")}:
                           </span>{" "}
                           <span className="font-medium">
                             {projectItem.purchase_order.delivery_deadline}
@@ -240,11 +245,11 @@ export function ProductDetailModal({
           {projectItem && projectId && onEdit && (
             <Button onClick={onEdit} variant="default">
               <Pencil className="mr-2 h-4 w-4" />
-              Editar
+              {t("edit")}
             </Button>
           )}
           <Button onClick={() => onOpenChange(false)} variant="outline">
-            Cerrar
+            {t("close")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -270,9 +270,7 @@ export default function CustomizationPage() {
         <h1 className="text-foreground text-3xl font-bold tracking-tight">
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-1">
-          {t("description")}
-        </p>
+        <p className="text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
       <div className="flex flex-col gap-8">
@@ -360,9 +358,7 @@ export default function CustomizationPage() {
               <FileSpreadsheet className="text-primary h-5 w-5" />
               <CardTitle>{t("budgetTitle")}</CardTitle>
             </div>
-            <CardDescription>
-              {t("budgetDescription")}
-            </CardDescription>
+            <CardDescription>{t("budgetDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Form {...formPresupuesto}>
@@ -381,7 +377,7 @@ export default function CustomizationPage() {
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Ej. Estudio García Interiorismo"
+                          placeholder={t("publicNamePlaceholder")}
                           className={INPUT_CONFIG_STANDARD_CLASS}
                           {...field}
                           value={field.value ?? ""}
@@ -416,7 +412,7 @@ export default function CustomizationPage() {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="Ej. contacto@tuestudio.com"
+                          placeholder={t("publicEmailPlaceholder")}
                           className={INPUT_CONFIG_STANDARD_CLASS}
                           {...field}
                           value={field.value ?? ""}
@@ -439,8 +435,8 @@ export default function CustomizationPage() {
                   }
                 >
                   {formPresupuesto.formState.isSubmitting
-                      ? t("saving")
-                      : t("saveChanges")}
+                    ? t("saving")
+                    : t("saveChanges")}
                 </Button>
                 {isBasePlan && (
                   <p className="text-muted-foreground text-xs">
@@ -471,9 +467,7 @@ export default function CustomizationPage() {
               <SlidersHorizontal className="text-primary h-5 w-5" />
               <CardTitle>{t("defaultsTitle")}</CardTitle>
             </div>
-            <CardDescription>
-              {t("defaultsDescription")}
-            </CardDescription>
+            <CardDescription>{t("defaultsDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Form {...formDefaults}>

@@ -36,12 +36,14 @@ import {
 } from "@/lib/contact-validation";
 import { PhoneInput } from "@/components/ui/phone-input";
 
-const formSchema = z.object({
-  full_name: z.string().min(2, "Nombre requerido"),
-  email: optionalEmailSchema,
-  phone: optionalPhoneSchema,
-  address: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    full_name: z.string().min(2, t("validationNameRequired")),
+    email: optionalEmailSchema,
+    phone: optionalPhoneSchema,
+    address: z.string().optional(),
+  });
+}
 
 interface ClientDialogProps {
   open: boolean;
@@ -59,6 +61,7 @@ export function ClientDialog({
   const t = useTranslations("DialogClient");
   const { user } = useAuth();
   const supabase = getSupabaseClient();
+  const formSchema = buildFormSchema(t);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

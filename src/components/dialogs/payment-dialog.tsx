@@ -39,40 +39,42 @@ import {
   formatCurrency,
 } from "@/lib/utils";
 
-const formSchema = z
-  .object({
-    amount: z.number().min(0.01, "El monto debe ser mayor a 0"),
-    payment_date: z.string().min(1, "Fecha requerida"),
-    reference_number: z.string().optional(),
-    description: z.string().optional(),
-    payment_type: z.enum([
-      "fees",
-      "purchase_provision",
-      "additional_cost",
-      "other",
-    ]),
-    purchase_order_id: z.string().optional(),
-    additional_cost_id: z.string().optional(),
-    phase: z
-      .enum([
-        "diagnosis",
-        "design",
-        "executive",
-        "budget",
-        "construction",
-        "delivery",
-      ])
-      .optional(),
-  })
-  .refine(
-    () => {
-      // Flexible: permite pagos sin asociación
-      return true;
-    },
-    {
-      message: "Especifica al menos una asociación o tipo de pago",
-    }
-  );
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z
+    .object({
+      amount: z.number().min(0.01, t("validationAmountPositive")),
+      payment_date: z.string().min(1, t("validationDateRequired")),
+      reference_number: z.string().optional(),
+      description: z.string().optional(),
+      payment_type: z.enum([
+        "fees",
+        "purchase_provision",
+        "additional_cost",
+        "other",
+      ]),
+      purchase_order_id: z.string().optional(),
+      additional_cost_id: z.string().optional(),
+      phase: z
+        .enum([
+          "diagnosis",
+          "design",
+          "executive",
+          "budget",
+          "construction",
+          "delivery",
+        ])
+        .optional(),
+    })
+    .refine(
+      () => {
+        // Flexible: permite pagos sin asociación
+        return true;
+      },
+      {
+        message: t("validationAssociationOrType"),
+      }
+    );
+}
 
 interface PaymentDialogProps {
   open: boolean;
@@ -96,6 +98,7 @@ export function PaymentDialog({
   currency = "EUR",
 }: PaymentDialogProps) {
   const t = useTranslations("DialogPayment");
+  const formSchema = buildFormSchema(t);
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
@@ -433,14 +436,20 @@ export function PaymentDialog({
                       <SelectItem value="__none__">
                         {t("noneFemale")}
                       </SelectItem>
-                      <SelectItem value="diagnosis">1. Diagnóstico</SelectItem>
-                      <SelectItem value="design">2. Diseño</SelectItem>
-                      <SelectItem value="executive">
-                        3. Proyecto Ejecutivo
+                      <SelectItem value="diagnosis">
+                        {t("phaseDiagnosis")}
                       </SelectItem>
-                      <SelectItem value="budget">4. Presupuestos</SelectItem>
-                      <SelectItem value="construction">5. Obra</SelectItem>
-                      <SelectItem value="delivery">6. Entrega</SelectItem>
+                      <SelectItem value="design">{t("phaseDesign")}</SelectItem>
+                      <SelectItem value="executive">
+                        {t("phaseExecutive")}
+                      </SelectItem>
+                      <SelectItem value="budget">{t("phaseBudget")}</SelectItem>
+                      <SelectItem value="construction">
+                        {t("phaseConstruction")}
+                      </SelectItem>
+                      <SelectItem value="delivery">
+                        {t("phaseDelivery")}
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

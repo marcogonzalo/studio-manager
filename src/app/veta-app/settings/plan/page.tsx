@@ -14,18 +14,6 @@ import type { PlanConfig } from "@/types";
 import { appPath } from "@/lib/app-paths";
 import { reportError } from "@/lib/utils";
 
-const PLAN_DISPLAY_NAMES: Record<string, string> = {
-  BASE: "Base",
-  PRO: "Pro",
-  STUDIO: "Studio",
-};
-
-const DURATION_LABELS: Record<string, string> = {
-  "1m": "Mensual",
-  "1y": "Anual",
-  "15d": "Prueba 15 días",
-};
-
 interface PlanAssignmentRow {
   id: string;
   assigned_at: string;
@@ -42,14 +30,6 @@ interface UsageCounts {
   products: number;
   storage: number; // in bytes
 }
-
-const CONSUMABLE_LABELS: Record<keyof UsageCounts, string> = {
-  projects: "Proyectos activos",
-  clients: "Clientes",
-  suppliers: "Proveedores",
-  products: "Productos en catálogo",
-  storage: "Almacenamiento",
-};
 
 const CONSUMABLE_ICONS: Record<
   keyof UsageCounts,
@@ -90,6 +70,23 @@ function formatBytes(bytes: number): string {
 
 export default function SettingsPlanPage() {
   const t = useTranslations("SettingsPlan");
+  const planDisplayNames: Record<string, string> = {
+    BASE: t("planBase"),
+    PRO: t("planPro"),
+    STUDIO: t("planStudio"),
+  };
+  const durationLabels: Record<string, string> = {
+    "1m": t("durationMonthly"),
+    "1y": t("durationYearly"),
+    "15d": t("durationTrial15d"),
+  };
+  const consumableLabels: Record<keyof UsageCounts, string> = {
+    projects: t("consumableProjects"),
+    clients: t("consumableClients"),
+    suppliers: t("consumableSuppliers"),
+    products: t("consumableProducts"),
+    storage: t("consumableStorage"),
+  };
   const { formatDate } = useAppFormatting();
   const { user, effectivePlan, planLoading } = useAuth();
   const supabase = getSupabaseClient();
@@ -175,8 +172,7 @@ export default function SettingsPlanPage() {
   }
 
   const currentPlanCode = effectivePlan?.plan_code ?? "BASE";
-  const currentPlanLabel =
-    PLAN_DISPLAY_NAMES[currentPlanCode] ?? currentPlanCode;
+  const currentPlanLabel = planDisplayNames[currentPlanCode] ?? currentPlanCode;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -201,7 +197,7 @@ export default function SettingsPlanPage() {
   const periodPillLabel =
     currentPlanCode === "BASE"
       ? "∞"
-      : (DURATION_LABELS[currentAssignment?.duration ?? ""] ?? t("unknown"));
+      : (durationLabels[currentAssignment?.duration ?? ""] ?? t("unknown"));
 
   return (
     <div className="space-y-8">
@@ -209,9 +205,7 @@ export default function SettingsPlanPage() {
         <h1 className="text-foreground flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight">
           {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-1">
-          {t("description")}
-        </p>
+        <p className="text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
       <Card className="bg-primary/5 border-primary/20">
@@ -268,7 +262,7 @@ export default function SettingsPlanPage() {
                       : limitMB === 0
                         ? 0
                         : Math.min(100, (usedBytes / limitBytes) * 100);
-                    const label = CONSUMABLE_LABELS.storage;
+                    const label = consumableLabels.storage;
                     const Icon = CONSUMABLE_ICONS.storage;
                     return (
                       <div key={key}>
@@ -303,7 +297,7 @@ export default function SettingsPlanPage() {
                     : limit === 0
                       ? 0
                       : Math.min(100, (used / limit) * 100);
-                  const label = CONSUMABLE_LABELS[key];
+                  const label = consumableLabels[key];
                   const Icon = CONSUMABLE_ICONS[key];
                   return (
                     <div key={key}>
@@ -340,16 +334,14 @@ export default function SettingsPlanPage() {
             {t("loadingHistory")}
           </div>
         ) : pastHistory.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            {t("noHistory")}
-          </p>
+          <p className="text-muted-foreground text-sm">{t("noHistory")}</p>
         ) : (
           <ul className="space-y-2">
             {pastHistory.map((row) => {
               const planCode = row.plans?.code ?? "—";
-              const planLabel = PLAN_DISPLAY_NAMES[planCode] ?? planCode;
+              const planLabel = planDisplayNames[planCode] ?? planCode;
               const durationLabel =
-                DURATION_LABELS[row.duration] ?? row.duration;
+                durationLabels[row.duration] ?? row.duration;
               return (
                 <li key={row.id}>
                   <Card>

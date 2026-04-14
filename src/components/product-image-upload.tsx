@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ImageIcon, Loader2, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateImageFile } from "@/lib/image-validation";
 
@@ -36,6 +37,7 @@ export function ProductImageUpload({
   disabled = false,
   className,
 }: ProductImageUploadProps) {
+  const t = useTranslations("ProductImageUpload");
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export function ProductImageUpload({
         };
 
         if (!res.ok) {
-          const msg = data.error || "Error al subir la imagen";
+          const msg = data.error || t("uploadError");
           setError(msg);
           onUploadError?.(msg);
           return;
@@ -85,8 +87,7 @@ export function ProductImageUpload({
           onUploadSuccess(data.url, data.fileSizeBytes, data.assetId);
         }
       } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : "Error al subir la imagen";
+        const msg = err instanceof Error ? err.message : t("uploadError");
         setError(msg);
         onUploadError?.(msg);
       } finally {
@@ -169,8 +170,8 @@ export function ProductImageUpload({
           onChange={handleFileInput}
           disabled={disabled || isUploading}
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
-          aria-label="Seleccionar imagen"
-          title="Seleccionar imagen"
+          aria-label={t("selectImageAria")}
+          title={t("selectImageTitle")}
         />
         {isUploading ? (
           <Loader2 className="text-muted-foreground h-10 w-10 animate-spin" />
@@ -179,11 +180,11 @@ export function ProductImageUpload({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={pendingPreviewUrl}
-              alt="Vista previa (se subirá al guardar)"
+              alt={t("previewPendingAlt")}
               className="max-h-[180px] max-w-full object-contain"
             />
             <p className="text-muted-foreground mt-2 text-center text-xs">
-              Imagen lista para subir cuando se guarde el producto.
+              {t("pendingUpload")}
             </p>
           </div>
         ) : previewUrl ? (
@@ -191,7 +192,7 @@ export function ProductImageUpload({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={previewUrl}
-              alt="Vista previa"
+              alt={t("previewAlt")}
               className="max-h-[180px] max-w-full object-contain"
             />
           </div>
@@ -199,20 +200,17 @@ export function ProductImageUpload({
           <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
             <ImageIcon className="text-muted-foreground h-10 w-10" />
             <div className="text-muted-foreground text-sm">
-              <p className="font-medium">Arrastra una imagen aquí</p>
-              <p>o haz clic para seleccionar</p>
+              <p className="font-medium">{t("dropImage")}</p>
+              <p>{t("clickToSelect")}</p>
             </div>
-            <p className="text-muted-foreground/80 text-xs">
-              JPG, PNG o WebP (máx. 5MB)
-            </p>
+            <p className="text-muted-foreground/80 text-xs">{t("formats")}</p>
             {deferUpload ? (
               <p className="text-muted-foreground/70 text-xs">
-                La imagen se subirá al guardar el producto.
+                {t("deferredHint")}
               </p>
             ) : (
               <p className="text-muted-foreground/70 text-xs">
-                La imagen será redimensionada a 1200px como máximo y convertida
-                a formato WebP.
+                {t("resizeHint")}
               </p>
             )}
           </div>

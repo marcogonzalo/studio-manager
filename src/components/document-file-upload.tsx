@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { FileIcon, Loader2, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateDocumentFile } from "@/lib/document-validation";
 
@@ -32,6 +33,7 @@ export function DocumentFileUpload({
   disabled = false,
   className,
 }: DocumentFileUploadProps) {
+  const t = useTranslations("DocumentFileUpload");
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,8 +52,7 @@ export function DocumentFileUpload({
         try {
           await onBeforeUpload();
         } catch (err) {
-          const msg =
-            err instanceof Error ? err.message : "Error al crear el documento";
+          const msg = err instanceof Error ? err.message : t("createError");
           setError(msg);
           onUploadError?.(msg);
           return;
@@ -78,7 +79,7 @@ export function DocumentFileUpload({
         };
 
         if (!res.ok) {
-          const msg = data.error || "Error al subir el documento";
+          const msg = data.error || t("uploadError");
           setError(msg);
           onUploadError?.(msg);
           return;
@@ -93,8 +94,7 @@ export function DocumentFileUpload({
           );
         }
       } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : "Error al subir el documento";
+        const msg = err instanceof Error ? err.message : t("uploadError");
         setError(msg);
         onUploadError?.(msg);
       } finally {
@@ -156,7 +156,7 @@ export function DocumentFileUpload({
           onChange={handleFileInput}
           disabled={disabled || isUploading}
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
-          aria-label="Seleccionar documento"
+          aria-label={t("selectDocumentAria")}
         />
         {isUploading ? (
           <Loader2 className="text-muted-foreground h-10 w-10 animate-spin" />
@@ -164,19 +164,17 @@ export function DocumentFileUpload({
           <div className="flex flex-col items-center gap-2 p-4">
             <FileIcon className="text-muted-foreground h-10 w-10" />
             <p className="text-muted-foreground max-w-[200px] truncate text-center text-sm">
-              Documento subido
+              {t("uploaded")}
             </p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
             <FileIcon className="text-muted-foreground h-10 w-10" />
             <div className="text-muted-foreground text-sm">
-              <p className="font-medium">Arrastra un documento aquí</p>
-              <p>o haz clic para seleccionar</p>
+              <p className="font-medium">{t("dropDocument")}</p>
+              <p>{t("clickToSelect")}</p>
             </div>
-            <p className="text-muted-foreground/80 text-xs">
-              PDFs, docs, hojas de cálculo, presentaciones, texto… (máx. 10MB)
-            </p>
+            <p className="text-muted-foreground/80 text-xs">{t("formats")}</p>
           </div>
         )}
       </div>

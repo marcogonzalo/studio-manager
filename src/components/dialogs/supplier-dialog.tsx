@@ -31,13 +31,15 @@ import {
 } from "@/lib/contact-validation";
 import { PhoneInput } from "@/components/ui/phone-input";
 
-const formSchema = z.object({
-  name: z.string().min(2, "Nombre requerido"),
-  contact_name: z.string().optional(),
-  email: optionalEmailSchema,
-  phone: optionalPhoneSchema,
-  website: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    name: z.string().min(2, t("validationNameRequired")),
+    contact_name: z.string().optional(),
+    email: optionalEmailSchema,
+    phone: optionalPhoneSchema,
+    website: z.string().optional(),
+  });
+}
 
 interface SupplierDialogProps {
   open: boolean;
@@ -55,6 +57,7 @@ export function SupplierDialog({
   const t = useTranslations("DialogSupplier");
   const { user } = useAuth();
   const supabase = getSupabaseClient();
+  const formSchema = buildFormSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
