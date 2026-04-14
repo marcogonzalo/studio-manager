@@ -46,5 +46,21 @@
     "budget": "Presupuestos",
     "construction": "Obra",
     "delivery": "Entrega"
+  },
+  "ProjectDetailModal": {
+    "title": "Detalle del Proyecto",
+    "description": "Información del proyecto. Usa Editar para modificar.",
+    "projectName": "Nombre del Proyecto",
+    "client": "Cliente",
+    "address": "Dirección",
+    "descriptionLabel": "Descripción",
+    "projectPhase": "Fase del Proyecto",
+    "status": "Estado",
+    "startDate": "Fecha Inicio",
+    "estimatedDeliveryDate": "Fecha Estimada de Entrega",
+    "currency": "Moneda",
+    "tax": "Impuesto (%)",
+    "edit": "Editar",
+    "close": "Cerrar"
   }
 }

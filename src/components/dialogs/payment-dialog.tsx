@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +95,7 @@ export function PaymentDialog({
   defaultAdditionalCostId,
   currency = "EUR",
 }: PaymentDialogProps) {
+  const t = useTranslations("DialogPayment");
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
@@ -210,12 +212,12 @@ export function PaymentDialog({
           .eq("id", payment.id);
 
         if (error) throw error;
-        toast.success("Pago actualizado");
+        toast.success(t("toastUpdated"));
       } else {
         const { error } = await supabase.from("payments").insert([paymentData]);
 
         if (error) throw error;
-        toast.success("Pago registrado");
+        toast.success(t("toastCreated"));
       }
 
       form.reset();
@@ -233,8 +235,8 @@ export function PaymentDialog({
         error instanceof Error
           ? error.message
           : payment
-            ? "Error al actualizar pago"
-            : "Error al registrar pago";
+            ? t("toastUpdateError")
+            : t("toastCreateError");
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -245,11 +247,9 @@ export function PaymentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{payment ? "Editar" : "Nuevo"} Pago</DialogTitle>
+          <DialogTitle>{payment ? t("titleEdit") : t("titleNew")}</DialogTitle>
           <DialogDescription>
-            {payment
-              ? "Edita la información del pago."
-              : "Registra un nuevo pago del cliente."}
+            {payment ? t("descriptionEdit") : t("descriptionNew")}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -259,12 +259,14 @@ export function PaymentDialog({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monto ({getCurrencySymbol(currency)})</FormLabel>
+                  <FormLabel>
+                    {t("amountLabel")} ({getCurrencySymbol(currency)})
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.01"
-                      placeholder="0.00"
+                      placeholder={t("amountPlaceholder")}
                       {...field}
                       onChange={(e) =>
                         field.onChange(parseFloat(e.target.value) || 0)
@@ -282,7 +284,7 @@ export function PaymentDialog({
               name="payment_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Fecha del Pago</FormLabel>
+                  <FormLabel>{t("paymentDateLabel")}</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -296,12 +298,9 @@ export function PaymentDialog({
               name="reference_number"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Número de Referencia</FormLabel>
+                  <FormLabel>{t("referenceLabel")}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Transferencia, cheque, etc."
-                      {...field}
-                    />
+                    <Input placeholder={t("referencePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -313,22 +312,24 @@ export function PaymentDialog({
               name="payment_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Pago</FormLabel>
+                  <FormLabel>{t("paymentTypeLabel")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un tipo" />
+                        <SelectValue
+                          placeholder={t("paymentTypePlaceholder")}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="fees">Honorarios</SelectItem>
+                      <SelectItem value="fees">{t("typeFees")}</SelectItem>
                       <SelectItem value="purchase_provision">
-                        Provisión de Compras
+                        {t("typePurchaseProvision")}
                       </SelectItem>
                       <SelectItem value="additional_cost">
-                        Coste Adicional
+                        {t("typeAdditionalCost")}
                       </SelectItem>
-                      <SelectItem value="other">Otro</SelectItem>
+                      <SelectItem value="other">{t("typeOther")}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -342,7 +343,7 @@ export function PaymentDialog({
                 name="purchase_order_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Orden de Compra</FormLabel>
+                    <FormLabel>{t("purchaseOrderLabel")}</FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value === "__none__" ? "" : value)
@@ -351,11 +352,15 @@ export function PaymentDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona una orden de compra (opcional)" />
+                          <SelectValue
+                            placeholder={t("purchaseOrderPlaceholder")}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="__none__">Ninguna</SelectItem>
+                        <SelectItem value="__none__">
+                          {t("noneFemale")}
+                        </SelectItem>
                         {purchaseOrders.map((po) => (
                           <SelectItem key={po.id} value={po.id}>
                             {po.order_number || `PO ${po.id.slice(0, 8)}`}
@@ -375,7 +380,7 @@ export function PaymentDialog({
                 name="additional_cost_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Coste Adicional</FormLabel>
+                    <FormLabel>{t("additionalCostLabel")}</FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value === "__none__" ? "" : value)
@@ -384,11 +389,15 @@ export function PaymentDialog({
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un coste adicional (opcional)" />
+                          <SelectValue
+                            placeholder={t("additionalCostPlaceholder")}
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="__none__">Ninguno</SelectItem>
+                        <SelectItem value="__none__">
+                          {t("noneMale")}
+                        </SelectItem>
                         {additionalCosts.map((cost) => (
                           <SelectItem key={cost.id} value={cost.id}>
                             {cost.cost_type} -{" "}
@@ -408,7 +417,7 @@ export function PaymentDialog({
               name="phase"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Fase del Proyecto</FormLabel>
+                  <FormLabel>{t("phaseLabel")}</FormLabel>
                   <Select
                     onValueChange={(value) =>
                       field.onChange(value === "__none__" ? undefined : value)
@@ -417,11 +426,13 @@ export function PaymentDialog({
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona una fase (opcional)" />
+                        <SelectValue placeholder={t("phasePlaceholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="__none__">Ninguna</SelectItem>
+                      <SelectItem value="__none__">
+                        {t("noneFemale")}
+                      </SelectItem>
                       <SelectItem value="diagnosis">1. Diagnóstico</SelectItem>
                       <SelectItem value="design">2. Diseño</SelectItem>
                       <SelectItem value="executive">
@@ -442,10 +453,10 @@ export function PaymentDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descripción</FormLabel>
+                  <FormLabel>{t("descriptionLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Descripción adicional del pago..."
+                      placeholder={t("descriptionPlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -456,7 +467,7 @@ export function PaymentDialog({
 
             <DialogFooter>
               <Button type="submit" disabled={loading}>
-                {payment ? "Guardar Cambios" : "Registrar Pago"}
+                {payment ? t("saveChanges") : t("registerPayment")}
               </Button>
             </DialogFooter>
           </form>

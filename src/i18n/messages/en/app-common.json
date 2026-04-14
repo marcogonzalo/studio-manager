@@ -46,5 +46,21 @@
     "budget": "Budget",
     "construction": "Construction",
     "delivery": "Delivery"
+  },
+  "ProjectDetailModal": {
+    "title": "Project details",
+    "description": "Project information. Use Edit to modify.",
+    "projectName": "Project name",
+    "client": "Client",
+    "address": "Address",
+    "descriptionLabel": "Description",
+    "projectPhase": "Project phase",
+    "status": "Status",
+    "startDate": "Start date",
+    "estimatedDeliveryDate": "Estimated delivery date",
+    "currency": "Currency",
+    "tax": "Tax (%)",
+    "edit": "Edit",
+    "close": "Close"
   }
 }

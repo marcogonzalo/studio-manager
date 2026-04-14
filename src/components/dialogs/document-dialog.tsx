@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -63,6 +64,7 @@ export function DocumentDialog({
   projectId,
   onSuccess,
 }: DocumentDialogProps) {
+  const t = useTranslations("DialogDocument");
   const [loading, setLoading] = useState(false);
   const uploadedFileUrlRef = useRef<string | null>(null);
   const uploadedFileSizeBytesRef = useRef<number | null>(null);
@@ -110,7 +112,7 @@ export function DocumentDialog({
         .eq("id", documentIdForUpload)
         .eq("project_id", projectId);
     }
-    toast.success("Documento subido");
+    toast.success(t("toastUploaded"));
   };
 
   const cleanupOrphanUpload = async () => {
@@ -125,7 +127,7 @@ export function DocumentDialog({
     if (documentRowCreatedForUploadRef.current) return;
     const { getSupabaseClient } = await import("@/lib/supabase");
     const supabase = getSupabaseClient();
-    const name = form.getValues("name")?.trim() || "Sin título";
+    const name = form.getValues("name")?.trim() || t("untitled");
     const { error } = await supabase.from("project_documents").insert([
       {
         id: documentIdForUpload,
@@ -147,7 +149,7 @@ export function DocumentDialog({
         uploadedFileSizeBytesRef.current = null;
         uploadedAssetIdRef.current = null;
         documentRowCreatedForUploadRef.current = false;
-        toast.success("Documento añadido");
+        toast.success(t("toastAdded"));
         form.reset({ name: "", file_url: "" });
         onOpenChange(false);
         onSuccess();
@@ -184,7 +186,7 @@ export function DocumentDialog({
       uploadedFileSizeBytesRef.current = null;
       uploadedAssetIdRef.current = null;
 
-      toast.success("Documento añadido");
+      toast.success(t("toastAdded"));
       form.reset({ name: "", file_url: "" });
       onOpenChange(false);
       onSuccess();
@@ -198,9 +200,7 @@ export function DocumentDialog({
         return;
       }
       await cleanupOrphanUpload();
-      toast.error(
-        err instanceof Error ? err.message : "Error al añadir documento"
-      );
+      toast.error(err instanceof Error ? err.message : t("toastAddError"));
     } finally {
       setLoading(false);
     }
@@ -231,7 +231,7 @@ export function DocumentDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Añadir documento</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -240,12 +240,9 @@ export function DocumentDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre</FormLabel>
+                  <FormLabel>{t("nameLabel")}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Ej: Plano Planta, Informe..."
-                      {...field}
-                    />
+                    <Input placeholder={t("namePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -257,16 +254,18 @@ export function DocumentDialog({
               name="file_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL / Imagen</FormLabel>
+                  <FormLabel>{t("urlImageLabel")}</FormLabel>
                   <Tabs defaultValue="url" className="w-full">
                     <TabsList>
                       <TabsTrigger value="url">URL</TabsTrigger>
-                      <TabsTrigger value="upload">Subir archivo</TabsTrigger>
+                      <TabsTrigger value="upload">
+                        {t("uploadFile")}
+                      </TabsTrigger>
                     </TabsList>
                     <TabsContent value="url">
                       <FormControl>
                         <Input
-                          placeholder="https://..."
+                          placeholder={t("urlPlaceholder")}
                           {...field}
                           className="mt-2"
                         />
@@ -299,7 +298,7 @@ export function DocumentDialog({
 
             <DialogFooter>
               <Button type="submit" disabled={loading}>
-                Añadir documento
+                {t("add")}
               </Button>
             </DialogFooter>
           </form>
