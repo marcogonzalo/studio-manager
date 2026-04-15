@@ -258,6 +258,7 @@ export interface ProjectItem {
   };
   product?: {
     name?: string;
+    currency?: string;
     supplier?: { name: string };
     description?: string;
     reference_code?: string;

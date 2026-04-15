@@ -961,6 +961,7 @@ export function ProjectBudget({
             onOpenChange={setIsProductModalOpen}
             projectItem={selectedItem}
             projectId={projectId}
+            currency={project?.currency}
             onEdit={
               readOnly
                 ? undefined

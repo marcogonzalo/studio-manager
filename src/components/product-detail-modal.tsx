@@ -10,6 +10,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import type { Product, ProjectItem } from "@/types";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 
 interface ProductDetailModalProps {
   open: boolean;
@@ -18,6 +19,7 @@ interface ProductDetailModalProps {
   projectItem?: ProjectItem | null;
   onEdit?: () => void;
   projectId?: string;
+  currency?: string;
 }
 
 export function ProductDetailModal({
@@ -27,8 +29,10 @@ export function ProductDetailModal({
   projectItem,
   onEdit,
   projectId,
+  currency,
 }: ProductDetailModalProps) {
   const t = useTranslations("ProductDetailModal");
+  const { formatCurrency, formatDate } = useAppFormatting();
   const poStatusLabels: Record<string, string> = {
     draft: t("statusDraft"),
     sent: t("statusSent"),
@@ -62,6 +66,7 @@ export function ProductDetailModal({
     : product?.cost_price || 0;
   const unitPrice = projectItem?.unit_price || undefined;
   const quantity = projectItem?.quantity || undefined;
+  const currencyCode = currency ?? projectItem?.product?.currency ?? product?.currency;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -150,7 +155,7 @@ export function ProductDetailModal({
                   {t("unitCost")}
                 </span>
                 <span className="font-mono text-sm">
-                  ${costPrice.toFixed(2)}
+                  {formatCurrency(costPrice, currencyCode)}
                 </span>
               </div>
 
@@ -169,7 +174,7 @@ export function ProductDetailModal({
                     {t("salePrice")}
                   </span>
                   <span className="font-mono text-sm">
-                    ${unitPrice.toFixed(2)}
+                    {formatCurrency(unitPrice, currencyCode)}
                   </span>
                 </div>
               )}
@@ -178,7 +183,7 @@ export function ProductDetailModal({
                 <div className="flex justify-between border-t pt-3">
                   <span className="font-medium">{t("total")}</span>
                   <span className="text-lg font-bold">
-                    ${(unitPrice * quantity).toFixed(2)}
+                    {formatCurrency(unitPrice * quantity, currencyCode)}
                   </span>
                 </div>
               )}
@@ -214,9 +219,7 @@ export function ProductDetailModal({
                           {t("deliveryDate")}:
                         </span>{" "}
                         <span className="font-medium">
-                          {new Date(
-                            projectItem.purchase_order.delivery_date
-                          ).toLocaleDateString("es-ES", {
+                          {formatDate(projectItem.purchase_order.delivery_date, {
                             day: "2-digit",
                             month: "2-digit",
                             year: "numeric",
