@@ -70,6 +70,122 @@
     "estimatedSuffix": "el estimado",
     "negativeMarginTitle": "Margen negativo",
     "negativeMarginDescription": "Los costes superan el presupuesto del cliente en",
-    "allGood": "Todo en orden. No hay alertas."
+    "allGood": "Todo en orden. No hay alertas.",
+    "budgetCategory": {
+      "construction": "Obra",
+      "own_fees": "Honorarios Propios",
+      "external_services": "Servicios Externos",
+      "operations": "Gastos Operativos"
+    }
+  },
+  "ProjectModuleBudget": {
+    "status": {
+      "pending": "Pendiente",
+      "ordered": "Pedido",
+      "received": "Recibido",
+      "installed": "Instalado",
+      "completed": "Completado",
+      "cancelled": "Cancelado"
+    },
+    "spaceGeneral": "General",
+    "budgetCategory": {
+      "construction": "Obra",
+      "own_fees": "Honorarios Propios",
+      "external_services": "Servicios Externos",
+      "operations": "Gastos Operativos"
+    },
+    "budgetSubcategory": {
+      "construction": {
+        "demolition": "Demolición",
+        "masonry": "Albañilería",
+        "electricity": "Electricidad",
+        "plumbing": "Fontanería",
+        "interior_painting": "Pintura Interior",
+        "exterior_painting": "Pintura Exterior",
+        "domotics": "Domótica",
+        "carpentry": "Carpintería",
+        "locksmithing": "Cerrajería",
+        "hvac": "Climatización",
+        "flooring": "Suelos y Pavimentos",
+        "tiling": "Alicatados",
+        "other": "Otros"
+      },
+      "own_fees": {
+        "design": "Diseño",
+        "executive_project": "Proyecto Ejecutivo",
+        "site_supervision": "Supervisión de Obra",
+        "management": "Gestión y Coordinación",
+        "other": "Otros"
+      },
+      "external_services": {
+        "technical_architect": "Arquitecto Técnico",
+        "engineering": "Ingenierías",
+        "logistics": "Logística",
+        "permits": "Gestión de Permisos",
+        "consulting": "Consultoría",
+        "other": "Otros"
+      },
+      "operations": {
+        "shipping": "Envío",
+        "packaging": "Embalaje",
+        "transport": "Transporte",
+        "storage": "Almacenamiento",
+        "insurance": "Seguros",
+        "customs": "Aduanas",
+        "handling": "Manipulación",
+        "other": "Otros"
+      }
+    }
+  },
+  "ProjectModuleCostControl": {
+    "pending": "Pendiente",
+    "budgetCategory": {
+      "construction": "Obra",
+      "own_fees": "Honorarios Propios",
+      "external_services": "Servicios Externos",
+      "operations": "Gastos Operativos"
+    },
+    "budgetSubcategory": {
+      "construction": {
+        "demolition": "Demolición",
+        "masonry": "Albañilería",
+        "electricity": "Electricidad",
+        "plumbing": "Fontanería",
+        "interior_painting": "Pintura Interior",
+        "exterior_painting": "Pintura Exterior",
+        "domotics": "Domótica",
+        "carpentry": "Carpintería",
+        "locksmithing": "Cerrajería",
+        "hvac": "Climatización",
+        "flooring": "Suelos y Pavimentos",
+        "tiling": "Alicatados",
+        "other": "Otros"
+      },
+      "own_fees": {
+        "design": "Diseño",
+        "executive_project": "Proyecto Ejecutivo",
+        "site_supervision": "Supervisión de Obra",
+        "management": "Gestión y Coordinación",
+        "other": "Otros"
+      },
+      "external_services": {
+        "technical_architect": "Arquitecto Técnico",
+        "engineering": "Ingenierías",
+        "logistics": "Logística",
+        "permits": "Gestión de Permisos",
+        "consulting": "Consultoría",
+        "other": "Otros"
+      },
+      "operations": {
+        "shipping": "Envío",
+        "packaging": "Embalaje",
+        "transport": "Transporte",
+        "storage": "Almacenamiento",
+        "insurance": "Seguros",
+        "customs": "Aduanas",
+        "handling": "Manipulación",
+        "other": "Otros"
+      }
+    }
   }
 }

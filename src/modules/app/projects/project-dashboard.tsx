@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import {
   getPhaseLabel,
-  getBudgetCategoryLabel,
   isCostCategory,
   reportError,
   reportWarn,
@@ -68,6 +67,12 @@ export function ProjectDashboard({
   disabled = false,
 }: ProjectDashboardProps) {
   const t = useTranslations("ProjectModuleDashboard");
+  const categoryLabels: Record<BudgetCategory, string> = {
+    construction: t("budgetCategory.construction"),
+    own_fees: t("budgetCategory.own_fees"),
+    external_services: t("budgetCategory.external_services"),
+    operations: t("budgetCategory.operations"),
+  };
   const { formatCurrency } = useAppFormatting();
   const supabase = getSupabaseClient();
   const [project, setProject] = useState<Project | null>(null);
@@ -404,7 +409,7 @@ export function ProjectDashboard({
                       <div key={category} className="space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium">
-                            {getBudgetCategoryLabel(category)}
+                            {categoryLabels[category] ?? category}
                           </span>
                           <span
                             className={`rounded-full px-2 py-1 text-xs ${

@@ -30,6 +30,11 @@
     "productQuantityLabel": "Qty:",
     "productPriceLabel": "Price:",
     "productRefLabel": "Ref:",
+    "productStatusPending": "Pending",
+    "productStatusOrdered": "Ordered",
+    "productStatusReceived": "Received",
+    "spaceGeneral": "General",
+    "viewImageAria": "View image of {name}",
     "costsTitle": "Project costs",
     "costsNoLines": "No visible budget lines.",
     "costsColDescription": "Description",
@@ -45,6 +50,54 @@
     "costsSummary": "Summary",
     "costsSubtotalLines": "Lines subtotal",
     "costsTax": "Tax ({rate}%)",
-    "costsTotal": "Total"
+    "costsTotal": "Total",
+    "budgetCategory": {
+      "construction": "Construction",
+      "own_fees": "Own Fees",
+      "external_services": "External Services",
+      "operations": "Operating Expenses"
+    },
+    "budgetSubcategory": {
+      "construction": {
+        "demolition": "Demolition",
+        "masonry": "Masonry",
+        "electricity": "Electricity",
+        "plumbing": "Plumbing",
+        "interior_painting": "Interior Painting",
+        "exterior_painting": "Exterior Painting",
+        "domotics": "Home Automation",
+        "carpentry": "Carpentry",
+        "locksmithing": "Locksmithing",
+        "hvac": "HVAC",
+        "flooring": "Flooring",
+        "tiling": "Tiling",
+        "other": "Other"
+      },
+      "own_fees": {
+        "design": "Design",
+        "executive_project": "Executive Project",
+        "site_supervision": "Site Supervision",
+        "management": "Management and Coordination",
+        "other": "Other"
+      },
+      "external_services": {
+        "technical_architect": "Technical Architect",
+        "engineering": "Engineering",
+        "logistics": "Logistics",
+        "permits": "Permits Management",
+        "consulting": "Consulting",
+        "other": "Other"
+      },
+      "operations": {
+        "shipping": "Shipping",
+        "packaging": "Packaging",
+        "transport": "Transport",
+        "storage": "Storage",
+        "insurance": "Insurance",
+        "customs": "Customs",
+        "handling": "Handling",
+        "other": "Other"
+      }
+    }
   }
 }

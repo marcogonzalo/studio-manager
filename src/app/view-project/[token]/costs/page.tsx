@@ -13,7 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrencyWithLang } from "@/lib/formatting";
-import { getBudgetCategoryLabel, getBudgetSubcategoryLabel } from "@/lib/utils";
 import { getViewProjectLocale } from "@/lib/view-project-locale";
 import type { BudgetCategory } from "@/types";
 import type { ProjectPhase } from "@/types";
@@ -48,6 +47,56 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
   setRequestLocale(locale);
   const t = await getTranslations("ViewProject");
   const supabase = await createClient();
+  const categoryLabels: Record<BudgetCategory, string> = {
+    construction: t("budgetCategory.construction"),
+    own_fees: t("budgetCategory.own_fees"),
+    external_services: t("budgetCategory.external_services"),
+    operations: t("budgetCategory.operations"),
+  };
+  const subcategoryLabels: Record<BudgetCategory, Record<string, string>> = {
+    construction: {
+      demolition: t("budgetSubcategory.construction.demolition"),
+      masonry: t("budgetSubcategory.construction.masonry"),
+      electricity: t("budgetSubcategory.construction.electricity"),
+      plumbing: t("budgetSubcategory.construction.plumbing"),
+      interior_painting: t("budgetSubcategory.construction.interior_painting"),
+      exterior_painting: t("budgetSubcategory.construction.exterior_painting"),
+      domotics: t("budgetSubcategory.construction.domotics"),
+      carpentry: t("budgetSubcategory.construction.carpentry"),
+      locksmithing: t("budgetSubcategory.construction.locksmithing"),
+      hvac: t("budgetSubcategory.construction.hvac"),
+      flooring: t("budgetSubcategory.construction.flooring"),
+      tiling: t("budgetSubcategory.construction.tiling"),
+      other: t("budgetSubcategory.construction.other"),
+    },
+    own_fees: {
+      design: t("budgetSubcategory.own_fees.design"),
+      executive_project: t("budgetSubcategory.own_fees.executive_project"),
+      site_supervision: t("budgetSubcategory.own_fees.site_supervision"),
+      management: t("budgetSubcategory.own_fees.management"),
+      other: t("budgetSubcategory.own_fees.other"),
+    },
+    external_services: {
+      technical_architect: t(
+        "budgetSubcategory.external_services.technical_architect"
+      ),
+      engineering: t("budgetSubcategory.external_services.engineering"),
+      logistics: t("budgetSubcategory.external_services.logistics"),
+      permits: t("budgetSubcategory.external_services.permits"),
+      consulting: t("budgetSubcategory.external_services.consulting"),
+      other: t("budgetSubcategory.external_services.other"),
+    },
+    operations: {
+      shipping: t("budgetSubcategory.operations.shipping"),
+      packaging: t("budgetSubcategory.operations.packaging"),
+      transport: t("budgetSubcategory.operations.transport"),
+      storage: t("budgetSubcategory.operations.storage"),
+      insurance: t("budgetSubcategory.operations.insurance"),
+      customs: t("budgetSubcategory.operations.customs"),
+      handling: t("budgetSubcategory.operations.handling"),
+      other: t("budgetSubcategory.operations.other"),
+    },
+  };
 
   const [shareRes, currencyRes, budgetRes, productsRes] = await Promise.all([
     supabase.rpc("get_project_share_by_token", { share_token: token }),
@@ -141,7 +190,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
               <Card key={category}>
                 <CardHeader>
                   <CardTitle className="text-base">
-                    {getBudgetCategoryLabel(category)}
+                    {categoryLabels[category] ?? category}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -164,10 +213,8 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                             {line.description || "—"}
                           </TableCell>
                           <TableCell>
-                            {getBudgetSubcategoryLabel(
-                              category as BudgetCategory,
-                              line.subcategory
-                            )}
+                            {subcategoryLabels[category]?.[line.subcategory] ??
+                              line.subcategory}
                           </TableCell>
                           <TableCell className="text-right font-medium tabular-nums">
                             {formatCurrency(Number(line.estimated_amount))}

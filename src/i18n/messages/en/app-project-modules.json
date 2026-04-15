@@ -70,6 +70,122 @@
     "estimatedSuffix": "the estimate",
     "negativeMarginTitle": "Negative margin",
     "negativeMarginDescription": "Costs exceed client budget by",
-    "allGood": "Everything looks good. No alerts."
+    "allGood": "Everything looks good. No alerts.",
+    "budgetCategory": {
+      "construction": "Construction",
+      "own_fees": "Own Fees",
+      "external_services": "External Services",
+      "operations": "Operating Expenses"
+    }
+  },
+  "ProjectModuleBudget": {
+    "status": {
+      "pending": "Pending",
+      "ordered": "Ordered",
+      "received": "Received",
+      "installed": "Installed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "spaceGeneral": "General",
+    "budgetCategory": {
+      "construction": "Construction",
+      "own_fees": "Own Fees",
+      "external_services": "External Services",
+      "operations": "Operating Expenses"
+    },
+    "budgetSubcategory": {
+      "construction": {
+        "demolition": "Demolition",
+        "masonry": "Masonry",
+        "electricity": "Electricity",
+        "plumbing": "Plumbing",
+        "interior_painting": "Interior Painting",
+        "exterior_painting": "Exterior Painting",
+        "domotics": "Home Automation",
+        "carpentry": "Carpentry",
+        "locksmithing": "Locksmithing",
+        "hvac": "HVAC",
+        "flooring": "Flooring",
+        "tiling": "Tiling",
+        "other": "Other"
+      },
+      "own_fees": {
+        "design": "Design",
+        "executive_project": "Executive Project",
+        "site_supervision": "Site Supervision",
+        "management": "Management and Coordination",
+        "other": "Other"
+      },
+      "external_services": {
+        "technical_architect": "Technical Architect",
+        "engineering": "Engineering",
+        "logistics": "Logistics",
+        "permits": "Permits Management",
+        "consulting": "Consulting",
+        "other": "Other"
+      },
+      "operations": {
+        "shipping": "Shipping",
+        "packaging": "Packaging",
+        "transport": "Transport",
+        "storage": "Storage",
+        "insurance": "Insurance",
+        "customs": "Customs",
+        "handling": "Handling",
+        "other": "Other"
+      }
+    }
+  },
+  "ProjectModuleCostControl": {
+    "pending": "Pending",
+    "budgetCategory": {
+      "construction": "Construction",
+      "own_fees": "Own Fees",
+      "external_services": "External Services",
+      "operations": "Operating Expenses"
+    },
+    "budgetSubcategory": {
+      "construction": {
+        "demolition": "Demolition",
+        "masonry": "Masonry",
+        "electricity": "Electricity",
+        "plumbing": "Plumbing",
+        "interior_painting": "Interior Painting",
+        "exterior_painting": "Exterior Painting",
+        "domotics": "Home Automation",
+        "carpentry": "Carpentry",
+        "locksmithing": "Locksmithing",
+        "hvac": "HVAC",
+        "flooring": "Flooring",
+        "tiling": "Tiling",
+        "other": "Other"
+      },
+      "own_fees": {
+        "design": "Design",
+        "executive_project": "Executive Project",
+        "site_supervision": "Site Supervision",
+        "management": "Management and Coordination",
+        "other": "Other"
+      },
+      "external_services": {
+        "technical_architect": "Technical Architect",
+        "engineering": "Engineering",
+        "logistics": "Logistics",
+        "permits": "Permits Management",
+        "consulting": "Consulting",
+        "other": "Other"
+      },
+      "operations": {
+        "shipping": "Shipping",
+        "packaging": "Packaging",
+        "transport": "Transport",
+        "storage": "Storage",
+        "insurance": "Insurance",
+        "customs": "Customs",
+        "handling": "Handling",
+        "other": "Other"
+      }
+    }
   }
 }
