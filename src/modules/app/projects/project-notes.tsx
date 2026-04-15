@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KeyboardHint } from "@/components/ui/keyboard-hint";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { useAuth } from "@/components/auth-provider";
 import { Trash2, MoreVertical, StickyNote } from "lucide-react";
 import {
@@ -18,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getDemoAccountMessage } from "@/lib/utils";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface Note {
@@ -38,6 +38,7 @@ export function ProjectNotes({
   disabled?: boolean;
 }) {
   const t = useTranslations("ProjectModuleNotes");
+  const { formatDate } = useAppFormatting();
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -263,7 +264,13 @@ export function ProjectNotes({
                     <div className="text-muted-foreground flex justify-between text-xs">
                       <span>{note.user?.full_name || t("userFallback")}</span>
                       <span>
-                        {format(new Date(note.created_at), "dd/MM/yyyy HH:mm")}
+                        {formatDate(note.created_at, {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     </div>
                   </CardContent>
