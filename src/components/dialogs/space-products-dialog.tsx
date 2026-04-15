@@ -29,6 +29,7 @@ import { AddItemDialog } from "@/components/dialogs/add-item-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import type { Space } from "@/types";
 import type { ProjectItem } from "@/types";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 
 interface SpaceProductsDialogProps {
   open: boolean;
@@ -46,8 +47,10 @@ export function SpaceProductsDialog({
   readOnly = false,
 }: SpaceProductsDialogProps) {
   const t = useTranslations("DialogSpaceProducts");
+  const { formatCurrency } = useAppFormatting();
   const supabase = getSupabaseClient();
   const [items, setItems] = useState<ProjectItem[]>([]);
+  const [projectCurrency, setProjectCurrency] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
@@ -56,15 +59,19 @@ export function SpaceProductsDialog({
 
   const fetchItems = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const [{ data, error }, { data: projectData }] = await Promise.all([
+      supabase
       .from("project_items")
       .select(
         "*, product:products(supplier:suppliers(name), description, reference_code, category, image_url), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
       )
       .eq("space_id", space.id)
-      .order("created_at");
+      .order("created_at"),
+      supabase.from("projects").select("currency").eq("id", projectId).single(),
+    ]);
 
     if (!error) setItems(data || []);
+    setProjectCurrency(projectData?.currency);
     setLoading(false);
   };
 
@@ -178,12 +185,15 @@ export function SpaceProductsDialog({
                             {t("quantityShort")} {item.quantity}
                           </span>
                           <span className="text-sm font-medium">
-                            ${item.unit_price.toFixed(2)}
+                            {formatCurrency(item.unit_price, projectCurrency)}
                           </span>
                         </div>
                         <div className="border-t pt-2 text-right text-xs font-bold">
-                          {t("total")}: $
-                          {(item.unit_price * item.quantity).toFixed(2)}
+                          {t("total")}:{" "}
+                          {formatCurrency(
+                            item.unit_price * item.quantity,
+                            projectCurrency
+                          )}
                         </div>
                         {!readOnly && (
                           <div className="mt-2 flex justify-end">
@@ -247,6 +257,7 @@ export function SpaceProductsDialog({
         onOpenChange={setIsProductModalOpen}
         projectItem={selectedItem}
         projectId={projectId}
+        currency={projectCurrency}
         onEdit={() => {
           setIsProductModalOpen(false);
           handleEdit(selectedItem!);
