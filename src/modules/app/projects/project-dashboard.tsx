@@ -22,7 +22,6 @@ import {
   isCostCategory,
   reportError,
   reportWarn,
-  formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 import type {
   Project,
@@ -31,6 +30,7 @@ import type {
   ProjectPhase,
   BudgetCategory,
 } from "@/types";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface PurchaseOrderCoverage {
@@ -68,6 +68,7 @@ export function ProjectDashboard({
   disabled = false,
 }: ProjectDashboardProps) {
   const t = useTranslations("ProjectModuleDashboard");
+  const { formatCurrency } = useAppFormatting();
   const supabase = getSupabaseClient();
   const [project, setProject] = useState<Project | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -284,9 +285,6 @@ export function ProjectDashboard({
     >
   );
 
-  const formatCurrency = (amount: number) =>
-    formatCurrencyUtil(amount, project?.currency);
-
   if (loading) {
     return (
       <div className="space-y-6">
@@ -333,7 +331,7 @@ export function ProjectDashboard({
           <KPICard
             title={t("kpiPaymentCoverage")}
             value={`${kpis.coverage.toFixed(1)}%`}
-            subtitle={`${formatCurrency(totalPaid)} de ${formatCurrency(clientBudget)}`}
+            subtitle={`${formatCurrency(totalPaid, project?.currency)} ${t("of")} ${formatCurrency(clientBudget, project?.currency)}`}
             icon={Wallet}
             color="chart-1"
           />
@@ -356,21 +354,21 @@ export function ProjectDashboard({
           />
           <KPICard
             title={t("kpiBudgeted")}
-            value={formatCurrency(clientBudget)}
-            subtitle={`Productos: ${formatCurrency(totalProductsPrice)} + Partidas: ${formatCurrency(totalBudgetLinesEstimated)}`}
+            value={formatCurrency(clientBudget, project?.currency)}
+            subtitle={`${t("products")}: ${formatCurrency(totalProductsPrice, project?.currency)} + ${t("budgetLines")}: ${formatCurrency(totalBudgetLinesEstimated, project?.currency)}`}
             icon={FileText}
             color="chart-2"
           />
           <KPICard
             title={t("kpiTotalCost")}
-            value={formatCurrency(totalCosts)}
-            subtitle={`Productos: ${formatCurrency(totalProductsCost)} + Partidas: ${formatCurrency(totalBudgetLinesActual)}`}
+            value={formatCurrency(totalCosts, project?.currency)}
+            subtitle={`${t("products")}: ${formatCurrency(totalProductsCost, project?.currency)} + ${t("budgetLines")}: ${formatCurrency(totalBudgetLinesActual, project?.currency)}`}
             icon={Receipt}
             color="chart-3"
           />
           <KPICard
             title={t("kpiGrossMargin")}
-            value={formatCurrency(margin)}
+            value={formatCurrency(margin, project?.currency)}
             subtitle={`${marginPercentage.toFixed(1)}% del presupuesto`}
             icon={TrendingUp}
             color={margin >= 0 ? "chart-4" : "destructive"}
@@ -423,10 +421,12 @@ export function ProjectDashboard({
                         </div>
                         <div className="text-muted-foreground flex justify-between text-xs">
                           <span>
-                            {t("estimated")}: {formatCurrency(data.estimated)}
+                            {t("estimated")}:{" "}
+                            {formatCurrency(data.estimated, project?.currency)}
                           </span>
                           <span>
-                            {t("actual")}: {formatCurrency(data.actual)}
+                            {t("actual")}:{" "}
+                            {formatCurrency(data.actual, project?.currency)}
                           </span>
                         </div>
                         <div className="bg-muted h-1 w-full rounded-full">
@@ -467,7 +467,8 @@ export function ProjectDashboard({
                         {t("cost")}: {formatCurrency(totalProductsCost)}
                       </span>
                       <span>
-                        {t("sale")}: {formatCurrency(totalProductsPrice)}
+                        {t("sale")}:{" "}
+                        {formatCurrency(totalProductsPrice, project?.currency)}
                       </span>
                     </div>
                   </div>
@@ -511,7 +512,9 @@ export function ProjectDashboard({
                         </span>
                       </div>
                       <div className="text-muted-foreground flex justify-between text-xs">
-                        <span>{formatCurrency(po.total_amount)}</span>
+                        <span>
+                          {formatCurrency(po.total_amount, project?.currency)}
+                        </span>
                         <span>
                           {po.total_amount > 0
                             ? Math.min(
@@ -592,7 +595,7 @@ export function ProjectDashboard({
                     </p>
                     <p className="text-muted-foreground text-xs">
                       {t("negativeMarginDescription")}{" "}
-                      {formatCurrency(Math.abs(margin))}
+                      {formatCurrency(Math.abs(margin), project?.currency)}
                     </p>
                   </div>
                 </div>
