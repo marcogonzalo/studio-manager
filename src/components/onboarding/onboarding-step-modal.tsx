@@ -57,7 +57,7 @@ export function OnboardingStepModal({
             >
               {[t("welcome.line1"), t("welcome.line2"), t("welcome.line3")].map(
                 (line, i) => (
-                <p key={i}>{line}</p>
+                  <p key={i}>{line}</p>
                 )
               )}
             </div>

@@ -422,8 +422,12 @@ export function ProjectDashboard({
                           </span>
                         </div>
                         <div className="text-muted-foreground flex justify-between text-xs">
-                          <span>{t("estimated")}: {formatCurrency(data.estimated)}</span>
-                          <span>{t("actual")}: {formatCurrency(data.actual)}</span>
+                          <span>
+                            {t("estimated")}: {formatCurrency(data.estimated)}
+                          </span>
+                          <span>
+                            {t("actual")}: {formatCurrency(data.actual)}
+                          </span>
                         </div>
                         <div className="bg-muted h-1 w-full rounded-full">
                           <div
@@ -445,7 +449,9 @@ export function ProjectDashboard({
                   {/* Products summary */}
                   <div className="space-y-1 border-t pt-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{t("products")}</span>
+                      <span className="text-sm font-medium">
+                        {t("products")}
+                      </span>
                       <span className="bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary rounded-full px-2 py-1 text-xs">
                         +
                         {(
@@ -457,8 +463,12 @@ export function ProjectDashboard({
                       </span>
                     </div>
                     <div className="text-muted-foreground flex justify-between text-xs">
-                      <span>{t("cost")}: {formatCurrency(totalProductsCost)}</span>
-                      <span>{t("sale")}: {formatCurrency(totalProductsPrice)}</span>
+                      <span>
+                        {t("cost")}: {formatCurrency(totalProductsCost)}
+                      </span>
+                      <span>
+                        {t("sale")}: {formatCurrency(totalProductsPrice)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -577,7 +587,9 @@ export function ProjectDashboard({
                 <div className="bg-destructive/10 dark:bg-destructive/20 flex items-start gap-2 rounded p-2">
                   <AlertTriangle className="text-destructive mt-0.5 h-4 w-4" />
                   <div>
-                    <p className="text-sm font-medium">{t("negativeMarginTitle")}</p>
+                    <p className="text-sm font-medium">
+                      {t("negativeMarginTitle")}
+                    </p>
                     <p className="text-muted-foreground text-xs">
                       {t("negativeMarginDescription")}{" "}
                       {formatCurrency(Math.abs(margin))}
@@ -591,9 +603,7 @@ export function ProjectDashboard({
                 margin >= 0 && (
                   <div className="bg-primary/10 dark:bg-primary/20 flex items-start gap-2 rounded p-2">
                     <CheckCircle2 className="text-primary mt-0.5 h-4 w-4" />
-                    <p className="text-sm font-medium">
-                      {t("allGood")}
-                    </p>
+                    <p className="text-sm font-medium">{t("allGood")}</p>
                   </div>
                 )}
             </div>

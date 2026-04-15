@@ -136,7 +136,9 @@ export function ProjectNotes({
         toast.error(t("toastUpdateError"));
       }
     } else {
-      toast.success(currentArchived ? t("toastUnarchived") : t("toastArchived"));
+      toast.success(
+        currentArchived ? t("toastUnarchived") : t("toastArchived")
+      );
       fetchNotes();
     }
   };
@@ -219,7 +221,9 @@ export function ProjectNotes({
                                 handleToggleArchive(note.id, note.archived)
                               }
                               className="border-border h-4 w-4 rounded"
-                              title={note.archived ? t("unarchive") : t("archive")}
+                              title={
+                                note.archived ? t("unarchive") : t("archive")
+                              }
                             />
                             <label
                               className="text-muted-foreground cursor-pointer text-xs"

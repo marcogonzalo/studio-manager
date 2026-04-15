@@ -83,9 +83,7 @@ export default function CatalogPage() {
       const { canDeleteProduct } = await import("@/lib/validation");
       const canDelete = await canDeleteProduct(product.id);
       if (!canDelete) {
-        toast.error(
-          t("toastDeleteBlocked")
-        );
+        toast.error(t("toastDeleteBlocked"));
         setDeleteTarget(null);
         return;
       }
@@ -131,9 +129,7 @@ export default function CatalogPage() {
         return;
       }
       if (!deleted || deleted.length === 0) {
-        toast.error(
-          t("toastDeleteFailed")
-        );
+        toast.error(t("toastDeleteFailed"));
         fetchProducts();
         return;
       }
@@ -154,9 +150,7 @@ export default function CatalogPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ShoppingBag className="text-primary h-8 w-8" />
-            <h1 className="text-3xl font-bold tracking-tight">
-              {t("title")}
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
           <Button
             onClick={() => {
@@ -167,9 +161,7 @@ export default function CatalogPage() {
             <Plus className="mr-2 h-4 w-4" /> {t("newProduct")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {t("description")}
-        </p>
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
       <div className="flex items-center space-x-2">

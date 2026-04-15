@@ -84,9 +84,7 @@ export default function SuppliersPage() {
       const { canDeleteSupplier } = await import("@/lib/validation");
       const canDelete = await canDeleteSupplier(id);
       if (!canDelete) {
-        toast.error(
-          t("toastDeleteBlocked")
-        );
+        toast.error(t("toastDeleteBlocked"));
         setDeleteTarget(null);
         return;
       }
@@ -127,9 +125,7 @@ export default function SuppliersPage() {
             <Plus className="mr-2 h-4 w-4" /> {t("newSupplier")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {t("description")}
-        </p>
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
       <div className="flex items-center space-x-2">

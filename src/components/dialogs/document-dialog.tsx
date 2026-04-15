@@ -35,7 +35,10 @@ function buildFormSchema(t: ReturnType<typeof useTranslations>) {
   });
 }
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = {
+  name: string;
+  file_url: string;
+};
 
 interface DocumentDialogProps {
   open: boolean;

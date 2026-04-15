@@ -61,7 +61,7 @@ export function ProjectShareDialog({
     void navigator.clipboard.writeText(shareUrl).then(() => {
       toast.success(t("toastCopied"));
     });
-  }, [shareUrl]);
+  }, [shareUrl, t]);
 
   const handleRegenerate = useCallback(async () => {
     if (!projectId) return;
@@ -76,7 +76,7 @@ export function ProjectShareDialog({
       setLink(data);
       toast.success(t("toastRegenerated"));
     }
-  }, [projectId]);
+  }, [projectId, t]);
 
   const handleToggleEnabled = useCallback(async () => {
     if (!link) return;

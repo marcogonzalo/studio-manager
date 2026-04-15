@@ -82,9 +82,7 @@ export default function ClientsPage() {
       const { canDeleteClient } = await import("@/lib/validation");
       const canDelete = await canDeleteClient(id);
       if (!canDelete) {
-        toast.error(
-          t("toastDeleteBlocked")
-        );
+        toast.error(t("toastDeleteBlocked"));
         setDeleteTarget(null);
         return;
       }
@@ -133,9 +131,7 @@ export default function ClientsPage() {
             <Plus className="mr-2 h-4 w-4" /> {t("newClient")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {t("description")}
-        </p>
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
       <div className="flex items-center space-x-2">

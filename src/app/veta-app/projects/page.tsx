@@ -178,9 +178,7 @@ export default function ProjectsPage() {
             <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          {t("description")}
-        </p>
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
