@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,6 +37,7 @@ import Link from "next/link";
 import {
   Coins,
   FileSpreadsheet,
+  Globe,
   Mail,
   Percent,
   SlidersHorizontal,
@@ -51,11 +54,16 @@ import type { Profile } from "@/types";
 import {
   publicProfileFormSchema,
   defaultsFormSchema,
+  languageFormSchema,
   type PublicProfileFormValues,
   type DefaultsFormValues,
+  type LanguageFormValues,
 } from "./schema";
 
 export default function CustomizationPage() {
+  const router = useRouter();
+  const tLang = useTranslations("SettingsLanguage");
+  const t = useTranslations("SettingsCustomization");
   const { user, effectivePlan } = useAuth();
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const supabase = getSupabaseClient();
@@ -76,6 +84,11 @@ export default function CustomizationPage() {
     defaultValues: { default_tax_rate: "", default_currency: "EUR" },
   });
 
+  const formLanguage = useForm<LanguageFormValues>({
+    resolver: zodResolver(languageFormSchema),
+    defaultValues: { lang: "es", date_format: "DD/MM/YYYY" },
+  });
+
   const fetchProfile = async () => {
     if (!user?.id) return;
     try {
@@ -92,19 +105,29 @@ export default function CustomizationPage() {
       // Fetch account settings (public_email independiente del email de login)
       const { data: settingsData, error: settingsError } = await supabase
         .from("account_settings")
-        .select("default_tax_rate, default_currency, public_name, public_email")
+        .select(
+          "default_tax_rate, default_currency, public_name, public_email, lang, date_format"
+        )
         .eq("user_id", user.id)
         .single();
 
       if (settingsError && settingsError.code === "PGRST116") {
-        await supabase.from("account_settings").insert({
-          user_id: user.id,
-          default_tax_rate: null,
-          default_currency: "EUR",
-          public_name: null,
-          public_email: null,
-        });
-      } else if (settingsError) {
+        const { error: insertError } = await supabase
+          .from("account_settings")
+          .insert({
+            user_id: user.id,
+            default_tax_rate: null,
+            default_currency: "EUR",
+            public_name: null,
+            public_email: null,
+            lang: "es",
+            date_format: "DD/MM/YYYY",
+          });
+        if (insertError) throw insertError;
+        await fetchProfile();
+        return;
+      }
+      if (settingsError) {
         throw settingsError;
       }
 
@@ -119,9 +142,21 @@ export default function CustomizationPage() {
             : "",
         default_currency: settingsData?.default_currency ?? "EUR",
       });
+      formLanguage.reset({
+        lang:
+          settingsData?.lang === "en" || settingsData?.lang === "es"
+            ? settingsData.lang
+            : "es",
+        date_format:
+          settingsData?.date_format === "YYYY-MM-DD" ||
+          settingsData?.date_format === "MM/DD/YYYY" ||
+          settingsData?.date_format === "DD/MM/YYYY"
+            ? settingsData.date_format
+            : "DD/MM/YYYY",
+      });
     } catch (err) {
       reportError(err, "Error fetching personalization:");
-      toast.error("Error al cargar la personalización");
+      toast.error(t("toastLoadError"));
     } finally {
       setLoading(false);
     }
@@ -171,11 +206,32 @@ export default function CustomizationPage() {
         })
         .eq("user_id", user.id);
       if (error) throw error;
-      toast.success("Presupuesto guardado");
+      toast.success(t("toastBudgetSaved"));
       fetchProfile();
     } catch (e) {
       reportError(e, "Error saving public profile:");
-      toast.error("Error al guardar: " + getErrorMessage(e));
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e)}`);
+    }
+  }
+
+  async function onSubmitLanguage(values: LanguageFormValues) {
+    if (!user?.id) return;
+    try {
+      const { error } = await supabase
+        .from("account_settings")
+        .update({
+          lang: values.lang,
+          date_format: values.date_format,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
+      if (error) throw error;
+      toast.success(t("toastLanguageSaved"));
+      router.refresh();
+      fetchProfile();
+    } catch (e) {
+      reportError(e, "Error saving language settings:");
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e)}`);
     }
   }
 
@@ -196,11 +252,11 @@ export default function CustomizationPage() {
         })
         .eq("user_id", user.id);
       if (error) throw error;
-      toast.success("Valores por defecto guardados");
+      toast.success(t("toastDefaultsSaved"));
       fetchProfile();
     } catch (e) {
       reportError(e, "Error saving defaults:");
-      toast.error("Error al guardar: " + getErrorMessage(e));
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e)}`);
     }
   }
 
@@ -212,23 +268,97 @@ export default function CustomizationPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-foreground text-3xl font-bold tracking-tight">
-          Personalización
+          {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-1">
-          Valores por defecto para adaptar tu espacio de trabajo
-        </p>
+        <p className="text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
       <div className="flex flex-col gap-8">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Globe className="text-primary h-5 w-5" />
+              <CardTitle>{tLang("sectionTitle")}</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Form {...formLanguage}>
+              <form
+                onSubmit={formLanguage.handleSubmit(onSubmitLanguage)}
+                className="space-y-6"
+              >
+                <FormField
+                  control={formLanguage.control}
+                  name="lang"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{tLang("langLabel")}</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={INPUT_CONFIG_STANDARD_CLASS}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="es">{tLang("langEs")}</SelectItem>
+                          <SelectItem value="en">{tLang("langEn")}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={formLanguage.control}
+                  name="date_format"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{tLang("dateFormatLabel")}</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={INPUT_CONFIG_STANDARD_CLASS}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="YYYY-MM-DD">
+                            {tLang("dateFormatYMD")}
+                          </SelectItem>
+                          <SelectItem value="MM/DD/YYYY">
+                            {tLang("dateFormatMDY")}
+                          </SelectItem>
+                          <SelectItem value="DD/MM/YYYY">
+                            {tLang("dateFormatDMY")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit">{t("save")}</Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+
         <Card data-onboarding-target="public-profile">
           <CardHeader>
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="text-primary h-5 w-5" />
-              <CardTitle>Presupuesto</CardTitle>
+              <CardTitle>{t("budgetTitle")}</CardTitle>
             </div>
-            <CardDescription>
-              Personaliza la apariencia del PDF de presupuestos
-            </CardDescription>
+            <CardDescription>{t("budgetDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Form {...formPresupuesto}>
@@ -243,11 +373,11 @@ export default function CustomizationPage() {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <User className="h-4 w-4" />
-                        Nombre público
+                        {t("publicNameLabel")}
                       </FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Ej. Estudio García Interiorismo"
+                          placeholder={t("publicNamePlaceholder")}
                           className={INPUT_CONFIG_STANDARD_CLASS}
                           {...field}
                           value={field.value ?? ""}
@@ -263,8 +393,7 @@ export default function CustomizationPage() {
                       </FormControl>
                       {!isBasePlan && (
                         <p className="text-muted-foreground text-xs">
-                          Este nombre aparecerá como &quot;Arquitecto/a&quot; en
-                          los PDF de presupuestos
+                          {t("publicNameHelp")}
                         </p>
                       )}
                       <FormMessage />
@@ -278,12 +407,12 @@ export default function CustomizationPage() {
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
                         <Mail className="h-4 w-4" />
-                        Correo público
+                        {t("publicEmailLabel")}
                       </FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="Ej. contacto@tuestudio.com"
+                          placeholder={t("publicEmailPlaceholder")}
                           className={INPUT_CONFIG_STANDARD_CLASS}
                           {...field}
                           value={field.value ?? ""}
@@ -292,7 +421,7 @@ export default function CustomizationPage() {
                       </FormControl>
                       {!isBasePlan && (
                         <p className="text-muted-foreground text-xs">
-                          Este correo aparecerá en los PDF de presupuestos
+                          {t("publicEmailHelp")}
                         </p>
                       )}
                       <FormMessage />
@@ -306,14 +435,14 @@ export default function CustomizationPage() {
                   }
                 >
                   {formPresupuesto.formState.isSubmitting
-                    ? "Guardando…"
-                    : "Guardar cambios"}
+                    ? t("saving")
+                    : t("saveChanges")}
                 </Button>
                 {isBasePlan && (
                   <p className="text-muted-foreground text-xs">
-                    Mejora tu plan para poder personalizar tus presupuestos.{" "}
+                    {t("upgradeHint")}{" "}
                     <Link href="/pricing" className="font-medium underline">
-                      Mejora tu plan
+                      {t("upgradeCta")}
                     </Link>
                   </p>
                 )}
@@ -336,12 +465,9 @@ export default function CustomizationPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="text-primary h-5 w-5" />
-              <CardTitle>Valores por defecto</CardTitle>
+              <CardTitle>{t("defaultsTitle")}</CardTitle>
             </div>
-            <CardDescription>
-              Se aplicarán al crear nuevos proyectos o productos. Los elementos
-              existentes con valores definidos no se modifican.
-            </CardDescription>
+            <CardDescription>{t("defaultsDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <Form {...formDefaults}>
@@ -351,7 +477,7 @@ export default function CustomizationPage() {
               >
                 <fieldset className="space-y-3">
                   <legend className="text-muted-foreground text-sm font-medium">
-                    Valores sugeridos para nuevos proyectos y productos
+                    {t("defaultsLegend")}
                   </legend>
                   <div className="flex flex-wrap gap-4">
                     <FormField
@@ -361,7 +487,7 @@ export default function CustomizationPage() {
                         <FormItem className="w-[125px]">
                           <FormLabel className="flex items-center gap-2">
                             <Coins className="h-4 w-4" />
-                            Moneda
+                            {t("currencyLabel")}
                           </FormLabel>
                           <Select
                             onValueChange={field.onChange}
@@ -369,7 +495,7 @@ export default function CustomizationPage() {
                           >
                             <FormControl>
                               <SelectTrigger className="h-9 text-sm">
-                                <SelectValue placeholder="Moneda" />
+                                <SelectValue placeholder={t("currencyLabel")} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -393,14 +519,14 @@ export default function CustomizationPage() {
                         <FormItem className="w-[125px]">
                           <FormLabel className="flex items-center gap-2">
                             <Percent className="h-4 w-4" />
-                            Impuesto
+                            {t("taxLabel")}
                           </FormLabel>
                           <FormControl>
                             <Input
                               type="number"
                               min="0"
                               step="0.01"
-                              placeholder="Ej: 21"
+                              placeholder={t("taxPlaceholder")}
                               className="h-9 text-sm"
                               {...field}
                               value={field.value ?? ""}
@@ -412,8 +538,7 @@ export default function CustomizationPage() {
                     />
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    Se sugieren al crear un proyecto o producto nuevo. También
-                    para productos del catálogo sin moneda definida.
+                    {t("defaultsHelp")}
                   </p>
                 </fieldset>
 
@@ -422,8 +547,8 @@ export default function CustomizationPage() {
                   disabled={formDefaults.formState.isSubmitting}
                 >
                   {formDefaults.formState.isSubmitting
-                    ? "Guardando…"
-                    : "Guardar cambios"}
+                    ? t("saving")
+                    : t("saveChanges")}
                 </Button>
               </form>
             </Form>

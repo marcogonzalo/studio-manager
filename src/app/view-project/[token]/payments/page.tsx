@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ViewProjectShell } from "../view-project-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,20 +11,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
-import { format } from "date-fns";
+import {
+  defaultDateFormatForLocale,
+  formatCurrencyWithLang,
+  formatDateByPattern,
+} from "@/lib/formatting";
+import { getViewProjectLocale } from "@/lib/view-project-locale";
 
 interface PageProps {
   params: Promise<{ token: string }>;
 }
 
-export const metadata = {
-  title: "Pagos del proyecto",
-  description: "Historial de pagos del proyecto compartido",
-};
+export async function generateMetadata() {
+  const locale = await getViewProjectLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations("ViewProject");
+  return {
+    title: t("paymentsMetaTitle"),
+    description: t("paymentsMetaDescription"),
+  };
+}
 
 export default async function ViewProjectPaymentsPage({ params }: PageProps) {
   const { token } = await params;
+  const locale = await getViewProjectLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations("ViewProject");
+  const dateFmt = defaultDateFormatForLocale(locale);
   const supabase = await createClient();
 
   const [shareRes, currencyRes, paymentsRes] = await Promise.all([
@@ -48,11 +62,11 @@ export default async function ViewProjectPaymentsPage({ params }: PageProps) {
   const totalAmount = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
   return (
-    <ViewProjectShell token={token} showBack title="Pagos">
+    <ViewProjectShell token={token} showBack title={t("payments")}>
       {payments.length === 0 ? (
         <Card>
           <CardContent className="text-muted-foreground py-12 text-center">
-            No hay pagos registrados.
+            {t("noPayments")}
           </CardContent>
         </Card>
       ) : (
@@ -60,28 +74,30 @@ export default async function ViewProjectPaymentsPage({ params }: PageProps) {
           <CardContent className="p-0">
             <div className="border-border flex justify-end border-b px-4 py-3">
               <span className="text-muted-foreground text-sm">
-                Total:{" "}
+                {t("total")}{" "}
                 <span className="text-foreground font-semibold">
-                  {formatCurrency(totalAmount, currency)}
+                  {formatCurrencyWithLang(totalAmount, currency, locale)}
                 </span>
               </span>
             </div>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Fecha</TableHead>
+                  <TableHead>{t("tableDate")}</TableHead>
                   <TableHead className="text-muted-foreground">
-                    Referencia
+                    {t("tableReference")}
                   </TableHead>
-                  <TableHead>Descripción</TableHead>
-                  <TableHead className="text-muted-foreground">Monto</TableHead>
+                  <TableHead>{t("tableDescription")}</TableHead>
+                  <TableHead className="text-muted-foreground">
+                    {t("tableAmount")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {payments.map((payment) => (
                   <TableRow key={payment.id}>
                     <TableCell>
-                      {format(new Date(payment.payment_date), "dd/MM/yyyy")}
+                      {formatDateByPattern(payment.payment_date, dateFmt)}
                     </TableCell>
                     <TableCell className="text-muted-foreground max-w-[12rem] truncate">
                       {payment.reference_number ?? "—"}
@@ -90,7 +106,11 @@ export default async function ViewProjectPaymentsPage({ params }: PageProps) {
                       {payment.description ?? "—"}
                     </TableCell>
                     <TableCell className="font-semibold tabular-nums">
-                      {formatCurrency(Number(payment.amount), currency)}
+                      {formatCurrencyWithLang(
+                        Number(payment.amount),
+                        currency,
+                        locale
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
@@ -57,8 +58,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import {
-  getBudgetCategoryLabel,
-  getBudgetSubcategoryLabel,
   getPhaseLabel,
   getDemoAccountMessage,
   getErrorMessage,
@@ -84,6 +83,7 @@ export function ProjectBudget({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
+  const t = useTranslations("ProjectModuleBudget");
   const { user, effectivePlan } = useAuth();
   const printFilterOptionsEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "full",
@@ -356,6 +356,56 @@ export function ProjectBudget({
 
   const formatCurrency = (amount: number) =>
     formatCurrencyUtil(amount, project?.currency);
+  const categoryLabels: Record<BudgetCategory, string> = {
+    construction: t("budgetCategory.construction"),
+    own_fees: t("budgetCategory.own_fees"),
+    external_services: t("budgetCategory.external_services"),
+    operations: t("budgetCategory.operations"),
+  };
+  const subcategoryLabels: Record<BudgetCategory, Record<string, string>> = {
+    construction: {
+      demolition: t("budgetSubcategory.construction.demolition"),
+      masonry: t("budgetSubcategory.construction.masonry"),
+      electricity: t("budgetSubcategory.construction.electricity"),
+      plumbing: t("budgetSubcategory.construction.plumbing"),
+      interior_painting: t("budgetSubcategory.construction.interior_painting"),
+      exterior_painting: t("budgetSubcategory.construction.exterior_painting"),
+      domotics: t("budgetSubcategory.construction.domotics"),
+      carpentry: t("budgetSubcategory.construction.carpentry"),
+      locksmithing: t("budgetSubcategory.construction.locksmithing"),
+      hvac: t("budgetSubcategory.construction.hvac"),
+      flooring: t("budgetSubcategory.construction.flooring"),
+      tiling: t("budgetSubcategory.construction.tiling"),
+      other: t("budgetSubcategory.construction.other"),
+    },
+    own_fees: {
+      design: t("budgetSubcategory.own_fees.design"),
+      executive_project: t("budgetSubcategory.own_fees.executive_project"),
+      site_supervision: t("budgetSubcategory.own_fees.site_supervision"),
+      management: t("budgetSubcategory.own_fees.management"),
+      other: t("budgetSubcategory.own_fees.other"),
+    },
+    external_services: {
+      technical_architect: t(
+        "budgetSubcategory.external_services.technical_architect"
+      ),
+      engineering: t("budgetSubcategory.external_services.engineering"),
+      logistics: t("budgetSubcategory.external_services.logistics"),
+      permits: t("budgetSubcategory.external_services.permits"),
+      consulting: t("budgetSubcategory.external_services.consulting"),
+      other: t("budgetSubcategory.external_services.other"),
+    },
+    operations: {
+      shipping: t("budgetSubcategory.operations.shipping"),
+      packaging: t("budgetSubcategory.operations.packaging"),
+      transport: t("budgetSubcategory.operations.transport"),
+      storage: t("budgetSubcategory.operations.storage"),
+      insurance: t("budgetSubcategory.operations.insurance"),
+      customs: t("budgetSubcategory.operations.customs"),
+      handling: t("budgetSubcategory.operations.handling"),
+      other: t("budgetSubcategory.operations.other"),
+    },
+  };
 
   // Map delivery_deadline codes to readable labels (same as purchase-order-dialog options)
   const deliveryDeadlineLabel: Record<string, string> = {
@@ -374,38 +424,38 @@ export function ProjectBudget({
       case "pending":
         return {
           icon: Clock,
-          label: "Pendiente",
+          label: t("status.pending"),
           className: "text-muted-foreground",
         };
       case "ordered":
         return {
           icon: Truck,
-          label: "Pedido",
+          label: t("status.ordered"),
           className: "text-blue-600 dark:text-blue-400",
         };
       case "received":
         return {
           icon: PackageCheck,
-          label: "Recibido",
+          label: t("status.received"),
           className: "text-cyan-600 dark:text-cyan-400",
         };
       case "installed":
         return {
           icon: Wrench,
-          label: "Instalado",
+          label: t("status.installed"),
           className: "text-orange-600 dark:text-orange-400",
         };
       case "completed":
         return {
           icon: Check,
-          label: "Completado",
+          label: t("status.completed"),
           className: "text-green-600 dark:text-green-400",
         };
       case "canceled":
       case "cancelled":
         return {
           icon: XCircle,
-          label: "Cancelado",
+          label: t("status.cancelled"),
           className: "text-red-600 dark:text-red-400",
         };
       default:
@@ -648,7 +698,9 @@ export function ProjectBudget({
                               {item.product?.supplier?.name || "-"}
                             </div>
                           </TableCell>
-                          <TableCell>{item.space?.name || "General"}</TableCell>
+                          <TableCell>
+                            {item.space?.name || t("spaceGeneral")}
+                          </TableCell>
                           <TableCell>
                             {(() => {
                               const statusDisplay = getStatusDisplay(
@@ -825,7 +877,7 @@ export function ProjectBudget({
                                         <ChevronDown
                                           className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
                                         />
-                                        {getBudgetCategoryLabel(category)}
+                                        {categoryLabels[category] ?? category}
                                       </CardTitle>
                                       <span className="text-foreground text-sm font-semibold">
                                         {formatCurrency(categoryTotal)}
@@ -850,10 +902,9 @@ export function ProjectBudget({
                                         {lines.map((line) => (
                                           <TableRow key={line.id}>
                                             <TableCell className="font-medium">
-                                              {getBudgetSubcategoryLabel(
-                                                category,
+                                              {subcategoryLabels[category]?.[
                                                 line.subcategory
-                                              )}
+                                              ] ?? line.subcategory}
                                             </TableCell>
                                             <TableCell className="text-muted-foreground">
                                               {line.description || "-"}
@@ -961,6 +1012,7 @@ export function ProjectBudget({
             onOpenChange={setIsProductModalOpen}
             projectItem={selectedItem}
             projectId={projectId}
+            currency={project?.currency}
             onEdit={
               readOnly
                 ? undefined

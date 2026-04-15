@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -33,11 +34,13 @@ import { useAuth } from "@/components/auth-provider";
 import { getDemoAccountMessage } from "@/lib/utils";
 import type { AdditionalCost } from "@/types";
 
-const formSchema = z.object({
-  cost_type: z.string().min(1, "Tipo de coste requerido"),
-  description: z.string().optional(),
-  amount: z.string().transform((v) => parseFloat(v) || 0),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    cost_type: z.string().min(1, t("validationTypeRequired")),
+    description: z.string().optional(),
+    amount: z.string().transform((v) => parseFloat(v) || 0),
+  });
+}
 
 interface AdditionalCostDialogProps {
   open: boolean;
@@ -67,9 +70,11 @@ export function AdditionalCostDialog({
   onSuccess,
   cost,
 }: AdditionalCostDialogProps) {
+  const t = useTranslations("DialogAdditionalCost");
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const isEditing = !!cost;
+  const formSchema = buildFormSchema(t);
 
   type FormValues = {
     cost_type: string;
@@ -106,7 +111,7 @@ export function AdditionalCostDialog({
 
   const onSubmit = async (values: z.infer<typeof formSchema> | FormValues) => {
     if (!user?.id) {
-      toast.error("No se pudo identificar el usuario");
+      toast.error(t("toastUserError"));
       return;
     }
 
@@ -129,9 +134,9 @@ export function AdditionalCostDialog({
           });
           return;
         }
-        toast.error("Error al actualizar coste adicional");
+        toast.error(t("toastUpdateError"));
       } else {
-        toast.success("Coste adicional actualizado");
+        toast.success(t("toastUpdated"));
         onSuccess();
         onOpenChange(false);
       }
@@ -155,9 +160,9 @@ export function AdditionalCostDialog({
           });
           return;
         }
-        toast.error("Error al crear coste adicional");
+        toast.error(t("toastCreateError"));
       } else {
-        toast.success("Coste adicional añadido");
+        toast.success(t("toastCreated"));
         onSuccess();
         onOpenChange(false);
       }
@@ -169,7 +174,7 @@ export function AdditionalCostDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Editar Coste Adicional" : "Añadir Coste Adicional"}
+            {isEditing ? t("titleEdit") : t("titleNew")}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -179,11 +184,11 @@ export function AdditionalCostDialog({
               name="cost_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Tipo de Coste</FormLabel>
+                  <FormLabel required>{t("typeLabel")}</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un tipo de coste" />
+                        <SelectValue placeholder={t("typePlaceholder")} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -204,10 +209,10 @@ export function AdditionalCostDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descripción</FormLabel>
+                  <FormLabel>{t("descriptionLabel")}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Descripción detallada del coste (opcional)"
+                      placeholder={t("descriptionPlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -221,12 +226,12 @@ export function AdditionalCostDialog({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Importe</FormLabel>
+                  <FormLabel required>{t("amountLabel")}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.01"
-                      placeholder="0.00"
+                      placeholder={t("amountPlaceholder")}
                       {...field}
                     />
                   </FormControl>
@@ -241,10 +246,10 @@ export function AdditionalCostDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
-                Cancelar
+                {t("cancel")}
               </Button>
               <Button type="submit">
-                {isEditing ? "Actualizar" : "Añadir"}
+                {isEditing ? t("update") : t("add")}
               </Button>
             </DialogFooter>
           </form>

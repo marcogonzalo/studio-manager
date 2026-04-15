@@ -1,11 +1,13 @@
 "use client";
 
 import { Moon, Sun } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export function ThemeToggleSimple() {
+  const t = useTranslations("AppNav");
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -19,7 +21,7 @@ export function ThemeToggleSimple() {
         variant="ghost"
         size="icon"
         className="h-8 w-8 cursor-pointer"
-        aria-label="Cambiar tema"
+        aria-label={t("theme")}
       >
         <Sun className="h-4 w-4" />
       </Button>
@@ -34,7 +36,7 @@ export function ThemeToggleSimple() {
       size="icon"
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className="hover:bg-background text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer transition-colors"
-      aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      aria-label={isDark ? t("switchToLight") : t("switchToDark")}
     >
       {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
     </Button>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { customizationFormSchema } from "./schema";
+import { customizationFormSchema, languageFormSchema } from "./schema";
 
 describe("customizationFormSchema", () => {
   it("accepts valid optional fields", () => {
@@ -56,5 +56,30 @@ describe("customizationFormSchema", () => {
     expect(
       customizationFormSchema.safeParse({ default_tax_rate: "" }).success
     ).toBe(true);
+  });
+});
+
+describe("languageFormSchema", () => {
+  it("accepts en and valid date formats", () => {
+    expect(
+      languageFormSchema.safeParse({
+        lang: "en",
+        date_format: "YYYY-MM-DD",
+      }).success
+    ).toBe(true);
+  });
+
+  it("rejects invalid lang", () => {
+    expect(
+      languageFormSchema.safeParse({ lang: "fr", date_format: "DD/MM/YYYY" })
+        .success
+    ).toBe(false);
+  });
+
+  it("rejects invalid date_format", () => {
+    expect(
+      languageFormSchema.safeParse({ lang: "es", date_format: "INVALID" })
+        .success
+    ).toBe(false);
   });
 });

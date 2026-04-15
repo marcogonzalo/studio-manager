@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,10 +25,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { getDemoAccountMessage } from "@/lib/utils";
 
-const formSchema = z.object({
-  name: z.string().min(2, "Nombre requerido"),
-  description: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    name: z.string().min(2, t("validationNameRequired")),
+    description: z.string().optional(),
+  });
+}
 
 interface SpaceDialogProps {
   open: boolean;
@@ -42,7 +45,9 @@ export function SpaceDialog({
   projectId,
   onSuccess,
 }: SpaceDialogProps) {
+  const t = useTranslations("DialogSpace");
   const supabase = getSupabaseClient();
+  const formSchema = buildFormSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -62,7 +67,7 @@ export function SpaceDialog({
 
       if (error) throw error;
 
-      toast.success("Espacio creado");
+      toast.success(t("toastCreated"));
       form.reset();
       onSuccess();
     } catch (error: unknown) {
@@ -74,7 +79,7 @@ export function SpaceDialog({
         return;
       }
       toast.error(
-        error instanceof Error ? error.message : "Error al crear espacio"
+        error instanceof Error ? error.message : t("toastCreateError")
       );
     }
   }
@@ -83,10 +88,8 @@ export function SpaceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Nuevo Espacio</DialogTitle>
-          <DialogDescription>
-            Añade una habitación o zona al proyecto.
-          </DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -95,9 +98,9 @@ export function SpaceDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Nombre</FormLabel>
+                  <FormLabel required>{t("nameLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ej: Sala de Estar" {...field} />
+                    <Input placeholder={t("namePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -108,16 +111,19 @@ export function SpaceDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descripción</FormLabel>
+                  <FormLabel>{t("descriptionLabel")}</FormLabel>
                   <FormControl>
-                    <Textarea placeholder="Detalles..." {...field} />
+                    <Textarea
+                      placeholder={t("descriptionPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="submit">Guardar</Button>
+              <Button type="submit">{t("save")}</Button>
             </DialogFooter>
           </form>
         </Form>

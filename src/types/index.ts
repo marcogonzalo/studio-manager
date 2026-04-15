@@ -37,6 +37,10 @@ export interface Profile {
   updated_at?: string;
 }
 
+export type AccountSettingsLang = "en" | "es";
+
+export type AccountDateFormat = "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
+
 export interface AccountSettings {
   user_id: string;
   public_name?: string;
@@ -44,6 +48,10 @@ export interface AccountSettings {
   public_email?: string | null;
   default_tax_rate?: number;
   default_currency?: string;
+  /** Idioma de la interfaz en /veta-app. */
+  lang?: AccountSettingsLang;
+  /** Formato de visualización de fechas. */
+  date_format?: AccountDateFormat;
   updated_at?: string;
 }
 
@@ -250,6 +258,7 @@ export interface ProjectItem {
   };
   product?: {
     name?: string;
+    currency?: string;
     supplier?: { name: string };
     description?: string;
     reference_code?: string;

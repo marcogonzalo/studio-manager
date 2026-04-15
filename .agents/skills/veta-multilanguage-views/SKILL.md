@@ -75,6 +75,15 @@ description: >-
 - Dev-only:
   - `GET /test-error` (or locale variant) -> not indexed (check robots meta) and excluded from sitemap
 
+## Anti-hardcode checklist (always apply)
+
+- Do not hardcode user-facing labels in components (examples: statuses like `Pendiente`, fallback labels like `General`, or aria labels like `Ver imagen de ...`).
+- Prefer `t(...)` in each view/module namespace (`useTranslations` in client components, `getTranslations` in server components).
+- For DB enums/keys (`pending`, `ordered`, budget categories/subcategories), map key -> translation key in messages files, never key -> literal string in component code.
+- Keep ES/EN message parity: when adding a key in `src/i18n/messages/es/*`, add the same key in `src/i18n/messages/en/*` in the same commit.
+- Avoid duplicating equivalent labels between app modules and `view-project`; when semantics are shared, keep one shared namespace/keyset and reference it from both surfaces.
+- Reuse these checks in non-marketing shared routes too (e.g. `/view-project`, app modules under `src/modules/app`), not only in `(marketing)`.
+
 ## References (files to inspect)
 
 - `src/i18n/routing.ts`

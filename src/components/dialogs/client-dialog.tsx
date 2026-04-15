@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,12 +36,14 @@ import {
 } from "@/lib/contact-validation";
 import { PhoneInput } from "@/components/ui/phone-input";
 
-const formSchema = z.object({
-  full_name: z.string().min(2, "Nombre requerido"),
-  email: optionalEmailSchema,
-  phone: optionalPhoneSchema,
-  address: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    full_name: z.string().min(2, t("validationNameRequired")),
+    email: optionalEmailSchema,
+    phone: optionalPhoneSchema,
+    address: z.string().optional(),
+  });
+}
 
 interface ClientDialogProps {
   open: boolean;
@@ -55,8 +58,10 @@ export function ClientDialog({
   client,
   onSuccess,
 }: ClientDialogProps) {
+  const t = useTranslations("DialogClient");
   const { user } = useAuth();
   const supabase = getSupabaseClient();
+  const formSchema = buildFormSchema(t);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -119,7 +124,7 @@ export function ClientDialog({
           .update(clientData)
           .eq("id", client.id);
         if (error) throw error;
-        toast.success("Cliente actualizado");
+        toast.success(t("toastUpdated"));
         onSuccess();
       } else {
         const { data: newClient, error } = await supabase
@@ -128,7 +133,7 @@ export function ClientDialog({
           .select()
           .single();
         if (error) throw error;
-        toast.success("Cliente creado");
+        toast.success(t("toastCreated"));
         onSuccess(newClient.id);
       }
     } catch (error: unknown) {
@@ -140,7 +145,7 @@ export function ClientDialog({
         return;
       }
       reportError(error, "Error saving client:");
-      toast.error(getErrorMessage(error) || "Error al guardar cliente");
+      toast.error(getErrorMessage(error) || t("toastSaveError"));
     }
   }
 
@@ -148,12 +153,8 @@ export function ClientDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
-            {client ? "Editar Cliente" : "Nuevo Cliente"}
-          </DialogTitle>
-          <DialogDescription>
-            Ingresa los datos del cliente. Click en guardar cuando termines.
-          </DialogDescription>
+          <DialogTitle>{client ? t("titleEdit") : t("titleNew")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -162,9 +163,9 @@ export function ClientDialog({
               name="full_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel required>Nombre Completo</FormLabel>
+                  <FormLabel required>{t("fullNameLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nombre del cliente" {...field} />
+                    <Input placeholder={t("fullNamePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -175,9 +176,9 @@ export function ClientDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("emailLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="email@ejemplo.com" {...field} />
+                    <Input placeholder={t("emailPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -188,7 +189,7 @@ export function ClientDialog({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Teléfono</FormLabel>
+                  <FormLabel>{t("phoneLabel")}</FormLabel>
                   <FormControl>
                     <PhoneInput
                       value={field.value}
@@ -205,16 +206,16 @@ export function ClientDialog({
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dirección</FormLabel>
+                  <FormLabel>{t("addressLabel")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Calle Principal 123" {...field} />
+                    <Input placeholder={t("addressPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="submit">Guardar</Button>
+              <Button type="submit">{t("save")}</Button>
             </DialogFooter>
           </form>
         </Form>

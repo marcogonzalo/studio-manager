@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -55,14 +56,11 @@ const profileFormSchema = z.object({
 });
 
 const deleteAccountSchema = z.object({
-  email: z.string().min(1, "Introduce tu correo electrónico"),
+  email: z.string().min(1),
 });
 
 const changeEmailSchema = z.object({
-  new_email: z
-    .string()
-    .min(1, "Introduce el nuevo correo")
-    .email("Correo no válido"),
+  new_email: z.string().min(1).email(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -70,6 +68,7 @@ type DeleteAccountValues = z.infer<typeof deleteAccountSchema>;
 type ChangeEmailValues = z.infer<typeof changeEmailSchema>;
 
 export default function SettingsAccountPage() {
+  const t = useTranslations("SettingsAccount");
   const router = useRouter();
   const { user, signOut } = useAuth();
   useOnboardingHighlight("config");
@@ -114,12 +113,10 @@ export default function SettingsAccountPage() {
       if (error) throw error;
       setChangeEmailDialogOpen(false);
       changeEmailForm.reset();
-      toast.success(
-        "Revisa tu nuevo correo y haz clic en el enlace para confirmar el cambio."
-      );
+      toast.success(t("toastCheckEmail"));
     } catch (err) {
       reportError(err, "Change email:");
-      toast.error("Error al cambiar el correo: " + getErrorMessage(err));
+      toast.error(`${t("toastChangeEmailError")}: ${getErrorMessage(err)}`);
     }
   }
 
@@ -139,7 +136,7 @@ export default function SettingsAccountPage() {
       });
     } catch (err) {
       reportError(err, "Error fetching profile:");
-      toast.error("Error al cargar el perfil");
+      toast.error(t("toastLoadError"));
     } finally {
       setProfileLoading(false);
     }
@@ -167,11 +164,11 @@ export default function SettingsAccountPage() {
         .eq("id", user.id);
 
       if (error) throw error;
-      toast.success("Perfil actualizado correctamente");
+      toast.success(t("toastProfileSaved"));
       fetchProfile();
     } catch (err) {
       reportError(err, "Error updating profile:");
-      toast.error("Error al guardar: " + getErrorMessage(err));
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(err)}`);
     }
   }
 
@@ -193,13 +190,13 @@ export default function SettingsAccountPage() {
             duration: 5000,
           });
         } else {
-          toast.error(data.error ?? "Error al eliminar la cuenta");
+          toast.error(data.error ?? t("toastDeleteError"));
         }
         return;
       }
       setDeleteDialogOpen(false);
       deleteForm.reset();
-      toast.success("Cuenta eliminada");
+      toast.success(t("toastDeleted"));
       await signOut();
       const locale =
         typeof document !== "undefined"
@@ -211,7 +208,7 @@ export default function SettingsAccountPage() {
       router.push(`/${locale}/sign-in`);
     } catch (err) {
       reportError(err, "Delete account:");
-      toast.error("Error al eliminar la cuenta");
+      toast.error(t("toastDeleteError"));
     }
   }
 
@@ -223,11 +220,9 @@ export default function SettingsAccountPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-foreground flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight">
-          Cuenta
+          {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-1">
-          Correo de acceso y acciones sobre tu cuenta
-        </p>
+        <p className="text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
       <div data-onboarding-target="config">
@@ -235,15 +230,15 @@ export default function SettingsAccountPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <User className="text-primary h-5 w-5" />
-              <CardTitle>Perfil</CardTitle>
+              <CardTitle>{t("profileTitle")}</CardTitle>
             </div>
-            <CardDescription>
-              Información que aparece en presupuestos y en la aplicación
-            </CardDescription>
+            <CardDescription>{t("profileDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             {profileLoading ? (
-              <div className="text-muted-foreground text-sm">Cargando…</div>
+              <div className="text-muted-foreground text-sm">
+                {t("loading")}
+              </div>
             ) : (
               <Form {...profileForm}>
                 <form
@@ -257,11 +252,11 @@ export default function SettingsAccountPage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <User className="h-4 w-4" />
-                          Nombre completo
+                          {t("fullNameLabel")}
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Tu nombre"
+                            placeholder={t("fullNamePlaceholder")}
                             className={INPUT_CONFIG_STANDARD_CLASS}
                             {...field}
                             value={field.value ?? ""}
@@ -278,11 +273,11 @@ export default function SettingsAccountPage() {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <Building2 className="h-4 w-4" />
-                          Empresa
+                          {t("companyLabel")}
                         </FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Nombre de tu empresa o estudio"
+                            placeholder={t("companyPlaceholder")}
                             className={INPUT_CONFIG_STANDARD_CLASS}
                             {...field}
                             value={field.value ?? ""}
@@ -297,8 +292,8 @@ export default function SettingsAccountPage() {
                     disabled={profileForm.formState.isSubmitting}
                   >
                     {profileForm.formState.isSubmitting
-                      ? "Guardando…"
-                      : "Guardar cambios"}
+                      ? t("saving")
+                      : t("saveChanges")}
                   </Button>
                 </form>
               </Form>
@@ -312,11 +307,9 @@ export default function SettingsAccountPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Mail className="text-primary h-5 w-5" />
-              <CardTitle>Email</CardTitle>
+              <CardTitle>{t("emailCardTitle")}</CardTitle>
             </div>
-            <CardDescription>
-              Correo electrónico de la cuenta. Con este correo inicias sesión.
-            </CardDescription>
+            <CardDescription>{t("emailCardDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-center gap-3">
@@ -329,7 +322,7 @@ export default function SettingsAccountPage() {
                 className="shrink-0 gap-2"
               >
                 <Mail className="h-4 w-4" />
-                Cambiar correo electrónico
+                {t("changeEmail")}
               </Button>
             </div>
           </CardContent>
@@ -344,31 +337,27 @@ export default function SettingsAccountPage() {
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="text-destructive h-5 w-5" />
                   <CardTitle className="text-destructive">
-                    Zona de peligro
+                    {t("dangerZoneTitle")}
                   </CardTitle>
                 </div>
                 <ChevronDown
                   className={`text-muted-foreground h-5 w-5 transition-transform ${dangerZoneOpen ? "rotate-180" : ""}`}
                 />
               </div>
-              <CardDescription>
-                Acciones irreversibles sobre tu cuenta
-              </CardDescription>
+              <CardDescription>{t("dangerZoneDescription")}</CardDescription>
             </CardHeader>
           </CollapsibleTrigger>
           <CollapsibleContent>
             <CardContent className="border-destructive/20 border-t pt-6">
               <p className="text-muted-foreground mb-4 text-sm">
-                Si eliminas tu cuenta se borrarán de forma permanente todos tus
-                datos: perfil, proyectos, clientes, catálogo, imágenes y
-                documentos.
+                {t("dangerZoneBody")}
               </p>
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => setDeleteDialogOpen(true)}
               >
-                Eliminar cuenta
+                {t("deleteAccount")}
               </Button>
             </CardContent>
           </CollapsibleContent>
@@ -390,20 +379,16 @@ export default function SettingsAccountPage() {
         >
           <DialogHeader>
             <DialogTitle className="text-destructive">
-              Eliminar cuenta
+              {t("deleteAccount")}
             </DialogTitle>
             <DialogDescription asChild>
               <div className="text-muted-foreground space-y-2 text-sm">
                 <p>
-                  Si eliminas tu cuenta se borrarán de forma permanente todos
-                  tus datos: perfil, proyectos, clientes, catálogo, imágenes y
-                  documentos.{" "}
-                  <span className="font-semibold">
-                    Esta acción no se puede deshacer.
-                  </span>
+                  {t("deleteDialogBody")}{" "}
+                  <span className="font-semibold">{t("cannotUndo")}</span>
                 </p>
                 <p>
-                  Escribe tu correo electrónico{" "}
+                  {t("deleteDialogConfirmEmail")}{" "}
                   <span className="text-foreground font-semibold">
                     {user?.email ?? ""}
                   </span>{" "}
@@ -422,11 +407,11 @@ export default function SettingsAccountPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Correo electrónico</FormLabel>
+                    <FormLabel>{t("emailLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="tu@email.com"
+                        placeholder={t("emailPlaceholder")}
                         autoComplete="email"
                         disabled={deleteForm.formState.isSubmitting}
                         {...field}
@@ -443,7 +428,7 @@ export default function SettingsAccountPage() {
                   onClick={() => setDeleteDialogOpen(false)}
                   disabled={deleteForm.formState.isSubmitting}
                 >
-                  Cancelar
+                  {t("cancel")}
                 </Button>
                 <Button
                   type="submit"
@@ -451,8 +436,8 @@ export default function SettingsAccountPage() {
                   disabled={deleteForm.formState.isSubmitting}
                 >
                   {deleteForm.formState.isSubmitting
-                    ? "Eliminando…"
-                    : "Eliminar cuenta"}
+                    ? t("deleting")
+                    : t("deleteAccount")}
                 </Button>
               </DialogFooter>
             </form>
@@ -474,11 +459,8 @@ export default function SettingsAccountPage() {
           }
         >
           <DialogHeader>
-            <DialogTitle>Cambiar correo electrónico</DialogTitle>
-            <DialogDescription>
-              Introduce el nuevo correo. Recibirás un enlace de confirmación; el
-              cambio se aplicará al hacer clic en él.
-            </DialogDescription>
+            <DialogTitle>{t("changeEmail")}</DialogTitle>
+            <DialogDescription>{t("changeEmailDescription")}</DialogDescription>
           </DialogHeader>
           <Form {...changeEmailForm}>
             <form
@@ -490,11 +472,11 @@ export default function SettingsAccountPage() {
                 name="new_email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nuevo correo electrónico</FormLabel>
+                    <FormLabel>{t("newEmailLabel")}</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="nuevo@email.com"
+                        placeholder={t("newEmailPlaceholder")}
                         autoComplete="email"
                         disabled={changeEmailForm.formState.isSubmitting}
                         {...field}
@@ -511,15 +493,15 @@ export default function SettingsAccountPage() {
                   onClick={() => setChangeEmailDialogOpen(false)}
                   disabled={changeEmailForm.formState.isSubmitting}
                 >
-                  Cancelar
+                  {t("cancel")}
                 </Button>
                 <Button
                   type="submit"
                   disabled={changeEmailForm.formState.isSubmitting}
                 >
                   {changeEmailForm.formState.isSubmitting
-                    ? "Enviando…"
-                    : "Enviar enlace de confirmación"}
+                    ? t("sending")
+                    : t("sendConfirmationLink")}
                 </Button>
               </DialogFooter>
             </form>

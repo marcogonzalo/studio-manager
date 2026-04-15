@@ -53,3 +53,10 @@ export const defaultsFormSchema = z.object({
 
 export type PublicProfileFormValues = z.infer<typeof publicProfileFormSchema>;
 export type DefaultsFormValues = z.infer<typeof defaultsFormSchema>;
+
+export const languageFormSchema = z.object({
+  lang: z.enum(["en", "es"]),
+  date_format: z.enum(["YYYY-MM-DD", "MM/DD/YYYY", "DD/MM/YYYY"]),
+});
+
+export type LanguageFormValues = z.infer<typeof languageFormSchema>;

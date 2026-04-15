@@ -1,0 +1,191 @@
+{
+  "ProjectModuleNotes": {
+    "title": "Notes",
+    "addTitle": "Add Note",
+    "placeholder": "Write a note...",
+    "save": "Save Note",
+    "saving": "Saving...",
+    "shortcutDescription": "to save",
+    "empty": "No notes yet.",
+    "emptyHint": "Add the first one with the form on the left.",
+    "archive": "Archive",
+    "archived": "Archived",
+    "unarchive": "Unarchive",
+    "actionsAria": "Note actions",
+    "delete": "Delete",
+    "userFallback": "User",
+    "confirmDelete": "Delete this note?",
+    "disabledMessage": "Notes are not included in your current plan.",
+    "toastAddError": "Error adding note",
+    "toastAdded": "Note added",
+    "toastDeleteError": "Error deleting note",
+    "toastDeleted": "Note deleted",
+    "toastUpdateError": "Error updating note",
+    "toastArchived": "Note archived",
+    "toastUnarchived": "Note unarchived"
+  },
+  "ProjectModuleDocuments": {
+    "title": "Documents",
+    "add": "Add document",
+    "addFirst": "Add first document",
+    "empty": "No documents.",
+    "downloadAria": "Download document",
+    "actionsAria": "Document actions",
+    "delete": "Delete",
+    "confirmDelete": "Delete document?",
+    "disabledMessage": "Documents are not included in your current plan."
+  },
+  "ProjectModuleDashboard": {
+    "title": "Overview",
+    "disabledMessage": "Overview is not included in your current plan.",
+    "kpiProgress": "Progress",
+    "kpiPaymentCoverage": "Payment Coverage",
+    "kpiCostDeviation": "Cost Deviation",
+    "kpiBudgeted": "Budgeted",
+    "kpiTotalCost": "Total Cost",
+    "kpiGrossMargin": "Gross Margin",
+    "unassigned": "Unassigned",
+    "overcost": "Overcost",
+    "saving": "Savings",
+    "onTrack": "On track",
+    "budgetByCategory": "Budget by Category",
+    "noBudgetLines": "No budget lines",
+    "estimated": "Est",
+    "actual": "Actual",
+    "of": "of",
+    "products": "Products",
+    "budgetLines": "Line items",
+    "margin": "margin",
+    "cost": "Cost",
+    "sale": "Sale",
+    "purchaseOrderCoverage": "Purchase Order Coverage",
+    "noPurchaseOrders": "No purchase orders",
+    "covered": "✓ Covered",
+    "partial": "⚠ Partial",
+    "pending": "○ Pending",
+    "alerts": "Alerts",
+    "pendingPurchaseOrdersTitle": "Purchase orders pending payment",
+    "ordersWithoutCoverage": "order(s) without coverage",
+    "budgetDeviationTitle": "Budget deviation",
+    "estimatedSuffix": "the estimate",
+    "negativeMarginTitle": "Negative margin",
+    "negativeMarginDescription": "Costs exceed client budget by",
+    "allGood": "Everything looks good. No alerts.",
+    "budgetCategory": {
+      "construction": "Construction",
+      "own_fees": "Own Fees",
+      "external_services": "External Services",
+      "operations": "Operating Expenses"
+    }
+  },
+  "ProjectModuleBudget": {
+    "status": {
+      "pending": "Pending",
+      "ordered": "Ordered",
+      "received": "Received",
+      "installed": "Installed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "spaceGeneral": "General",
+    "budgetCategory": {
+      "construction": "Construction",
+      "own_fees": "Own Fees",
+      "external_services": "External Services",
+      "operations": "Operating Expenses"
+    },
+    "budgetSubcategory": {
+      "construction": {
+        "demolition": "Demolition",
+        "masonry": "Masonry",
+        "electricity": "Electricity",
+        "plumbing": "Plumbing",
+        "interior_painting": "Interior Painting",
+        "exterior_painting": "Exterior Painting",
+        "domotics": "Home Automation",
+        "carpentry": "Carpentry",
+        "locksmithing": "Locksmithing",
+        "hvac": "HVAC",
+        "flooring": "Flooring",
+        "tiling": "Tiling",
+        "other": "Other"
+      },
+      "own_fees": {
+        "design": "Design",
+        "executive_project": "Executive Project",
+        "site_supervision": "Site Supervision",
+        "management": "Management and Coordination",
+        "other": "Other"
+      },
+      "external_services": {
+        "technical_architect": "Technical Architect",
+        "engineering": "Engineering",
+        "logistics": "Logistics",
+        "permits": "Permits Management",
+        "consulting": "Consulting",
+        "other": "Other"
+      },
+      "operations": {
+        "shipping": "Shipping",
+        "packaging": "Packaging",
+        "transport": "Transport",
+        "storage": "Storage",
+        "insurance": "Insurance",
+        "customs": "Customs",
+        "handling": "Handling",
+        "other": "Other"
+      }
+    }
+  },
+  "ProjectModuleCostControl": {
+    "pending": "Pending",
+    "budgetCategory": {
+      "construction": "Construction",
+      "own_fees": "Own Fees",
+      "external_services": "External Services",
+      "operations": "Operating Expenses"
+    },
+    "budgetSubcategory": {
+      "construction": {
+        "demolition": "Demolition",
+        "masonry": "Masonry",
+        "electricity": "Electricity",
+        "plumbing": "Plumbing",
+        "interior_painting": "Interior Painting",
+        "exterior_painting": "Exterior Painting",
+        "domotics": "Home Automation",
+        "carpentry": "Carpentry",
+        "locksmithing": "Locksmithing",
+        "hvac": "HVAC",
+        "flooring": "Flooring",
+        "tiling": "Tiling",
+        "other": "Other"
+      },
+      "own_fees": {
+        "design": "Design",
+        "executive_project": "Executive Project",
+        "site_supervision": "Site Supervision",
+        "management": "Management and Coordination",
+        "other": "Other"
+      },
+      "external_services": {
+        "technical_architect": "Technical Architect",
+        "engineering": "Engineering",
+        "logistics": "Logistics",
+        "permits": "Permits Management",
+        "consulting": "Consulting",
+        "other": "Other"
+      },
+      "operations": {
+        "shipping": "Shipping",
+        "packaging": "Packaging",
+        "transport": "Transport",
+        "storage": "Storage",
+        "insurance": "Insurance",
+        "customs": "Customs",
+        "handling": "Handling",
+        "other": "Other"
+      }
+    }
+  }
+}

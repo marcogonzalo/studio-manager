@@ -1,16 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrencyWithLang } from "@/lib/formatting";
+import type { Locale } from "@/i18n/config";
 import { Image as ImageIcon } from "lucide-react";
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Pendiente",
-  ordered: "Pedido",
-  received: "Recibido",
-};
+const GENERAL_SPACE_KEY = "__general_space__";
 
 interface ProductRow {
   id: string;
@@ -28,10 +26,13 @@ interface ProductRow {
 export function ViewProjectProductsClient({
   products,
   currency,
+  locale,
 }: {
   products: ProductRow[];
   currency: string;
+  locale: Locale;
 }) {
+  const t = useTranslations("ViewProject");
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   const [lightboxAlt, setLightboxAlt] = useState("");
@@ -44,9 +45,22 @@ export function ViewProjectProductsClient({
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "pending":
+        return t("productStatusPending");
+      case "ordered":
+        return t("productStatusOrdered");
+      case "received":
+        return t("productStatusReceived");
+      default:
+        return status;
+    }
+  };
+
   const bySpace = products.reduce(
     (acc, p) => {
-      const key = p.space_name?.trim() || "General";
+      const key = p.space_name?.trim() || GENERAL_SPACE_KEY;
       if (!acc[key]) acc[key] = [];
       acc[key].push(p);
       return acc;
@@ -54,7 +68,11 @@ export function ViewProjectProductsClient({
     {} as Record<string, ProductRow[]>
   );
   const spaceNames = Object.keys(bySpace).sort((a, b) =>
-    a === "General" ? 1 : b === "General" ? -1 : a.localeCompare(b)
+    a === GENERAL_SPACE_KEY
+      ? 1
+      : b === GENERAL_SPACE_KEY
+        ? -1
+        : a.localeCompare(b)
   );
 
   return (
@@ -63,17 +81,19 @@ export function ViewProjectProductsClient({
         {products.length === 0 ? (
           <Card>
             <CardContent className="text-muted-foreground py-12 text-center">
-              No hay productos visibles en este proyecto.
+              {t("noProductsVisible")}
             </CardContent>
           </Card>
         ) : (
           spaceNames.map((spaceName) => {
             const spaceProducts = bySpace[spaceName];
+            const spaceLabel =
+              spaceName === GENERAL_SPACE_KEY ? t("spaceGeneral") : spaceName;
             return (
               <section key={spaceName} className="space-y-3">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <h2 className="text-foreground text-lg font-semibold">
-                    {spaceName}
+                    {spaceLabel}
                   </h2>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -85,26 +105,30 @@ export function ViewProjectProductsClient({
                             {p.name}
                           </p>
                           <p className="text-muted-foreground mt-1 text-xs">
-                            {(STATUS_LABELS[p.status] ?? p.status) || "—"}
+                            {getStatusLabel(p.status) || "—"}
                           </p>
                           {p.internal_reference && (
                             <p className="text-muted-foreground mt-1 font-mono text-xs">
-                              Cód.: {p.internal_reference}
+                              {t("productRefLabel")} {p.internal_reference}
                             </p>
                           )}
                           <p className="text-foreground mt-4 text-sm font-semibold tabular-nums">
-                            Cantidad: {p.quantity}
+                            {t("productQuantityLabel")} {p.quantity}
                           </p>
                           <p className="text-foreground mt-2 text-sm font-semibold tabular-nums">
-                            Precio:{" "}
-                            {formatCurrency(Number(p.unit_price), currency)}
+                            {t("productPriceLabel")}{" "}
+                            {formatCurrencyWithLang(
+                              Number(p.unit_price),
+                              currency,
+                              locale
+                            )}
                           </p>
                         </div>
                         <button
                           type="button"
                           className="bg-muted focus-visible:ring-ring relative h-full w-[30%] shrink-0 overflow-hidden rounded-md transition-opacity hover:opacity-90 focus-visible:ring-2"
                           onClick={() => openLightbox(p.image_url, p.name)}
-                          aria-label={`Ver imagen de ${p.name}`}
+                          aria-label={t("viewImageAria", { name: p.name })}
                           style={
                             p.image_url
                               ? {

@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { getViewProjectLocale } from "@/lib/view-project-locale";
 import { ViewProjectShell } from "../view-project-shell";
 import { ViewProjectProductsClient } from "./products-client";
 
@@ -7,13 +9,21 @@ interface PageProps {
   params: Promise<{ token: string }>;
 }
 
-export const metadata = {
-  title: "Productos del proyecto",
-  description: "Productos del proyecto compartido",
-};
+export async function generateMetadata() {
+  const locale = await getViewProjectLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations("ViewProject");
+  return {
+    title: t("productsMetaTitle"),
+    description: t("productsMetaDescription"),
+  };
+}
 
 export default async function ViewProjectProductsPage({ params }: PageProps) {
   const { token } = await params;
+  const locale = await getViewProjectLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations("ViewProject");
   const supabase = await createClient();
 
   const [shareRes, currencyRes, productsRes] = await Promise.all([
@@ -40,8 +50,12 @@ export default async function ViewProjectProductsPage({ params }: PageProps) {
   }[];
 
   return (
-    <ViewProjectShell token={token} title="Productos" showBack>
-      <ViewProjectProductsClient products={products} currency={currency} />
+    <ViewProjectShell token={token} title={t("products")} showBack>
+      <ViewProjectProductsClient
+        products={products}
+        currency={currency}
+        locale={locale}
+      />
     </ViewProjectShell>
   );
 }

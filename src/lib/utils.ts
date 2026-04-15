@@ -1,19 +1,16 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { ProjectPhase, BudgetCategory } from "@/types";
+import { defaultLocale } from "@/i18n/config";
+import {
+  formatCurrencyWithLang,
+  formatDateByPattern,
+  formatNumberWithLang,
+  getCurrencySymbolWithLang,
+  intlLocaleForAppLang,
+} from "@/lib/formatting";
 
-/** Monedas soportadas: código ISO → etiqueta mostrada */
-export const CURRENCIES: Record<string, string> = {
-  EUR: "EUR - €",
-  USD: "USD - $",
-  GBP: "GBP - £",
-  CHF: "CHF - Fr",
-  MXN: "MXN - $",
-  BRL: "BRL - R$",
-  ARS: "ARS - $",
-  COP: "COP - $",
-  CLP: "CLP - $",
-} as const;
+export { CURRENCIES } from "@/lib/currencies";
 
 /**
  * Clase estándar para inputs en vistas de configuración (Cuenta, Personalización, etc.).
@@ -26,72 +23,51 @@ export interface FormatCurrencyOptions {
   maxFractionDigits?: number;
 }
 
-/** Formatea un importe con la moneda. Si moneda es undefined o no reconocida, usa "??" como símbolo. */
+/** Formatea un importe con la moneda (locale por defecto: idioma de la app, hoy `es`). Preferir `useAppFormatting().formatCurrency` en /veta-app. */
 export function formatCurrency(
   amount: number,
   currencyCode?: string,
   options?: FormatCurrencyOptions
 ): string {
-  const maxFrac = options?.maxFractionDigits ?? 2;
-  const minFrac = Math.min(maxFrac, 2);
-  const hasValidCurrency =
-    currencyCode && currencyCode.trim() && CURRENCIES[currencyCode];
-  if (!hasValidCurrency) {
-    return `${amount.toLocaleString("es-ES", {
-      minimumFractionDigits: minFrac,
-      maximumFractionDigits: maxFrac,
-    })} ??`;
-  }
-  return new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: currencyCode,
-    minimumFractionDigits: minFrac,
-    maximumFractionDigits: maxFrac,
-  }).format(amount);
+  return formatCurrencyWithLang(amount, currencyCode, defaultLocale, options);
 }
 
 /**
- * Formatea una fecha según el locale del navegador (o es-ES por defecto).
- * Usa Intl.DateTimeFormat para i18n y consistencia.
+ * Formatea una fecha. Sin opciones usa patrón `DD/MM/YYYY` (consistente SSR/cliente).
+ * Con opciones granulares usa `Intl` con locale por defecto `es`. En /veta-app usar `useAppFormatting().formatDate`.
  */
 export function formatDate(
   date: Date | string | number,
   options?: Intl.DateTimeFormatOptions & { locale?: string }
 ): string {
+  const { locale: optLocale, ...rest } = options ?? {};
+  const opts = rest as Record<string, unknown>;
+  const hasGranular = (
+    ["day", "month", "year", "weekday", "hour", "minute", "second"] as const
+  ).some((k) => opts[k] !== undefined);
+  if (!hasGranular && Object.keys(opts).length === 0 && !optLocale) {
+    return formatDateByPattern(date, "DD/MM/YYYY");
+  }
   const d =
     typeof date === "object" && "getTime" in date ? date : new Date(date);
-  const locale =
-    options?.locale ??
-    (typeof navigator !== "undefined" ? navigator.language : "es-ES");
-  const opts = options
-    ? Object.fromEntries(
-        Object.entries(options).filter(([key]) => key !== "locale")
-      )
-    : {};
-  const hasGranularOptions = Object.keys(opts).some((k) =>
-    ["day", "month", "year", "weekday", "hour", "minute", "second"].includes(k)
-  );
-  const formatOpts = hasGranularOptions
-    ? opts
-    : { dateStyle: "short", ...opts };
-  return new Intl.DateTimeFormat(locale, formatOpts).format(d);
+  const intlLocale = optLocale ?? intlLocaleForAppLang(defaultLocale);
+  const formatOpts = hasGranular
+    ? (rest as Intl.DateTimeFormatOptions)
+    : { dateStyle: "short" as const, ...(rest as Intl.DateTimeFormatOptions) };
+  return new Intl.DateTimeFormat(intlLocale, formatOpts).format(d);
 }
 
-/** Devuelve solo el símbolo de la moneda. Si es undefined o no reconocida, devuelve "??". */
+/** Número con separadores según locale por defecto `es`. Preferir `useAppFormatting().formatNumber` en /veta-app. */
+export function formatNumber(
+  amount: number,
+  options?: Intl.NumberFormatOptions
+): string {
+  return formatNumberWithLang(amount, defaultLocale, options);
+}
+
+/** Devuelve el símbolo de moneda según locale por defecto `es`. */
 export function getCurrencySymbol(currencyCode?: string): string {
-  const hasValidCurrency =
-    currencyCode && currencyCode.trim() && CURRENCIES[currencyCode];
-  if (!hasValidCurrency) return "??";
-  return (
-    new Intl.NumberFormat("es-ES", {
-      style: "currency",
-      currency: currencyCode,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    })
-      .formatToParts(0)
-      .find((p) => p.type === "currency")?.value ?? "??"
-  );
+  return getCurrencySymbolWithLang(currencyCode, defaultLocale);
 }
 
 export function cn(...inputs: ClassValue[]) {
