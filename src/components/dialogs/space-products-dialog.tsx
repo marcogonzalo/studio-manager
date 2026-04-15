@@ -61,12 +61,12 @@ export function SpaceProductsDialog({
     setLoading(true);
     const [{ data, error }, { data: projectData }] = await Promise.all([
       supabase
-      .from("project_items")
-      .select(
-        "*, product:products(supplier:suppliers(name), description, reference_code, category, image_url), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
-      )
-      .eq("space_id", space.id)
-      .order("created_at"),
+        .from("project_items")
+        .select(
+          "*, product:products(supplier:suppliers(name), description, reference_code, category, image_url), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
+        )
+        .eq("space_id", space.id)
+        .order("created_at"),
       supabase.from("projects").select("currency").eq("id", projectId).single(),
     ]);
 

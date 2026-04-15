@@ -66,7 +66,8 @@ export function ProductDetailModal({
     : product?.cost_price || 0;
   const unitPrice = projectItem?.unit_price || undefined;
   const quantity = projectItem?.quantity || undefined;
-  const currencyCode = currency ?? projectItem?.product?.currency ?? product?.currency;
+  const currencyCode =
+    currency ?? projectItem?.product?.currency ?? product?.currency;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -219,11 +220,14 @@ export function ProductDetailModal({
                           {t("deliveryDate")}:
                         </span>{" "}
                         <span className="font-medium">
-                          {formatDate(projectItem.purchase_order.delivery_date, {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })}
+                          {formatDate(
+                            projectItem.purchase_order.delivery_date,
+                            {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            }
+                          )}
                         </span>
                       </p>
                     )}
