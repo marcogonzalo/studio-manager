@@ -21,6 +21,16 @@ describe("resolveLocaleFromAcceptLanguage", () => {
     expect(resolveLocaleFromAcceptLanguage("de, es-MX")).toBe("es");
   });
 
+  it("respects q weights before declaration order", () => {
+    expect(resolveLocaleFromAcceptLanguage("en;q=0.5,es;q=0.9")).toBe("es");
+    expect(resolveLocaleFromAcceptLanguage("es;q=0.4,en;q=0.8")).toBe("en");
+  });
+
+  it("keeps declaration order when q weights are equal", () => {
+    expect(resolveLocaleFromAcceptLanguage("es;q=0.8,en;q=0.8")).toBe("es");
+    expect(resolveLocaleFromAcceptLanguage("en;q=0.8,es;q=0.8")).toBe("en");
+  });
+
   it("falls back to es when no supported language", () => {
     expect(resolveLocaleFromAcceptLanguage("fr-FR,de;q=0.8")).toBe("es");
   });
