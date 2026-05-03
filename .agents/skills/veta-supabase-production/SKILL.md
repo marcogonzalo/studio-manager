@@ -7,14 +7,7 @@ description: Safe Supabase production operations for Veta — no config push, no
 
 ## Hosted project
 
-| Key | Value |
-|-----|-------|
-| Project name | studio-manager |
-| Project ref | `pwpekrlojdhepreqybon` |
-| Region | East US (Ohio) |
-| Domain | veta.pro |
-| Linked via CLI | Yes (`supabase projects list` shows `●`) |
-| MCP server | `project-0-interior-design-project-supabase` |
+The production project is linked via the Supabase CLI (visible with `supabase projects list`). The MCP server is `project-0-interior-design-project-supabase`.
 
 ---
 
@@ -33,6 +26,7 @@ description: Safe Supabase production operations for Veta — no config push, no
 **Do not run `supabase config push` unless the user explicitly requests it, confirms awareness of the above, and has either aligned `config.toml` with production values or accepted the consequences.**
 
 If the user asks to push config:
+
 1. Show the diff between local and remote first (run `supabase config push --dry-run` or explain what will change).
 2. Ask for explicit confirmation before proceeding.
 3. After the push, revert `[auth]` in `config.toml` to local-dev values so `supabase start` keeps working.
@@ -49,25 +43,15 @@ Read-only queries (`SELECT`) may be used to diagnose issues, but still require u
 
 ---
 
-## Production `[auth]` values (reference)
+## Before an authorized `config push`
 
-Use this table when the user authorizes a `config push` and you need to set `config.toml` to production values before pushing:
+The `config.toml` in this repo uses local-dev defaults. Before pushing, obtain the current remote values from the Dashboard or via dry-run — **never assume them from memory or hardcode them in this file**.
 
-| `config.toml` key | Production value |
-|-------------------|-----------------|
-| `site_url` | `https://veta.pro` |
-| `additional_redirect_urls` | `["https://studio-manager-eight.vercel.app/**", "https://veta-studio-manager.vercel.app/**", "https://veta.pro/**", "https://studio-manager-marcogonzalo-projects.vercel.app/", "https://studio-manager-marcogonzalo-projects.vercel.app/**", "https://studio-*-manager-marcogonzalo-projects.vercel.app", "https://studio-*-manager-marcogonzalo-projects.vercel.app/**"]` |
-| `minimum_password_length` | `12` |
-| `password_requirements` | `lower_upper_letters_digits_symbols` |
-| `[auth.email] enable_confirmations` | `true` |
-| `[auth.email] secure_password_change` | `true` |
-| `[auth.email] max_frequency` | `10s` |
-| `[auth.email] otp_length` | `8` |
-| `[auth.rate_limit] token_refresh` | `5` |
-| `[auth.mfa.totp] enroll_enabled` | `true` |
-| `[auth.mfa.totp] verify_enabled` | `true` |
+```bash
+supabase config push --dry-run   # shows diff without applying
+```
 
-After a `config push` with these values, **revert `config.toml` to local-dev defaults** so `supabase start` works normally again.
+Review the diff with the user, confirm each change is intentional, then run without `--dry-run`. After the push, revert `config.toml` to local-dev defaults so `supabase start` keeps working.
 
 ---
 
