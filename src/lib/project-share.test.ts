@@ -3,7 +3,7 @@ import {
   getOrCreateProjectShareLink,
   regenerateProjectShareToken,
   setProjectShareEnabled,
-} from "./project-share";
+} from "./project-share-actions";
 
 const mockFrom = vi.fn();
 const mockSupabase = {

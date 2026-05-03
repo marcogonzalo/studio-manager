@@ -2,12 +2,7 @@
 
 import { randomBytes } from "crypto";
 import { createClient } from "@/lib/supabase/server";
-
-/** Token y estado de vista pública del proyecto (columnas en projects). */
-export interface ProjectShareLink {
-  token: string;
-  is_enabled: boolean;
-}
+import type { ProjectShareLink } from "@/lib/project-share-types";
 
 function generateToken(): string {
   return randomBytes(24).toString("hex");

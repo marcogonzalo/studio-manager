@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getViewProjectLocale } from "@/lib/view-project-locale";
 import { ViewProjectShell } from "../view-project-shell";
-import { ViewProjectProductsClient } from "./products-client";
+import { ViewProjectSpacesClient } from "./spaces-client";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -14,22 +14,23 @@ export async function generateMetadata() {
   setRequestLocale(locale);
   const t = await getTranslations("ViewProject");
   return {
-    title: t("productsMetaTitle"),
-    description: t("productsMetaDescription"),
+    title: t("spacesMetaTitle"),
+    description: t("spacesMetaDescription"),
   };
 }
 
-export default async function ViewProjectProductsPage({ params }: PageProps) {
+export default async function ViewProjectSpacesPage({ params }: PageProps) {
   const { token } = await params;
   const locale = await getViewProjectLocale();
   setRequestLocale(locale);
   const t = await getTranslations("ViewProject");
   const supabase = await createClient();
 
-  const [shareRes, currencyRes, productsRes] = await Promise.all([
+  const [shareRes, currencyRes, productsRes, rendersRes] = await Promise.all([
     supabase.rpc("get_project_share_by_token", { share_token: token }),
     supabase.rpc("get_project_public_currency", { share_token: token }),
     supabase.rpc("get_project_public_products", { share_token: token }),
+    supabase.rpc("get_project_public_space_images", { share_token: token }),
   ]);
 
   if (shareRes.error || !shareRes.data?.length) notFound();
@@ -48,11 +49,18 @@ export default async function ViewProjectProductsPage({ params }: PageProps) {
     image_url: string | null;
     space_name: string;
   }[];
+  const renders = (rendersRes.data ?? []) as {
+    id: string;
+    url: string;
+    description: string;
+    space_name: string;
+  }[];
 
   return (
-    <ViewProjectShell token={token} title={t("products")} showBack>
-      <ViewProjectProductsClient
+    <ViewProjectShell token={token} title={t("spaces")} showBack>
+      <ViewProjectSpacesClient
         products={products}
+        renders={renders}
         currency={currency}
         locale={locale}
       />

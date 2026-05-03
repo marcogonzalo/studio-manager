@@ -13,12 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Copy, Eye, EyeOff, RefreshCw } from "lucide-react";
-import type { ProjectShareLink } from "@/lib/project-share";
 import {
   getOrCreateProjectShareLink,
   regenerateProjectShareToken,
   setProjectShareEnabled,
-} from "@/lib/project-share";
+} from "@/lib/project-share-actions";
+import type { ProjectShareLink } from "@/lib/project-share-types";
 
 export function ProjectShareDialog({
   open,
