@@ -35,7 +35,7 @@ export function ViewProjectDocumentsClient({
           key={document.id}
           href={document.file_url}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           aria-label={t("viewDocumentAria", { name: document.name })}
         >
           <Card className="h-full transition-shadow hover:shadow-md">
