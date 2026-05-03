@@ -96,13 +96,13 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
-## 10. veta-supabase-email-templates (implementada)
+## 10. veta-supabase-production (implementada)
 
-**Objetivo:** Gestión de plantillas HTML de Auth de Supabase para Veta: cuerpo bilingüe ES/EN con Go templates, asuntos solo en inglés, atributo `lang` con comillas simples, escape de valores interpolados en correos internos y flujo seguro de `config push` a producción sin sobreescribir ajustes de Auth.
+**Objetivo:** Reglas de seguridad para operaciones sobre el proyecto Supabase de producción (studio-manager / veta.pro): no ejecutar `config push`, SQL ni migraciones contra el remoto sin autorización explícita del usuario.
 
-**Cuándo usar:** Al editar `supabase/templates/*.html`, asuntos en `config.toml`, desplegar plantillas a hosted Supabase, o revisar escaping en correos internos (demo-request, contacto).
+**Cuándo usar:** Cuando cualquier operación pueda afectar el proyecto hosted — `config push`, `db push` sin `--local`, `execute_sql` del MCP, `apply_migration`, branches o cualquier herramienta que apunte al remoto.
 
-**Contenido:** Reglas del cuerpo bilingüe, quién escribe `lang` en `user_metadata`, correos internos en español con `escapeHtml`, tabla de asuntos, advertencia crítica sobre `config push` (sobrescribe `[auth]` completo), workflow seguro con Management API / Dashboard / config push con checklist.
+**Contenido:** Regla estricta contra `config push` y SQL en producción sin petición explícita; por qué `config push` sobrescribe todo `[auth]`; tabla de valores de producción para cuando sí se autoriza; alternativas seguras (Dashboard, dry-run, CI/CD).
 
 ---
 
@@ -130,6 +130,6 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 | veta-frontend-components        | Implementada | Media     |
 | veta-security-owasp             | Implementada | Alta      |
 | veta-marketing-strategy-seo-geo   | Implementada | Media     |
-| veta-supabase-email-templates     | Implementada | Alta      |
+| veta-supabase-production          | Implementada | Alta      |
 
-**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`, `veta-marketing-strategy-seo-geo`, `veta-supabase-email-templates`.
+**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`, `veta-marketing-strategy-seo-geo`, `veta-supabase-production`.
