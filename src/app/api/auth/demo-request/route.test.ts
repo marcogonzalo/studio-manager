@@ -151,4 +151,38 @@ describe("POST /api/auth/demo-request", () => {
     expect(internal?.html).toContain("evil&lt;img&gt;");
     expect(internal?.html).not.toContain("evil<img>");
   });
+
+  it("escapes visitor email in internal notification HTML", async () => {
+    const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
+    const { createClient } = await import("@supabase/supabase-js");
+    vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
+    vi.mocked(createClient).mockReturnValue({
+      auth: {
+        admin: {
+          generateLink: vi.fn().mockResolvedValue({
+            data: {
+              properties: { action_link: "https://example.com/demo-magic" },
+            },
+            error: null,
+          }),
+        },
+      },
+    } as never);
+
+    const request = new NextRequest("http://localhost/api/auth/demo-request", {
+      method: "POST",
+      headers: { origin: "https://app.test" },
+      body: JSON.stringify({
+        email: "evil<img>@example.com",
+        lang: "en",
+      }),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(vi.mocked(sendTransactionalEmail).mock.calls.length).toBe(2);
+    const internal = vi.mocked(sendTransactionalEmail).mock.calls[1]?.[0];
+    expect(internal?.html).toContain("evil&lt;img&gt;");
+    expect(internal?.html).not.toContain("evil<img>");
+  });
 });
