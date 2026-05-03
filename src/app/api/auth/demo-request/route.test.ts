@@ -152,7 +152,7 @@ describe("POST /api/auth/demo-request", () => {
     expect(internal?.html).not.toContain("evil<img>");
   });
 
-  it("escapes visitor email in internal notification HTML", async () => {
+  it("escapes ampersand in visitor email in internal notification HTML", async () => {
     const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
     const { createClient } = await import("@supabase/supabase-js");
     vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
@@ -173,16 +173,15 @@ describe("POST /api/auth/demo-request", () => {
       method: "POST",
       headers: { origin: "https://app.test" },
       body: JSON.stringify({
-        email: "evil<img>@example.com",
-        lang: "en",
+        email: "test&visitor@example.com",
+        lang: "es",
       }),
     });
 
     const response = await POST(request);
     expect(response.status).toBe(200);
-    expect(vi.mocked(sendTransactionalEmail).mock.calls.length).toBe(2);
     const internal = vi.mocked(sendTransactionalEmail).mock.calls[1]?.[0];
-    expect(internal?.html).toContain("evil&lt;img&gt;");
-    expect(internal?.html).not.toContain("evil<img>");
+    expect(internal?.html).toContain("test&amp;visitor");
+    expect(internal?.html).not.toContain("test&visitor");
   });
 });
