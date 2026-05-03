@@ -37,7 +37,9 @@ as $$
     coalesce(d.file_type, '')::text
   from projects p
   join project_documents d on d.project_id = p.id
-  where p.token = share_token and p.is_public_enabled = true
+  where p.token = share_token
+    and p.is_public_enabled = true
+    and nullif(btrim(d.file_url), '') is not null
   order by d.created_at desc;
 $$;
 
