@@ -75,8 +75,7 @@ When either scenario is triggered, run **in this order**:
 
 **Summary:**
 
-- **Generate PR:** Branch → Clean → Format → Lint + Tests + Build (container) → Documentation → [New routes: ask public/private if unknown, update middleware] → Commits → Push → PR
-- **Push changes:** same flow, stop after Push.
-- **Rutas:** Si se añade una ruta nueva que no está en una carpeta conocida, preguntar si es pública; si es pública, añadirla a `PUBLIC_ROUTES` en el middleware.
+- **Generate PR:** Branch (ensure not on main) → Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push → PR
+- **Push changes:** Branch (ensure not on main) → Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push (stop here)
 
 Do not skip steps; if something fails, fix it before continuing.
