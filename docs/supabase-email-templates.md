@@ -20,18 +20,36 @@ La app guarda `lang` en metadata al enviar el magic link (`/api/auth/magic-link`
 
 Los HTML mezclan atributos con sintaxis Go (`{{ ... }}`); **Prettier los ignora** (ver `.prettierignore`) para no romper el formateo del repo.
 
+## Flujo de registro con confirmación de email
+
+Desde `config.toml`: `enable_confirmations = true`.
+
+Supabase distingue automáticamente entre usuario nuevo y usuario existente al llamar a `signInWithOtp`:
+
+| Situación                     | Plantilla enviada                        |
+| ----------------------------- | ---------------------------------------- |
+| **Nuevo usuario** (signup)    | `confirmation.html` — tono de bienvenida |
+| **Usuario existente** (login) | `magic_link.html` — acceso neutro        |
+
+El perfil (`public.profiles`) y `account_settings` **no se crean hasta que el usuario confirma el email**:
+
+- Trigger `on_auth_user_created` (AFTER INSERT): solo crea perfil si `email_confirmed_at IS NOT NULL` (OAuth, admin API con `email_confirm: true`).
+- Trigger `on_auth_user_confirmed` (AFTER UPDATE OF `email_confirmed_at`): crea perfil cuando `email_confirmed_at` pasa de `NULL` a `NOT NULL` (confirmación de signup email).
+
+Ambas funciones son idempotentes (comprueban existencia antes de insertar).
+
 ## Plantillas incluidas
 
-| Plantilla                         | Archivo                              | Cuándo se envía                            |
-| --------------------------------- | ------------------------------------ | ------------------------------------------ |
-| Confirmación de registro          | `confirmation.html`                  | Usuario se registra y debe confirmar email |
-| Invitación                        | `invite.html`                        | Invitación a unirse a la app               |
-| Recuperación de contraseña        | `recovery.html`                      | Solicitud de restablecer contraseña        |
-| Magic link                        | `magic_link.html`                    | Login sin contraseña por enlace            |
-| Cambio de email                   | `email_change.html`                  | Usuario solicita cambiar su correo         |
-| Reautenticación                   | `reauthentication.html`              | Código OTP para acciones sensibles         |
-| Notificación: contraseña cambiada | `password_changed_notification.html` | Aviso tras cambiar la contraseña           |
-| Notificación: email cambiado      | `email_changed_notification.html`    | Aviso tras cambiar el correo               |
+| Plantilla                         | Archivo                              | Cuándo se envía                                       |
+| --------------------------------- | ------------------------------------ | ----------------------------------------------------- |
+| Confirmación de registro          | `confirmation.html`                  | Signup nuevo: bienvenida + enlace para activar cuenta |
+| Invitación                        | `invite.html`                        | Invitación a unirse a la app                          |
+| Recuperación de contraseña        | `recovery.html`                      | Solicitud de restablecer contraseña                   |
+| Magic link                        | `magic_link.html`                    | Login de usuario ya registrado (sin contraseña)       |
+| Cambio de email                   | `email_change.html`                  | Usuario solicita cambiar su correo                    |
+| Reautenticación                   | `reauthentication.html`              | Código OTP para acciones sensibles                    |
+| Notificación: contraseña cambiada | `password_changed_notification.html` | Aviso tras cambiar la contraseña                      |
+| Notificación: email cambiado      | `email_changed_notification.html`    | Aviso tras cambiar el correo                          |
 
 ## Desarrollo local
 

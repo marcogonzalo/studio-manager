@@ -8,6 +8,8 @@ const eslintConfig = defineConfig([
   {
     rules: {
       "react-hooks/set-state-in-effect": "off",
+      // react-hook-form watch()/handleSubmit patterns are incompatible with React Compiler memoization heuristics
+      "react-hooks/incompatible-library": "off",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-unused-vars": "warn",
       "@next/next/no-img-element": "warn",

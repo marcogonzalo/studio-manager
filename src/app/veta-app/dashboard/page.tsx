@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import {
@@ -120,40 +120,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseClient();
 
-  useEffect(() => {
-    fetchDashboardStats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
-  }, []);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    void supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", user.id)
-      .single()
-      .then(
-        (res: { data: { full_name?: string | null } | null }) =>
-          setProfile(
-            user.id && res.data
-              ? {
-                  id: user.id,
-                  full_name: res.data.full_name ?? undefined,
-                }
-              : null
-          ),
-        () => setProfile(null)
-      );
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase from getSupabaseClient() is stable
-  }, [user?.id]);
-
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = useCallback(async () => {
     try {
       setLoading(true);
 
       const now = new Date();
       const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
       const { data: activeProjects, error: activeError } = await supabase
         .from("projects")
@@ -294,7 +266,33 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [supabase, t]);
+
+  useEffect(() => {
+    void fetchDashboardStats();
+  }, [fetchDashboardStats]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    void supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single()
+      .then(
+        (res: { data: { full_name?: string | null } | null }) =>
+          setProfile(
+            user.id && res.data
+              ? {
+                  id: user.id,
+                  full_name: res.data.full_name ?? undefined,
+                }
+              : null
+          ),
+        () => setProfile(null)
+      );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase from getSupabaseClient() is stable
+  }, [user?.id]);
 
   const formatChange = (change: number) => {
     if (change === 0) return t("noChanges");

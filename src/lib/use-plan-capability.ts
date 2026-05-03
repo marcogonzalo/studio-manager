@@ -24,7 +24,7 @@ export function usePlanCapability(
   featureKey: PlanFeatureKey,
   options?: CheckCapabilityOptions
 ): boolean {
-  const { effectivePlan, planLoading } = useAuth();
+  const { effectivePlan } = useAuth();
   const config = effectivePlan?.config ?? getPlanConfigForDisplay("BASE");
   return checkCapability(config, featureKey, options);
 }

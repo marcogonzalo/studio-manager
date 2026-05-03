@@ -579,7 +579,7 @@ export default function AppLayoutClient({
         !!sessionStorage.getItem(ONBOARDING_SESSION_SKIP_KEY)
     );
   const [onboardingModalOpen, setOnboardingModalOpen] = useState(true);
-  const [welcomeDismissedTrigger, setWelcomeDismissedTrigger] = useState(0);
+  const [, setWelcomeDismissedTrigger] = useState(0);
   const { firstPendingStepId, loading: onboardingLoading } =
     useOnboardingStatus();
   const showOnboardingModal =

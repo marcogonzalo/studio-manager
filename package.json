@@ -11,6 +11,7 @@
     "lint:fix": "eslint src --fix",
     "db:push": "supabase db push --local",
     "db:reset": "supabase db reset --local",
+    "seed:demo": "node scripts/run-seed-demo-local.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest",
@@ -82,6 +83,7 @@
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "tailwindcss": "^4.2.1",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
     "vitest": "^4.0.16"
