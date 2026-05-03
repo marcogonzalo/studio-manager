@@ -96,6 +96,16 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
+## 10. veta-supabase-email-templates (implementada)
+
+**Objetivo:** Gestión de plantillas HTML de Auth de Supabase para Veta: cuerpo bilingüe ES/EN con Go templates, asuntos solo en inglés, atributo `lang` con comillas simples, escape de valores interpolados en correos internos y flujo seguro de `config push` a producción sin sobreescribir ajustes de Auth.
+
+**Cuándo usar:** Al editar `supabase/templates/*.html`, asuntos en `config.toml`, desplegar plantillas a hosted Supabase, o revisar escaping en correos internos (demo-request, contacto).
+
+**Contenido:** Reglas del cuerpo bilingüe, quién escribe `lang` en `user_metadata`, correos internos en español con `escapeHtml`, tabla de asuntos, advertencia crítica sobre `config push` (sobrescribe `[auth]` completo), workflow seguro con Management API / Dashboard / config push con checklist.
+
+---
+
 ## 9. veta-marketing-strategy-seo-geo (implementada)
 
 **Objetivo:** Contenido de marketing con nivel estratégico para **SEO** y **GEO** (visibilidad en búsqueda clásica y en respuestas citadas / motores generativos), alineado a **buyer personas** en `memory-bank/buyerPersona.md` y a marca/keywords en `memory-bank/productContext.md`.
@@ -119,6 +129,7 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 | veta-app-routing                | Implementada | Media     |
 | veta-frontend-components        | Implementada | Media     |
 | veta-security-owasp             | Implementada | Alta      |
-| veta-marketing-strategy-seo-geo | Implementada | Media     |
+| veta-marketing-strategy-seo-geo   | Implementada | Media     |
+| veta-supabase-email-templates     | Implementada | Alta      |
 
-**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`, `veta-marketing-strategy-seo-geo`.
+**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`, `veta-marketing-strategy-seo-geo`, `veta-supabase-email-templates`.
