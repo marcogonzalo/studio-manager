@@ -96,16 +96,6 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
-## 10. veta-supabase-production (implementada)
-
-**Objetivo:** Reglas de seguridad para operaciones sobre el proyecto Supabase de producción (studio-manager / veta.pro): no ejecutar `config push`, SQL ni migraciones contra el remoto sin autorización explícita del usuario.
-
-**Cuándo usar:** Cuando cualquier operación pueda afectar el proyecto hosted — `config push`, `db push` sin `--local`, `execute_sql` del MCP, `apply_migration`, branches o cualquier herramienta que apunte al remoto.
-
-**Contenido:** Regla estricta contra `config push` y SQL en producción sin petición explícita; por qué `config push` sobrescribe todo `[auth]`; tabla de valores de producción para cuando sí se autoriza; alternativas seguras (Dashboard, dry-run, CI/CD).
-
----
-
 ## 9. veta-marketing-strategy-seo-geo (implementada)
 
 **Objetivo:** Contenido de marketing con nivel estratégico para **SEO** y **GEO** (visibilidad en búsqueda clásica y en respuestas citadas / motores generativos), alineado a **buyer personas** en `memory-bank/buyerPersona.md` y a marca/keywords en `memory-bank/productContext.md`.
@@ -113,6 +103,16 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 **Cuándo usar:** Blog, ampliación de copy público, piezas de ayuda o producto “privadas” (app, emails), guías o revisiones de posicionamiento y mensaje por persona (Elena, Javi, Beatriz).
 
 **Contenido:** Intención de búsqueda, E-E-A-T, enlazado interno, estructura extractiva para IA; matriz de mensaje por persona; separación blog / marketing público / UI privada; checklist; remite a `veta-marketing-i18n-content` y `veta-multilanguage-views` para implementación ES+EN y SEO técnico. Ver `SKILL.md` en `.agents/skills/veta-marketing-strategy-seo-geo/`.
+
+---
+
+## 10. veta-supabase-production (implementada)
+
+**Objetivo:** Reglas de seguridad para operaciones sobre el proyecto Supabase de producción (studio-manager / veta.pro): no ejecutar `config push`, SQL ni migraciones contra el remoto sin autorización explícita del usuario.
+
+**Cuándo usar:** Cuando cualquier operación pueda afectar el proyecto hosted — `config push`, `db push` sin `--local`, `execute_sql` del MCP, `apply_migration`, branches o cualquier herramienta que apunte al remoto.
+
+**Contenido:** Regla estricta contra `config push` y SQL en producción sin petición explícita; explicación de por qué `config push` sobrescribe todo `[auth]`; workflow con `--dry-run` para revisar el diff antes de aplicar; tabla de alternativas seguras (Dashboard, Management API, CI/CD).
 
 ---
 
