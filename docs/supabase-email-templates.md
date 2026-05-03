@@ -48,7 +48,7 @@ Los HTML mezclan atributos con sintaxis Go (`{{ ... }}`); **Prettier los ignora*
 
 ### Plantillas y asuntos ya aplicados (proyecto enlazado)
 
-En el proyecto **studio-manager** (`pwpekrlojdhepreqybon`) se ejecutó `supabase config push` para desplegar el HTML de `supabase/templates/*.html` y los **asuntos en inglés** del `config.toml`. La configuración sensible de Auth en producción (Site URL `https://veta.pro`, redirect URLs de Vercel, contraseñas 12+ con complejidad, MFA TOTP activo, confirmación de email, etc.) se **restauró** en un segundo push; el `config.toml` del repo sigue pensado para **desarrollo local** (localhost, reglas laxas).
+En el proyecto **studio-manager** se ejecutó `supabase config push` para desplegar el HTML de `supabase/templates/*.html` y los **asuntos en inglés** del `config.toml`. La configuración sensible de Auth en producción (Site URL `https://veta.pro`, redirect URLs de Vercel, contraseñas 12+ con complejidad, MFA TOTP activo, confirmación de email, etc.) se **restauró** en un segundo push; el `config.toml` del repo sigue pensado para **desarrollo local** (localhost, reglas laxas).
 
 ### Peligro: `supabase config push`
 
