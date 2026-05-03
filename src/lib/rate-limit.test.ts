@@ -36,7 +36,7 @@ describe("getRouteGroup", () => {
   });
   it("returns view-project for /view-project/*", () => {
     expect(getRouteGroup("/view-project/abc123")).toBe("view-project");
-    expect(getRouteGroup("/view-project/abc123/products")).toBe("view-project");
+    expect(getRouteGroup("/view-project/abc123/spaces")).toBe("view-project");
     expect(getRouteGroup("/view-project/xyz/costs", "GET")).toBe(
       "view-project"
     );
@@ -56,8 +56,8 @@ describe("maskShareToken", () => {
 
 describe("maskViewProjectPath", () => {
   it("masks token in view-project path", () => {
-    expect(maskViewProjectPath("/view-project/abc123def456/products")).toBe(
-      "/view-project/abc1…f456/products"
+    expect(maskViewProjectPath("/view-project/abc123def456/spaces")).toBe(
+      "/view-project/abc1…f456/spaces"
     );
   });
   it("returns path unchanged when not view-project", () => {

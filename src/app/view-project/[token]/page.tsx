@@ -124,9 +124,7 @@ export default async function ViewProjectPage({ params }: PageProps) {
         >
           <div className="flex flex-col items-center justify-center gap-2 md:flex-row md:flex-wrap md:justify-between md:gap-2">
             <Button variant="secondary" asChild className="min-h-12 text-base">
-              <Link href={`/view-project/${token}/products`}>
-                {t("products")}
-              </Link>
+              <Link href={`/view-project/${token}/spaces`}>{t("spaces")}</Link>
             </Button>
             <Button variant="secondary" asChild className="min-h-12 text-base">
               <Link href={`/view-project/${token}/costs`}>{t("costs")}</Link>
@@ -134,6 +132,11 @@ export default async function ViewProjectPage({ params }: PageProps) {
             <Button variant="secondary" asChild className="min-h-12 text-base">
               <Link href={`/view-project/${token}/payments`}>
                 {t("payments")}
+              </Link>
+            </Button>
+            <Button variant="secondary" asChild className="min-h-12 text-base">
+              <Link href={`/view-project/${token}/documents`}>
+                {t("documents")}
               </Link>
             </Button>
           </div>

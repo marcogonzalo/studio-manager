@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 export function ThemeToggleSimple() {
   const t = useTranslations("AppNav");
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export function ThemeToggleSimple() {
     );
   }
 
-  const isDark = theme === "dark";
+  const isDark = resolvedTheme === "dark";
 
   return (
     <Button
@@ -38,7 +38,7 @@ export function ThemeToggleSimple() {
       className="hover:bg-background text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer transition-colors"
       aria-label={isDark ? t("switchToLight") : t("switchToDark")}
     >
-      {isDark ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
     </Button>
   );
 }

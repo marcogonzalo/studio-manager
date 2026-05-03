@@ -148,7 +148,7 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Redirect legacy Spanish view-project routes to English
+  // Marketing / legacy path canonicalization (next-intl, Spanish default paths)
   async redirects() {
     return [
       // i18n: remove legacy "/es" prefix duplicates (ES default without prefix)
@@ -206,22 +206,6 @@ const nextConfig: NextConfig = {
         source: "/en/plan-studio-empresas-arquitectura-diseno-interior",
         destination:
           "/en/studio-plan-for-architecture-and-interior-design-firms",
-        permanent: true,
-      },
-
-      {
-        source: "/view-project/:token/productos",
-        destination: "/view-project/:token/products",
-        permanent: true,
-      },
-      {
-        source: "/view-project/:token/costes",
-        destination: "/view-project/:token/costs",
-        permanent: true,
-      },
-      {
-        source: "/view-project/:token/pagos",
-        destination: "/view-project/:token/payments",
         permanent: true,
       },
     ];

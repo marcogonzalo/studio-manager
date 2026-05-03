@@ -106,7 +106,7 @@ export default async function RootLayout({
         {/* Aplicar tema antes del primer pintado para evitar que la 404 (y el resto) pierda formato al hidratar (next-themes aplica la clase después). */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('theme');var s=window.matchMedia('(prefers-color-scheme: dark)').matches;var v=!t||t==='system'?(s?'dark':'light'):t;document.documentElement.classList.add(v);})();`,
+            __html: `(function(){try{var k='theme';var t=localStorage.getItem(k);var s=window.matchMedia('(prefers-color-scheme: dark)').matches;var isDark=!t||t==='system'?s:t==='dark';document.documentElement.classList.remove('light');document.documentElement.classList.toggle('dark',isDark);}catch(e){}})();`,
           }}
         />
         {/* Preconnect to third-party origins (faster TTFB, keeps third-party budget &lt; 200 KB). */}
