@@ -206,39 +206,39 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Email templates (Veta branding, ES/EN body via Go templates + user_metadata.lang). For production, copy HTML + subjects to Dashboard > Auth > Email Templates.
+# Email templates (Veta branding; body ES/EN via Go templates + user_metadata.lang). Subjects: English only (inbox preheader).
 [auth.email.template.confirmation]
-subject = "Confirma tu cuenta | Confirm your account — Veta"
+subject = "Confirm your account — Veta"
 content_path = "supabase/templates/confirmation.html"
 
 [auth.email.template.invite]
-subject = "Invitación a Veta | Invitation to Veta"
+subject = "Invitation to Veta"
 content_path = "supabase/templates/invite.html"
 
 [auth.email.template.recovery]
-subject = "Restablece tu contraseña | Reset your password — Veta"
+subject = "Reset your password — Veta"
 content_path = "supabase/templates/recovery.html"
 
 [auth.email.template.magic_link]
-subject = "Tu enlace de acceso | Your sign-in link — Veta"
+subject = "Your sign-in link — Veta"
 content_path = "supabase/templates/magic_link.html"
 
 [auth.email.template.email_change]
-subject = "Confirma el cambio de correo | Confirm email change — Veta"
+subject = "Confirm email change — Veta"
 content_path = "supabase/templates/email_change.html"
 
 [auth.email.template.reauthentication]
-subject = "Confirmar identidad | Confirm your identity — Veta"
+subject = "Confirm your identity — Veta"
 content_path = "supabase/templates/reauthentication.html"
 
 [auth.email.notification.password_changed]
 enabled = true
-subject = "Contraseña modificada | Password updated — Veta"
+subject = "Password updated — Veta"
 content_path = "./templates/password_changed_notification.html"
 
 [auth.email.notification.email_changed]
 enabled = true
-subject = "Correo actualizado | Email updated — Veta"
+subject = "Email updated — Veta"
 content_path = "./templates/email_changed_notification.html"
 
 [auth.sms]
