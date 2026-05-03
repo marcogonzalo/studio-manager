@@ -226,6 +226,10 @@ export default function CustomizationPage() {
         })
         .eq("user_id", user.id);
       if (error) throw error;
+      const { error: authLangError } = await supabase.auth.updateUser({
+        data: { lang: values.lang },
+      });
+      if (authLangError) throw authLangError;
       toast.success(t("toastLanguageSaved"));
       router.refresh();
       fetchProfile();

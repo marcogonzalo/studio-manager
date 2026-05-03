@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "./route";
 import { NextRequest } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendTransactionalEmail } from "@/lib/email/mailersend";
 
 vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseUrl: () => "https://test.supabase.co",
@@ -77,5 +78,77 @@ describe("POST /api/auth/demo-request", () => {
 
     expect(response.status).toBe(503);
     expect(data.error).toBeDefined();
+  });
+
+  it("sends visitor email in English when lang is en", async () => {
+    const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
+    const { createClient } = await import("@supabase/supabase-js");
+    vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
+    vi.mocked(createClient).mockReturnValue({
+      auth: {
+        admin: {
+          generateLink: vi.fn().mockResolvedValue({
+            data: {
+              properties: { action_link: "https://example.com/demo-magic" },
+            },
+            error: null,
+          }),
+        },
+      },
+    } as never);
+
+    const request = new NextRequest("http://localhost/api/auth/demo-request", {
+      method: "POST",
+      headers: { origin: "https://app.test" },
+      body: JSON.stringify({
+        email: "visitor@example.com",
+        lang: "en",
+      }),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    const visitorEmail = vi.mocked(sendTransactionalEmail).mock.calls[0]?.[0];
+    expect(visitorEmail?.to).toBe("visitor@example.com");
+    expect(visitorEmail?.subject).toContain("Your link");
+    expect(visitorEmail?.html).toContain("Try the Veta demo");
+    const internal = vi.mocked(sendTransactionalEmail).mock.calls[1]?.[0];
+    expect(internal?.subject).toContain("Solicitud de demo");
+    expect(internal?.html).toContain("Idioma (locale): en");
+    expect(internal?.html).not.toContain("Visitor");
+  });
+
+  it("escapes visitor email in internal notification HTML", async () => {
+    const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
+    const { createClient } = await import("@supabase/supabase-js");
+    vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
+    vi.mocked(createClient).mockReturnValue({
+      auth: {
+        admin: {
+          generateLink: vi.fn().mockResolvedValue({
+            data: {
+              properties: { action_link: "https://example.com/demo-magic" },
+            },
+            error: null,
+          }),
+        },
+      },
+    } as never);
+
+    const request = new NextRequest("http://localhost/api/auth/demo-request", {
+      method: "POST",
+      headers: { origin: "https://app.test" },
+      body: JSON.stringify({
+        email: "evil<img>@example.com",
+        lang: "en",
+      }),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(vi.mocked(sendTransactionalEmail).mock.calls.length).toBe(2);
+    const internal = vi.mocked(sendTransactionalEmail).mock.calls[1]?.[0];
+    expect(internal?.html).toContain("evil&lt;img&gt;");
+    expect(internal?.html).not.toContain("evil<img>");
   });
 });

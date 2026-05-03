@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { pushContact } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ const MESSAGE_MAX = 1000;
 
 export function ContactForm() {
   const t = useTranslations("ContactForm");
+  const locale = useLocale();
   const [formTimestamp] = useState(() => Date.now());
   const [state, formAction, isPending] = useActionState(
     submitContactForm,
@@ -90,6 +91,7 @@ export function ContactForm() {
             />
           </div>
           <input type="hidden" name="_ts" value={formTimestamp} />
+          <input type="hidden" name="form_locale" value={locale} />
           <div className="grid gap-6 md:grid-cols-2">
             <FormField
               control={form.control}

@@ -84,6 +84,7 @@ export function SignInForm() {
         body: JSON.stringify({
           email: values.email,
           emailRedirectTo: callbackUrl,
+          lang: locale,
         }),
       });
 
@@ -117,6 +118,7 @@ export function SignInForm() {
         body: JSON.stringify({
           email,
           emailRedirectTo: callbackUrl,
+          lang: locale,
         }),
       });
 

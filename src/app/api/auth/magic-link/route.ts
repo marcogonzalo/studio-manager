@@ -5,11 +5,8 @@ import {
   getClientIp,
   RATE_LIMIT_MESSAGE,
 } from "@/lib/rate-limit";
-import { defaultLocale, type Locale } from "@/i18n/config";
-import {
-  isAppLocale,
-  resolveLocaleFromAcceptLanguage,
-} from "@/lib/resolve-locale-from-accept-language";
+import type { Locale } from "@/i18n/config";
+import { resolveEmailLocale } from "@/lib/email/auth-email-lang";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,14 +29,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, emailRedirectTo, data, lang: bodyLang } = body;
 
-    let resolvedLang: Locale = defaultLocale;
-    if (isAppLocale(bodyLang)) {
-      resolvedLang = bodyLang;
-    } else {
-      resolvedLang = resolveLocaleFromAcceptLanguage(
-        request.headers.get("accept-language")
-      );
-    }
+    const resolvedLang: Locale = resolveEmailLocale(
+      bodyLang,
+      request.headers.get("accept-language")
+    );
 
     const mergedData =
       typeof data === "object" && data !== null && !Array.isArray(data)

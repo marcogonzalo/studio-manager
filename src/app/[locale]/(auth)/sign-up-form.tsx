@@ -147,6 +147,7 @@ export function SignUpForm({
         body: JSON.stringify({
           email,
           emailRedirectTo: callbackUrl,
+          lang: locale,
           data: {
             full_name: fullName,
             signup_plan: selectedPlan,

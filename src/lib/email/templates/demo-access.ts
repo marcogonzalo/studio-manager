@@ -1,7 +1,8 @@
 /**
- * Plantilla de correo para el enlace de acceso a la demo (misma línea visual que
- * supabase/templates/magic_link.html: marca Veta, fondo #f5f3ef, botón #759b6d).
+ * Demo access email (MailerSend). Visual line aligned with supabase/templates/magic_link.html.
  */
+
+import type { Locale } from "@/i18n/config";
 
 function escapeHtml(link: string): string {
   return link
@@ -11,16 +12,7 @@ function escapeHtml(link: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function getDemoAccessEmailHtml(actionLink: string): string {
-  const safeLink = escapeHtml(actionLink);
-  return `<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tu enlace para probar la demo de Veta</title>
-    <style>
-      body {
+const STYLES = `      body {
         font-family:
           "Montserrat",
           -apple-system,
@@ -91,41 +83,78 @@ export function getDemoAccessEmailHtml(actionLink: string): string {
       .footer a {
         color: #759b6d;
         text-decoration: none;
-      }
+      }`;
+
+export function getDemoAccessEmailHtml(
+  actionLink: string,
+  lang: Locale = "es"
+): string {
+  const safeLink = escapeHtml(actionLink);
+  const isEn = lang === "en";
+  const htmlLang = isEn ? "en" : "es";
+  const title = isEn
+    ? "Your link to try the Veta demo"
+    : "Tu enlace para probar la demo de Veta";
+  const h1 = isEn ? "Try the Veta demo" : "Prueba la demo de Veta";
+  const lead = isEn
+    ? "You asked to access the demo. Use the link below to sign in; it is valid for a limited time:"
+    : "Has solicitado acceder a la demo. Usa el siguiente enlace para entrar; es válido durante un tiempo limitado:";
+  const cta = isEn ? "Open the Veta demo" : "Acceder a la demo de Veta";
+  const fallback = isEn
+    ? "If the button does not work, copy and paste this link:"
+    : "Si el botón no funciona, copia y pega este enlace:";
+  const ignore = isEn
+    ? "If you did not request this link, you can ignore this email."
+    : "Si no has solicitado este enlace, puedes ignorar este correo.";
+  const footer = isEn
+    ? `<a href="https://www.veta.pro">Veta</a> — Interior design project management.`
+    : `<a href="https://www.veta.pro">Veta</a> — Gestión de proyectos de diseño interior.`;
+
+  return `<!doctype html>
+<html lang="${htmlLang}">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${title}</title>
+    <style>
+${STYLES}
     </style>
   </head>
   <body>
     <div class="wrapper">
       <div class="card">
         <div class="brand">Veta</div>
-        <h1>Prueba la demo de Veta</h1>
+        <h1>${h1}</h1>
+        <p>${lead}</p>
         <p>
-          Has solicitado acceder a la demo. Usa el siguiente enlace para entrar;
-          es válido durante un tiempo limitado:
-        </p>
-        <p>
-          <a href="${safeLink}" class="button" style="color: #ffffff !important;">Acceder a la demo de Veta</a>
+          <a href="${safeLink}" class="button" style="color: #ffffff !important;">${cta}</a>
         </p>
         <p class="link-fallback">
-          Si el botón no funciona, copia y pega este enlace:<br /><a
-            href="${safeLink}"
-            >${safeLink}</a
-          >
+          ${fallback}<br /><a href="${safeLink}">${safeLink}</a>
         </p>
-        <p style="font-size: 13px; color: #6b6560">
-          Si no has solicitado este enlace, puedes ignorar este correo.
-        </p>
-        <div class="footer">
-          <a href="https://www.veta.pro">Veta</a> — Gestión de proyectos de diseño
-          interior.
-        </div>
+        <p style="font-size: 13px; color: #6b6560">${ignore}</p>
+        <div class="footer">${footer}</div>
       </div>
     </div>
   </body>
 </html>`;
 }
 
-export function getDemoAccessEmailText(actionLink: string): string {
+export function getDemoAccessEmailText(
+  actionLink: string,
+  lang: Locale = "es"
+): string {
+  if (lang === "en") {
+    return `Hello,
+
+You asked to access the Veta demo. Use this link to sign in (valid for a limited time):
+
+${actionLink}
+
+If you did not request this link, you can ignore this email.
+
+— Veta team`;
+  }
   return `Hola,
 
 Has solicitado acceder a la demo de Veta. Usa este enlace para entrar (válido durante un tiempo limitado):

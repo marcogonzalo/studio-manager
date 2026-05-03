@@ -115,8 +115,22 @@ describe("submitContactForm", () => {
     expect(call.text).toContain("Jane Doe");
     expect(call.text).toContain("jane@example.com");
     expect(call.text).toContain("IP: 192.168.1.1");
+    expect(call.text).toContain("Idioma (locale): es");
     expect(call.html).toContain("192.168.1.1");
     expect(call.html).toContain("Nuevo mensaje de contacto");
+    expect(call.html).toContain("Idioma (locale):</strong> es");
+  });
+
+  it("includes form locale in body when form_locale is en", async () => {
+    const data = formData();
+    data.set("form_locale", "en");
+    const result = await submitContactForm(null, data);
+    expect(result.success).toBe(true);
+    const call = mockSendTransactionalEmail.mock.calls[0][0];
+    expect(call.subject).toContain("[Veta Contacto]");
+    expect(call.html).toContain("Nuevo mensaje de contacto");
+    expect(call.text).toContain("Idioma (locale): en");
+    expect(call.html).toContain("Idioma (locale):</strong> en");
   });
 
   it("returns error when MailerSend returns failure", async () => {
@@ -201,6 +215,24 @@ describe("submitContactForm", () => {
     const result = await submitContactForm(
       null,
       formData({ subject: "a".repeat(101) })
+    );
+    expect(result.error).toContain("asunto");
+    expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns error when subject contains LF", async () => {
+    const result = await submitContactForm(
+      null,
+      formData({ subject: "Hello\nWorld extra chars" })
+    );
+    expect(result.error).toContain("asunto");
+    expect(mockSendTransactionalEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns error when subject contains CR", async () => {
+    const result = await submitContactForm(
+      null,
+      formData({ subject: "Hello\rWorld extra chars" })
     );
     expect(result.error).toContain("asunto");
     expect(mockSendTransactionalEmail).not.toHaveBeenCalled();

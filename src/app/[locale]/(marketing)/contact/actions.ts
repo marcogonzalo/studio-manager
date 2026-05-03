@@ -12,6 +12,18 @@ import {
   getClientIpFromHeaders,
   RATE_LIMIT_MESSAGE,
 } from "@/lib/rate-limit";
+import type { Locale } from "@/i18n/config";
+import { defaultLocale } from "@/i18n/config";
+import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
+import { escapeHtml } from "@/lib/escape-html";
+
+/** Strips CR/LF from a fragment used in email Subject to mitigate header injection. */
+function sanitizeEmailSubjectFragment(value: string): string {
+  return value
+    .replace(/\r\n|\r|\n/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 /** Minimum seconds the form must be open before submit (anti-bot). */
 const MIN_SUBMIT_SECONDS = 10;
@@ -30,7 +42,11 @@ const contactSchema = z.object({
   subject: z
     .string()
     .min(5, "El asunto debe tener al menos 5 caracteres")
-    .max(100, "El asunto es demasiado largo"),
+    .max(100, "El asunto es demasiado largo")
+    .refine(
+      (s) => !/[\r\n]/.test(s),
+      "El asunto no puede contener saltos de línea"
+    ),
   message: z
     .string()
     .min(10, "El mensaje debe tener al menos 10 caracteres")
@@ -84,26 +100,33 @@ export async function submitContactForm(
   }
 
   const { name, email, subject, message } = parsed.data;
+  const rawFormLocale = String(formData.get("form_locale") ?? "").trim();
+  const formLocale: Locale = isAppLocale(rawFormLocale)
+    ? rawFormLocale
+    : defaultLocale;
   const from = getDefaultFrom();
   const toEmail = getContactFormToEmail();
 
-  const text = `Nombre: ${name}\nEmail: ${email}\nIP: ${ip}\n\nMensaje:\n${message}`;
+  const text = `Nombre: ${name}\nEmail: ${email}\nIP: ${ip}\nIdioma (locale): ${formLocale}\n\nMensaje:\n${message}`;
   const html = `
     <h2>Nuevo mensaje de contacto</h2>
     <p><strong>Nombre:</strong> ${escapeHtml(name)}</p>
     <p><strong>Email:</strong> ${escapeHtml(email)}</p>
     <p><strong>Asunto:</strong> ${escapeHtml(subject)}</p>
     <p><strong>IP:</strong> ${escapeHtml(ip)}</p>
+    <p><strong>Idioma (locale):</strong> ${escapeHtml(formLocale)}</p>
     <hr>
     <p>${escapeHtml(message).replace(/\n/g, "<br>")}</p>
   `;
+
+  const subjectForHeader = sanitizeEmailSubjectFragment(subject);
 
   const result = await sendTransactionalEmail({
     to: toEmail,
     from: from.email,
     fromName: from.name,
     replyTo: { email, name },
-    subject: `[Veta Contacto] ${subject}`,
+    subject: `[Veta Contacto] ${subjectForHeader}`,
     text,
     html,
   });
@@ -116,15 +139,4 @@ export async function submitContactForm(
   }
 
   return { success: true };
-}
-
-function escapeHtml(text: string): string {
-  const map: Record<string, string> = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-  };
-  return text.replace(/[&<>"']/g, (m) => map[m] ?? m);
 }
