@@ -7,10 +7,16 @@ Seed or reset the demo account (`demo@veta.pro`) with Studio plan and sample dat
 **Run (from project root):**
 
 ```bash
+npm run seed:demo
+```
+
+Con Supabase local en marcha (`supabase start`), el comando lee `API_URL` y `SERVICE_ROLE_KEY` de `supabase status --output json`. También puedes fijar tú las variables y se respetan:
+
+```bash
 SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY=<key> npx tsx scripts/seed-demo-account.ts
 ```
 
-- **Local:** After `npx supabase start`, use the URL and **Secret** key from `npx supabase status` (Project URL + Secret under Authentication Keys).
+- **Local:** Tras `supabase start`, `npm run seed:demo` suele bastar. A mano: URL y clave de `supabase status` (JSON: `API_URL`, `SERVICE_ROLE_KEY`).
 - **Cloud:** Use your project's API URL and Service Role key from Supabase Dashboard → Settings → API.
 
 The script is idempotent: it deletes existing demo data then re-seeds. It creates the demo user via Auth Admin if it does not exist.
