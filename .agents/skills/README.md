@@ -106,6 +106,16 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
+## 10. veta-supabase-production (implementada)
+
+**Objetivo:** Reglas de seguridad para operaciones sobre el proyecto Supabase de producción (studio-manager / veta.pro): no ejecutar `config push`, SQL ni migraciones contra el remoto sin autorización explícita del usuario.
+
+**Cuándo usar:** Cuando cualquier operación pueda afectar el proyecto hosted — `config push`, `db push` sin `--local`, `execute_sql` del MCP, `apply_migration`, branches o cualquier herramienta que apunte al remoto.
+
+**Contenido:** Regla estricta contra `config push` y SQL en producción sin petición explícita; explicación de por qué `config push` sobrescribe todo `[auth]`; workflow con `--dry-run` para revisar el diff antes de aplicar; tabla de alternativas seguras (Dashboard, Management API, CI/CD).
+
+---
+
 ## Resumen
 
 | Skill                           | Estado       | Prioridad |
@@ -120,5 +130,6 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 | veta-frontend-components        | Implementada | Media     |
 | veta-security-owasp             | Implementada | Alta      |
 | veta-marketing-strategy-seo-geo | Implementada | Media     |
+| veta-supabase-production        | Implementada | Alta      |
 
-**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`, `veta-marketing-strategy-seo-geo`.
+**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`, `veta-marketing-strategy-seo-geo`, `veta-supabase-production`.

@@ -11,7 +11,7 @@ El cuerpo del HTML usa [plantillas Go](https://supabase.com/docs/guides/auth/aut
 
 La app guarda `lang` en metadata al enviar el magic link (`/api/auth/magic-link`, formularios sign-in / sign-up), al cambiar el correo en ajustes (junto con `updateUser`), y al guardar el idioma en **Ajustes → Personalización** (sincroniza `auth.updateUser({ data: { lang } })`).
 
-**Asunto del correo:** en Dashboard/hosting el asunto es una sola cadena por tipo de plantilla; en `config.toml` se usan líneas **bilingües** (ES | EN) para que el preheader sea claro en ambos idiomas. El cuerpo sigue siendo el que cambia según `lang`.
+**Asunto del correo:** una sola cadena por tipo de plantilla. En `config.toml` y en **producción** los asuntos están **solo en inglés** (marca Veta al final). El **cuerpo** del HTML sigue bifurcando ES/EN según `user_metadata.lang`.
 
 ## Ubicación
 
@@ -46,28 +46,34 @@ Los HTML mezclan atributos con sintaxis Go (`{{ ... }}`); **Prettier los ignora*
 
 ## Producción (Supabase Hosted)
 
-En proyectos alojados en Supabase, **la config de `config.toml` no se aplica** a los emails. Hay que copiar contenido y asuntos manualmente:
+### Plantillas y asuntos ya aplicados (proyecto enlazado)
+
+En el proyecto **studio-manager** se ejecutó `supabase config push` para desplegar el HTML de `supabase/templates/*.html` y los **asuntos en inglés** del `config.toml`. La configuración sensible de Auth en producción (Site URL `https://veta.pro`, redirect URLs de Vercel, contraseñas 12+ con complejidad, MFA TOTP activo, confirmación de email, etc.) se **restauró** en un segundo push; el `config.toml` del repo sigue pensado para **desarrollo local** (localhost, reglas laxas).
+
+### Peligro: `supabase config push`
+
+El comando sube **toda** la sección `[auth]` del `config.toml`, no solo las plantillas. Si ese archivo tiene `site_url` y políticas de **local**, **sobrescribirás producción** (URLs, MFA, OTP, contraseñas). Antes de un push a hosted hay que **igualar** `[auth]` a los valores de producción (o usar solo el Dashboard / [Management API](https://supabase.com/docs/guides/auth/auth-email-templates#manage-email-templates) con campos `mailer_*`).
+
+### Opción manual (Dashboard)
+
+Si no usas `config push`:
 
 1. Dashboard del proyecto → **Authentication** → **Email Templates**.
 2. Para cada tipo (Confirm signup, Invite, Reset password, Magic link, Change email, Reauthentication):
-   - **Subject:** usar el mismo que en `config.toml` (ver tabla abajo).
-   - **Body:** copiar el HTML del archivo correspondiente en `supabase/templates/`.
-3. En **Auth** → **Settings** (o configuración de notificaciones), activar y personalizar:
-   - **Password changed** → subject y body de `password_changed_notification.html`.
-   - **Email changed** → subject y body de `email_changed_notification.html`.
+   - **Subject:** mismo valor que en `config.toml` (tabla abajo).
+   - **Body:** pegar el HTML del archivo en `supabase/templates/`.
+3. Notificaciones: **Password changed** / **Email changed** → subject y body de los HTML correspondientes.
 
-### Subjects de referencia (producción)
+### Subjects de referencia (inglés, alineados con `config.toml`)
 
-Copiar los mismos valores que en `supabase/config.toml` (`[auth.email.template.*]` y notificaciones):
-
-- Confirm signup: `Confirma tu cuenta | Confirm your account — Veta`
-- Invite: `Invitación a Veta | Invitation to Veta`
-- Reset password: `Restablece tu contraseña | Reset your password — Veta`
-- Magic link: `Tu enlace de acceso | Your sign-in link — Veta`
-- Change email: `Confirma el cambio de correo | Confirm email change — Veta`
-- Reauthentication: `Confirmar identidad | Confirm your identity — Veta`
-- Password changed (notification): `Contraseña modificada | Password updated — Veta`
-- Email changed (notification): `Correo actualizado | Email updated — Veta`
+- Confirm signup: `Confirm your account — Veta`
+- Invite: `Invitation to Veta`
+- Reset password: `Reset your password — Veta`
+- Magic link: `Your sign-in link — Veta`
+- Change email: `Confirm email change — Veta`
+- Reauthentication: `Confirm your identity — Veta`
+- Password changed (notification): `Password updated — Veta`
+- Email changed (notification): `Email updated — Veta`
 
 ## Variables de plantilla (Go templates)
 
