@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { ImageIcon, Loader2, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateImageFile } from "@/lib/image-validation";
 
@@ -12,10 +13,15 @@ interface SpaceImageUploadProps {
   currentImageUrl?: string;
   /** Llamar antes de subir; debe crear el registro en BD para evitar archivos huérfanos. */
   onBeforeUpload?: () => Promise<void>;
+  /** Si se proporciona, permite subir varias imágenes; debe crear el registro y devolver el id para cada una. */
+  getImageIdForUpload?: () => Promise<string>;
+  /** Si true, el input acepta múltiples archivos (requiere getImageIdForUpload). */
+  multiple?: boolean;
   onUploadSuccess: (
     url: string,
     fileSizeBytes?: number,
-    assetId?: string
+    assetId?: string,
+    imageIdUsed?: string
   ) => void;
   onUploadError?: (error: string) => void;
   disabled?: boolean;
@@ -28,17 +34,20 @@ export function SpaceImageUpload({
   imageId,
   currentImageUrl,
   onBeforeUpload,
+  getImageIdForUpload,
+  multiple = false,
   onUploadSuccess,
   onUploadError,
   disabled = false,
   className,
 }: SpaceImageUploadProps) {
+  const t = useTranslations("SpaceImageUpload");
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const uploadFile = useCallback(
-    async (file: File) => {
+    async (file: File, imageIdOverride?: string) => {
       setError(null);
       const validation = validateImageFile(file);
       if (!validation.valid) {
@@ -47,12 +56,13 @@ export function SpaceImageUpload({
         return;
       }
 
-      if (onBeforeUpload) {
+      const idToUse = imageIdOverride ?? imageId;
+
+      if (!imageIdOverride && onBeforeUpload) {
         try {
           await onBeforeUpload();
         } catch (err) {
-          const msg =
-            err instanceof Error ? err.message : "Error al crear la imagen";
+          const msg = err instanceof Error ? err.message : t("createError");
           setError(msg);
           onUploadError?.(msg);
           return;
@@ -65,7 +75,7 @@ export function SpaceImageUpload({
         formData.append("file", file);
         formData.append("projectId", projectId);
         formData.append("spaceId", spaceId);
-        formData.append("imageId", imageId);
+        formData.append("imageId", idToUse);
 
         const res = await fetch("/api/upload/space-image", {
           method: "POST",
@@ -80,18 +90,17 @@ export function SpaceImageUpload({
         };
 
         if (!res.ok) {
-          const msg = data.error || "Error al subir la imagen";
+          const msg = data.error || t("uploadError");
           setError(msg);
           onUploadError?.(msg);
           return;
         }
 
         if (data.url) {
-          onUploadSuccess(data.url, data.fileSizeBytes, data.assetId);
+          onUploadSuccess(data.url, data.fileSizeBytes, data.assetId, idToUse);
         }
       } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : "Error al subir la imagen";
+        const msg = err instanceof Error ? err.message : t("uploadError");
         setError(msg);
         onUploadError?.(msg);
       } finally {
@@ -109,14 +118,25 @@ export function SpaceImageUpload({
   );
 
   const handleDrop = useCallback(
-    (e: React.DragEvent) => {
+    async (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
       if (disabled || isUploading) return;
-      const file = e.dataTransfer.files[0];
-      if (file) uploadFile(file);
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length === 0) return;
+      if (multiple && getImageIdForUpload && files.length > 1) {
+        for (const file of files) {
+          const id = await getImageIdForUpload();
+          await uploadFile(file, id);
+        }
+      } else if (getImageIdForUpload && files.length >= 1) {
+        const id = await getImageIdForUpload();
+        await uploadFile(files[0], id);
+      } else {
+        await uploadFile(files[0]);
+      }
     },
-    [disabled, isUploading, uploadFile]
+    [disabled, isUploading, uploadFile, multiple, getImageIdForUpload]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -132,12 +152,24 @@ export function SpaceImageUpload({
   }, []);
 
   const handleFileInput = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) uploadFile(file);
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const fileList = e.target.files;
+      if (!fileList?.length) return;
+      const files = Array.from(fileList);
       e.target.value = "";
+      if (multiple && getImageIdForUpload && files.length > 0) {
+        for (const file of files) {
+          const id = await getImageIdForUpload();
+          await uploadFile(file, id);
+        }
+      } else if (getImageIdForUpload && files.length >= 1) {
+        const id = await getImageIdForUpload();
+        await uploadFile(files[0], id);
+      } else if (files[0]) {
+        await uploadFile(files[0]);
+      }
     },
-    [uploadFile]
+    [uploadFile, multiple, getImageIdForUpload]
   );
 
   return (
@@ -157,10 +189,11 @@ export function SpaceImageUpload({
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+          multiple={multiple}
           onChange={handleFileInput}
           disabled={disabled || isUploading}
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
-          aria-label="Seleccionar imagen"
+          aria-label={multiple ? t("selectImagesAria") : t("selectImageAria")}
         />
         {isUploading ? (
           <Loader2 className="text-muted-foreground h-10 w-10 animate-spin" />
@@ -169,7 +202,7 @@ export function SpaceImageUpload({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={currentImageUrl}
-              alt="Vista previa"
+              alt={t("previewAlt")}
               className="max-h-[160px] max-w-full object-contain"
             />
           </div>
@@ -177,12 +210,12 @@ export function SpaceImageUpload({
           <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">
             <ImageIcon className="text-muted-foreground h-10 w-10" />
             <div className="text-muted-foreground text-sm">
-              <p className="font-medium">Arrastra una imagen aquí</p>
-              <p>o haz clic para seleccionar</p>
+              <p className="font-medium">
+                {multiple ? t("dropImages") : t("dropImage")}
+              </p>
+              <p>{t("clickToSelect")}</p>
             </div>
-            <p className="text-muted-foreground/80 text-xs">
-              JPG, PNG o WebP (máx. 5MB)
-            </p>
+            <p className="text-muted-foreground/80 text-xs">{t("formats")}</p>
           </div>
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
@@ -57,9 +58,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import {
-  getBudgetCategoryLabel,
-  getBudgetSubcategoryLabel,
   getPhaseLabel,
+  getDemoAccountMessage,
   getErrorMessage,
   reportError,
   formatCurrency as formatCurrencyUtil,
@@ -72,7 +72,7 @@ import type {
   BudgetCategory,
   ProjectPhase,
 } from "@/types";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 export function ProjectBudget({
   projectId,
@@ -83,10 +83,14 @@ export function ProjectBudget({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
-  const { user } = useAuth();
+  const t = useTranslations("ProjectModuleBudget");
+  const { user, effectivePlan } = useAuth();
   const printFilterOptionsEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "full",
   });
+  const showVetaBranding =
+    effectivePlan?.config?.pdf_export_mode === "basic" ||
+    effectivePlan?.config?.pdf_export_mode === "plus";
   const supabase = getSupabaseClient();
   const { budgetLines, refetch: refetchBudgetLines } = useProjectBudgetLines(
     projectId,
@@ -143,7 +147,7 @@ export function ProjectBudget({
       const { data: itemsData, error: itemsError } = await supabase
         .from("project_items")
         .select(
-          "*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
+          "*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category, image_url), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
         )
         .eq("project_id", projectId)
         .order("created_at");
@@ -187,8 +191,15 @@ export function ProjectBudget({
       .delete()
       .eq("id", id);
     if (error) {
-      toast.error("Error al eliminar la partida");
-      reportError(error, "Error deleting budget line:");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al eliminar la partida");
+        reportError(error, "Error deleting budget line:");
+      }
     } else {
       toast.success("Partida eliminada");
       refetchBudgetLines();
@@ -229,7 +240,7 @@ export function ProjectBudget({
       if (user?.id) {
         const { data: settings } = await supabase
           .from("account_settings")
-          .select("public_name")
+          .select("public_name, public_email")
           .eq("user_id", user.id)
           .single();
         const { data: profile } = await supabase
@@ -238,7 +249,8 @@ export function ProjectBudget({
           .eq("id", user.id)
           .single();
         architectName = settings?.public_name?.trim() || undefined;
-        architectEmail = profile?.email?.trim() || undefined;
+        architectEmail =
+          settings?.public_email?.trim() || profile?.email?.trim() || undefined;
       }
       const taxRate =
         project.tax_rate !== null && project.tax_rate !== undefined
@@ -248,13 +260,44 @@ export function ProjectBudget({
       const itemsToPdf = option === "lines" ? [] : includedItems;
       const linesToPdf = option === "products" ? [] : budgetLines;
 
+      // Logo como data URL para que react-pdf lo incruste sin depender de fetch/CORS
+      let vetaLogoDataUrl: string | undefined;
+      if (typeof window !== "undefined" && showVetaBranding) {
+        try {
+          const logoRes = await fetch(
+            `${window.location.origin}/img/veta-logo.png`
+          );
+          if (logoRes.ok) {
+            const blob = await logoRes.blob();
+            const dataUrl = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+            // Solo pasar data URLs válidas para evitar RangeError en react-pdf toBlob()
+            if (
+              typeof dataUrl === "string" &&
+              dataUrl.startsWith("data:image/") &&
+              dataUrl.includes(",")
+            ) {
+              vetaLogoDataUrl = dataUrl;
+            }
+          }
+        } catch {
+          // Sin fallback a URL: react-pdf haría otro fetch y podría repetir "Failed to fetch"
+          vetaLogoDataUrl = undefined;
+        }
+      }
       const asPdf = await generateProjectPDF(
         project,
         itemsToPdf,
         linesToPdf,
         taxRate,
         architectName,
-        architectEmail
+        architectEmail,
+        showVetaBranding,
+        vetaLogoDataUrl
       );
       const blob = await asPdf.toBlob();
       const url = URL.createObjectURL(blob);
@@ -313,6 +356,56 @@ export function ProjectBudget({
 
   const formatCurrency = (amount: number) =>
     formatCurrencyUtil(amount, project?.currency);
+  const categoryLabels: Record<BudgetCategory, string> = {
+    construction: t("budgetCategory.construction"),
+    own_fees: t("budgetCategory.own_fees"),
+    external_services: t("budgetCategory.external_services"),
+    operations: t("budgetCategory.operations"),
+  };
+  const subcategoryLabels: Record<BudgetCategory, Record<string, string>> = {
+    construction: {
+      demolition: t("budgetSubcategory.construction.demolition"),
+      masonry: t("budgetSubcategory.construction.masonry"),
+      electricity: t("budgetSubcategory.construction.electricity"),
+      plumbing: t("budgetSubcategory.construction.plumbing"),
+      interior_painting: t("budgetSubcategory.construction.interior_painting"),
+      exterior_painting: t("budgetSubcategory.construction.exterior_painting"),
+      domotics: t("budgetSubcategory.construction.domotics"),
+      carpentry: t("budgetSubcategory.construction.carpentry"),
+      locksmithing: t("budgetSubcategory.construction.locksmithing"),
+      hvac: t("budgetSubcategory.construction.hvac"),
+      flooring: t("budgetSubcategory.construction.flooring"),
+      tiling: t("budgetSubcategory.construction.tiling"),
+      other: t("budgetSubcategory.construction.other"),
+    },
+    own_fees: {
+      design: t("budgetSubcategory.own_fees.design"),
+      executive_project: t("budgetSubcategory.own_fees.executive_project"),
+      site_supervision: t("budgetSubcategory.own_fees.site_supervision"),
+      management: t("budgetSubcategory.own_fees.management"),
+      other: t("budgetSubcategory.own_fees.other"),
+    },
+    external_services: {
+      technical_architect: t(
+        "budgetSubcategory.external_services.technical_architect"
+      ),
+      engineering: t("budgetSubcategory.external_services.engineering"),
+      logistics: t("budgetSubcategory.external_services.logistics"),
+      permits: t("budgetSubcategory.external_services.permits"),
+      consulting: t("budgetSubcategory.external_services.consulting"),
+      other: t("budgetSubcategory.external_services.other"),
+    },
+    operations: {
+      shipping: t("budgetSubcategory.operations.shipping"),
+      packaging: t("budgetSubcategory.operations.packaging"),
+      transport: t("budgetSubcategory.operations.transport"),
+      storage: t("budgetSubcategory.operations.storage"),
+      insurance: t("budgetSubcategory.operations.insurance"),
+      customs: t("budgetSubcategory.operations.customs"),
+      handling: t("budgetSubcategory.operations.handling"),
+      other: t("budgetSubcategory.operations.other"),
+    },
+  };
 
   // Map delivery_deadline codes to readable labels (same as purchase-order-dialog options)
   const deliveryDeadlineLabel: Record<string, string> = {
@@ -331,38 +424,38 @@ export function ProjectBudget({
       case "pending":
         return {
           icon: Clock,
-          label: "Pendiente",
+          label: t("status.pending"),
           className: "text-muted-foreground",
         };
       case "ordered":
         return {
           icon: Truck,
-          label: "Pedido",
+          label: t("status.ordered"),
           className: "text-blue-600 dark:text-blue-400",
         };
       case "received":
         return {
           icon: PackageCheck,
-          label: "Recibido",
+          label: t("status.received"),
           className: "text-cyan-600 dark:text-cyan-400",
         };
       case "installed":
         return {
           icon: Wrench,
-          label: "Instalado",
+          label: t("status.installed"),
           className: "text-orange-600 dark:text-orange-400",
         };
       case "completed":
         return {
           icon: Check,
-          label: "Completado",
+          label: t("status.completed"),
           className: "text-green-600 dark:text-green-400",
         };
       case "canceled":
       case "cancelled":
         return {
           icon: XCircle,
-          label: "Cancelado",
+          label: t("status.cancelled"),
           className: "text-red-600 dark:text-red-400",
         };
       default:
@@ -424,164 +517,411 @@ export function ProjectBudget({
   }
 
   return (
-    <ProjectTabContent disabled={disabled}>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h3 className="text-lg font-medium">Presupuesto</h3>
-            <div className="text-muted-foreground text-sm">
-              Productos: {formatCurrency(totalItemsPrice)} | Partidas:{" "}
-              {formatCurrency(totalBudgetLinesEstimated)} |
-              <span className="font-semibold">
-                {" "}
-                Total: {formatCurrency(grandTotal)}
-              </span>
+    <ProjectTabContent
+      disabled={disabled}
+      disabledMessage="El presupuesto no está incluido en tu plan actual."
+    >
+      <TooltipProvider>
+        <div className="space-y-6">
+          <TabSectionHeader title="Presupuesto">
+            <div className="flex space-x-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="shrink-0 print:hidden"
+                    aria-label="Exportar"
+                  >
+                    Exportar
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => setIsPrintOptionsOpen(true)}
+                    disabled={isGeneratingPDF || !project}
+                  >
+                    <Printer className="mr-2 h-4 w-4" />
+                    {isGeneratingPDF ? "Generando PDF..." : "Exportar PDF"}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {!readOnly && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      className="shrink-0 print:hidden"
+                      aria-label="Añadir"
+                    >
+                      Añadir
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleAddBudgetLine}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Nueva Partida
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleAddItem}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Añadir Producto
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
-          </div>
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsPrintOptionsOpen(true)}
-              className="print:hidden"
-              disabled={isGeneratingPDF || !project}
-            >
-              <Printer className="mr-2 h-4 w-4" />
-              {isGeneratingPDF ? "Generando PDF..." : "Exportar PDF"}
-            </Button>
-            {!readOnly && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={handleAddBudgetLine}
-                  className="print:hidden"
-                >
-                  <Plus className="mr-2 h-4 w-4" /> Nueva Partida
-                </Button>
-                <Button onClick={handleAddItem} className="print:hidden">
-                  <Plus className="mr-2 h-4 w-4" /> Añadir Producto
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
+          </TabSectionHeader>
 
-        {/* Budget Lines by Phase and Category */}
-        {phaseOrder.map((phase) => {
-          const phaseData = budgetLinesByPhaseAndCategory[phase];
-          if (!phaseData) return null;
+          {/* Grand Total Summary */}
+          <Card className="bg-primary/5 border-primary/20">
+            <CardContent className="pt-6">
+              <h4 className="text-muted-foreground mb-2 font-medium">
+                Total Presupuesto
+              </h4>
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <p className="text-muted-foreground text-xs">
+                    Partidas: {formatCurrency(totalBudgetLinesEstimated)}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    Productos: {formatCurrency(totalItemsPrice)}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end gap-0.5">
+                  <p className="text-primary text-3xl font-bold">
+                    {formatCurrency(grandTotal)}
+                  </p>
+                </div>
+              </div>
+              {(() => {
+                const taxRate =
+                  project?.tax_rate != null ? project.tax_rate : 0;
+                const taxAmount = grandTotal * (taxRate / 100);
+                const totalWithTax = grandTotal + taxAmount;
+                if (taxRate === 0) return null;
+                return (
+                  <div className="flex items-center justify-between pt-2">
+                    <p className="text-muted-foreground text-xs">
+                      Impuesto ({taxRate}%): {formatCurrency(taxAmount)}
+                    </p>
+                    <p className="text-muted-foreground text-xs font-medium">
+                      Con impuestos: {formatCurrency(totalWithTax)}
+                    </p>
+                  </div>
+                );
+              })()}
+            </CardContent>
+          </Card>
 
-          // Check if this phase has any lines
-          const hasLines = Object.values(phaseData).some(
-            (lines) => lines.length > 0
-          );
-          if (!hasLines) return null;
+          {/* Products Section */}
+          <Collapsible
+            open={openSections.products}
+            onOpenChange={() => toggleSection("products")}
+          >
+            <Card className="border-l-primary border-l-4">
+              <CollapsibleTrigger asChild>
+                <CardHeader className="hover:bg-accent/30 cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform ${openSections.products ? "" : "-rotate-90"}`}
+                      />
+                      Mobiliario y Productos
+                    </CardTitle>
+                    <span className="text-foreground font-semibold">
+                      {formatCurrency(totalItemsPrice)}
+                    </span>
+                  </div>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="pt-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]">Img</TableHead>
+                        <TableHead>Ítem</TableHead>
+                        <TableHead>Ubicación</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead className="text-right">Cant.</TableHead>
+                        <TableHead className="text-right">
+                          Costo Unit.
+                        </TableHead>
+                        <TableHead className="text-right">
+                          Precio Venta
+                        </TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead className="w-[80px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {includedItems.map((item) => (
+                        <TableRow key={item.id}>
+                          <TableCell>
+                            {(() => {
+                              const imageSrc =
+                                item.image_url || item.product?.image_url;
 
-          const phaseTotal = Object.values(phaseData).reduce(
-            (sum, lines) =>
-              sum +
-              lines.reduce(
-                (lineSum, line) => lineSum + Number(line.estimated_amount),
-                0
-              ),
-            0
-          );
+                              if (!imageSrc) return null;
 
-          const phaseSectionKey = `phase_${phase}`;
-
-          return (
-            <div key={phase} className="space-y-3">
-              <Collapsible
-                open={openSections[phaseSectionKey] !== false}
-                onOpenChange={() => toggleSection(phaseSectionKey)}
-              >
-                <Card className="border-l-primary border-l-4">
-                  <CollapsibleTrigger asChild>
-                    <CardHeader className="hover:bg-accent/30 cursor-pointer">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <ChevronDown
-                            className={`h-4 w-4 transition-transform ${openSections[phaseSectionKey] !== false ? "" : "-rotate-90"}`}
-                          />
-                          {phase === "no_phase"
-                            ? "Sin Fase"
-                            : getPhaseLabel(phase as ProjectPhase)}
-                        </CardTitle>
-                        <span className="text-primary font-semibold">
-                          {formatCurrency(phaseTotal)}
-                        </span>
-                      </div>
-                    </CardHeader>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <CardContent className="space-y-3 pt-0">
-                      {categoryOrder.map((category) => {
-                        const lines = phaseData[category] || [];
-                        if (lines.length === 0) return null;
-
-                        const categoryTotal = lines.reduce(
-                          (sum, line) => sum + Number(line.estimated_amount),
-                          0
-                        );
-                        const categorySectionKey = `${phaseSectionKey}_${category}`;
-
-                        return (
-                          <Collapsible
-                            key={category}
-                            open={openSections[categorySectionKey] !== false}
-                            onOpenChange={() =>
-                              toggleSection(categorySectionKey)
+                              return (
+                                <button
+                                  type="button"
+                                  className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
+                                  onClick={() => {
+                                    setSelectedItem(item);
+                                    setIsProductModalOpen(true);
+                                  }}
+                                >
+                                  <Image
+                                    src={imageSrc}
+                                    width={32}
+                                    height={32}
+                                    className="object-cover"
+                                    style={{ width: "auto", height: "auto" }}
+                                    alt={item.product?.name || item.name}
+                                  />
+                                </button>
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">
+                              {item.product?.name || item.name}
+                            </div>
+                            {item.internal_reference && (
+                              <div className="text-muted-foreground mt-1 font-mono text-xs">
+                                Cód.: {item.internal_reference}
+                              </div>
+                            )}
+                            <div className="text-muted-foreground text-xs">
+                              {item.product?.supplier?.name || "-"}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {item.space?.name || t("spaceGeneral")}
+                          </TableCell>
+                          <TableCell>
+                            {(() => {
+                              const statusDisplay = getStatusDisplay(
+                                item.status
+                              );
+                              const Icon = statusDisplay.icon;
+                              const po = item.purchase_order;
+                              const isOrderedNotReceived =
+                                item.status === "ordered" && po;
+                              const deliveryInfo =
+                                isOrderedNotReceived &&
+                                (po.delivery_date || po.delivery_deadline)
+                                  ? po.delivery_date
+                                    ? `Entrega: ${new Date(po.delivery_date).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })}`
+                                    : `Entrega: ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
+                                  : null;
+                              const statusLabel =
+                                deliveryInfo ?? statusDisplay.label;
+                              return (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="flex items-center justify-center">
+                                      <Icon
+                                        className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
+                                      />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent variant="tertiary">
+                                    <p>{statusLabel}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              );
+                            })()}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {item.quantity}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-right">
+                            {formatCurrency(item.unit_cost)}
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatCurrency(item.unit_price)}
+                          </TableCell>
+                          <TableCell className="text-right font-bold">
+                            {formatCurrency(item.unit_price * item.quantity)}
+                          </TableCell>
+                          <TableCell
+                            className={
+                              !readOnly
+                                ? "flex items-center justify-end"
+                                : undefined
                             }
                           >
-                            <Card className="ml-4">
-                              <CollapsibleTrigger asChild>
-                                <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
-                                  <div className="flex items-center justify-between">
-                                    <CardTitle className="flex items-center gap-2 text-sm">
-                                      <ChevronDown
-                                        className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
-                                      />
-                                      {getBudgetCategoryLabel(category)}
-                                    </CardTitle>
-                                    <span className="text-primary text-sm font-semibold">
-                                      {formatCurrency(categoryTotal)}
-                                    </span>
-                                  </div>
-                                </CardHeader>
-                              </CollapsibleTrigger>
-                              <CollapsibleContent>
-                                <CardContent className="pt-0">
-                                  <Table>
-                                    <TableHeader>
-                                      <TableRow>
-                                        <TableHead>Concepto</TableHead>
-                                        <TableHead>Descripción</TableHead>
-                                        <TableHead className="text-right">
-                                          Importe
-                                        </TableHead>
-                                        <TableHead className="w-[80px]"></TableHead>
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {lines.map((line) => (
-                                        <TableRow key={line.id}>
-                                          <TableCell className="font-medium">
-                                            {getBudgetSubcategoryLabel(
-                                              category,
-                                              line.subcategory
-                                            )}
-                                          </TableCell>
-                                          <TableCell className="text-muted-foreground">
-                                            {line.description || "-"}
-                                          </TableCell>
-                                          <TableCell className="text-right font-semibold">
-                                            {formatCurrency(
-                                              Number(line.estimated_amount)
-                                            )}
-                                          </TableCell>
-                                          <TableCell>
-                                            {!readOnly && (
-                                              <div className="flex justify-end">
+                            {!readOnly && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    aria-label="Acciones de la partida"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => handleEditItem(item)}
+                                  >
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeleteItem(item.id)}
+                                    className="text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Eliminar
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {items.length === 0 && (
+                        <TableRow>
+                          <TableCell
+                            colSpan={9}
+                            className="text-muted-foreground py-8 text-center"
+                          >
+                            No hay productos añadidos.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+
+          {/* Budget Lines by Phase and Category */}
+          {phaseOrder.map((phase) => {
+            const phaseData = budgetLinesByPhaseAndCategory[phase];
+            if (!phaseData) return null;
+
+            // Check if this phase has any lines
+            const hasLines = Object.values(phaseData).some(
+              (lines) => lines.length > 0
+            );
+            if (!hasLines) return null;
+
+            const phaseTotal = Object.values(phaseData).reduce(
+              (sum, lines) =>
+                sum +
+                lines.reduce(
+                  (lineSum, line) => lineSum + Number(line.estimated_amount),
+                  0
+                ),
+              0
+            );
+
+            const phaseSectionKey = `phase_${phase}`;
+
+            return (
+              <div key={phase} className="space-y-3">
+                <Collapsible
+                  open={openSections[phaseSectionKey] !== false}
+                  onOpenChange={() => toggleSection(phaseSectionKey)}
+                >
+                  <Card className="border-l-primary border-l-4">
+                    <CollapsibleTrigger asChild>
+                      <CardHeader className="hover:bg-accent/30 cursor-pointer">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="flex items-center gap-2 text-base">
+                            <ChevronDown
+                              className={`h-4 w-4 transition-transform ${openSections[phaseSectionKey] !== false ? "" : "-rotate-90"}`}
+                            />
+                            {phase === "no_phase"
+                              ? "Sin Fase"
+                              : getPhaseLabel(phase as ProjectPhase)}
+                          </CardTitle>
+                          <span className="text-foreground font-semibold">
+                            {formatCurrency(phaseTotal)}
+                          </span>
+                        </div>
+                      </CardHeader>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <CardContent className="space-y-3 pt-0">
+                        {categoryOrder.map((category) => {
+                          const lines = phaseData[category] || [];
+                          if (lines.length === 0) return null;
+
+                          const categoryTotal = lines.reduce(
+                            (sum, line) => sum + Number(line.estimated_amount),
+                            0
+                          );
+                          const categorySectionKey = `${phaseSectionKey}_${category}`;
+
+                          return (
+                            <Collapsible
+                              key={category}
+                              open={openSections[categorySectionKey] !== false}
+                              onOpenChange={() =>
+                                toggleSection(categorySectionKey)
+                              }
+                            >
+                              <Card className="ml-4">
+                                <CollapsibleTrigger asChild>
+                                  <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
+                                    <div className="flex items-center justify-between">
+                                      <CardTitle className="flex items-center gap-2 text-sm">
+                                        <ChevronDown
+                                          className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
+                                        />
+                                        {categoryLabels[category] ?? category}
+                                      </CardTitle>
+                                      <span className="text-foreground text-sm font-semibold">
+                                        {formatCurrency(categoryTotal)}
+                                      </span>
+                                    </div>
+                                  </CardHeader>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                  <CardContent className="pt-0">
+                                    <Table>
+                                      <TableHeader>
+                                        <TableRow>
+                                          <TableHead>Concepto</TableHead>
+                                          <TableHead>Descripción</TableHead>
+                                          <TableHead className="text-right">
+                                            Importe
+                                          </TableHead>
+                                          <TableHead className="w-[80px]"></TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {lines.map((line) => (
+                                          <TableRow key={line.id}>
+                                            <TableCell className="font-medium">
+                                              {subcategoryLabels[category]?.[
+                                                line.subcategory
+                                              ] ?? line.subcategory}
+                                            </TableCell>
+                                            <TableCell className="text-muted-foreground">
+                                              {line.description || "-"}
+                                            </TableCell>
+                                            <TableCell className="text-right font-semibold">
+                                              {formatCurrency(
+                                                Number(line.estimated_amount)
+                                              )}
+                                            </TableCell>
+                                            <TableCell
+                                              className={
+                                                !readOnly
+                                                  ? "flex items-center justify-end"
+                                                  : undefined
+                                              }
+                                            >
+                                              {!readOnly && (
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
                                                     <Button
@@ -616,273 +956,83 @@ export function ProjectBudget({
                                                     </DropdownMenuItem>
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
-                                              </div>
-                                            )}
-                                          </TableCell>
-                                        </TableRow>
-                                      ))}
-                                    </TableBody>
-                                  </Table>
-                                </CardContent>
-                              </CollapsibleContent>
-                            </Card>
-                          </Collapsible>
-                        );
-                      })}
-                    </CardContent>
-                  </CollapsibleContent>
-                </Card>
-              </Collapsible>
-            </div>
-          );
-        })}
-
-        {/* Products Section */}
-        <Collapsible
-          open={openSections.products}
-          onOpenChange={() => toggleSection("products")}
-        >
-          <Card>
-            <CollapsibleTrigger asChild>
-              <CardHeader className="hover:bg-accent/30 cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform ${openSections.products ? "" : "-rotate-90"}`}
-                    />
-                    Mobiliario y Productos
-                  </CardTitle>
-                  <span className="text-primary font-semibold">
-                    {formatCurrency(totalItemsPrice)}
-                  </span>
-                </div>
-              </CardHeader>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <CardContent className="pt-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">Img</TableHead>
-                      <TableHead>Ítem</TableHead>
-                      <TableHead>Ubicación</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead className="text-right">Cant.</TableHead>
-                      <TableHead className="text-right">Costo Unit.</TableHead>
-                      <TableHead className="text-right">Precio Venta</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                      <TableHead className="w-[80px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {includedItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell>
-                          {item.image_url && (
-                            <button
-                              type="button"
-                              className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
-                              onClick={() => {
-                                setSelectedItem(item);
-                                setIsProductModalOpen(true);
-                              }}
-                            >
-                              <Image
-                                src={item.image_url}
-                                width={32}
-                                height={32}
-                                className="object-cover"
-                                alt={item.product?.name || item.name}
-                              />
-                            </button>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">
-                            {item.product?.name || item.name}
-                          </div>
-                          {item.product?.reference_code && (
-                            <div className="text-muted-foreground mt-1 font-mono text-xs">
-                              Ref: {item.product.reference_code}
-                            </div>
-                          )}
-                          <div className="text-muted-foreground text-xs">
-                            {item.product?.supplier?.name || "-"}
-                          </div>
-                        </TableCell>
-                        <TableCell>{item.space?.name || "General"}</TableCell>
-                        <TableCell>
-                          {(() => {
-                            const statusDisplay = getStatusDisplay(item.status);
-                            const Icon = statusDisplay.icon;
-                            const po = item.purchase_order;
-                            const isOrderedNotReceived =
-                              item.status === "ordered" && po;
-                            const deliveryInfo =
-                              isOrderedNotReceived &&
-                              (po.delivery_date || po.delivery_deadline)
-                                ? po.delivery_date
-                                  ? `Entrega: ${new Date(po.delivery_date).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })}`
-                                  : `Entrega: ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
-                                : null;
-                            const statusLabel =
-                              deliveryInfo ?? statusDisplay.label;
-                            return (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div className="flex items-center justify-center">
-                                      <Icon
-                                        className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
-                                      />
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>{statusLabel}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            );
-                          })()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {item.quantity}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground text-right">
-                          {formatCurrency(item.unit_cost)}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {formatCurrency(item.unit_price)}
-                        </TableCell>
-                        <TableCell className="text-right font-bold">
-                          {formatCurrency(item.unit_price * item.quantity)}
-                        </TableCell>
-                        <TableCell>
-                          {!readOnly && (
-                            <div className="flex justify-end">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    aria-label="Acciones de la partida"
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => handleEditItem(item)}
-                                  >
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => handleDeleteItem(item.id)}
-                                    className="text-destructive"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Eliminar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {items.length === 0 && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={9}
-                          className="text-muted-foreground py-8 text-center"
-                        >
-                          No hay productos añadidos.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
-
-        {/* Grand Total Summary */}
-        <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-muted-foreground text-sm">
-                  Total Presupuesto
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  Partidas: {formatCurrency(totalBudgetLinesEstimated)} +
-                  Productos: {formatCurrency(totalItemsPrice)}
-                </p>
+                                              )}
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </CardContent>
+                                </CollapsibleContent>
+                              </Card>
+                            </Collapsible>
+                          );
+                        })}
+                      </CardContent>
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
               </div>
-              <p className="text-primary text-3xl font-bold">
-                {formatCurrency(grandTotal)}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            );
+          })}
 
-        {/* Dialogs */}
-        <AddItemDialog
-          open={isItemDialogOpen}
-          onOpenChange={(open) => {
-            setIsItemDialogOpen(open);
-            if (!open) setEditingItem(null);
-          }}
-          projectId={projectId}
-          item={editingItem}
-          onSuccess={() => {
-            setIsItemDialogOpen(false);
-            setEditingItem(null);
-            fetchData();
-          }}
-        />
+          {/* Dialogs */}
+          <AddItemDialog
+            open={isItemDialogOpen}
+            onOpenChange={(open) => {
+              setIsItemDialogOpen(open);
+              if (!open) setEditingItem(null);
+            }}
+            projectId={projectId}
+            item={editingItem}
+            onSuccess={() => {
+              setIsItemDialogOpen(false);
+              setEditingItem(null);
+              fetchData();
+            }}
+          />
 
-        <BudgetLineDialog
-          open={isBudgetLineDialogOpen}
-          onOpenChange={(open) => {
-            setIsBudgetLineDialogOpen(open);
-            if (!open) setEditingBudgetLine(null);
-          }}
-          projectId={projectId}
-          budgetLine={editingBudgetLine}
-          onSuccess={() => {
-            setIsBudgetLineDialogOpen(false);
-            setEditingBudgetLine(null);
-            fetchData();
-          }}
-        />
+          <BudgetLineDialog
+            open={isBudgetLineDialogOpen}
+            onOpenChange={(open) => {
+              setIsBudgetLineDialogOpen(open);
+              if (!open) setEditingBudgetLine(null);
+            }}
+            projectId={projectId}
+            budgetLine={editingBudgetLine}
+            onSuccess={() => {
+              setIsBudgetLineDialogOpen(false);
+              setEditingBudgetLine(null);
+              fetchData();
+            }}
+          />
 
-        <ProductDetailModal
-          open={isProductModalOpen}
-          onOpenChange={setIsProductModalOpen}
-          projectItem={selectedItem}
-          projectId={projectId}
-          onEdit={
-            readOnly
-              ? undefined
-              : () => {
-                  setIsProductModalOpen(false);
-                  setEditingItem(selectedItem);
-                  setIsItemDialogOpen(true);
-                }
-          }
-        />
+          <ProductDetailModal
+            open={isProductModalOpen}
+            onOpenChange={setIsProductModalOpen}
+            projectItem={selectedItem}
+            projectId={projectId}
+            currency={project?.currency}
+            onEdit={
+              readOnly
+                ? undefined
+                : () => {
+                    setIsProductModalOpen(false);
+                    setEditingItem(selectedItem);
+                    setIsItemDialogOpen(true);
+                  }
+            }
+          />
 
-        <BudgetPrintOptionsDialog
-          open={isPrintOptionsOpen}
-          onOpenChange={setIsPrintOptionsOpen}
-          onConfirm={handleGeneratePDF}
-          isGenerating={isGeneratingPDF}
-          printFilterOptionsEnabled={printFilterOptionsEnabled}
-        />
-      </div>
+          <BudgetPrintOptionsDialog
+            open={isPrintOptionsOpen}
+            onOpenChange={setIsPrintOptionsOpen}
+            onConfirm={handleGeneratePDF}
+            isGenerating={isGeneratingPDF}
+            printFilterOptionsEnabled={printFilterOptionsEnabled}
+          />
+        </div>
+      </TooltipProvider>
     </ProjectTabContent>
   );
 }

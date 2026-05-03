@@ -1,6 +1,7 @@
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,41 +32,45 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Image as ImageIcon, Plus, Search } from "lucide-react";
 import Image from "next/image";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ProductImageUpload } from "@/components/product-image-upload";
 import type { Product, ProjectItem, Space, Supplier } from "@/types";
 import Link from "next/link";
-import { reportError } from "@/lib/utils";
+import { getDemoAccountMessage, reportError } from "@/lib/utils";
 import { useAuth } from "@/components/auth-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { SupplierDialog } from "./supplier-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const formSchema = z.object({
-  product_id: z.string().optional(),
-  space_id: z.string().optional(),
-  supplier_id: z.string().optional(),
-  name: z.string().min(2, "Nombre requerido"),
-  description: z.string().optional(),
-  reference_code: z.string().optional(),
-  reference_url: z.string().optional(),
-  category: z.string().optional(),
-  internal_reference: z.string().optional(),
-  quantity: z
-    .string()
-    .transform((v) => parseFloat(v) || 1)
-    .refine((val) => val > 0, "La cantidad debe ser mayor a 0"),
-  unit_cost: z
-    .string()
-    .transform((v) => parseFloat(v) || 0)
-    .refine((val) => val >= 0, "El costo unitario debe ser mayor o igual a 0"),
-  markup: z.string().transform((v) => parseFloat(v) || 0),
-  unit_price: z.string().transform((v) => parseFloat(v) || 0),
-  image_url: z.string().optional(),
-  is_excluded: z.boolean().optional(),
-});
+const MAX_PRODUCT_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    product_id: z.string().optional(),
+    space_id: z.string().optional(),
+    supplier_id: z.string().optional(),
+    name: z.string().min(2, t("validationNameRequired")),
+    description: z.string().optional(),
+    reference_code: z.string().optional(),
+    reference_url: z.string().optional(),
+    category: z.string().optional(),
+    internal_reference: z.string().optional(),
+    quantity: z
+      .string()
+      .transform((v) => parseFloat(v) || 1)
+      .refine((val) => val > 0, t("validationQuantityPositive")),
+    unit_cost: z
+      .string()
+      .transform((v) => parseFloat(v) || 0)
+      .refine((val) => val >= 0, t("validationUnitCostNonNegative")),
+    markup: z.string().transform((v) => parseFloat(v) || 0),
+    unit_price: z.string().transform((v) => parseFloat(v) || 0),
+    image_url: z.string().optional(),
+    is_excluded: z.boolean().optional(),
+  });
+}
 
 interface AddItemDialogProps {
   open: boolean;
@@ -84,9 +89,10 @@ export function AddItemDialog({
   item,
   spaceId,
 }: AddItemDialogProps) {
+  const t = useTranslations("DialogAddItem");
   const { user } = useAuth();
   const excludeFromBudgetOptionEnabled = usePlanCapability("pdf_export_mode", {
-    minModality: "full",
+    minModality: "plus",
   });
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
@@ -110,6 +116,7 @@ export function AddItemDialog({
   const isEditing = !!item;
 
   const productIdForUpload = item?.product_id ?? "";
+  const formSchema = buildFormSchema(t);
 
   type FormValues = z.input<typeof formSchema>;
   const form = useForm<FormValues>({
@@ -203,7 +210,7 @@ export function AddItemDialog({
           space_id: item.space_id || "none",
           supplier_id: item.supplier_id || "none",
           name: item.name || "",
-          description: productData.description,
+          description: item.description || productData.description,
           reference_code: productData.reference_code,
           reference_url: productData.reference_url,
           category: productData.category,
@@ -276,7 +283,7 @@ export function AddItemDialog({
       form.setValue("product_id", "custom");
       setSelectedProduct(null);
       // Limpiar solo campos de producto, mantener campos de project_item si ya tienen valores
-      form.setValue("description", "");
+      if (!isEditing) form.setValue("description", "");
       form.setValue("reference_code", "");
       form.setValue("reference_url", "");
       form.setValue("category", "");
@@ -286,7 +293,7 @@ export function AddItemDialog({
       form.setValue("product_id", "");
       setSelectedProduct(null);
       // Limpiar campos de producto cuando vuelve a catálogo
-      form.setValue("description", "");
+      if (!isEditing) form.setValue("description", "");
       form.setValue("reference_code", "");
       form.setValue("reference_url", "");
       form.setValue("category", "");
@@ -297,13 +304,22 @@ export function AddItemDialog({
 
   async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
+      if (
+        pendingImageFile &&
+        pendingImageFile.size > MAX_PRODUCT_IMAGE_SIZE_BYTES
+      ) {
+        throw new Error(t("imageTooLarge"));
+      }
+
       // Validar que el proveedor sea obligatorio cuando se crea un nuevo producto
       if (
         activeTab === "new" &&
         (!values.supplier_id || values.supplier_id === "none")
       ) {
-        form.setError("supplier_id", { message: "Proveedor requerido" });
-        toast.error("El proveedor es obligatorio para nuevos productos");
+        form.setError("supplier_id", {
+          message: t("validationSupplierRequired"),
+        });
+        toast.error(t("toastSupplierRequired"));
         return;
       }
 
@@ -317,9 +333,7 @@ export function AddItemDialog({
           .single();
 
         if (poData && poData.status !== "cancelled") {
-          toast.error(
-            "No se puede excluir un producto asociado a una orden de compra activa. Cancela la orden primero."
-          );
+          toast.error(t("toastCannotExcludeWithActivePo"));
           form.setValue("is_excluded", false);
           return;
         }
@@ -336,7 +350,7 @@ export function AddItemDialog({
         !isEditing
       ) {
         if (!user?.id) {
-          toast.error("No se pudo identificar el usuario");
+          toast.error(t("toastUserError"));
           return;
         }
 
@@ -380,10 +394,19 @@ export function AddItemDialog({
             assetId?: string;
           };
           if (!res.ok) {
-            await supabase.from("products").delete().eq("id", newProduct.id);
-            toast.error(uploadJson.error ?? "Error al subir la imagen");
+            const { error: rollbackError } = await supabase
+              .from("products")
+              .delete()
+              .eq("id", newProduct.id);
+            if (rollbackError) {
+              reportError(
+                rollbackError,
+                "Error rolling back product after upload failure:"
+              );
+            }
+            toast.error(uploadJson.error ?? t("toastUploadError"));
             setPendingImageFile(null);
-            throw new Error(uploadJson.error ?? "Error al subir la imagen");
+            throw new Error(uploadJson.error ?? t("toastUploadError"));
           }
           if (uploadJson.url) {
             const updatePayload: {
@@ -415,6 +438,7 @@ export function AddItemDialog({
             : values.space_id,
         product_id: finalProductId,
         name: values.name,
+        description: values.description || "",
         quantity: values.quantity,
         unit_cost: values.unit_cost,
         markup: values.markup,
@@ -448,7 +472,6 @@ export function AddItemDialog({
         ) {
           const productUpdate: Record<string, unknown> = {
             name: values.name,
-            description: values.description || "",
             reference_code: values.reference_code || "",
             reference_url: values.reference_url || null,
             category: values.category || "",
@@ -481,17 +504,24 @@ export function AddItemDialog({
           .update(data)
           .eq("id", item.id);
         if (error) throw error;
-        toast.success("Ítem actualizado");
+        toast.success(t("toastUpdated"));
       } else {
         const { error } = await supabase.from("project_items").insert([data]);
         if (error) throw error;
-        toast.success("Ítem añadido");
+        toast.success(t("toastCreated"));
       }
 
       form.reset();
       onSuccess();
-    } catch {
-      toast.error("Error al guardar");
+    } catch (error: unknown) {
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
+      toast.error(error instanceof Error ? error.message : t("toastSaveError"));
     }
   }
 
@@ -525,9 +555,7 @@ export function AddItemDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>
-            {isEditing
-              ? "Editar Ítem del Presupuesto"
-              : "Añadir Ítem al Presupuesto"}
+            {isEditing ? t("titleEdit") : t("titleNew")}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
@@ -539,10 +567,8 @@ export function AddItemDialog({
               className="w-full"
             >
               <TabsList className="grid w-full grid-cols-2 rounded-b-none">
-                <TabsTrigger value="catalog">
-                  Seleccionar del Catálogo
-                </TabsTrigger>
-                <TabsTrigger value="new">Nuevo Producto</TabsTrigger>
+                <TabsTrigger value="catalog">{t("tabCatalog")}</TabsTrigger>
+                <TabsTrigger value="new">{t("tabNewProduct")}</TabsTrigger>
               </TabsList>
 
               {/* Pestaña: Seleccionar del catálogo */}
@@ -557,7 +583,7 @@ export function AddItemDialog({
                           <div className="relative">
                             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
                             <Input
-                              placeholder="Buscar por nombre, descripción o referencia..."
+                              placeholder={t("searchPlaceholder")}
                               value={searchQuery}
                               onChange={(e) => setSearchQuery(e.target.value)}
                               className="bg-background pl-9"
@@ -565,7 +591,7 @@ export function AddItemDialog({
                           </div>
 
                           {filteredProducts.length > 0 ? (
-                            <div className="bg-background grid max-h-[300px] grid-cols-2 gap-3 overflow-y-auto rounded-md border p-2 md:grid-cols-3 lg:grid-cols-4">
+                            <div className="bg-background grid max-h-[300px] grid-cols-2 gap-3 overflow-y-auto rounded-md border p-2 sm:grid-cols-3 lg:grid-cols-3">
                               {filteredProducts.map((product) => (
                                 <button
                                   key={product.id}
@@ -574,13 +600,13 @@ export function AddItemDialog({
                                     field.onChange(product.id);
                                     handleProductSelect(product.id);
                                   }}
-                                  className={`overflow-hidden rounded-lg border-2 transition-all hover:shadow-md ${
+                                  className={`flex min-h-32 w-full items-center gap-4 overflow-hidden rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md ${
                                     field.value === product.id
                                       ? "border-primary bg-primary/10"
                                       : "border-border bg-card"
                                   }`}
                                 >
-                                  <div className="bg-secondary/30 dark:bg-muted relative aspect-square">
+                                  <div className="bg-secondary/30 dark:bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
                                     {product.image_url ? (
                                       <div className="group relative h-full w-full">
                                         <Image
@@ -598,24 +624,30 @@ export function AddItemDialog({
                                             setIsProductModalOpen(true);
                                           }}
                                           className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-colors group-hover:bg-black/10 group-hover:opacity-100"
-                                          title="Ver detalles"
+                                          title={t("viewDetails")}
                                         >
                                           <Search className="h-6 w-6 text-white drop-shadow-lg" />
                                         </button>
                                       </div>
                                     ) : (
-                                      <div className="text-muted-foreground flex h-full w-full items-center justify-center text-xs">
-                                        Sin imagen
+                                      <div className="text-muted-foreground flex h-full w-full items-center justify-center">
+                                        <ImageIcon
+                                          className="h-6 w-6"
+                                          aria-hidden
+                                        />
+                                        <span className="sr-only">
+                                          {t("noImage")}
+                                        </span>
                                       </div>
                                     )}
                                   </div>
-                                  <div className="p-2">
-                                    <div className="mb-1 line-clamp-2 text-sm font-medium">
+                                  <div className="min-w-0 flex-1 text-left">
+                                    <div className="mb-1 line-clamp-2 text-left text-sm font-medium">
                                       {product.name}
                                     </div>
-                                    <div className="text-muted-foreground text-xs">
+                                    <div className="text-muted-foreground line-clamp-1 text-left text-xs">
                                       {product.supplier?.name ||
-                                        "Sin proveedor"}
+                                        t("noSupplier")}
                                     </div>
                                   </div>
                                 </button>
@@ -625,8 +657,8 @@ export function AddItemDialog({
                             <div className="bg-background rounded-md border border-dashed py-8 text-center">
                               <p className="text-muted-foreground text-sm">
                                 {searchQuery
-                                  ? "No se encontraron productos con esa búsqueda"
-                                  : "No hay productos en el catálogo"}
+                                  ? t("emptySearch")
+                                  : t("emptyCatalog")}
                               </p>
                             </div>
                           )}
@@ -645,7 +677,7 @@ export function AddItemDialog({
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel required>Nombre del Producto</FormLabel>
+                        <FormLabel required>{t("productNameLabel")}</FormLabel>
                         <FormControl>
                           <Input {...field} className="bg-background" />
                         </FormControl>
@@ -660,7 +692,7 @@ export function AddItemDialog({
                       name="supplier_id"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel required>Proveedor</FormLabel>
+                          <FormLabel required>{t("supplierLabel")}</FormLabel>
                           <div className="flex gap-2">
                             <Select
                               onValueChange={field.onChange}
@@ -668,7 +700,9 @@ export function AddItemDialog({
                             >
                               <FormControl>
                                 <SelectTrigger className="bg-background">
-                                  <SelectValue placeholder="Seleccionar proveedor" />
+                                  <SelectValue
+                                    placeholder={t("supplierPlaceholder")}
+                                  />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -684,8 +718,8 @@ export function AddItemDialog({
                               variant="outline"
                               size="icon"
                               onClick={() => setIsSupplierDialogOpen(true)}
-                              title="Agregar nuevo proveedor"
-                              aria-label="Agregar nuevo proveedor"
+                              title={t("addSupplierAria")}
+                              aria-label={t("addSupplierAria")}
                             >
                               <Plus className="h-4 w-4" />
                             </Button>
@@ -699,10 +733,10 @@ export function AddItemDialog({
                       name="reference_code"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Referencia</FormLabel>
+                          <FormLabel>{t("referenceLabel")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="Código o referencia"
+                              placeholder={t("referencePlaceholder")}
                               {...field}
                               className="bg-background"
                             />
@@ -714,31 +748,14 @@ export function AddItemDialog({
 
                   <FormField
                     control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Descripción</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Descripción del producto..."
-                            {...field}
-                            className="bg-background"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
                     name="reference_url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>URL de Referencia</FormLabel>
+                        <FormLabel>{t("referenceUrlLabel")}</FormLabel>
                         <FormControl>
                           <Input
                             type="url"
-                            placeholder="https://..."
+                            placeholder={t("referenceUrlPlaceholder")}
                             {...field}
                             className="bg-background"
                           />
@@ -752,10 +769,10 @@ export function AddItemDialog({
                     name="category"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Categoría</FormLabel>
+                        <FormLabel>{t("categoryLabel")}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Ej: Muebles, Iluminación, Textiles..."
+                            placeholder={t("categoryPlaceholder")}
                             {...field}
                             className="bg-background"
                           />
@@ -769,7 +786,7 @@ export function AddItemDialog({
                     name="image_url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Imagen del producto</FormLabel>
+                        <FormLabel>{t("imageLabel")}</FormLabel>
                         {user?.id ? (
                           activeTab === "new" && !isEditing ? (
                             <ProductImageUpload
@@ -803,15 +820,14 @@ export function AddItemDialog({
                                 uploadedImageSizeBytesRef.current =
                                   fileSizeBytes ?? null;
                                 uploadedAssetIdRef.current = assetId ?? null;
-                                toast.success("Imagen subida");
+                                toast.success(t("toastImageUploaded"));
                               }}
                               onUploadError={(msg) => toast.error(msg)}
                               className="mt-2"
                             />
                           ) : (
                             <p className="text-muted-foreground mt-2 text-sm">
-                              Selecciona un producto del catálogo o crea uno
-                              nuevo para subir una imagen.
+                              {t("selectOrCreateForImage")}
                             </p>
                           )
                         ) : (
@@ -836,19 +852,19 @@ export function AddItemDialog({
                   name="space_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ubicación</FormLabel>
+                      <FormLabel>{t("locationLabel")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger className="bg-background">
-                            <SelectValue placeholder="Seleccionar espacio" />
+                            <SelectValue placeholder={t("spacePlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">
-                            General / Ninguno
+                            {t("spaceGeneralNone")}
                           </SelectItem>
                           {spaces.map((s) => (
                             <SelectItem key={s.id} value={s.id}>
@@ -866,10 +882,10 @@ export function AddItemDialog({
                   name="internal_reference"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Código</FormLabel>
+                      <FormLabel>{t("codeLabel")}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Clave para asociar con anotaciones en planos"
+                          placeholder={t("codePlaceholder")}
                           {...field}
                           className="bg-background"
                         />
@@ -886,7 +902,7 @@ export function AddItemDialog({
                   name="quantity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cantidad</FormLabel>
+                      <FormLabel>{t("quantityLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -905,7 +921,7 @@ export function AddItemDialog({
                   name="unit_cost"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Costo Unit.</FormLabel>
+                      <FormLabel>{t("unitCostLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -924,7 +940,7 @@ export function AddItemDialog({
                   name="markup"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Margen %</FormLabel>
+                      <FormLabel>{t("markupLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -941,7 +957,7 @@ export function AddItemDialog({
                   name="unit_price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Precio Venta</FormLabel>
+                      <FormLabel>{t("unitPriceLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -954,6 +970,24 @@ export function AddItemDialog({
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("descriptionForProjectLabel")}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t("descriptionForProjectPlaceholder")}
+                        {...field}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -984,7 +1018,7 @@ export function AddItemDialog({
                                   const poData = res.data;
                                   if (poData && poData.status !== "cancelled") {
                                     toast.error(
-                                      "No se puede excluir un producto asociado a una orden de compra activa. Cancela la orden primero."
+                                      t("toastCannotExcludeWithActivePo")
                                     );
                                     field.onChange(false);
                                   }
@@ -997,25 +1031,23 @@ export function AddItemDialog({
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="cursor-pointer">
-                        Excluir del proyecto
+                        {t("excludeLabel")}
                       </FormLabel>
                       <p className="text-muted-foreground text-xs">
-                        Si está marcado, el producto no se incluirá en el
-                        presupuesto ni en los cálculos de costos.
+                        {t("excludeDescription")}
                       </p>
                       {!excludeFromBudgetOptionEnabled && (
                         <p className="text-muted-foreground mt-1 text-xs">
                           <Link href="/pricing" className="underline">
-                            Mejora tu plan
+                            {t("upgradePlan")}
                           </Link>{" "}
-                          para excluir ítems del presupuesto.
+                          {t("upgradeSuffix")}
                         </p>
                       )}
                       {item?.purchase_order_id &&
                         excludeFromBudgetOptionEnabled && (
                           <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                            ⚠ No se puede excluir si está asociado a una orden
-                            de compra activa.
+                            {t("activePoWarning")}
                           </p>
                         )}
                     </div>
@@ -1026,7 +1058,7 @@ export function AddItemDialog({
 
             <DialogFooter>
               <Button type="submit">
-                {isEditing ? "Guardar Cambios" : "Añadir al Presupuesto"}
+                {isEditing ? t("saveChanges") : t("addToBudget")}
               </Button>
             </DialogFooter>
           </form>

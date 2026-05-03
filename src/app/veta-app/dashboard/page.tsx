@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -30,9 +31,12 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
+import { useOnboardingStatus } from "@/lib/use-onboarding-status";
+import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
-import { reportError, formatDate, getProjectStatusLabel } from "@/lib/utils";
+import { reportError, getProjectStatusLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import type { Project, Profile } from "@/types";
 
@@ -92,13 +96,17 @@ function QuickActionSkeleton() {
 }
 
 function getFirstName(fullName: string | null | undefined): string {
-  if (!fullName?.trim()) return "Bienvenido";
+  if (!fullName?.trim()) return "";
   const first = fullName.trim().split(/\s+/)[0];
-  return first || "Bienvenido";
+  return first || "";
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("DashboardPage");
+  const { formatDate } = useAppFormatting();
   const { user } = useAuth();
+  const { steps: onboardingSteps, allComplete: onboardingComplete } =
+    useOnboardingStatus();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     activeProjects: 0,
@@ -255,7 +263,7 @@ export default function DashboardPage() {
         confirmedOrdersError ||
         recentError
       ) {
-        toast.error("Error al cargar estadísticas", { id: "dashboard-stats" });
+        toast.error(t("toastLoadError"), { id: "dashboard-stats" });
         return;
       }
 
@@ -282,47 +290,48 @@ export default function DashboardPage() {
       });
     } catch (error) {
       reportError(error, "Error fetching dashboard stats:");
-      toast.error("Error al cargar estadísticas", { id: "dashboard-stats" });
+      toast.error(t("toastLoadError"), { id: "dashboard-stats" });
     } finally {
       setLoading(false);
     }
   };
 
   const formatChange = (change: number) => {
-    if (change === 0) return "Sin cambios";
+    if (change === 0) return t("noChanges");
     const sign = change > 0 ? "+" : "";
     return `${sign}${change}%`;
   };
 
   return (
     <div className="space-y-8">
-      <AnimatedSection duration={0.4}>
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <div className="flex items-start gap-3">
-            <LayoutDashboard className="text-primary mt-1 h-8 w-8" />
-            <div>
-              <h1 className="text-foreground text-3xl font-bold tracking-tight">
-                Hola,{" "}
-                {getFirstName(
-                  profile?.full_name ??
-                    (user?.user_metadata?.full_name as string | undefined)
-                )}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Aquí tienes un resumen de tu estudio de diseño.
-              </p>
-            </div>
+      <AnimatedSection
+        duration={0.4}
+        className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center"
+      >
+        <div className="flex items-start gap-3">
+          <LayoutDashboard className="text-primary mt-1 h-8 w-8" />
+          <div>
+            <h1 className="text-foreground text-3xl font-bold tracking-tight">
+              {t("hello")}{" "}
+              {getFirstName(
+                profile?.full_name ??
+                  (user?.user_metadata?.full_name as string | undefined)
+              )}
+            </h1>
+            <p className="text-muted-foreground mt-1">{t("subtitle")}</p>
           </div>
-          <Button
-            asChild
-            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 animate-glow shadow-lg transition-all hover:scale-105"
-          >
-            <Link href={appPath("/projects")}>
-              <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
-            </Link>
-          </Button>
         </div>
+        <Button
+          asChild
+          className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 animate-glow shadow-lg transition-all hover:scale-105"
+        >
+          <Link href={appPath("/projects")}>
+            <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
+          </Link>
+        </Button>
       </AnimatedSection>
+
+      {!onboardingComplete && <OnboardingChecklist steps={onboardingSteps} />}
 
       {loading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -340,7 +349,7 @@ export default function DashboardPage() {
             <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                  Proyectos Activos
+                  {t("activeProjectsTitle")}
                 </CardTitle>
                 <FolderKanban
                   className="text-primary h-4 w-4 transition-transform group-hover:scale-110"
@@ -355,7 +364,9 @@ export default function DashboardPage() {
                   />
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  {formatChange(stats.activeProjectsChange)} desde el mes pasado
+                  {t("activeProjectsFromLastMonth", {
+                    change: formatChange(stats.activeProjectsChange),
+                  })}
                 </p>
               </CardContent>
             </Card>
@@ -365,7 +376,7 @@ export default function DashboardPage() {
             <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                  Clientes Totales
+                  {t("totalClientsTitle")}
                 </CardTitle>
                 <Users
                   className="text-chart-2 h-4 w-4 transition-transform group-hover:scale-110"
@@ -377,7 +388,9 @@ export default function DashboardPage() {
                   <AnimatedCounter target={stats.totalClients} duration={1.5} />
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  +{stats.newClientsThisMonth} nuevos este mes
+                  {t("newClientsThisMonth", {
+                    count: stats.newClientsThisMonth,
+                  })}
                 </p>
               </CardContent>
             </Card>
@@ -387,7 +400,7 @@ export default function DashboardPage() {
             <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                  Total de Gastos
+                  {t("totalExpensesTitle")}
                 </CardTitle>
                 <TrendingDown
                   className="text-destructive h-4 w-4 transition-transform group-hover:scale-110"
@@ -399,11 +412,13 @@ export default function DashboardPage() {
                   <AnimatedCounter
                     target={stats.totalExpensesThisMonth}
                     duration={1.5}
-                    prefix="€"
+                    currencyCode="EUR"
                     decimals={2}
                   />
                 </div>
-                <p className="text-muted-foreground mt-1 text-xs">Este mes</p>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {t("thisMonth")}
+                </p>
               </CardContent>
             </Card>
           </StaggerItem>
@@ -412,7 +427,7 @@ export default function DashboardPage() {
             <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                  Total de Ingresos
+                  {t("totalIncomeTitle")}
                 </CardTitle>
                 <TrendingUp
                   className="text-primary h-4 w-4 transition-transform group-hover:scale-110"
@@ -424,12 +439,12 @@ export default function DashboardPage() {
                   <AnimatedCounter
                     target={stats.totalIncomeThisMonth}
                     duration={1.5}
-                    prefix="€"
+                    currencyCode="EUR"
                     decimals={2}
                   />
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">
-                  Este mes (próximamente)
+                  {t("thisMonthSoon")}
                 </p>
               </CardContent>
             </Card>
@@ -441,7 +456,7 @@ export default function DashboardPage() {
         <AnimatedSection delay={0.2} className="col-span-4">
           <Card className="border-none shadow-md">
             <CardHeader>
-              <CardTitle>Proyectos Recientes</CardTitle>
+              <CardTitle>{t("recentProjectsTitle")}</CardTitle>
               {loading ? (
                 <div className="text-muted-foreground text-sm">
                   <Skeleton className="h-4 w-48" />
@@ -449,8 +464,10 @@ export default function DashboardPage() {
               ) : (
                 <CardDescription>
                   {stats.recentProjects.length > 0
-                    ? `${stats.recentProjects.length} proyectos recientes`
-                    : "No tienes proyectos recientes."}
+                    ? t("recentProjectsCount", {
+                        count: stats.recentProjects.length,
+                      })
+                    : t("noRecentProjects")}
                 </CardDescription>
               )}
             </CardHeader>
@@ -537,15 +554,16 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-foreground font-medium">
-                      Comienza tu primer proyecto
+                      {t("startFirstProjectTitle")}
                     </h3>
                     <p className="text-muted-foreground mx-auto max-w-xs text-sm">
-                      Crea un proyecto para empezar a gestionar clientes,
-                      espacios y presupuestos.
+                      {t("startFirstProjectDescription")}
                     </p>
                   </div>
                   <Button variant="outline" asChild className="mt-4">
-                    <Link href={appPath("/projects")}>Crear Proyecto</Link>
+                    <Link href={appPath("/projects")}>
+                      {t("createProject")}
+                    </Link>
                   </Button>
                 </div>
               )}
@@ -556,8 +574,8 @@ export default function DashboardPage() {
         <AnimatedSection delay={0.3} className="col-span-3">
           <Card className="bg-primary/5 border-none shadow-md">
             <CardHeader>
-              <CardTitle>Accesos Rápidos</CardTitle>
-              <CardDescription>Acciones frecuentes</CardDescription>
+              <CardTitle>{t("quickAccessTitle")}</CardTitle>
+              <CardDescription>{t("quickAccessDescription")}</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-4">
               {loading ? (
@@ -581,10 +599,10 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <p className="text-foreground text-sm leading-none font-medium">
-                            Registrar Cliente
+                            {t("registerClient")}
                           </p>
                           <p className="text-muted-foreground mt-1 text-xs">
-                            Añadir nuevo contacto
+                            {t("addNewContact")}
                           </p>
                         </div>
                       </div>
@@ -603,10 +621,10 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <p className="text-foreground text-sm leading-none font-medium">
-                            Añadir Producto
+                            {t("addProduct")}
                           </p>
                           <p className="text-muted-foreground mt-1 text-xs">
-                            Actualizar catálogo
+                            {t("updateCatalog")}
                           </p>
                         </div>
                       </div>

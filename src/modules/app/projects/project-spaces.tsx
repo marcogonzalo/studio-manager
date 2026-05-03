@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ import { SpaceImagesDialog } from "@/components/dialogs/space-images-dialog";
 import { SpaceProductsDialog } from "@/components/dialogs/space-products-dialog";
 
 import type { Space } from "@/types";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 export function ProjectSpaces({
   projectId,
@@ -35,12 +35,13 @@ export function ProjectSpaces({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
-  const addRendersAndDocumentsEnabled = usePlanCapability("documents", {
-    minModality: "full",
-  });
+  const addRendersAndDocumentsEnabled = usePlanCapability("documents");
   const canAddRenders = !readOnly && !disabled && addRendersAndDocumentsEnabled;
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
+  const [firstImageBySpaceId, setFirstImageBySpaceId] = useState<
+    Record<string, string>
+  >({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSpace, setSelectedSpace] = useState<Space | null>(null);
   const [isImagesOpen, setIsImagesOpen] = useState(false);
@@ -61,6 +62,30 @@ export function ProjectSpaces({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
+  const fetchFirstImages = useCallback(async () => {
+    if (spaces.length === 0) {
+      setFirstImageBySpaceId({});
+      return;
+    }
+    const spaceIds = spaces.map((s) => s.id);
+    const { data } = await supabase
+      .from("space_images")
+      .select("space_id, url")
+      .in("space_id", spaceIds)
+      .not("url", "eq", "")
+      .order("created_at", { ascending: true });
+    const map: Record<string, string> = {};
+    for (const row of data || []) {
+      if (row.space_id && row.url && !map[row.space_id])
+        map[row.space_id] = row.url;
+    }
+    setFirstImageBySpaceId(map);
+  }, [spaces, supabase]);
+
+  useEffect(() => {
+    fetchFirstImages();
+  }, [fetchFirstImages]);
+
   const openImages = (space: Space) => {
     setSelectedSpace(space);
     setIsImagesOpen(true);
@@ -73,74 +98,93 @@ export function ProjectSpaces({
 
   return (
     <TooltipProvider>
-      <ProjectTabContent disabled={disabled}>
+      <ProjectTabContent
+        disabled={disabled}
+        disabledMessage="Los espacios no están incluidos en tu plan actual."
+      >
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">Espacios del Proyecto</h3>
+          <TabSectionHeader title="Espacios del Proyecto">
             {!readOnly && (
-              <Button onClick={() => setIsDialogOpen(true)} size="sm">
+              <Button onClick={() => setIsDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" /> Nuevo Espacio
               </Button>
             )}
-          </div>
+          </TabSectionHeader>
 
           <div className="grid gap-4 md:grid-cols-3">
-            {spaces.map((space) => (
-              <Card key={space.id}>
-                <CardHeader>
-                  <CardTitle>{space.name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-sm">
-                    {space.description || "Sin descripción"}
-                  </p>
-                </CardContent>
-                <CardFooter className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => openProducts(space)}
-                  >
-                    <Package className="h-4 w-4 lg:mr-2" />
-                    <span className="hidden lg:inline">Productos</span>
-                  </Button>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span className="flex-1">
+            {spaces.map((space) => {
+              const firstImageUrl = firstImageBySpaceId[space.id];
+              return (
+                <Card key={space.id} className="relative overflow-hidden">
+                  {firstImageUrl && (
+                    <div
+                      className="absolute inset-0"
+                      style={{
+                        backgroundImage: `url(${firstImageUrl})`,
+                        backgroundRepeat: "no-repeat",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        opacity: 0.15,
+                      }}
+                      aria-hidden
+                    />
+                  )}
+                  <CardHeader className="relative z-10">
+                    <CardTitle>{space.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="relative z-10">
+                    <p className="text-muted-foreground text-sm">
+                      {space.description || ""}
+                    </p>
+                  </CardContent>
+                  <CardFooter className="relative z-10 flex gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
                         <Button
                           variant="outline"
-                          size="sm"
-                          className="w-full"
+                          className="flex-1"
+                          onClick={() => openProducts(space)}
+                        >
+                          <Package className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent variant="tertiary">
+                        Productos del espacio
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="flex-1"
                           onClick={() => openImages(space)}
                           disabled={!canAddRenders}
                         >
-                          <ImageIcon className="h-4 w-4 lg:mr-2" />
-                          <span className="hidden lg:inline">Renders</span>
+                          <ImageIcon className="h-4 w-4" />
                         </Button>
-                      </span>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {!canAddRenders ? (
-                        <p>
-                          No disponible en tu plan.{" "}
-                          <Link
-                            href="/pricing"
-                            className="underline"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            Mejora tu plan
-                          </Link>{" "}
-                          para subir renders.
-                        </p>
-                      ) : (
-                        "Visualizaciones del espacio"
-                      )}
-                    </TooltipContent>
-                  </Tooltip>
-                </CardFooter>
-              </Card>
-            ))}
+                      </TooltipTrigger>
+                      <TooltipContent variant="tertiary">
+                        {!canAddRenders ? (
+                          <p>
+                            No disponible en tu plan.{" "}
+                            <Link
+                              href="/pricing"
+                              className="underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              Mejora tu plan
+                            </Link>{" "}
+                            para subir renders.
+                          </p>
+                        ) : (
+                          "Visualizaciones del espacio"
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  </CardFooter>
+                </Card>
+              );
+            })}
             {spaces.length === 0 && (
               <div className="text-muted-foreground col-span-full rounded-md border border-dashed py-8 text-center">
                 No hay espacios registrados.
@@ -162,7 +206,10 @@ export function ProjectSpaces({
             <>
               <SpaceImagesDialog
                 open={isImagesOpen}
-                onOpenChange={setIsImagesOpen}
+                onOpenChange={(open) => {
+                  setIsImagesOpen(open);
+                  if (!open) fetchFirstImages();
+                }}
                 space={selectedSpace}
                 projectId={projectId}
                 canAddRenders={canAddRenders}

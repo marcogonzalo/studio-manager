@@ -4,6 +4,13 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
+import { useOnboardingStatus } from "@/lib/use-onboarding-status";
+import { OnboardingStepModal } from "@/components/onboarding/onboarding-step-modal";
+import {
+  ONBOARDING_SESSION_SKIP_KEY,
+  ONBOARDING_WELCOME_SEEN_SESSION_KEY,
+  isOnOnboardingStepTargetPage,
+} from "@/lib/onboarding";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -26,10 +33,13 @@ import {
   PanelLeft,
   User,
   SlidersHorizontal,
-  Palette,
+  Moon,
   Rocket,
+  Sun,
   ArrowLeft,
   CreditCard,
+  Bug,
+  ChevronRight,
 } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
 import {
@@ -46,13 +56,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState } from "react";
-import { ThemeToggleSimple } from "@/components/theme-toggle-simple";
+import { useState, useEffect, useMemo } from "react";
+import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getDisplayName } from "@/lib/display-name";
 import { appPath } from "@/lib/app-paths";
+import { getReportBugUrl } from "@/lib/report-bug";
+import { AuthConfirmedTracker } from "@/components/gtm/auth-confirmed-tracker";
 
 function AppLayoutSkeleton() {
   return (
@@ -71,25 +84,35 @@ function AppLayoutSkeleton() {
   );
 }
 
-const navItems = [
-  { name: "Dashboard", href: appPath("/dashboard"), icon: LayoutDashboard },
-  { name: "Clientes", href: appPath("/clients"), icon: Users },
-  { name: "Proyectos", href: appPath("/projects"), icon: FolderKanban },
-  { name: "Catálogo", href: appPath("/catalog"), icon: ShoppingBag },
-  { name: "Proveedores", href: appPath("/suppliers"), icon: Truck },
-];
-
-const settingsNavItems = [
-  { name: "Volver atrás", href: appPath("/dashboard"), icon: ArrowLeft },
-  { name: "Cuenta", href: appPath("/settings/account"), icon: User },
-  { name: "Tu plan", href: appPath("/settings/plan"), icon: CreditCard },
-];
-
 const PLAN_DISPLAY_NAMES: Record<string, string> = {
   BASE: "Base",
   PRO: "Pro",
   STUDIO: "Studio",
 };
+
+function getSettingsBreadcrumbs(
+  pathname: string,
+  t: (key: string) => string
+): { label: string; href?: string }[] {
+  const base = { label: t("settings"), href: appPath("/settings") };
+  const pathToKey: Record<string, string> = {
+    [appPath("/settings")]: "account",
+    [appPath("/settings/account")]: "account",
+    [appPath("/settings/plan")]: "yourPlan",
+    [appPath("/settings/plan/change")]: "changePlan",
+    [appPath("/settings/customization")]: "customization",
+  };
+  const key = pathToKey[pathname];
+  if (!key) return [base];
+  const items = [base, { label: t(key) }];
+  if (pathname === appPath("/settings/plan/change")) {
+    items.splice(1, 0, {
+      label: t("yourPlan"),
+      href: appPath("/settings/plan"),
+    });
+  }
+  return items;
+}
 
 function SidebarContent({
   collapsed = false,
@@ -101,6 +124,7 @@ function SidebarContent({
   setIsMobileOpen,
   isCollapsed,
   setIsCollapsed,
+  className,
 }: {
   collapsed?: boolean;
   user: ReturnType<typeof useAuth>["user"];
@@ -111,7 +135,54 @@ function SidebarContent({
   setIsMobileOpen: (open: boolean) => void;
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
+  /** Clases adicionales para el contenedor raíz (ej. en desktop: md:fixed md:w-64) */
+  className?: string;
 }) {
+  const tNav = useTranslations("AppNav");
+  const navItems = useMemo(
+    () => [
+      {
+        name: tNav("dashboard"),
+        href: appPath("/dashboard"),
+        icon: LayoutDashboard,
+      },
+      { name: tNav("clients"), href: appPath("/clients"), icon: Users },
+      {
+        name: tNav("projects"),
+        href: appPath("/projects"),
+        icon: FolderKanban,
+      },
+      { name: tNav("catalog"), href: appPath("/catalog"), icon: ShoppingBag },
+      {
+        name: tNav("suppliers"),
+        href: appPath("/suppliers"),
+        icon: Truck,
+      },
+    ],
+    [tNav]
+  );
+  const settingsNavItems = useMemo(
+    () => [
+      { name: tNav("back"), href: appPath("/dashboard"), icon: ArrowLeft },
+      { name: tNav("account"), href: appPath("/settings/account"), icon: User },
+      {
+        name: tNav("customization"),
+        href: appPath("/settings/customization"),
+        icon: SlidersHorizontal,
+      },
+      {
+        name: tNav("yourPlan"),
+        href: appPath("/settings/plan"),
+        icon: CreditCard,
+      },
+    ],
+    [tNav]
+  );
+
+  const { theme, setTheme } = useTheme();
+  const [themeMounted, setThemeMounted] = useState(false);
+  useEffect(() => setThemeMounted(true), []);
+
   const isInSettings = pathname.includes("/settings");
   const navSource = isInSettings ? settingsNavItems : navItems;
 
@@ -169,7 +240,9 @@ function SidebarContent({
       return (
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>{wrapped}</TooltipTrigger>
-          <TooltipContent side="right">{item.name}</TooltipContent>
+          <TooltipContent side="right" variant="tertiary">
+            {item.name}
+          </TooltipContent>
         </Tooltip>
       );
     }
@@ -177,7 +250,12 @@ function SidebarContent({
   };
 
   return (
-    <div className="bg-sidebar border-border relative flex h-full flex-col border-r">
+    <div
+      className={cn(
+        "bg-sidebar border-border relative flex h-full flex-col border-r",
+        className
+      )}
+    >
       <div
         className={cn(
           "flex items-center gap-2 p-6",
@@ -203,9 +281,7 @@ function SidebarContent({
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="bg-background border-border hover:bg-secondary absolute top-1/2 -right-3 z-10 hidden -translate-y-1/2 rounded-full border p-1 shadow-md transition-colors md:flex"
-        aria-label={
-          collapsed ? "Expandir barra lateral" : "Minimizar barra lateral"
-        }
+        aria-label={collapsed ? tNav("expandSidebar") : tNav("collapseSidebar")}
       >
         {collapsed ? (
           <PanelLeft className="text-muted-foreground h-4 w-4" />
@@ -228,6 +304,69 @@ function SidebarContent({
             </Fragment>
           );
         })}
+        {isInSettings && (
+          <span
+            className="animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards block duration-300"
+            style={{ animationDelay: "320ms" }}
+          >
+            {(() => {
+              const isDark = theme === "dark";
+              const oppositeLabel = isDark
+                ? tNav("lightMode")
+                : tNav("darkMode");
+              const ariaLabel = isDark
+                ? tNav("switchToLight")
+                : tNav("switchToDark");
+              if (!themeMounted) {
+                return (
+                  <div className="text-muted-foreground flex cursor-default items-center justify-between gap-2 rounded-xl px-4 py-2.5 text-sm font-medium">
+                    <span className="flex items-center gap-3">
+                      <Sun className="h-5 w-5 flex-shrink-0" />
+                      {!collapsed && tNav("theme")}
+                    </span>
+                  </div>
+                );
+              }
+              return collapsed ? (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setTheme(isDark ? "light" : "dark")}
+                      className="group text-muted-foreground hover:bg-secondary hover:text-secondary-foreground flex w-full cursor-pointer items-center justify-center rounded-xl px-2 py-2.5 text-sm font-medium transition-all duration-200 [&_svg]:size-5"
+                      aria-label={ariaLabel}
+                    >
+                      {isDark ? (
+                        <Sun className="h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110" />
+                      ) : (
+                        <Moon className="h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" variant="tertiary">
+                    {oppositeLabel}
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Button
+                  variant="ghost"
+                  onClick={() => setTheme(isDark ? "light" : "dark")}
+                  className="text-muted-foreground hover:bg-secondary hover:text-secondary-foreground flex w-full cursor-pointer items-center justify-between gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors [&_svg]:size-5"
+                  aria-label={ariaLabel}
+                >
+                  <span className="flex items-center gap-3">
+                    {isDark ? (
+                      <Sun className="h-5 w-5 flex-shrink-0" />
+                    ) : (
+                      <Moon className="h-5 w-5 flex-shrink-0" />
+                    )}
+                    {oppositeLabel}
+                  </span>
+                </Button>
+              );
+            })()}
+          </span>
+        )}
       </nav>
       <div
         className={cn(
@@ -235,18 +374,30 @@ function SidebarContent({
           collapsed ? "p-2" : "space-y-3 p-4"
         )}
       >
-        {effectivePlan?.plan_code === "BASE" && (
-          <Link
-            href={appPath("/settings/plan/change")}
-            className={cn(
-              "bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors",
-              collapsed ? "py-2" : "mb-2"
-            )}
-          >
-            <Rocket className="h-4 w-4 shrink-0" />
-            {!collapsed && <span>Mejora tu plan</span>}
-          </Link>
-        )}
+        {effectivePlan?.plan_code === "BASE" &&
+          (collapsed ? (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Link
+                  href={appPath("/settings/plan/change")}
+                  className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors"
+                >
+                  <Rocket className="h-4 w-4 shrink-0" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" variant="tertiary">
+                {tNav("upgradePlanTooltip")}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <Link
+              href={appPath("/settings/plan/change")}
+              className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 mb-2 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors"
+            >
+              <Rocket className="h-4 w-4 shrink-0" />
+              <span>{tNav("upgradePlanCta")}</span>
+            </Link>
+          ))}
         {collapsed ? (
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
@@ -267,10 +418,18 @@ function SidebarContent({
                   className="w-56 rounded-xl"
                 >
                   <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">
-                        {getDisplayName(user, profileFullName)}
-                      </p>
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-sm font-medium">
+                          {getDisplayName(user, profileFullName)}
+                        </p>
+                        {effectivePlan?.plan_code && (
+                          <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+                            {PLAN_DISPLAY_NAMES[effectivePlan.plan_code] ??
+                              effectivePlan.plan_code}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-muted-foreground text-xs">
                         {user?.email}
                       </p>
@@ -278,45 +437,40 @@ function SidebarContent({
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href={appPath("/profile")}>
-                      <User className="mr-2 h-4 w-4" />
-                      Mi perfil
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href={appPath("/customization")}>
-                      <SlidersHorizontal className="mr-2 h-4 w-4" />
-                      Personalización
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
                     <Link href={appPath("/settings")}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Configuración
+                      {tNav("settings")}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    className="flex cursor-default items-center justify-between gap-2"
+                    onClick={() => {
+                      const url = getReportBugUrl({
+                        viewTitle:
+                          typeof document !== "undefined" ? document.title : "",
+                        viewUrl:
+                          typeof window !== "undefined"
+                            ? window.location.href
+                            : "",
+                      });
+                      window.open(url, "_blank", "noopener,noreferrer");
+                    }}
+                    className="cursor-pointer"
                   >
-                    <span className="flex items-center">
-                      <Palette className="mr-2 h-4 w-4" />
-                      Tema
-                    </span>
-                    <ThemeToggleSimple />
+                    <Bug className="mr-2 h-4 w-4" />
+                    {tNav("reportBug")}
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={signOut}
                     className="text-destructive focus:text-destructive cursor-pointer"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Cerrar Sesión
+                    {tNav("signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </TooltipTrigger>
-            <TooltipContent side="right">
+            <TooltipContent side="right" variant="tertiary">
               {getDisplayName(user, profileFullName)}
             </TooltipContent>
           </Tooltip>
@@ -342,57 +496,61 @@ function SidebarContent({
                   variant="ghost"
                   size="icon"
                   className="hover:bg-background text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer"
-                  aria-label="Cuenta y personalización"
+                  aria-label={tNav("accountMenuAria")}
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl">
-                <DropdownMenuLabel className="flex flex-wrap items-center gap-2">
-                  Mi Cuenta
-                  {effectivePlan?.plan_code && (
-                    <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-                      {PLAN_DISPLAY_NAMES[effectivePlan.plan_code] ??
-                        effectivePlan.plan_code}
-                    </span>
-                  )}
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-medium">
+                        {getDisplayName(user, profileFullName)}
+                      </p>
+                      {effectivePlan?.plan_code && (
+                        <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+                          {PLAN_DISPLAY_NAMES[effectivePlan.plan_code] ??
+                            effectivePlan.plan_code}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-muted-foreground text-xs">
+                      {user?.email}
+                    </p>
+                  </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href={appPath("/profile")}>
-                    <User className="mr-2 h-4 w-4" />
-                    Mi perfil
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href={appPath("/customization")}>
-                    <SlidersHorizontal className="mr-2 h-4 w-4" />
-                    Personalización
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                   <Link href={appPath("/settings")}>
                     <Settings className="mr-2 h-4 w-4" />
-                    Configuración
+                    {tNav("settings")}
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onSelect={(e) => e.preventDefault()}
-                  className="flex cursor-default items-center justify-between gap-2"
+                  onClick={() => {
+                    const url = getReportBugUrl({
+                      viewTitle:
+                        typeof document !== "undefined" ? document.title : "",
+                      viewUrl:
+                        typeof window !== "undefined"
+                          ? window.location.href
+                          : "",
+                    });
+                    window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                  className="cursor-pointer"
                 >
-                  <span className="flex items-center">
-                    <Palette className="mr-2 h-4 w-4" />
-                    Tema
-                  </span>
-                  <ThemeToggleSimple />
+                  <Bug className="mr-2 h-4 w-4" />
+                  {tNav("reportBug")}
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={signOut}
                   className="text-destructive focus:text-destructive cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Cerrar Sesión
+                  {tNav("signOut")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -408,10 +566,58 @@ export default function AppLayoutClient({
 }: {
   children: React.ReactNode;
 }) {
+  const tLayout = useTranslations("AppLayout");
+  const tCrumb = useTranslations("AppSettingsBreadcrumb");
   const { user, profileFullName, effectivePlan, signOut, loading } = useAuth();
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [skippedOnboardingThisSession, setSkippedOnboardingThisSession] =
+    useState(
+      () =>
+        typeof window !== "undefined" &&
+        !!sessionStorage.getItem(ONBOARDING_SESSION_SKIP_KEY)
+    );
+  const [onboardingModalOpen, setOnboardingModalOpen] = useState(true);
+  const [welcomeDismissedTrigger, setWelcomeDismissedTrigger] = useState(0);
+  const { firstPendingStepId, loading: onboardingLoading } =
+    useOnboardingStatus();
+  const showOnboardingModal =
+    !onboardingLoading &&
+    firstPendingStepId !== null &&
+    !skippedOnboardingThisSession;
+
+  // Reabrir el modal al navegar a una página que no sea la del paso actual (oculto temporalmente para realizar la acción)
+  useEffect(() => {
+    if (
+      showOnboardingModal &&
+      firstPendingStepId &&
+      !isOnOnboardingStepTargetPage(pathname, firstPendingStepId)
+    ) {
+      setOnboardingModalOpen(true);
+    }
+  }, [showOnboardingModal, pathname, firstPendingStepId]);
+
+  const handleOnboardingWelcomeComplete = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(ONBOARDING_WELCOME_SEEN_SESSION_KEY, "1");
+    }
+    setWelcomeDismissedTrigger((n) => n + 1);
+    return Promise.resolve();
+  };
+
+  const handleOnboardingOmitir = () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(ONBOARDING_SESSION_SKIP_KEY, "1");
+    }
+    setSkippedOnboardingThisSession(true);
+    setOnboardingModalOpen(false);
+  };
+
+  useEffect(() => {
+    document.body.classList.add("veta-app");
+    return () => document.body.classList.remove("veta-app");
+  }, []);
 
   if (loading) {
     return (
@@ -423,29 +629,36 @@ export default function AppLayoutClient({
 
   return (
     <TooltipProvider>
+      <AuthConfirmedTracker />
       <a href="#main-content" className="skip-link">
-        Saltar al contenido
+        {tLayout("skipToContent")}
       </a>
+      {showOnboardingModal && firstPendingStepId && (
+        <OnboardingStepModal
+          stepId={firstPendingStepId}
+          open={onboardingModalOpen}
+          onOpenChange={setOnboardingModalOpen}
+          onOmitir={handleOnboardingOmitir}
+          onWelcomeComplete={handleOnboardingWelcomeComplete}
+        />
+      )}
       <div className="bg-background text-foreground flex min-h-screen">
         {/* Desktop Sidebar */}
-        <div
+        <SidebarContent
+          collapsed={isCollapsed}
+          user={user}
+          profileFullName={profileFullName}
+          effectivePlan={effectivePlan}
+          signOut={signOut}
+          pathname={pathname}
+          setIsMobileOpen={setIsMobileOpen}
+          isCollapsed={isCollapsed}
+          setIsCollapsed={setIsCollapsed}
           className={cn(
             "z-50 hidden shadow-sm transition-all duration-300 md:fixed md:inset-y-0 md:flex md:flex-col print:hidden",
             isCollapsed ? "md:w-16" : "md:w-64"
           )}
-        >
-          <SidebarContent
-            collapsed={isCollapsed}
-            user={user}
-            profileFullName={profileFullName}
-            effectivePlan={effectivePlan}
-            signOut={signOut}
-            pathname={pathname}
-            setIsMobileOpen={setIsMobileOpen}
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-          />
-        </div>
+        />
 
         {/* Mobile Sidebar */}
         <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
@@ -453,21 +666,26 @@ export default function AppLayoutClient({
             <Button
               variant="ghost"
               size="icon"
-              className="bg-background/80 border-border fixed bottom-4 left-1/2 z-50 h-10 w-10 -translate-x-1/2 rounded-[25px] border shadow-sm backdrop-blur-sm md:hidden print:hidden"
-              aria-label="Abrir menú"
+              className="bg-background/80 border-border fixed bottom-4 left-1/2 z-50 h-12 w-12 -translate-x-1/2 overflow-hidden rounded-full border shadow-sm backdrop-blur-sm md:hidden print:hidden"
+              aria-label={tLayout("openMenu")}
             >
-              <VetaLogo variant="icon" height={20} width={28} />
+              <VetaLogo
+                variant="icon"
+                height={24}
+                width={34}
+                className="shrink-0"
+              />
             </Button>
           </SheetTrigger>
           <SheetContent
             side="left"
             className="border-border w-64 border-r p-0"
-            closeLabel="Cerrar menú"
+            closeLabel={tLayout("closeMenu")}
           >
             <SheetHeader className="sr-only">
-              <SheetTitle>Menú de Navegación</SheetTitle>
+              <SheetTitle>{tLayout("navMenuTitle")}</SheetTitle>
               <SheetDescription>
-                Navegación principal de la aplicación
+                {tLayout("navMenuDescription")}
               </SheetDescription>
             </SheetHeader>
             <SidebarContent
@@ -490,12 +708,46 @@ export default function AppLayoutClient({
           tabIndex={-1}
           className={cn(
             "flex-1 overflow-x-hidden p-4 transition-all duration-300 md:p-5 print:ml-0 print:p-0",
-            isCollapsed ? "md:ml-16" : "md:ml-64"
+            isCollapsed ? "md:ml-16" : "md:ml-64",
+            "animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500"
           )}
         >
-          <div className="animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500">
-            {children}
-          </div>
+          {(pathname.includes("/settings") ||
+            pathname === appPath("/settings/customization")) && (
+            <nav
+              aria-label={tLayout("breadcrumbAria")}
+              className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"
+            >
+              <ol className="flex flex-wrap items-center gap-1.5">
+                {getSettingsBreadcrumbs(pathname, tCrumb).map((item, i) => (
+                  <li key={i} className="flex items-center gap-1.5">
+                    {i > 0 && (
+                      <ChevronRight
+                        className="h-4 w-4 shrink-0 opacity-60"
+                        aria-hidden
+                      />
+                    )}
+                    {item.href ? (
+                      <Link
+                        href={item.href}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <span
+                        className="text-foreground font-medium"
+                        aria-current="page"
+                      >
+                        {item.label}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          )}
+          {children}
         </main>
       </div>
     </TooltipProvider>

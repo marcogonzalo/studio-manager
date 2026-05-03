@@ -10,12 +10,19 @@ export const RATE_LIMIT_MESSAGE =
 
 const WINDOW_MS = 60_000;
 
-type RouteGroup = "auth" | "upload" | "account-delete";
+type RouteGroup =
+  | "auth"
+  | "upload"
+  | "account-delete"
+  | "contact"
+  | "view-project";
 
 const LIMITS: Record<RouteGroup, number> = {
   auth: 10,
   upload: 20,
   "account-delete": 5,
+  contact: 5,
+  "view-project": 120,
 };
 
 interface Entry {
@@ -69,30 +76,55 @@ export function checkRateLimit(
   };
 }
 
-export function getRouteGroup(pathname: string): RouteGroup | null {
+export function getRouteGroup(
+  pathname: string,
+  method?: string
+): RouteGroup | null {
   if (pathname.startsWith("/api/auth")) return "auth";
   if (pathname.startsWith("/api/upload")) return "upload";
   if (pathname === "/api/account/delete") return "account-delete";
+  if (pathname === "/contact" && method === "POST") return "contact";
+  if (pathname.startsWith("/view-project/")) return "view-project";
   return null;
 }
 
-export function getClientIp(request: Request): string {
-  // In Next.js middleware, we need to access headers differently
-  const forwarded = request.headers.get("x-forwarded-for");
+function getIpFromHeaders(headers: Headers): string {
+  const forwarded = headers.get("x-forwarded-for");
   if (forwarded) {
     const first = forwarded.split(",")[0]?.trim();
     if (first) return first;
   }
-  const real = request.headers.get("x-real-ip");
+  const real = headers.get("x-real-ip");
   if (real) return real.trim();
-
-  // For development/localhost, use a consistent identifier
-  // In production behind a proxy, x-forwarded-for should be set
-  const host = request.headers.get("host");
+  const host = headers.get("host");
   if (host?.includes("localhost") || host?.includes("127.0.0.1")) {
-    // Use host as fallback for localhost to ensure consistent rate limiting
     return `localhost-${host}`;
   }
-
   return "unknown";
+}
+
+export function getClientIp(request: Request): string {
+  return getIpFromHeaders(request.headers);
+}
+
+/** For use in Server Actions where only headers() is available. */
+export function getClientIpFromHeaders(headers: Headers): string {
+  return getIpFromHeaders(headers);
+}
+
+/**
+ * Mask share token for logging (never log the full token).
+ * Returns e.g. "a1b2…x9z0" so logs can identify the path without exposing the secret.
+ */
+export function maskShareToken(token: string): string {
+  if (!token || token.length <= 8) return "***";
+  return `${token.slice(0, 4)}…${token.slice(-4)}`;
+}
+
+/** Path with token masked for logging (e.g. /view-project/a1b2…x9z0/spaces). */
+export function maskViewProjectPath(pathname: string): string {
+  const match = pathname.match(/^\/view-project\/([^/]+)(\/.*)?$/);
+  if (!match) return pathname;
+  const [, token, rest = ""] = match;
+  return `/view-project/${maskShareToken(token)}${rest}`;
 }

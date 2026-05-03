@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
+import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -23,13 +25,16 @@ import { ClientDialog } from "@/components/dialogs/client-dialog";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { getDemoAccountMessage } from "@/lib/utils";
 import { useDebouncedState } from "@/lib/use-debounced-value";
 
 import type { Client } from "@/types";
 
 export default function ClientsPage() {
+  const t = useTranslations("ClientsPage");
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
+  useOnboardingHighlight("client", !loading);
   const [searchInput, searchDebounced, setSearchInput] = useDebouncedState(
     "",
     500
@@ -53,7 +58,7 @@ export default function ClientsPage() {
 
     const { data, error } = await query;
     if (error) {
-      toast.error("Error al cargar clientes", { id: "clients-load" });
+      toast.error(t("toastLoadError"), { id: "clients-load" });
     } else {
       setClients(data || []);
     }
@@ -77,18 +82,23 @@ export default function ClientsPage() {
       const { canDeleteClient } = await import("@/lib/validation");
       const canDelete = await canDeleteClient(id);
       if (!canDelete) {
-        toast.error(
-          "No se puede eliminar el cliente porque tiene proyectos asociados"
-        );
+        toast.error(t("toastDeleteBlocked"));
         setDeleteTarget(null);
         return;
       }
       const { error } = await supabase.from("clients").delete().eq("id", id);
       if (error) {
-        toast.error("Error al eliminar cliente");
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error(t("toastDeleteError"));
+        }
         return;
       }
-      toast.success("Cliente eliminado");
+      toast.success(t("toastDeleted"));
       setDeleteTarget(null);
       fetchClients();
     } finally {
@@ -112,15 +122,16 @@ export default function ClientsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Users className="text-primary h-8 w-8" />
-            <h1 className="text-3xl font-bold tracking-tight">Clientes</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
-          <Button onClick={handleCreate}>
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Cliente
+          <Button
+            onClick={handleCreate}
+            {...(clients.length > 0 && { "data-onboarding-target": "client" })}
+          >
+            <Plus className="mr-2 h-4 w-4" /> {t("newClient")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          Gestiona los contactos y datos de tus clientes.
-        </p>
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
       <div className="flex items-center space-x-2">
@@ -131,11 +142,11 @@ export default function ClientsPage() {
           />
           <Input
             type="search"
-            placeholder="Buscar clientes…"
+            placeholder={t("searchPlaceholder")}
             className="pl-8"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Buscar clientes"
+            aria-label={t("searchAria")}
           />
         </div>
       </div>
@@ -152,27 +163,41 @@ export default function ClientsPage() {
             </Card>
           ))
         ) : clients.length === 0 ? (
-          <Card className="border-dashed sm:col-span-2 lg:col-span-3">
+          <Card
+            className="border-dashed sm:col-span-2 lg:col-span-3"
+            data-onboarding-target="client"
+          >
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <div className="bg-muted rounded-full p-4">
                 <Users className="text-muted-foreground h-8 w-8" />
               </div>
               <h3 className="text-foreground mt-4 font-medium">
-                No se encontraron clientes
+                {t("emptyTitle")}
               </h3>
               <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-                Añade tu primer cliente para empezar a asociarlos a proyectos.
+                {t("emptyDescription")}
               </p>
               <Button onClick={handleCreate} className="mt-4">
-                <Plus className="mr-2 h-4 w-4" /> Nuevo Cliente
+                <Plus className="mr-2 h-4 w-4" /> {t("newClient")}
               </Button>
             </CardContent>
           </Card>
         ) : (
           clients.map((client) => (
-            <Card key={client.id} className="transition-shadow hover:shadow-md">
-              <CardContent className="flex items-start justify-between gap-2 p-4">
-                <div className="min-w-0 flex-1">
+            <Card
+              key={client.id}
+              className="relative cursor-pointer transition-shadow hover:shadow-md"
+              role="button"
+              tabIndex={0}
+              onClick={() => handleEdit(client)}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                handleEdit(client);
+              }}
+            >
+              <CardContent className="p-4">
+                <div className="min-w-0 pr-10">
                   <p className="text-foreground truncate font-medium">
                     {client.full_name}
                   </p>
@@ -187,31 +212,46 @@ export default function ClientsPage() {
                     </p>
                   )}
                 </div>
+              </CardContent>
+              <div
+                className="absolute right-3 bottom-3 z-10"
+                style={{ inset: "auto 0.75rem 0.75rem auto" }}
+              >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      aria-label="Acciones del cliente"
+                      className="h-8 w-8"
+                      aria-label={t("actionsAria")}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleEdit(client)}>
+                  <DropdownMenuContent align="end" side="top">
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(client);
+                      }}
+                    >
                       <Pencil className="mr-2 h-4 w-4" />
-                      Editar
+                      {t("edit")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handleDeleteClick(client)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(client);
+                      }}
                       className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
+                      {t("delete")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </CardContent>
+              </div>
             </Card>
           ))
         )}
@@ -230,8 +270,8 @@ export default function ClientsPage() {
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="¿Eliminar cliente?"
-        description="Esta acción no se puede deshacer. Si el cliente tiene proyectos asociados no podrá eliminarse."
+        title={t("confirmDeleteTitle")}
+        description={t("confirmDeleteDescription")}
         onConfirm={handleConfirmDelete}
         loading={deleteLoading}
       />

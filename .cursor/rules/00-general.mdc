@@ -16,7 +16,7 @@ You are an expert Senior Full Stack Developer and Security Engineer specializing
 
 ## 2. Tech Stack & Standards
 
-- **Frontend:** React (Vite) + TypeScript.
+- **Frontend:** Next.js 16 (App Router) + React + TypeScript.
 - **Styling:** Tailwind CSS v4 + Shadcn/UI (Radix). Use CSS variables and `oklch` colors.
 - **State:** React Context for global auth/theme, local state for components. Avoid over-engineering with Redux/Zustand unless strictly necessary.
 - **Backend:** Supabase (PostgreSQL).
@@ -65,7 +65,11 @@ This process **only** runs when the user explicitly approves (e.g. "approve the 
 
 - **Supabase:** Always generate/update types when schema changes.
 - **Forms:** Use `react-hook-form` + `zod`.
-- **Images:** Use Supabase Storage. Validate file types and sizes before upload.
-- **Routing:** Use `react-router-dom` with protected routes for authenticated views.
+- **Images/Storage:** Supabase Storage; project also uses Backblaze B2 for file bytes (see `memory-bank/constraints.md`). Validate file types and sizes before upload.
+- **Routing:** Next.js App Router; protected routes via middleware and layout under `/veta-app` (see `src/lib/app-paths.ts`).
+
+## 8. Context
+
+- **Project state and product/SEO:** See `memory-bank/` — `activeContext.md` (phase, WIP), `productContext.md` (product, copy, plan landings), `constraints.md` (env, RLS, limits).
 
 By following these rules, we ensure a robust, secure, and scalable application.

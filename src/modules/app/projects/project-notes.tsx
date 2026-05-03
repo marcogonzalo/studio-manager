@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KeyboardHint } from "@/components/ui/keyboard-hint";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { useAuth } from "@/components/auth-provider";
 import { Trash2, MoreVertical, StickyNote } from "lucide-react";
 import {
@@ -16,7 +16,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ProjectTabContent } from "./project-tab-content";
+import { getDemoAccountMessage } from "@/lib/utils";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface Note {
   id: string;
@@ -35,6 +37,8 @@ export function ProjectNotes({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
+  const t = useTranslations("ProjectModuleNotes");
+  const { formatDate } = useAppFormatting();
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -79,9 +83,16 @@ export function ProjectNotes({
     ]);
 
     if (error) {
-      toast.error("Error al añadir nota");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error(t("toastAddError"));
+      }
     } else {
-      toast.success("Nota añadida");
+      toast.success(t("toastAdded"));
       setNewNote("");
       fetchNotes();
     }
@@ -89,16 +100,23 @@ export function ProjectNotes({
   };
 
   const handleDeleteNote = async (id: string) => {
-    if (!confirm("¿Eliminar esta nota?")) return;
+    if (!confirm(t("confirmDelete"))) return;
     const { error } = await supabase
       .from("project_notes")
       .delete()
       .eq("id", id);
 
     if (error) {
-      toast.error("Error al eliminar nota");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error(t("toastDeleteError"));
+      }
     } else {
-      toast.success("Nota eliminada");
+      toast.success(t("toastDeleted"));
       fetchNotes();
     }
   };
@@ -110,132 +128,157 @@ export function ProjectNotes({
       .eq("id", id);
 
     if (error) {
-      toast.error("Error al actualizar nota");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error(t("toastUpdateError"));
+      }
     } else {
-      toast.success(currentArchived ? "Nota desarchivada" : "Nota archivada");
+      toast.success(
+        currentArchived ? t("toastUnarchived") : t("toastArchived")
+      );
       fetchNotes();
     }
   };
 
   return (
-    <ProjectTabContent disabled={disabled}>
-      <div className="grid gap-6 md:grid-cols-2">
-        {!readOnly && (
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle>Añadir Nota</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                placeholder="Escribe una nota..."
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-                onKeyDown={(e) => {
-                  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddNote();
-                  }
-                }}
-                rows={5}
-              />
-              <div className="flex items-center gap-2">
-                <Button onClick={handleAddNote} disabled={loading}>
-                  {loading ? "Guardando..." : "Guardar Nota"}
-                </Button>
-                <KeyboardHint
-                  keys="Ctrl/Cmd + Enter"
-                  description="para guardar"
+    <ProjectTabContent
+      disabled={disabled}
+      disabledMessage={t("disabledMessage")}
+    >
+      <div className="space-y-6">
+        <TabSectionHeader title={t("title")} />
+        <div className="grid gap-6 md:grid-cols-2">
+          {!readOnly && (
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle>{t("addTitle")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Textarea
+                  placeholder={t("placeholder")}
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                  onKeyDown={(e) => {
+                    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddNote();
+                    }
+                  }}
+                  rows={5}
                 />
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {notes.length === 0 ? (
-          <div
-            className={
-              readOnly ? "md:col-span-2" : "flex h-full min-h-0 flex-col"
-            }
-          >
-            <Card className="flex h-full flex-col">
-              <CardContent className="flex flex-1 flex-col justify-center py-12 text-center">
-                <StickyNote className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-                <p className="text-muted-foreground mb-4">No hay notas.</p>
-                {!readOnly && (
-                  <p className="text-muted-foreground text-sm">
-                    Añade la primera con el formulario de la izquierda.
-                  </p>
-                )}
+                <div className="flex items-center gap-2">
+                  <Button onClick={handleAddNote} disabled={loading}>
+                    {loading ? t("saving") : t("save")}
+                  </Button>
+                  <KeyboardHint
+                    keys="Ctrl/Cmd + Enter"
+                    description={t("shortcutDescription")}
+                  />
+                </div>
               </CardContent>
             </Card>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {notes.map((note) => (
-              <Card
-                key={note.id}
-                className={note.archived ? "bg-secondary/30/50 opacity-60" : ""}
-              >
-                <CardContent className="pt-6">
-                  <div className="mb-4 flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      {!readOnly && (
-                        <>
-                          <input
-                            type="checkbox"
-                            checked={note.archived}
-                            onChange={() =>
-                              handleToggleArchive(note.id, note.archived)
-                            }
-                            className="border-border h-4 w-4 rounded"
-                            title={note.archived ? "Desarchivar" : "Archivar"}
-                          />
-                          <label
-                            className="text-muted-foreground cursor-pointer text-xs"
-                            onClick={() =>
-                              handleToggleArchive(note.id, note.archived)
-                            }
-                          >
-                            {note.archived ? "Archivada" : "Archivar"}
-                          </label>
-                        </>
-                      )}
-                    </div>
-                    {!readOnly && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Acciones de la nota"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteNote(note.id)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
-                  <p className="mb-4 whitespace-pre-wrap">{note.content}</p>
-                  <div className="text-muted-foreground flex justify-between text-xs">
-                    <span>{note.user?.full_name || "Usuario"}</span>
-                    <span>
-                      {format(new Date(note.created_at), "dd/MM/yyyy HH:mm")}
-                    </span>
-                  </div>
+          )}
+
+          {notes.length === 0 ? (
+            <div
+              className={
+                readOnly ? "md:col-span-2" : "flex h-full min-h-0 flex-col"
+              }
+            >
+              <Card className="flex h-full flex-col">
+                <CardContent className="flex flex-1 flex-col justify-center py-12 text-center">
+                  <StickyNote className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                  <p className="text-muted-foreground mb-4">{t("empty")}</p>
+                  {!readOnly && (
+                    <p className="text-muted-foreground text-sm">
+                      {t("emptyHint")}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {notes.map((note) => (
+                <Card
+                  key={note.id}
+                  className={
+                    note.archived ? "bg-secondary/30/50 opacity-60" : ""
+                  }
+                >
+                  <CardContent className="pt-6">
+                    <div className="mb-4 flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        {!readOnly && (
+                          <>
+                            <input
+                              type="checkbox"
+                              checked={note.archived}
+                              onChange={() =>
+                                handleToggleArchive(note.id, note.archived)
+                              }
+                              className="border-border h-4 w-4 rounded"
+                              title={
+                                note.archived ? t("unarchive") : t("archive")
+                              }
+                            />
+                            <label
+                              className="text-muted-foreground cursor-pointer text-xs"
+                              onClick={() =>
+                                handleToggleArchive(note.id, note.archived)
+                              }
+                            >
+                              {note.archived ? t("archived") : t("archive")}
+                            </label>
+                          </>
+                        )}
+                      </div>
+                      {!readOnly && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label={t("actionsAria")}
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteNote(note.id)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {t("delete")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+                    <p className="mb-4 whitespace-pre-wrap">{note.content}</p>
+                    <div className="text-muted-foreground flex justify-between text-xs">
+                      <span>{note.user?.full_name || t("userFallback")}</span>
+                      <span>
+                        {formatDate(note.created_at, {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </ProjectTabContent>
   );

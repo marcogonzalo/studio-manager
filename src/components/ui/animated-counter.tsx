@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from "react";
 import { useInView, motion, useMotionValue, animate } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
 
 interface AnimatedCounterProps {
@@ -16,6 +16,8 @@ interface AnimatedCounterProps {
   suffix?: string;
   /** Number of decimal places */
   decimals?: number;
+  /** When set, formats the value as currency (locale-aware); ignores prefix/suffix for the number part */
+  currencyCode?: string;
   /** Additional CSS classes */
   className?: string;
   /** Whether to animate only once */
@@ -30,6 +32,7 @@ export function AnimatedCounter({
   prefix = "",
   suffix = "",
   decimals = 0,
+  currencyCode,
   className,
   once = true,
   triggerOnMount = true,
@@ -60,10 +63,14 @@ export function AnimatedCounter({
 
     const unsubscribe = motionValue.on("change", (latest) => {
       setDisplayValue(
-        latest.toLocaleString("es-ES", {
-          minimumFractionDigits: decimals,
-          maximumFractionDigits: decimals,
-        })
+        currencyCode
+          ? formatCurrency(latest, currencyCode, {
+              maxFractionDigits: decimals,
+            })
+          : latest.toLocaleString("es-ES", {
+              minimumFractionDigits: decimals,
+              maximumFractionDigits: decimals,
+            })
       );
     });
 
@@ -71,7 +78,14 @@ export function AnimatedCounter({
       controls.stop();
       unsubscribe();
     };
-  }, [isInView, target, effectiveDuration, decimals, motionValue]);
+  }, [
+    isInView,
+    target,
+    effectiveDuration,
+    decimals,
+    currencyCode,
+    motionValue,
+  ]);
 
   const transitionDuration = reducedMotion ? 0 : 0.4;
   if (target === Infinity) {
@@ -104,9 +118,7 @@ export function AnimatedCounter({
       }
       transition={{ duration: transitionDuration }}
     >
-      {prefix}
-      {displayValue}
-      {suffix}
+      {currencyCode ? displayValue : `${prefix}${displayValue}${suffix}`}
     </motion.span>
   );
 }

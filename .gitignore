@@ -56,10 +56,6 @@ coverage/
 # Gimp
 *.xcf
 
-# Cursor
-.cursor/skills/*
-
 # Others
-.agents/*
 squirrel.toml
 skills-lock.json

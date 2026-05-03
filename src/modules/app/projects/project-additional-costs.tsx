@@ -28,6 +28,7 @@ import {
 import { AdditionalCostDialog } from "@/components/dialogs/additional-cost-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { getDemoAccountMessage } from "@/lib/utils";
 import type { AdditionalCost } from "@/types";
 
 const COST_TYPE_LABELS: Record<string, string> = {
@@ -81,7 +82,14 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
       .eq("id", id);
 
     if (error) {
-      toast.error("Error al eliminar coste adicional");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al eliminar coste adicional");
+      }
     } else {
       toast.success("Coste adicional eliminado");
       fetchCosts();

@@ -51,6 +51,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    if (user.email?.toLowerCase() === "demo@veta.pro") {
+      return NextResponse.json(
+        {
+          code: "DEMO_ACCOUNT_READ_ONLY",
+          message: "Las acciones están limitadas en la cuenta de demostración.",
+        },
+        { status: 403 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const projectId = formData.get("projectId") as string | null;

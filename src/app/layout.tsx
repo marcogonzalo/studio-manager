@@ -5,6 +5,8 @@ import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
+import { GtmScript } from "@/components/gtm";
+import { CONSENT_STORAGE_KEY, getDefaultGtmConsent } from "@/lib/consent";
 import {
   JsonLd,
   organizationJsonLd,
@@ -95,14 +97,65 @@ export default async function RootLayout({
     }
   }
 
+  // Default consent when no stored preference (e.g. first visit or EU). Injected so inline script can use it.
+  const defaultDeniedPayload = getDefaultGtmConsent(true);
+
   return (
     <html lang="es" suppressHydrationWarning className={montserrat.variable}>
+      <head>
+        {/* Aplicar tema antes del primer pintado para evitar que la 404 (y el resto) pierda formato al hidratar (next-themes aplica la clase después). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var k='theme';var t=localStorage.getItem(k);var s=window.matchMedia('(prefers-color-scheme: dark)').matches;var isDark=!t||t==='system'?s:t==='dark';document.documentElement.classList.remove('light');document.documentElement.classList.toggle('dark',isDark);}catch(e){}})();`,
+          }}
+        />
+        {/* Preconnect to third-party origins (faster TTFB, keeps third-party budget &lt; 200 KB). */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" />
+
+        {/* Consent default must be read from localStorage in the browser so returning users who already accepted get analytics_storage: granted before GTM/GA runs. Server cannot read localStorage, so we inject default-denied and let this script override from storage. */}
+        <script
+          id="gtm-consent-default"
+          dangerouslySetInnerHTML={{
+            __html: `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = gtag;
+(function(){
+  var key = ${JSON.stringify(CONSENT_STORAGE_KEY)};
+  var defaultDenied = ${JSON.stringify(defaultDeniedPayload)};
+  try {
+    var raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
+    if (raw) {
+      var p = JSON.parse(raw);
+      gtag('consent', 'default', {
+        ad_storage: p.marketing ? 'granted' : 'denied',
+        ad_user_data: p.marketing ? 'granted' : 'denied',
+        ad_personalization: p.marketing ? 'granted' : 'denied',
+        analytics_storage: p.analytics ? 'granted' : 'denied',
+        functionality_storage: 'granted',
+        personalization_storage: p.personalization ? 'granted' : 'denied',
+        security_storage: 'granted'
+      });
+    } else {
+      gtag('consent', 'default', defaultDenied);
+    }
+  } catch (e) {
+    gtag('consent', 'default', defaultDenied);
+  }
+})();
+gtag('set', 'ads_data_redaction', true);
+gtag('set', 'url_passthrough', false);
+          `.trim(),
+          }}
+        />
+      </head>
       <body className="bg-background min-h-screen font-sans antialiased">
+        <GtmScript />
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={softwareApplicationJsonLd} />
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >

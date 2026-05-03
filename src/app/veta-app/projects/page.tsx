@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
+import { getDemoAccountMessage } from "@/lib/utils";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
+import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,12 +30,21 @@ import {
   User as UserIcon,
   FolderKanban,
   Search,
+  MoreVertical,
+  Trash2,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ProjectDialog } from "@/components/project-dialog";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { appPath } from "@/lib/app-paths";
-import { formatDate, getProjectStatusLabel } from "@/lib/utils";
+import { getProjectStatusLabel } from "@/lib/utils";
 
 import type { Project } from "@/types";
 
@@ -57,13 +70,47 @@ type StatusFilter = "all" | "active" | "completed" | "cancelled";
 type SortOption = "status" | "created_at" | "end_date";
 
 export default function ProjectsPage() {
+  const t = useTranslations("ProjectsPage");
+  const { formatDate } = useAppFormatting();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  useOnboardingHighlight("project", !loading);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("status");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const supabase = getSupabaseClient();
+
+  const handleDeleteClick = (project: Project) => {
+    setDeleteTarget(project);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget.id;
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase.from("projects").delete().eq("id", id);
+      if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error(t("toastDeleteError"));
+        }
+        return;
+      }
+      toast.success(t("toastDeleted"));
+      setDeleteTarget(null);
+      fetchProjects();
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const filteredAndSortedProjects = useMemo(() => {
     let list = projects.filter((p) => matchProject(p, search));
@@ -102,7 +149,7 @@ export default function ProjectsPage() {
       .select("*, client:clients(full_name)");
 
     if (error) {
-      toast.error("Error al cargar proyectos", { id: "projects-load" });
+      toast.error(t("toastLoadError"), { id: "projects-load" });
     } else {
       setProjects(data || []);
     }
@@ -120,16 +167,18 @@ export default function ProjectsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <FolderKanban className="text-primary h-8 w-8" />
-            <h1 className="text-3xl font-bold tracking-tight">Proyectos</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
-          <Button onClick={() => setIsDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
+          <Button
+            onClick={() => setIsDialogOpen(true)}
+            {...(projects.length > 0 && {
+              "data-onboarding-target": "project",
+            })}
+          >
+            <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          Crea y gestiona proyectos de diseño con clientes, espacios y
-          presupuestos.
-        </p>
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -140,11 +189,11 @@ export default function ProjectsPage() {
           />
           <Input
             type="search"
-            placeholder="Buscar proyectos, descripción o cliente…"
+            placeholder={t("searchPlaceholder")}
             className="pl-8"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            aria-label="Buscar proyectos"
+            aria-label={t("searchAria")}
           />
         </div>
         <Select
@@ -152,13 +201,13 @@ export default function ProjectsPage() {
           onValueChange={(v) => setStatusFilter(v as StatusFilter)}
         >
           <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Estado" />
+            <SelectValue placeholder={t("statusPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Activos</SelectItem>
-            <SelectItem value="completed">Completados</SelectItem>
-            <SelectItem value="cancelled">Cancelados</SelectItem>
+            <SelectItem value="all">{t("statusAll")}</SelectItem>
+            <SelectItem value="active">{t("statusActive")}</SelectItem>
+            <SelectItem value="completed">{t("statusCompleted")}</SelectItem>
+            <SelectItem value="cancelled">{t("statusCancelled")}</SelectItem>
           </SelectContent>
         </Select>
         <Select
@@ -166,12 +215,12 @@ export default function ProjectsPage() {
           onValueChange={(v) => setSortBy(v as SortOption)}
         >
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Ordenar por" />
+            <SelectValue placeholder={t("sortPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="status">Por estado</SelectItem>
-            <SelectItem value="created_at">Por fecha de creación</SelectItem>
-            <SelectItem value="end_date">Por fecha de cierre</SelectItem>
+            <SelectItem value="status">{t("sortByStatus")}</SelectItem>
+            <SelectItem value="created_at">{t("sortByCreated")}</SelectItem>
+            <SelectItem value="end_date">{t("sortByEnd")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -209,30 +258,53 @@ export default function ProjectsPage() {
                     : "transition-shadow hover:shadow-md"
                 }
               >
-                <CardHeader>
-                  <CardTitle
-                    className={isMuted ? "text-muted-foreground" : undefined}
-                  >
-                    {project.name}
-                  </CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    {project.description}
-                  </CardDescription>
+                <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <CardTitle
+                      className={isMuted ? "text-muted-foreground" : undefined}
+                    >
+                      {project.name}
+                    </CardTitle>
+                    <CardDescription className="line-clamp-2">
+                      {project.description}
+                    </CardDescription>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        aria-label={t("actionsAria")}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteClick(project)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {t("delete")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardHeader>
                 <CardContent>
                   <div className="text-muted-foreground space-y-2 text-sm">
                     <div className="flex items-center">
                       <UserIcon className="mr-2 h-4 w-4" />
-                      {project.client?.full_name || "Sin cliente"}
+                      {project.client?.full_name || t("noClient")}
                     </div>
                     <div className="flex items-center">
                       <Calendar className="mr-2 h-4 w-4" />
                       {project.start_date
                         ? formatDate(project.start_date)
-                        : "Sin fecha"}
+                        : t("noDate")}
                     </div>
                     <div className="capitalize">
-                      Estado:{" "}
+                      {t("statusLabel")}{" "}
                       <span
                         className={
                           isMuted
@@ -248,7 +320,7 @@ export default function ProjectsPage() {
                 <CardFooter>
                   <Button asChild className="w-full" variant="outline">
                     <Link href={appPath(`/projects/${project.id}`)}>
-                      Ver Detalles
+                      {t("viewDetails")}
                     </Link>
                   </Button>
                 </CardFooter>
@@ -256,27 +328,32 @@ export default function ProjectsPage() {
             );
           })}
           {filteredAndSortedProjects.length === 0 && (
-            <Card className="border-dashed md:col-span-2 lg:col-span-3">
+            <Card
+              className="border-dashed md:col-span-2 lg:col-span-3"
+              {...(projects.length === 0 && {
+                "data-onboarding-target": "project",
+              })}
+            >
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="bg-muted rounded-full p-4">
                   <FolderKanban className="text-muted-foreground h-8 w-8" />
                 </div>
                 <h3 className="text-foreground mt-4 font-medium">
                   {projects.length === 0
-                    ? "No tienes proyectos activos"
-                    : "No hay resultados para la búsqueda"}
+                    ? t("emptyNoProjects")
+                    : t("emptyNoResults")}
                 </h3>
                 <p className="text-muted-foreground mt-1 max-w-sm text-sm">
                   {projects.length === 0
-                    ? "Crea un proyecto para gestionar clientes, espacios y presupuestos."
-                    : "Prueba con otros términos o borra el filtro."}
+                    ? t("emptyNoProjectsDescription")
+                    : t("emptyNoResultsDescription")}
                 </p>
                 {projects.length === 0 && (
                   <Button
                     onClick={() => setIsDialogOpen(true)}
                     className="mt-4"
                   >
-                    <Plus className="mr-2 h-4 w-4" /> Nuevo Proyecto
+                    <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
                   </Button>
                 )}
                 {projects.length > 0 && (
@@ -285,7 +362,7 @@ export default function ProjectsPage() {
                     onClick={() => setSearch("")}
                     className="mt-4"
                   >
-                    Limpiar búsqueda
+                    {t("clearSearch")}
                   </Button>
                 )}
               </CardContent>
@@ -301,6 +378,15 @@ export default function ProjectsPage() {
           setIsDialogOpen(false);
           fetchProjects();
         }}
+      />
+
+      <ConfirmDeleteDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title={t("confirmDeleteTitle")}
+        description={t("confirmDeleteDescription")}
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
       />
     </div>
   );

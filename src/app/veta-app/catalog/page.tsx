@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
-import { reportError, formatCurrency } from "@/lib/utils";
+import {
+  getDemoAccountMessage,
+  reportError,
+  formatCurrency,
+} from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -33,6 +37,7 @@ import { toast } from "sonner";
 import type { Product } from "@/types";
 
 export default function CatalogPage() {
+  const t = useTranslations("CatalogPage");
   const profileDefaults = useProfileDefaults();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,9 +83,7 @@ export default function CatalogPage() {
       const { canDeleteProduct } = await import("@/lib/validation");
       const canDelete = await canDeleteProduct(product.id);
       if (!canDelete) {
-        toast.error(
-          "No se puede eliminar el producto porque está asociado a un proyecto"
-        );
+        toast.error(t("toastDeleteBlocked"));
         setDeleteTarget(null);
         return;
       }
@@ -104,33 +107,38 @@ export default function CatalogPage() {
         .eq("id", product.id)
         .select();
       if (deleteError) {
+        const demoMsg = getDemoAccountMessage(deleteError);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+          return;
+        }
         reportError(deleteError, "Error deleting product:");
         if (
           deleteError.code === "42501" ||
           deleteError.message?.includes("permission") ||
           deleteError.message?.includes("policy")
         ) {
-          toast.error("No tienes permisos para eliminar este producto");
+          toast.error(t("toastNoPermission"));
         } else {
           toast.error(
-            `Error al eliminar: ${deleteError.message || "Error desconocido"}`
+            `${t("toastDeleteError")}: ${deleteError.message || t("unknownError")}`
           );
         }
         return;
       }
       if (!deleted || deleted.length === 0) {
-        toast.error(
-          "No se pudo eliminar el producto. Verifica que tengas permisos y que el producto no esté asociado a un proyecto."
-        );
+        toast.error(t("toastDeleteFailed"));
         fetchProducts();
         return;
       }
-      toast.success("Producto eliminado correctamente");
+      toast.success(t("toastDeleted"));
       setDeleteTarget(null);
       fetchProducts();
     } catch (error) {
       reportError(error, "Unexpected error in handleDelete:");
-      toast.error("Error inesperado al eliminar el producto");
+      toast.error(t("toastUnexpectedDeleteError"));
     } finally {
       setDeleteLoading(false);
     }
@@ -142,9 +150,7 @@ export default function CatalogPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ShoppingBag className="text-primary h-8 w-8" />
-            <h1 className="text-3xl font-bold tracking-tight">
-              Catálogo de Productos
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
           <Button
             onClick={() => {
@@ -152,12 +158,10 @@ export default function CatalogPage() {
               setIsDialogOpen(true);
             }}
           >
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Producto
+            <Plus className="mr-2 h-4 w-4" /> {t("newProduct")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          Productos, referencias y costes para usar en presupuestos.
-        </p>
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
       <div className="flex items-center space-x-2">
@@ -168,11 +172,11 @@ export default function CatalogPage() {
           />
           <Input
             type="search"
-            placeholder="Buscar por nombre o referencia…"
+            placeholder={t("searchPlaceholder")}
             className="pl-8"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Buscar productos por nombre o referencia"
+            aria-label={t("searchAria")}
           />
         </div>
       </div>
@@ -198,11 +202,10 @@ export default function CatalogPage() {
                 <ShoppingBag className="text-muted-foreground h-8 w-8" />
               </div>
               <h3 className="text-foreground mt-4 font-medium">
-                No se encontraron productos
+                {t("emptyTitle")}
               </h3>
               <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-                Añade productos al catálogo para usarlos en presupuestos de
-                proyectos.
+                {t("emptyDescription")}
               </p>
               <Button
                 onClick={() => {
@@ -211,32 +214,50 @@ export default function CatalogPage() {
                 }}
                 className="mt-4"
               >
-                <Plus className="mr-2 h-4 w-4" /> Nuevo Producto
+                <Plus className="mr-2 h-4 w-4" /> {t("newProduct")}
               </Button>
             </CardContent>
           </Card>
         ) : (
           products.map((p) => (
-            <Card key={p.id} className="transition-shadow hover:shadow-md">
+            <Card
+              key={p.id}
+              className="relative cursor-pointer transition-shadow hover:shadow-md"
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                setSelectedProduct(p);
+                setIsProductModalOpen(true);
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                setSelectedProduct(p);
+                setIsProductModalOpen(true);
+              }}
+            >
               <CardContent className="flex gap-4 p-4">
                 <button
                   type="button"
-                  className="bg-muted focus-visible:ring-ring relative h-16 w-16 shrink-0 overflow-hidden rounded-md transition-opacity hover:opacity-90 focus-visible:ring-2"
-                  onClick={() => {
+                  className="bg-muted focus-visible:ring-ring relative h-24 w-24 shrink-0 overflow-hidden rounded-md transition-opacity hover:opacity-90 focus-visible:ring-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setSelectedProduct(p);
                     setIsProductModalOpen(true);
                   }}
-                  aria-label={`Ver imagen de ${p.name}`}
+                  aria-label={t("viewImageAria", { name: p.name })}
+                  style={
+                    p.image_url
+                      ? {
+                          backgroundImage: `url(${p.image_url})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                        }
+                      : undefined
+                  }
                 >
-                  {p.image_url ? (
-                    <Image
-                      src={p.image_url}
-                      alt={p.name}
-                      width={64}
-                      height={64}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
+                  {!p.image_url && (
                     <div className="flex h-full w-full items-center justify-center">
                       <ImageIcon
                         className="text-muted-foreground h-6 w-6"
@@ -246,18 +267,22 @@ export default function CatalogPage() {
                   )}
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className="text-foreground truncate font-medium">
+                  <button
+                    type="button"
+                    className="text-foreground line-clamp-2 w-full text-left font-medium hover:underline"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedProduct(p);
+                      setIsProductModalOpen(true);
+                    }}
+                  >
                     {p.name}
-                  </p>
-                  <p className="text-muted-foreground font-mono text-xs">
-                    {p.reference_code}
-                  </p>
-                  <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-sm">
-                    {p.category && <span>{p.category}</span>}
-                    {p.supplier?.name && (
-                      <span className="truncate">{p.supplier.name}</span>
-                    )}
-                  </div>
+                  </button>
+                  {p.supplier?.name && (
+                    <p className="text-muted-foreground mt-1 truncate text-sm">
+                      {p.supplier.name}
+                    </p>
+                  )}
                   <p className="text-foreground mt-1 text-sm font-medium tabular-nums">
                     {formatCurrency(
                       Number(p.cost_price),
@@ -265,36 +290,47 @@ export default function CatalogPage() {
                     )}
                   </p>
                 </div>
+              </CardContent>
+              <div
+                className="absolute right-3 bottom-3 z-10"
+                style={{ inset: "auto 0.75rem 0.75rem auto" }}
+              >
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      aria-label="Acciones del producto"
+                      className="h-8 w-8"
+                      aria-label={t("actionsAria")}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" side="top">
                     <DropdownMenuItem
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setEditingProduct(p);
                         setIsDialogOpen(true);
                       }}
                     >
                       <Pencil className="mr-2 h-4 w-4" />
-                      Editar
+                      {t("edit")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => handleDeleteClick(p)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(p);
+                      }}
                       className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
+                      {t("delete")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </CardContent>
+              </div>
             </Card>
           ))
         )}
@@ -319,8 +355,8 @@ export default function CatalogPage() {
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="¿Eliminar producto?"
-        description="Esta acción no se puede deshacer. No podrá eliminarse si está asociado a un proyecto."
+        title={t("confirmDeleteTitle")}
+        description={t("confirmDeleteDescription")}
         onConfirm={handleConfirmDelete}
         loading={deleteLoading}
       />

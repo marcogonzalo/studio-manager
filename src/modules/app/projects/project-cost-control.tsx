@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
@@ -40,16 +41,15 @@ import {
 import { BudgetLineDialog } from "@/components/dialogs/budget-line-dialog";
 import { toast } from "sonner";
 import {
-  getBudgetCategoryLabel,
-  getBudgetSubcategoryLabel,
   getPhaseLabel,
+  getDemoAccountMessage,
   reportError,
   COST_CATEGORIES,
   formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 
 import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
-import { ProjectTabContent } from "./project-tab-content";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 export function ProjectCostControl({
   projectId,
@@ -63,7 +63,58 @@ export function ProjectCostControl({
   /** Si true, muestra margen y desviación %. Precio de venta y coste siempre se muestran. */
   advancedCostOptionsEnabled?: boolean;
 }) {
+  const t = useTranslations("ProjectModuleCostControl");
   const supabase = getSupabaseClient();
+  const categoryLabels: Record<BudgetCategory, string> = {
+    construction: t("budgetCategory.construction"),
+    own_fees: t("budgetCategory.own_fees"),
+    external_services: t("budgetCategory.external_services"),
+    operations: t("budgetCategory.operations"),
+  };
+  const subcategoryLabels: Record<BudgetCategory, Record<string, string>> = {
+    construction: {
+      demolition: t("budgetSubcategory.construction.demolition"),
+      masonry: t("budgetSubcategory.construction.masonry"),
+      electricity: t("budgetSubcategory.construction.electricity"),
+      plumbing: t("budgetSubcategory.construction.plumbing"),
+      interior_painting: t("budgetSubcategory.construction.interior_painting"),
+      exterior_painting: t("budgetSubcategory.construction.exterior_painting"),
+      domotics: t("budgetSubcategory.construction.domotics"),
+      carpentry: t("budgetSubcategory.construction.carpentry"),
+      locksmithing: t("budgetSubcategory.construction.locksmithing"),
+      hvac: t("budgetSubcategory.construction.hvac"),
+      flooring: t("budgetSubcategory.construction.flooring"),
+      tiling: t("budgetSubcategory.construction.tiling"),
+      other: t("budgetSubcategory.construction.other"),
+    },
+    own_fees: {
+      design: t("budgetSubcategory.own_fees.design"),
+      executive_project: t("budgetSubcategory.own_fees.executive_project"),
+      site_supervision: t("budgetSubcategory.own_fees.site_supervision"),
+      management: t("budgetSubcategory.own_fees.management"),
+      other: t("budgetSubcategory.own_fees.other"),
+    },
+    external_services: {
+      technical_architect: t(
+        "budgetSubcategory.external_services.technical_architect"
+      ),
+      engineering: t("budgetSubcategory.external_services.engineering"),
+      logistics: t("budgetSubcategory.external_services.logistics"),
+      permits: t("budgetSubcategory.external_services.permits"),
+      consulting: t("budgetSubcategory.external_services.consulting"),
+      other: t("budgetSubcategory.external_services.other"),
+    },
+    operations: {
+      shipping: t("budgetSubcategory.operations.shipping"),
+      packaging: t("budgetSubcategory.operations.packaging"),
+      transport: t("budgetSubcategory.operations.transport"),
+      storage: t("budgetSubcategory.operations.storage"),
+      insurance: t("budgetSubcategory.operations.insurance"),
+      customs: t("budgetSubcategory.operations.customs"),
+      handling: t("budgetSubcategory.operations.handling"),
+      other: t("budgetSubcategory.operations.other"),
+    },
+  };
   const canEdit = !readOnly && !disabled;
   const [project, setProject] = useState<{ currency?: string } | null>(null);
   const {
@@ -117,8 +168,15 @@ export function ProjectCostControl({
       .delete()
       .eq("id", id);
     if (error) {
-      toast.error("Error al eliminar la partida");
-      reportError(error, "Error deleting budget line:");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al eliminar la partida");
+        reportError(error, "Error deleting budget line:");
+      }
     } else {
       toast.success("Partida eliminada");
       refetchBudgetLines();
@@ -188,13 +246,13 @@ export function ProjectCostControl({
 
   // Get bar color based on deviation
   const getDeviationBarColor = (percentage: number) => {
-    if (percentage < 100) return "bg-primary";
-    if (percentage <= 101) return "bg-yellow-500";
+    if (percentage <= 100) return "bg-primary";
+    if (percentage > 100 && percentage <= 101) return "bg-yellow-500";
     return "bg-destructive";
   };
 
   const getDeviationTextColor = (percentage: number) => {
-    if (percentage < 100) return "text-primary";
+    if (percentage <= 100) return "text-primary";
     if (percentage <= 101) return "text-yellow-600 dark:text-yellow-400";
     return "text-destructive";
   };
@@ -206,7 +264,11 @@ export function ProjectCostControl({
     if (estimated === 0 && actual === 0)
       return { icon: Minus, color: "text-muted-foreground", text: "-" };
     if (actual === 0)
-      return { icon: Minus, color: "text-muted-foreground", text: "Pendiente" };
+      return {
+        icon: Minus,
+        color: "text-muted-foreground",
+        text: t("pending"),
+      };
 
     const deviation = ((actual - estimated) / estimated) * 100;
 
@@ -259,20 +321,16 @@ export function ProjectCostControl({
         disabledMessage="El control de costes no está incluido en tu plan actual."
       >
         <div className="space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h3 className="text-lg font-medium">Control de Costes</h3>
-              <p className="text-muted-foreground text-sm">
-                Seguimiento interno de estimado vs real
-              </p>
-            </div>
+          <TabSectionHeader
+            title="Control de Costes"
+            subtitle="Seguimiento interno de estimado vs real"
+          >
             {!readOnly && (
               <Button onClick={handleAddBudgetLine} disabled={!canEdit}>
                 <Plus className="mr-2 h-4 w-4" /> Nueva Partida
               </Button>
             )}
-          </div>
+          </TabSectionHeader>
 
           {/* Cost Totalization Summary */}
           <Card>
@@ -350,7 +408,7 @@ export function ProjectCostControl({
                           <ChevronDown
                             className={`h-4 w-4 transition-transform ${openSections[category] ? "" : "-rotate-90"}`}
                           />
-                          {getBudgetCategoryLabel(category)}
+                          {categoryLabels[category] ?? category}
                         </CardTitle>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
@@ -400,10 +458,9 @@ export function ProjectCostControl({
                             return (
                               <TableRow key={line.id}>
                                 <TableCell className="font-medium">
-                                  {getBudgetSubcategoryLabel(
-                                    category,
+                                  {subcategoryLabels[category]?.[
                                     line.subcategory
-                                  )}
+                                  ] ?? line.subcategory}
                                 </TableCell>
                                 <TableCell className="text-muted-foreground max-w-[200px] truncate">
                                   {line.description || "-"}

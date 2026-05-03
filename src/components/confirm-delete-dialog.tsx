@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,11 +28,14 @@ export function ConfirmDeleteDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Eliminar",
-  cancelLabel = "Cancelar",
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   loading = false,
 }: ConfirmDeleteDialogProps) {
+  const t = useTranslations("ConfirmDeleteDialog");
+  const confirmText = confirmLabel ?? t("confirm");
+  const cancelText = cancelLabel ?? t("cancel");
   const handleConfirm = async () => {
     try {
       await onConfirm();
@@ -49,9 +53,7 @@ export function ConfirmDeleteDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>
-            {cancelLabel}
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
               e.preventDefault();
@@ -60,7 +62,7 @@ export function ConfirmDeleteDialog({
             disabled={loading}
             className="bg-destructive hover:bg-destructive/90 text-white"
           >
-            {loading ? "Eliminando…" : confirmLabel}
+            {loading ? t("deleting") : confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

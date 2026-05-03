@@ -33,6 +33,13 @@ globs: src/**/*.tsx, src/**/*.ts
 - **Glow Effects:** Use `animate-glow` class for primary CTAs and important buttons.
 - **Skeleton Loading:** Use `Skeleton` component from `@/components/ui/skeleton` for loading states instead of text placeholders.
 
+## DOM & Nesting (efficiency)
+
+- **Fragment con un solo hijo:** Usar `<>...</>` solo cuando el padre exija múltiples hijos (ej. key en listas). Si el hijo único es un div, no hace falta Fragment.
+- **Div solo para una clase:** Valorar si esa clase puede ir en el padre o en el hijo (p. ej. `flex`, `gap`, `space-y`) y evitar el wrapper.
+- **TooltipProvider:** Un solo provider a nivel de sección o página cuando sea posible; no uno por fila o por ítem.
+- **TableCell + alineación:** Preferir `className` en `TableCell` (p. ej. `flex items-center justify-end`) en lugar de un div intermedio solo para alinear.
+
 ## Visual Enhancements
 
 - **Gradients:** Use radial/mesh gradients (`bg-gradient-to-br`, `from-primary/10 via-primary/5`) for CTAs and hero sections.
@@ -42,7 +49,7 @@ globs: src/**/*.tsx, src/**/*.ts
 
 ## Supabase Client
 
-- **Singleton:** Use the singleton instance from `@/lib/supabase`.
+- **Client-side:** Use `getSupabaseClient()` from `@/lib/supabase` (re-exports from `client.ts`). For Server Components or server code, use `createClient` from `@/lib/supabase/server`.
 - **Types:** Import database types from `@/types` or generated Supabase types.
 - **Error Handling:** Always check `error` returned by Supabase calls.
 

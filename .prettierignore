@@ -9,3 +9,5 @@ coverage
 *.min.js
 package-lock.json
 pnpm-lock.yaml
+# Go template syntax in attributes breaks the HTML parser
+supabase/templates

@@ -13,6 +13,10 @@ alwaysApply: true
 
 When either scenario is triggered, run **in this order**:
 
+## 0. Branch
+
+- If currently on `main`, create and switch to a feature branch (e.g. `feat/...`, `fix/...`, `chore/...`) before making any changes. Never commit directly to `main`.
+
 ## 1. Clean
 
 - Remove `console.log`, `debugger`, and debug code.
@@ -25,11 +29,12 @@ When either scenario is triggered, run **in this order**:
 - Run the formatter (e.g. `npm run format` or `npx prettier --write .`). Verify there are no format-only diffs left; fix any reported issues.
 - Do this **before** running tests and build so the build sees the final formatted code.
 
-## 3. Verify everything works
+## 3. Verify everything works (in container)
 
-- **Tests:** Run the test suite (e.g. `npm run test`). Fix failures before continuing. Minimum 80% coverage for new code (per project standards).
-- **Build:** Run the build (e.g. `npm run build`). Ensure it completes without errors.
-- Do not proceed to the next step if tests or build fail.
+- **Linter:** Run lint **inside the Docker/dev container** (e.g. `docker compose exec <service> npm run lint`). Fix all errors before continuing.
+- **Tests:** Run the test suite **inside the Docker/dev container** (e.g. `docker compose exec <service> npm run test`). Fix failures before continuing. Minimum 80% coverage for new code (per project standards).
+- **Build:** Run the build **inside the Docker/dev container** (e.g. `docker compose exec <service> npm run build`). Ensure it completes without errors.
+- Do not proceed to the next step if lint, tests, or build fail.
 
 ## 4. Update documentation
 
@@ -37,18 +42,26 @@ When either scenario is triggered, run **in this order**:
 - Update README, API docs, or guides if the change requires it.
 - Include these changes in the documentation commit or in previous commits if already ready.
 
-## 5. Commits
+## 5. New routes and middleware (public vs private)
+
+- If the changes **add new route(s)** (new segments under `app/` that are not under an existing known layout), decide whether each new route must be **public** or **private**:
+  - **Known folders (assume same behaviour):** `(marketing)` → public; `veta-app` → private; `(auth)` → public (sign-in, sign-up, callback, auth/complete). No need to ask.
+  - **Unknown / new top-level route or new route group:** Ask the user: “¿Esta ruta debe ser pública (accesible sin sesión) o privada?”
+  - If the user says **public** (or it belongs to a public group), add the path to `PUBLIC_ROUTES` in `src/lib/supabase/middleware.ts` so unauthenticated users are not redirected to sign-in.
+  - If **private**, no change in middleware (protected by default).
+
+## 6. Commits
 
 - Review `git status` and ensure all relevant changes are included.
 - Create commits using **Conventional Commits** (`feat:`, `fix:`, `chore:`, `docs:`, etc.).
 - Clear, descriptive messages per logical set of changes.
 - Optional: a final commit `docs: update progress and release notes` if documentation was updated in step 4.
 
-## 6. Push to remote
+## 7. Push to remote
 
 - Push the branch to the remote.
 
-## 7. Create the PR (only if user asked to "generate PR")
+## 8. Create the PR (only if user asked to "generate PR")
 
 - **Only execute this step if the user explicitly asked to generate/create the PR.**
 - **If the user only asked to "push changes" or "subir cambios", skip this step.**

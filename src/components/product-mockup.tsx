@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import {
   FolderKanban,
   Users,
@@ -13,6 +14,7 @@ import { useReducedMotion } from "@/lib/use-reduced-motion";
 const finalState = { opacity: 1, y: 0, x: 0, scale: 1, rotate: -6 };
 
 export function ProductMockup() {
+  const t = useTranslations("ProductMockup");
   const reducedMotion = useReducedMotion();
   const mainTransition = reducedMotion
     ? { duration: 0, delay: 0 }
@@ -22,7 +24,7 @@ export function ProductMockup() {
     : { opacity: 0, y: 20, scale: 0.95 };
 
   return (
-    <div className="relative mx-auto w-full max-w-lg">
+    <div className="relative mx-auto w-full max-w-lg -translate-x-[10px]">
       {/* Glow background */}
       <div className="from-primary/20 via-primary/5 absolute -inset-4 rounded-3xl bg-gradient-to-br to-transparent blur-2xl" />
 
@@ -42,7 +44,7 @@ export function ProductMockup() {
           </div>
           <div className="flex-1 text-center">
             <span className="text-muted-foreground text-xs font-medium">
-              Veta — Dashboard
+              {t("title")}
             </span>
           </div>
         </div>
@@ -53,7 +55,7 @@ export function ProductMockup() {
           <div className="grid grid-cols-3 gap-3">
             <MockStatCard
               icon={FolderKanban}
-              label="Proyectos"
+              label={t("projects")}
               value="12"
               trend="+3"
               color="text-primary"
@@ -63,7 +65,7 @@ export function ProductMockup() {
             />
             <MockStatCard
               icon={Users}
-              label="Clientes"
+              label={t("clients")}
               value="28"
               trend="+5"
               color="text-chart-2"
@@ -73,7 +75,7 @@ export function ProductMockup() {
             />
             <MockStatCard
               icon={TrendingUp}
-              label="Ingresos"
+              label={t("revenue")}
               value="€84k"
               trend="+12%"
               color="text-chart-4"
@@ -86,26 +88,26 @@ export function ProductMockup() {
           {/* Fake project list */}
           <div className="space-y-2">
             <p className="text-muted-foreground px-1 text-xs font-medium">
-              Proyectos Recientes
+              {t("recentProjects")}
             </p>
             <MockProjectRow
-              name="Reforma Ático Salamanca"
-              client="María García"
-              status="Obra y ejecución"
+              name={t("project1Name")}
+              client={t("project1Client")}
+              status={t("projectStatusConstruction")}
               delay={1.1}
               reducedMotion={reducedMotion}
             />
             <MockProjectRow
-              name="Hotel Boutique Malasaña"
-              client="Grupo Hostelero BCN"
-              status="Diseño ejecutivo"
+              name={t("project2Name")}
+              client={t("project2Client")}
+              status={t("projectStatusExecutiveDesign")}
               delay={1.3}
               reducedMotion={reducedMotion}
             />
             <MockProjectRow
-              name="Oficinas Coworking"
-              client="TechSpace S.L."
-              status="Obra y ejecución"
+              name={t("project3Name")}
+              client={t("project3Client")}
+              status={t("projectStatusConstruction")}
               delay={1.5}
               reducedMotion={reducedMotion}
             />
@@ -133,7 +135,7 @@ export function ProductMockup() {
               }
         }
       >
-        3 nuevos proyectos
+        {t("newProjectsBadge")}
       </motion.div>
 
       {/* Floating catalog card */}
@@ -155,8 +157,10 @@ export function ProductMockup() {
           <ShoppingBag className="h-4 w-4" />
         </div>
         <div>
-          <p className="text-foreground text-xs font-medium">Catálogo</p>
-          <p className="text-muted-foreground text-[10px]">248 productos</p>
+          <p className="text-foreground text-xs font-medium">{t("catalog")}</p>
+          <p className="text-muted-foreground text-[10px]">
+            {t("catalogCount")}
+          </p>
         </div>
       </motion.div>
     </div>

@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
+// Sin Font.register externo: las URLs a Google Fonts provocan "Failed to fetch" en toBlob()
+// al renderizar. Usamos Helvetica (integrada) para que el PDF se genere sin peticiones externas.
 import type {
   Project,
   ProjectBudgetLine,
@@ -50,13 +52,13 @@ const styles = StyleSheet.create({
     borderBottomStyle: "solid",
   },
   title: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: "bold",
     color: colors.primary,
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textLight,
     marginBottom: 4,
   },
@@ -64,7 +66,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "bold",
     color: colors.primary,
     marginBottom: 12,
@@ -72,6 +74,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     borderBottomStyle: "solid",
+  },
+  clientArchitectRow: {
+    flexDirection: "row",
+    marginTop: 12,
+    gap: 24,
+  },
+  clientArchitectCol: {
+    flex: 1,
+  },
+  clientArchitectTitle: {
+    fontSize: 11,
+    fontWeight: "bold",
+    color: colors.primary,
+    marginBottom: 4,
+  },
+  clientArchitectText: {
+    fontSize: 9,
+    color: colors.text,
+    marginBottom: 2,
   },
   locationGroup: {
     marginBottom: 20,
@@ -144,7 +165,7 @@ const styles = StyleSheet.create({
     width: "8%",
   },
   colName: {
-    width: "44%",
+    width: "40%",
   },
   colPrice: {
     width: "16%",
@@ -158,14 +179,14 @@ const styles = StyleSheet.create({
     width: "20%",
     textAlign: "right",
   },
+  colEmpty: {
+    width: "4%",
+  },
   budgetLineGroup: {
     marginBottom: 15,
     backgroundColor: colors.card,
-    padding: 12,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderStyle: "solid",
+    padding: 0,
+    width: "100%",
   },
   budgetLineHeader: {
     backgroundColor: colors.sectionBg,
@@ -215,7 +236,7 @@ const styles = StyleSheet.create({
     width: "20%",
   },
   summary: {
-    marginTop: 25,
+    marginTop: 15,
     backgroundColor: colors.card,
     padding: 15,
     borderRadius: 4,
@@ -269,7 +290,51 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontStyle: "italic",
   },
+  vetaHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    borderBottomStyle: "solid",
+  },
+  vetaHeaderLogo: {
+    width: 32,
+    height: 24,
+    objectFit: "contain",
+  },
+  vetaHeaderName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: colors.primary,
+    letterSpacing: 0.5,
+  },
+  vetaFooter: {
+    marginTop: 24,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    borderTopStyle: "solid",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  vetaFooterLogo: {
+    width: 16,
+    height: 12,
+    objectFit: "contain",
+  },
+  vetaFooterText: {
+    fontSize: 8,
+    color: colors.textLight,
+  },
 });
+
+/** Fallback path for logo (relative; react-pdf often needs absolute URL, so caller should pass vetaLogoUrl). */
+const VETA_LOGO_PATH = "/img/veta-logo.png";
 
 interface ProjectPDFProps {
   project: Project & {
@@ -285,6 +350,10 @@ interface ProjectPDFProps {
   taxRate?: number;
   architectName?: string;
   architectEmail?: string;
+  /** When true (pdf_export_mode basic or plus), show Veta logo and name in header and branding footer. */
+  showVetaBranding?: boolean;
+  /** Absolute URL for the Veta logo (react-pdf does not resolve relative paths). E.g. `${origin}/img/veta-logo.png` */
+  vetaLogoUrl?: string;
 }
 
 // Helper function to get category label
@@ -307,7 +376,13 @@ export function ProjectPDF({
   taxRate = 0,
   architectName,
   architectEmail,
+  showVetaBranding = false,
+  vetaLogoUrl,
 }: ProjectPDFProps) {
+  const logoSrc = vetaLogoUrl ?? VETA_LOGO_PATH;
+  const logoIsEmbedded =
+    typeof logoSrc === "string" && logoSrc.startsWith("data:");
+
   // Filter out excluded items
   const includedItems = items.filter((item) => !item.is_excluded);
 
@@ -378,9 +453,31 @@ export function ProjectPDF({
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {showVetaBranding && (
+          <View style={styles.vetaHeader}>
+            {logoIsEmbedded && (
+              // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image has no alt prop
+              <Image
+                src={logoSrc}
+                style={styles.vetaHeaderLogo}
+                cache={false}
+              />
+            )}
+            <Text style={styles.vetaHeaderName}>Veta</Text>
+          </View>
+        )}
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Presupuesto de {project.name}</Text>
+
+          <Text style={[styles.subtitle, { marginTop: 12 }]}>
+            Fecha:{" "}
+            {new Date().toLocaleDateString("es-ES", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </Text>
 
           {project.description && (
             <Text
@@ -390,43 +487,54 @@ export function ProjectPDF({
             </Text>
           )}
 
-          {project.client && (
-            <Text style={[styles.subtitle, { marginTop: 8 }]}>
-              Cliente: {project.client.full_name}
-            </Text>
-          )}
-
-          <Text style={[styles.subtitle, { marginTop: 8 }]}>
-            Fecha:{" "}
-            {new Date().toLocaleDateString("es-ES", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </Text>
-
-          {(architectName || architectEmail) && (
-            <View
-              style={{
-                marginTop: 16,
-                paddingTop: 12,
-                borderTopWidth: 1,
-                borderTopColor: colors.border,
-                borderTopStyle: "solid",
-              }}
-            >
-              {architectName && (
-                <Text style={[styles.subtitle, { fontWeight: "bold" }]}>
-                  Arquitecto/a: {architectName}
-                </Text>
-              )}
-              {architectEmail && (
-                <Text style={[styles.subtitle, { marginTop: 4 }]}>
-                  {architectEmail}
-                </Text>
+          <View style={styles.clientArchitectRow}>
+            <View style={styles.clientArchitectCol}>
+              <Text style={styles.clientArchitectTitle}>Cliente</Text>
+              {project.client ? (
+                <>
+                  <Text style={styles.clientArchitectText}>
+                    {project.client.full_name}
+                  </Text>
+                  {project.client.address && (
+                    <Text style={styles.clientArchitectText}>
+                      {project.client.address}
+                    </Text>
+                  )}
+                  {project.client.email && (
+                    <Text style={styles.clientArchitectText}>
+                      {project.client.email}
+                    </Text>
+                  )}
+                  {project.client.phone && (
+                    <Text style={styles.clientArchitectText}>
+                      {project.client.phone}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <Text style={styles.clientArchitectText}>—</Text>
               )}
             </View>
-          )}
+            <View style={styles.clientArchitectCol}>
+              <Text style={styles.clientArchitectTitle}>Arquitecto/a</Text>
+              {architectName || architectEmail ? (
+                <>
+                  {architectName && (
+                    <Text style={styles.clientArchitectText}>
+                      {architectName}
+                    </Text>
+                  )}
+                  {architectEmail && (
+                    <Text style={styles.clientArchitectText}>
+                      {architectEmail}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <Text style={styles.clientArchitectText}>—</Text>
+              )}
+            </View>
+          </View>
         </View>
 
         {/* Budget Lines by Phase and Category */}
@@ -499,7 +607,7 @@ export function ProjectPDF({
                         key={category}
                         style={[
                           styles.budgetLineGroup,
-                          { marginLeft: 10, marginBottom: 12 },
+                          { marginLeft: 10, marginRight: 10, marginBottom: 12 },
                         ]}
                       >
                         <View style={styles.budgetLineHeader}>
@@ -545,10 +653,27 @@ export function ProjectPDF({
               );
 
               return (
-                <View key={spaceName} style={styles.locationGroup}>
-                  <View style={styles.locationHeader}>
-                    <Text style={styles.locationName}>{spaceName}</Text>
-                    <Text style={styles.locationSubtotal}>
+                <View key={spaceName} style={styles.budgetLineGroup}>
+                  <View
+                    style={[
+                      styles.budgetLineHeader,
+                      { backgroundColor: colors.primary, marginBottom: 10 },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.budgetLineName,
+                        { color: "#FFFFFF", fontSize: 13 },
+                      ]}
+                    >
+                      {spaceName}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.budgetLineSubtotal,
+                        { color: "#FFFFFF", fontSize: 12 },
+                      ]}
+                    >
                       Subtotal: {formatCurrency(spaceSubtotal)}
                     </Text>
                   </View>
@@ -592,18 +717,21 @@ export function ProjectPDF({
                           Total
                         </Text>
                       </View>
+                      <View style={styles.colEmpty}>
+                        <Text style={styles.tableHeaderText}></Text>
+                      </View>
                     </View>
 
                     {/* Table Rows */}
                     {spaceItems.map((item) => (
                       <View key={item.id} style={styles.tableRow}>
                         <View style={styles.colImage}>
-                          {item.image_url ? (
+                          {item.image_url?.startsWith("data:") ? (
                             // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image has no alt prop
                             <Image
                               src={item.image_url}
                               style={styles.itemImage}
-                              cache={false}
+                              cache={true}
                             />
                           ) : (
                             <View style={{ width: 20, height: 20 }} />
@@ -652,6 +780,7 @@ export function ProjectPDF({
                             {formatCurrency(item.unit_price * item.quantity)}
                           </Text>
                         </View>
+                        <View style={styles.colEmpty} />
                       </View>
                     ))}
                   </View>
@@ -702,6 +831,21 @@ export function ProjectPDF({
             </View>
           </View>
         </View>
+        {showVetaBranding && (
+          <View style={styles.vetaFooter} fixed>
+            {logoIsEmbedded && (
+              // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image has no alt prop
+              <Image
+                src={logoSrc}
+                style={styles.vetaFooterLogo}
+                cache={false}
+              />
+            )}
+            <Text style={styles.vetaFooterText}>
+              Document generated with Veta - www.veta.pro
+            </Text>
+          </View>
+        )}
       </Page>
     </Document>
   );

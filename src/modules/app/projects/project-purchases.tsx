@@ -23,7 +23,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
-import { ProjectTabContent } from "./project-tab-content";
+import { getDemoAccountMessage } from "@/lib/utils";
+import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface PurchaseOrder {
   id: string;
@@ -55,9 +56,9 @@ const STATUS_LABELS: Record<string, string> = {
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-foreground",
   sent: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
-  confirmed: "bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary",
-  received:
+  confirmed:
     "bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300",
+  received: "bg-primary/5 text-primary dark:bg-primary/10 dark:text-primary",
   cancelled:
     "bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive",
 };
@@ -173,7 +174,14 @@ export function ProjectPurchases({
       .eq("id", orderId);
 
     if (error) {
-      toast.error("Error al eliminar la orden");
+      const demoMsg = getDemoAccountMessage(error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+      } else {
+        toast.error("Error al eliminar la orden");
+      }
     } else {
       toast.success("Orden eliminada");
       fetchOrders();
@@ -201,17 +209,14 @@ export function ProjectPurchases({
       disabled={disabled}
       disabledMessage="Las órdenes de compra no están incluidas en tu plan actual."
     >
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <CardTitle>Órdenes de Compra</CardTitle>
+      <div className="space-y-6">
+        <TabSectionHeader title="Órdenes de compra y fabricación">
           {!readOnly && (
-            <div className="flex gap-2">
-              <Button onClick={handleCreateNew} disabled={loading}>
-                <Plus className="mr-2 h-4 w-4" /> Nueva Orden
-              </Button>
-            </div>
+            <Button onClick={handleCreateNew} disabled={loading}>
+              <Plus className="mr-2 h-4 w-4" /> Nueva Orden
+            </Button>
           )}
-        </div>
+        </TabSectionHeader>
 
         {orders.length === 0 ? (
           <Card>
