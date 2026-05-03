@@ -112,7 +112,7 @@ export function SignUpForm({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to send magic link");
+        throw new Error(errorData.error || "Failed to send confirmation email");
       }
       const billingPeriod =
         billingParam?.toLowerCase() === "annual" ? "annual" : "monthly";
@@ -158,7 +158,9 @@ export function SignUpForm({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to resend magic link");
+        throw new Error(
+          errorData.error || "Failed to resend confirmation email"
+        );
       }
       toast.success(t("toastResend"));
     } catch (error: unknown) {
