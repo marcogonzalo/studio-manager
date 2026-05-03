@@ -94,7 +94,7 @@ export function ProductImageUpload({
         setIsUploading(false);
       }
     },
-    [productId, projectId, onUploadSuccess, onUploadError]
+    [productId, projectId, onUploadSuccess, onUploadError, t]
   );
 
   const handleFile = useCallback(

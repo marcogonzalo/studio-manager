@@ -101,7 +101,7 @@ export function DocumentFileUpload({
         setIsUploading(false);
       }
     },
-    [documentId, projectId, onBeforeUpload, onUploadSuccess, onUploadError]
+    [documentId, projectId, onBeforeUpload, onUploadSuccess, onUploadError, t]
   );
 
   const handleDrop = useCallback(

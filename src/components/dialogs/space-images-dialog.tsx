@@ -39,7 +39,6 @@ export function SpaceImagesDialog({
   const t = useTranslations("DialogSpaceImages");
   const supabase = getSupabaseClient();
   const [images, setImages] = useState<Image[]>([]);
-  const [loading, setLoading] = useState(false);
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [expandedImage, setExpandedImage] = useState<Image | null>(null);
 

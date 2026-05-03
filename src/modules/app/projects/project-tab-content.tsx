@@ -32,7 +32,8 @@ export function TabSectionHeader({
 
 /**
  * Wrapper estándar para el contenido de cada pestaña de proyecto.
- * - readOnly: no se usa aquí; cada tab oculta botones de edición cuando readOnly.
+ * - readOnly: no se pasa aquí; cada tab lo recibe en props y oculta edición. El dashboard
+ *   combina `readOnly` con `disabled` del plan al llamar a este wrapper (`disabled || readOnly`).
  * - disabled: cuando la funcionalidad no está en el plan, muestra el contenido
  *   con overlay y mensaje "Mejora tu plan" (estilo vista de costos).
  * Ambos estados pueden darse a la vez.

@@ -145,7 +145,7 @@ export function DocumentDialog({
     ]);
     if (error) throw error;
     documentRowCreatedForUploadRef.current = true;
-  }, [documentIdForUpload, projectId, form]);
+  }, [documentIdForUpload, projectId, form, t]);
 
   async function onSubmit(values: FormValues) {
     setLoading(true);
@@ -240,7 +240,12 @@ export function DocumentDialog({
           <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              void form.handleSubmit(onSubmit)(e);
+            }}
+            className="space-y-4"
+          >
             <FormField
               control={form.control}
               name="name"

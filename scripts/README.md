@@ -16,7 +16,7 @@ Con Supabase local en marcha (`supabase start`), el comando lee `API_URL` y `SER
 SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY=<key> npx tsx scripts/seed-demo-account.ts
 ```
 
-- **Local:** Tras `supabase start`, `npm run seed:demo` suele bastar. A mano: URL y clave de `supabase status` (JSON: `API_URL`, `SERVICE_ROLE_KEY`).
+- **Local:** Tras `supabase start`, `npm run seed:demo` suele bastar (lee `API_URL` y `SERVICE_ROLE_KEY` de `supabase status`; no mezcla una variable de entorno con otra del status: o defines **las dos** `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`, o ninguna). A mano: mismas claves en el JSON de `supabase status`.
 - **Cloud:** Use your project's API URL and Service Role key from Supabase Dashboard → Settings → API.
 
 The script is idempotent: it deletes existing demo data then re-seeds. It creates the demo user via Auth Admin if it does not exist.

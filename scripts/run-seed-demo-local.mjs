@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Runs scripts/seed-demo-account.ts with SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY.
- * - If both env vars are already set, uses them (e.g. remote).
- * - Otherwise reads `supabase status --output json` (local dev).
+ * - If both env vars are set, uses them (e.g. remote).
+ * - If neither is set, reads both from `supabase status --output json` (local dev).
+ * - If only one is set, exits with an error (no mixing env with status).
  */
 
 import { execSync } from "node:child_process";
@@ -14,10 +15,18 @@ const projectRoot = path.resolve(
   ".."
 );
 
-let supabaseUrl = process.env.SUPABASE_URL?.trim();
-let serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+const envUrl = process.env.SUPABASE_URL?.trim();
+const envKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+const hasUrl = Boolean(envUrl);
+const hasKey = Boolean(envKey);
 
-if (!supabaseUrl || !serviceRoleKey) {
+let supabaseUrl;
+let serviceRoleKey;
+
+if (hasUrl && hasKey) {
+  supabaseUrl = envUrl;
+  serviceRoleKey = envKey;
+} else if (!hasUrl && !hasKey) {
   try {
     const raw = execSync("supabase status --output json", {
       encoding: "utf8",
@@ -25,14 +34,19 @@ if (!supabaseUrl || !serviceRoleKey) {
       stdio: ["ignore", "pipe", "pipe"],
     });
     const status = JSON.parse(raw);
-    supabaseUrl = supabaseUrl || status.API_URL;
-    serviceRoleKey = serviceRoleKey || status.SERVICE_ROLE_KEY;
+    supabaseUrl = status.API_URL;
+    serviceRoleKey = status.SERVICE_ROLE_KEY;
   } catch {
     console.error(
       "No se pudieron obtener credenciales: define SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY, o ejecuta `supabase start` en este proyecto."
     );
     process.exit(1);
   }
+} else {
+  console.error(
+    "Configuración incompleta: usa las dos variables juntas (SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY) o ninguna para leer ambas de `supabase status`."
+  );
+  process.exit(1);
 }
 
 if (!supabaseUrl || !serviceRoleKey) {

@@ -7,7 +7,7 @@ import { useAuth } from "@/components/auth-provider";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Rocket, FolderKanban, Users, Truck, ShoppingBag } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { PlanConfig } from "@/types";
@@ -122,7 +122,7 @@ export default function SettingsPlanPage() {
       }
       setHistoryLoading(false);
     })();
-  }, [user?.id]);
+  }, [user?.id, supabase]);
 
   useEffect(() => {
     if (!user?.id) {
@@ -165,7 +165,7 @@ export default function SettingsPlanPage() {
       });
       setUsageLoading(false);
     })();
-  }, [user?.id]);
+  }, [user?.id, supabase]);
 
   if (planLoading || !user) {
     return <PageLoading variant="form" />;

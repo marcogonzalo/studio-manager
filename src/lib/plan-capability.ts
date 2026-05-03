@@ -14,21 +14,20 @@ const CONSUMABLE_KEYS = [
   "storage_limit_mb",
 ] as const;
 
-const MODALITY_KEYS = [
-  "pdf_export_mode",
-  "multi_currency_per_project",
-  "purchase_orders",
-  "costs_management",
-  "payments_management",
-  "documents",
-  "notes",
-  "summary",
-  "support_level",
-] as const;
+export type ModalityFeatureKey =
+  | "pdf_export_mode"
+  | "multi_currency_per_project"
+  | "purchase_orders"
+  | "costs_management"
+  | "payments_management"
+  | "documents"
+  | "notes"
+  | "summary"
+  | "support_level";
 
 export type PlanFeatureKey =
   | (typeof CONSUMABLE_KEYS)[number]
-  | (typeof MODALITY_KEYS)[number];
+  | ModalityFeatureKey;
 
 const CONSUMABLE_SET = new Set<string>(CONSUMABLE_KEYS);
 

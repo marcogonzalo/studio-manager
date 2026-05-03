@@ -317,7 +317,7 @@ export function ProjectDashboard({
 
   return (
     <ProjectTabContent
-      disabled={disabled}
+      disabled={disabled || readOnly}
       disabledMessage={t("disabledMessage")}
     >
       <div className="space-y-6">

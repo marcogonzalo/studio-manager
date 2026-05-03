@@ -80,7 +80,9 @@ export function DemoRequestForm() {
       <CardContent>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={(e) => {
+              void form.handleSubmit(onSubmit)(e);
+            }}
             className="flex flex-col gap-4"
           >
             <FormField

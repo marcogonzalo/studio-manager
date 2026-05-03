@@ -114,6 +114,7 @@ export function SpaceImageUpload({
       onBeforeUpload,
       onUploadSuccess,
       onUploadError,
+      t,
     ]
   );
 
