@@ -57,12 +57,12 @@ Review the diff with the user, confirm each change is intentional, then run with
 
 ## Safe alternatives for common tasks
 
-| Goal | Safe approach |
-|------|--------------|
-| Update email template HTML or subject | Dashboard → Authentication → Email Templates (manual, always safe) |
-| Apply schema change to production | Reviewed PR → CI/CD pipeline, or explicit `supabase db push` after user confirmation |
-| Read data for diagnosis | Dashboard → Table Editor / SQL Editor, or ask user to run the query |
-| Inspect auth config diff | `supabase config push --dry-run` (shows diff, does not apply) — still confirm intent |
+| Goal                                  | Safe approach                                                                        |
+| ------------------------------------- | ------------------------------------------------------------------------------------ |
+| Update email template HTML or subject | Dashboard → Authentication → Email Templates (manual, always safe)                   |
+| Apply schema change to production     | Reviewed PR → CI/CD pipeline, or explicit `supabase db push` after user confirmation |
+| Read data for diagnosis               | Dashboard → Table Editor / SQL Editor, or ask user to run the query                  |
+| Inspect auth config diff              | `supabase config push --dry-run` (shows diff, does not apply) — still confirm intent |
 
 ---
 
