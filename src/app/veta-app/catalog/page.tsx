@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import {
   getDemoAccountMessage,
@@ -36,6 +37,7 @@ import { toast } from "sonner";
 import type { Product } from "@/types";
 
 export default function CatalogPage() {
+  const t = useTranslations("CatalogPage");
   const profileDefaults = useProfileDefaults();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,9 +83,7 @@ export default function CatalogPage() {
       const { canDeleteProduct } = await import("@/lib/validation");
       const canDelete = await canDeleteProduct(product.id);
       if (!canDelete) {
-        toast.error(
-          "No se puede eliminar el producto porque está asociado a un proyecto"
-        );
+        toast.error(t("toastDeleteBlocked"));
         setDeleteTarget(null);
         return;
       }
@@ -120,27 +120,25 @@ export default function CatalogPage() {
           deleteError.message?.includes("permission") ||
           deleteError.message?.includes("policy")
         ) {
-          toast.error("No tienes permisos para eliminar este producto");
+          toast.error(t("toastNoPermission"));
         } else {
           toast.error(
-            `Error al eliminar: ${deleteError.message || "Error desconocido"}`
+            `${t("toastDeleteError")}: ${deleteError.message || t("unknownError")}`
           );
         }
         return;
       }
       if (!deleted || deleted.length === 0) {
-        toast.error(
-          "No se pudo eliminar el producto. Verifica que tengas permisos y que el producto no esté asociado a un proyecto."
-        );
+        toast.error(t("toastDeleteFailed"));
         fetchProducts();
         return;
       }
-      toast.success("Producto eliminado correctamente");
+      toast.success(t("toastDeleted"));
       setDeleteTarget(null);
       fetchProducts();
     } catch (error) {
       reportError(error, "Unexpected error in handleDelete:");
-      toast.error("Error inesperado al eliminar el producto");
+      toast.error(t("toastUnexpectedDeleteError"));
     } finally {
       setDeleteLoading(false);
     }
@@ -152,9 +150,7 @@ export default function CatalogPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ShoppingBag className="text-primary h-8 w-8" />
-            <h1 className="text-3xl font-bold tracking-tight">
-              Catálogo de Productos
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
           <Button
             onClick={() => {
@@ -162,12 +158,10 @@ export default function CatalogPage() {
               setIsDialogOpen(true);
             }}
           >
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Producto
+            <Plus className="mr-2 h-4 w-4" /> {t("newProduct")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          Productos, referencias y costes para usar en presupuestos.
-        </p>
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
       <div className="flex items-center space-x-2">
@@ -178,11 +172,11 @@ export default function CatalogPage() {
           />
           <Input
             type="search"
-            placeholder="Buscar por nombre o referencia…"
+            placeholder={t("searchPlaceholder")}
             className="pl-8"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Buscar productos por nombre o referencia"
+            aria-label={t("searchAria")}
           />
         </div>
       </div>
@@ -208,11 +202,10 @@ export default function CatalogPage() {
                 <ShoppingBag className="text-muted-foreground h-8 w-8" />
               </div>
               <h3 className="text-foreground mt-4 font-medium">
-                No se encontraron productos
+                {t("emptyTitle")}
               </h3>
               <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-                Añade productos al catálogo para usarlos en presupuestos de
-                proyectos.
+                {t("emptyDescription")}
               </p>
               <Button
                 onClick={() => {
@@ -221,7 +214,7 @@ export default function CatalogPage() {
                 }}
                 className="mt-4"
               >
-                <Plus className="mr-2 h-4 w-4" /> Nuevo Producto
+                <Plus className="mr-2 h-4 w-4" /> {t("newProduct")}
               </Button>
             </CardContent>
           </Card>
@@ -252,7 +245,7 @@ export default function CatalogPage() {
                     setSelectedProduct(p);
                     setIsProductModalOpen(true);
                   }}
-                  aria-label={`Ver imagen de ${p.name}`}
+                  aria-label={t("viewImageAria", { name: p.name })}
                   style={
                     p.image_url
                       ? {
@@ -308,7 +301,7 @@ export default function CatalogPage() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      aria-label="Acciones del producto"
+                      aria-label={t("actionsAria")}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <MoreVertical className="h-4 w-4" />
@@ -323,7 +316,7 @@ export default function CatalogPage() {
                       }}
                     >
                       <Pencil className="mr-2 h-4 w-4" />
-                      Editar
+                      {t("edit")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={(e) => {
@@ -333,7 +326,7 @@ export default function CatalogPage() {
                       className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
+                      {t("delete")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -362,8 +355,8 @@ export default function CatalogPage() {
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="¿Eliminar producto?"
-        description="Esta acción no se puede deshacer. No podrá eliminarse si está asociado a un proyecto."
+        title={t("confirmDeleteTitle")}
+        description={t("confirmDeleteDescription")}
         onConfirm={handleConfirmDelete}
         loading={deleteLoading}
       />

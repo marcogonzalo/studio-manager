@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -9,12 +10,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  CURRENCIES,
-  formatDate,
-  getPhaseLabel,
-  getProjectStatusLabel,
-} from "@/lib/utils";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
+import { CURRENCIES, getProjectStatusLabel } from "@/lib/utils";
 import type { Project } from "@/types";
 import { Pencil } from "lucide-react";
 
@@ -34,6 +31,11 @@ export function ProjectDetailModal({
   onEdit,
   readOnly = false,
 }: ProjectDetailModalProps) {
+  const { formatDate } = useAppFormatting();
+  const tPhases = useTranslations("Phases");
+  const tVP = useTranslations("ViewProject");
+  const t = useTranslations("ProjectDetailModal");
+
   if (!project) return null;
 
   const handleEdit = () => {
@@ -56,60 +58,62 @@ export function ProjectDetailModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Detalle del Proyecto</DialogTitle>
-          <DialogDescription>
-            Información del proyecto. Usa Editar para modificar.
-          </DialogDescription>
+          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
         <dl className="grid gap-4 py-2 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <dt className="text-muted-foreground text-sm">
-              Nombre del Proyecto
+              {t("projectName")}
             </dt>
             <dd className="font-medium">{project.name}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-muted-foreground text-sm">Cliente</dt>
+            <dt className="text-muted-foreground text-sm">{t("client")}</dt>
             <dd className="font-medium">{project.client?.full_name ?? "—"}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-muted-foreground text-sm">Dirección</dt>
+            <dt className="text-muted-foreground text-sm">{t("address")}</dt>
             <dd className="font-medium">{project.address ?? "—"}</dd>
           </div>
           <div className="sm:col-span-2">
-            <dt className="text-muted-foreground text-sm">Descripción</dt>
+            <dt className="text-muted-foreground text-sm">
+              {t("descriptionLabel")}
+            </dt>
             <dd className="font-medium whitespace-pre-wrap">
               {project.description ?? "—"}
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground text-sm">Fase del Proyecto</dt>
+            <dt className="text-muted-foreground text-sm">
+              {t("projectPhase")}
+            </dt>
             <dd className="font-medium">
-              {project.phase ? getPhaseLabel(project.phase) : "—"}
+              {project.phase ? tPhases(project.phase) : "—"}
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground text-sm">Estado</dt>
+            <dt className="text-muted-foreground text-sm">{t("status")}</dt>
             <dd className="font-medium">
               {getProjectStatusLabel(project.status)}
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground text-sm">Fecha Inicio</dt>
+            <dt className="text-muted-foreground text-sm">{t("startDate")}</dt>
             <dd className="font-medium">
-              {startDate ? formatDate(startDate) : "No definida"}
+              {startDate ? formatDate(startDate) : tVP("dateNotSet")}
             </dd>
           </div>
           <div>
             <dt className="text-muted-foreground text-sm">
-              Fecha Estimada de Entrega
+              {t("estimatedDeliveryDate")}
             </dt>
             <dd className="font-medium">
-              {endDate ? formatDate(endDate) : "No definida"}
+              {endDate ? formatDate(endDate) : tVP("dateNotSet")}
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground text-sm">Moneda</dt>
+            <dt className="text-muted-foreground text-sm">{t("currency")}</dt>
             <dd className="font-medium">
               {project.currency && CURRENCIES[project.currency]
                 ? CURRENCIES[project.currency]
@@ -117,7 +121,7 @@ export function ProjectDetailModal({
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground text-sm">Impuesto (%)</dt>
+            <dt className="text-muted-foreground text-sm">{t("tax")}</dt>
             <dd className="font-medium">
               {project.tax_rate != null ? String(project.tax_rate) : "—"}
             </dd>
@@ -127,7 +131,7 @@ export function ProjectDetailModal({
           {!readOnly && (
             <Button type="button" onClick={handleEdit}>
               <Pencil className="mr-2 h-4 w-4" />
-              Editar
+              {t("edit")}
             </Button>
           )}
           <Button
@@ -135,7 +139,7 @@ export function ProjectDetailModal({
             variant="outline"
             onClick={() => onOpenChange(false)}
           >
-            Cerrar
+            {t("close")}
           </Button>
         </DialogFooter>
       </DialogContent>

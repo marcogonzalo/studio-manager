@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth-provider";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,19 +12,7 @@ import { Rocket, FolderKanban, Users, Truck, ShoppingBag } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { PlanConfig } from "@/types";
 import { appPath } from "@/lib/app-paths";
-import { reportError, formatDate } from "@/lib/utils";
-
-const PLAN_DISPLAY_NAMES: Record<string, string> = {
-  BASE: "Base",
-  PRO: "Pro",
-  STUDIO: "Studio",
-};
-
-const DURATION_LABELS: Record<string, string> = {
-  "1m": "Mensual",
-  "1y": "Anual",
-  "15d": "Prueba 15 días",
-};
+import { reportError } from "@/lib/utils";
 
 interface PlanAssignmentRow {
   id: string;
@@ -40,14 +30,6 @@ interface UsageCounts {
   products: number;
   storage: number; // in bytes
 }
-
-const CONSUMABLE_LABELS: Record<keyof UsageCounts, string> = {
-  projects: "Proyectos activos",
-  clients: "Clientes",
-  suppliers: "Proveedores",
-  products: "Productos en catálogo",
-  storage: "Almacenamiento",
-};
 
 const CONSUMABLE_ICONS: Record<
   keyof UsageCounts,
@@ -87,6 +69,25 @@ function formatBytes(bytes: number): string {
 }
 
 export default function SettingsPlanPage() {
+  const t = useTranslations("SettingsPlan");
+  const planDisplayNames: Record<string, string> = {
+    BASE: t("planBase"),
+    PRO: t("planPro"),
+    STUDIO: t("planStudio"),
+  };
+  const durationLabels: Record<string, string> = {
+    "1m": t("durationMonthly"),
+    "1y": t("durationYearly"),
+    "15d": t("durationTrial15d"),
+  };
+  const consumableLabels: Record<keyof UsageCounts, string> = {
+    projects: t("consumableProjects"),
+    clients: t("consumableClients"),
+    suppliers: t("consumableSuppliers"),
+    products: t("consumableProducts"),
+    storage: t("consumableStorage"),
+  };
+  const { formatDate } = useAppFormatting();
   const { user, effectivePlan, planLoading } = useAuth();
   const supabase = getSupabaseClient();
   const [history, setHistory] = useState<PlanAssignmentRow[]>([]);
@@ -171,8 +172,7 @@ export default function SettingsPlanPage() {
   }
 
   const currentPlanCode = effectivePlan?.plan_code ?? "BASE";
-  const currentPlanLabel =
-    PLAN_DISPLAY_NAMES[currentPlanCode] ?? currentPlanCode;
+  const currentPlanLabel = planDisplayNames[currentPlanCode] ?? currentPlanCode;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -185,8 +185,8 @@ export default function SettingsPlanPage() {
     currentAssignment &&
     currentAssignment.expires_at;
   const expiryLabel = currentAssignment?.next_period_duration
-    ? "Renueva el"
-    : "Finaliza el";
+    ? t("renewsOn")
+    : t("endsOn");
   const expiryDateFormatted = currentAssignment
     ? formatDate(currentAssignment.expires_at, {
         day: "numeric",
@@ -197,24 +197,22 @@ export default function SettingsPlanPage() {
   const periodPillLabel =
     currentPlanCode === "BASE"
       ? "∞"
-      : (DURATION_LABELS[currentAssignment?.duration ?? ""] ?? "—");
+      : (durationLabels[currentAssignment?.duration ?? ""] ?? t("unknown"));
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-foreground flex flex-wrap items-center gap-2 text-3xl font-bold tracking-tight">
-          Tu plan
+          {t("title")}
         </h1>
-        <p className="text-muted-foreground mt-1">
-          Plan actual e histórico de planes adquiridos
-        </p>
+        <p className="text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
       <Card className="bg-primary/5 border-primary/20">
         <CardHeader className="flex flex-row flex-wrap items-center gap-4 space-y-0">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="m-0 flex flex-wrap items-center gap-2 text-lg font-medium">
-              Plan{" "}
+              {t("planLabel")}{" "}
               <span className="text-primary font-bold">{currentPlanLabel}</span>
             </h2>
             {currentAssignment?.next_period_duration != null && (
@@ -231,17 +229,17 @@ export default function SettingsPlanPage() {
           <Button asChild className="ml-auto shrink-0 gap-2">
             <Link href={appPath("/settings/plan/change")}>
               <Rocket className="h-4 w-4" />
-              Mejorar plan
+              {t("upgradePlan")}
             </Link>
           </Button>
         </CardHeader>
         <CardContent className="flex flex-col gap-0">
           <div className="border-border border-t pt-6">
             <h3 className="text-foreground mb-3 text-base font-semibold">
-              Consumibles
+              {t("consumables")}
             </h3>
             {usageLoading ? (
-              <p className="text-muted-foreground text-sm">Cargando…</p>
+              <p className="text-muted-foreground text-sm">{t("loading")}</p>
             ) : (
               <div className="space-y-4">
                 {(
@@ -264,7 +262,7 @@ export default function SettingsPlanPage() {
                       : limitMB === 0
                         ? 0
                         : Math.min(100, (usedBytes / limitBytes) * 100);
-                    const label = CONSUMABLE_LABELS.storage;
+                    const label = consumableLabels.storage;
                     const Icon = CONSUMABLE_ICONS.storage;
                     return (
                       <div key={key}>
@@ -299,7 +297,7 @@ export default function SettingsPlanPage() {
                     : limit === 0
                       ? 0
                       : Math.min(100, (used / limit) * 100);
-                  const label = CONSUMABLE_LABELS[key];
+                  const label = consumableLabels[key];
                   const Icon = CONSUMABLE_ICONS[key];
                   return (
                     <div key={key}>
@@ -329,23 +327,21 @@ export default function SettingsPlanPage() {
 
       <div>
         <h2 className="text-foreground mb-3 text-lg font-semibold">
-          Histórico de planes
+          {t("historyTitle")}
         </h2>
         {historyLoading ? (
           <div className="text-muted-foreground text-sm">
-            Cargando histórico…
+            {t("loadingHistory")}
           </div>
         ) : pastHistory.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            No hay registros de planes anteriores.
-          </p>
+          <p className="text-muted-foreground text-sm">{t("noHistory")}</p>
         ) : (
           <ul className="space-y-2">
             {pastHistory.map((row) => {
               const planCode = row.plans?.code ?? "—";
-              const planLabel = PLAN_DISPLAY_NAMES[planCode] ?? planCode;
+              const planLabel = planDisplayNames[planCode] ?? planCode;
               const durationLabel =
-                DURATION_LABELS[row.duration] ?? row.duration;
+                durationLabels[row.duration] ?? row.duration;
               return (
                 <li key={row.id}>
                   <Card>
@@ -355,14 +351,14 @@ export default function SettingsPlanPage() {
                         <p className="text-muted-foreground text-sm">
                           {durationLabel}
                           {" · "}
-                          Asignado{" "}
+                          {t("assigned")}{" "}
                           {formatDate(row.assigned_at, {
                             day: "numeric",
                             month: "short",
                             year: "numeric",
                           })}
                           {" · "}
-                          Expira{" "}
+                          {t("expires")}{" "}
                           {formatDate(row.expires_at, {
                             day: "numeric",
                             month: "short",

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +36,7 @@ export function SpaceImagesDialog({
   /** Si false (plan sin subida de renders), el botón Añadir y el input se deshabilitan y se muestra mensaje. */
   canAddRenders?: boolean;
 }) {
+  const t = useTranslations("DialogSpaceImages");
   const supabase = getSupabaseClient();
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,7 +59,7 @@ export function SpaceImagesDialog({
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("space_images").delete().eq("id", id);
     if (!error) {
-      toast.success("Imagen eliminada");
+      toast.success(t("toastDeleted"));
       fetchImages();
     }
   };
@@ -82,10 +84,8 @@ export function SpaceImagesDialog({
         <DialogHeader>
           <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0 flex-1 space-y-1.5">
-              <DialogTitle>Renders - {space.name}</DialogTitle>
-              <DialogDescription>
-                Visualizaciones del espacio.
-              </DialogDescription>
+              <DialogTitle>{t("title", { name: space.name })}</DialogTitle>
+              <DialogDescription>{t("description")}</DialogDescription>
             </div>
             <div className="flex shrink-0 justify-end">
               {canAddRenders ? (
@@ -96,15 +96,15 @@ export function SpaceImagesDialog({
                   onClick={() => setAddModalOpen(true)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Agregar imágenes
+                  {t("addImages")}
                 </Button>
               ) : (
                 <p className="text-muted-foreground text-right text-xs">
-                  No disponible en tu plan.{" "}
+                  {t("notAvailable")}{" "}
                   <Link href="/pricing" className="underline">
-                    Mejora tu plan
+                    {t("upgradePlan")}
                   </Link>{" "}
-                  para subir renders.
+                  {t("upgradeSuffix")}
                 </p>
               )}
             </div>
@@ -118,7 +118,7 @@ export function SpaceImagesDialog({
               type="button"
               className="group focus-visible:ring-ring relative aspect-video overflow-hidden rounded-md border bg-transparent p-0 text-left transition-opacity hover:opacity-95 focus:outline-none focus-visible:ring-2"
               onClick={() => setExpandedImage(img)}
-              aria-label={`Ampliar ${img.description}`}
+              aria-label={t("expandAria", { description: img.description })}
             >
               <Image
                 src={img.url}
@@ -140,7 +140,7 @@ export function SpaceImagesDialog({
                     e.stopPropagation();
                     handleDelete(img.id);
                   }}
-                  aria-label="Eliminar imagen"
+                  aria-label={t("deleteImageAria")}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -149,7 +149,7 @@ export function SpaceImagesDialog({
           ))}
           {images.length === 0 && (
             <div className="text-muted-foreground col-span-full py-10 text-center">
-              No hay imágenes.
+              {t("empty")}
             </div>
           )}
         </div>
@@ -158,10 +158,8 @@ export function SpaceImagesDialog({
       <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Agregar imágenes</DialogTitle>
-            <DialogDescription>
-              Selecciona una o varias imágenes para subir a este espacio.
-            </DialogDescription>
+            <DialogTitle>{t("addImages")}</DialogTitle>
+            <DialogDescription>{t("addDescription")}</DialogDescription>
           </DialogHeader>
           {projectId && (
             <SpaceImageUpload
@@ -186,7 +184,7 @@ export function SpaceImagesDialog({
                     .update(update)
                     .eq("id", imageIdUsed)
                     .eq("space_id", space.id);
-                  toast.success("Imagen añadida");
+                  toast.success(t("toastAdded"));
                 }
                 fetchImages();
               }}

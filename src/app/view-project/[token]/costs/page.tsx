@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ViewProjectShell } from "../view-project-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,11 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  formatCurrency as formatCurrencyUtil,
-  getBudgetCategoryLabel,
-  getBudgetSubcategoryLabel,
-} from "@/lib/utils";
+import { formatCurrencyWithLang } from "@/lib/formatting";
+import { getViewProjectLocale } from "@/lib/view-project-locale";
 import type { BudgetCategory } from "@/types";
 import type { ProjectPhase } from "@/types";
 
@@ -33,14 +31,72 @@ interface PageProps {
   params: Promise<{ token: string }>;
 }
 
-export const metadata = {
-  title: "Costes del proyecto",
-  description: "Presupuesto del proyecto compartido",
-};
+export async function generateMetadata() {
+  const locale = await getViewProjectLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations("ViewProject");
+  return {
+    title: t("costsMetaTitle"),
+    description: t("costsMetaDescription"),
+  };
+}
 
 export default async function ViewProjectCostsPage({ params }: PageProps) {
   const { token } = await params;
+  const locale = await getViewProjectLocale();
+  setRequestLocale(locale);
+  const t = await getTranslations("ViewProject");
   const supabase = await createClient();
+  const categoryLabels: Record<BudgetCategory, string> = {
+    construction: t("budgetCategory.construction"),
+    own_fees: t("budgetCategory.own_fees"),
+    external_services: t("budgetCategory.external_services"),
+    operations: t("budgetCategory.operations"),
+  };
+  const subcategoryLabels: Record<BudgetCategory, Record<string, string>> = {
+    construction: {
+      demolition: t("budgetSubcategory.construction.demolition"),
+      masonry: t("budgetSubcategory.construction.masonry"),
+      electricity: t("budgetSubcategory.construction.electricity"),
+      plumbing: t("budgetSubcategory.construction.plumbing"),
+      interior_painting: t("budgetSubcategory.construction.interior_painting"),
+      exterior_painting: t("budgetSubcategory.construction.exterior_painting"),
+      domotics: t("budgetSubcategory.construction.domotics"),
+      carpentry: t("budgetSubcategory.construction.carpentry"),
+      locksmithing: t("budgetSubcategory.construction.locksmithing"),
+      hvac: t("budgetSubcategory.construction.hvac"),
+      flooring: t("budgetSubcategory.construction.flooring"),
+      tiling: t("budgetSubcategory.construction.tiling"),
+      other: t("budgetSubcategory.construction.other"),
+    },
+    own_fees: {
+      design: t("budgetSubcategory.own_fees.design"),
+      executive_project: t("budgetSubcategory.own_fees.executive_project"),
+      site_supervision: t("budgetSubcategory.own_fees.site_supervision"),
+      management: t("budgetSubcategory.own_fees.management"),
+      other: t("budgetSubcategory.own_fees.other"),
+    },
+    external_services: {
+      technical_architect: t(
+        "budgetSubcategory.external_services.technical_architect"
+      ),
+      engineering: t("budgetSubcategory.external_services.engineering"),
+      logistics: t("budgetSubcategory.external_services.logistics"),
+      permits: t("budgetSubcategory.external_services.permits"),
+      consulting: t("budgetSubcategory.external_services.consulting"),
+      other: t("budgetSubcategory.external_services.other"),
+    },
+    operations: {
+      shipping: t("budgetSubcategory.operations.shipping"),
+      packaging: t("budgetSubcategory.operations.packaging"),
+      transport: t("budgetSubcategory.operations.transport"),
+      storage: t("budgetSubcategory.operations.storage"),
+      insurance: t("budgetSubcategory.operations.insurance"),
+      customs: t("budgetSubcategory.operations.customs"),
+      handling: t("budgetSubcategory.operations.handling"),
+      other: t("budgetSubcategory.operations.other"),
+    },
+  };
 
   const [shareRes, currencyRes, budgetRes, productsRes] = await Promise.all([
     supabase.rpc("get_project_share_by_token", { share_token: token }),
@@ -74,7 +130,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
   }[];
 
   const formatCurrency = (amount: number) =>
-    formatCurrencyUtil(amount, currency);
+    formatCurrencyWithLang(amount, currency, locale);
 
   type BudgetLine = (typeof budgetLines)[number];
   const byCategory = budgetLines.reduce(
@@ -107,11 +163,11 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
   const total = subtotal + tax;
 
   return (
-    <ViewProjectShell token={token} showBack title="Costes del proyecto">
+    <ViewProjectShell token={token} showBack title={t("costsTitle")}>
       {budgetLines.length === 0 ? (
         <Card>
           <CardContent className="text-muted-foreground py-12 text-center">
-            No hay partidas de presupuesto visibles.
+            {t("costsNoLines")}
           </CardContent>
         </Card>
       ) : (
@@ -134,7 +190,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
               <Card key={category}>
                 <CardHeader>
                   <CardTitle className="text-base">
-                    {getBudgetCategoryLabel(category)}
+                    {categoryLabels[category] ?? category}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -142,10 +198,12 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="text-muted-foreground">
-                          Descripción
+                          {t("costsColDescription")}
                         </TableHead>
-                        <TableHead>Partida</TableHead>
-                        <TableHead className="text-right">Importe</TableHead>
+                        <TableHead>{t("costsColLine")}</TableHead>
+                        <TableHead className="text-right">
+                          {t("costsColAmount")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -155,10 +213,8 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                             {line.description || "—"}
                           </TableCell>
                           <TableCell>
-                            {getBudgetSubcategoryLabel(
-                              category as BudgetCategory,
-                              line.subcategory
-                            )}
+                            {subcategoryLabels[category]?.[line.subcategory] ??
+                              line.subcategory}
                           </TableCell>
                           <TableCell className="text-right font-medium tabular-nums">
                             {formatCurrency(Number(line.estimated_amount))}
@@ -172,7 +228,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                           colSpan={2}
                           className="text-muted-foreground text-left"
                         >
-                          Subtotal
+                          {t("costsSubtotal")}
                         </TableCell>
                         <TableCell className="text-right font-medium tabular-nums">
                           {formatCurrency(categoryTotal)}
@@ -187,18 +243,24 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
           {products.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Productos</CardTitle>
+                <CardTitle className="text-base">
+                  {t("costsProductsSection")}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Producto</TableHead>
+                      <TableHead>{t("costsColProduct")}</TableHead>
                       <TableHead className="text-muted-foreground">
-                        Espacio
+                        {t("costsColSpace")}
                       </TableHead>
-                      <TableHead className="text-right">Cantidad</TableHead>
-                      <TableHead className="text-right">Precio</TableHead>
+                      <TableHead className="text-right">
+                        {t("costsColQuantity")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("costsColPrice")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -223,7 +285,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                         colSpan={3}
                         className="text-muted-foreground text-left"
                       >
-                        Subtotal productos
+                        {t("costsSubtotalProducts")}
                       </TableCell>
                       <TableCell className="text-right font-medium tabular-nums">
                         {formatCurrency(
@@ -241,13 +303,13 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
           )}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Resumen</CardTitle>
+              <CardTitle className="text-base">{t("costsSummary")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {budgetLines.length > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    Subtotal partidas
+                    {t("costsSubtotalLines")}
                   </span>
                   <span className="tabular-nums">
                     {formatCurrency(budgetSubtotal)}
@@ -257,7 +319,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
               {products.length > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    Subtotal productos
+                    {t("costsSubtotalProducts")}
                   </span>
                   <span className="tabular-nums">
                     {formatCurrency(productsSubtotal)}
@@ -265,19 +327,21 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                 </div>
               )}
               <div className="flex justify-between border-t pt-1 text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
+                <span className="text-muted-foreground">
+                  {t("costsSubtotal")}
+                </span>
                 <span className="tabular-nums">{formatCurrency(subtotal)}</span>
               </div>
               {taxRate > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    Impuestos ({taxRate}%)
+                    {t("costsTax", { rate: taxRate })}
                   </span>
                   <span className="tabular-nums">{formatCurrency(tax)}</span>
                 </div>
               )}
               <div className="flex justify-between border-t pt-2 font-semibold">
-                <span>Total</span>
+                <span>{t("costsTotal")}</span>
                 <span className="tabular-nums">{formatCurrency(total)}</span>
               </div>
             </CardContent>

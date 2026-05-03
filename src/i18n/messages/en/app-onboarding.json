@@ -1,0 +1,44 @@
+{
+  "Onboarding": {
+    "checklistTitle": "Complete your setup ({completed}/{total})",
+    "checklistDescription": "Follow these steps to get the most out of Veta.",
+    "steps": {
+      "welcome": "Welcome",
+      "config": "Set up account and customization",
+      "client": "Add a client",
+      "project": "Create a project",
+      "public-profile": "Public name and public email"
+    },
+    "welcome": {
+      "title": "Welcome!",
+      "line1": "Great to have you here!",
+      "line2": "Veta was built with care and dedication. I hope you enjoy it.",
+      "line3": "Now let's complete a few initial setup steps...",
+      "continue": "Continue"
+    },
+    "later": "Later",
+    "step": {
+      "config": {
+        "title": "Set up account and customization",
+        "description": "Complete your profile, default currency, and tax rate to use Veta comfortably.",
+        "primaryLabel": "Go to Account",
+        "secondaryLabel": "Go to Customization"
+      },
+      "client": {
+        "title": "Add a client",
+        "description": "Create your first client to link it to projects.",
+        "primaryLabel": "Go to Clients"
+      },
+      "project": {
+        "title": "Create a project",
+        "description": "Create your first project to organize spaces and budgets.",
+        "primaryLabel": "Go to Projects"
+      },
+      "publicProfile": {
+        "title": "Public name and public email",
+        "description": "Set how your name and email should appear on budget PDFs.",
+        "primaryLabel": "Go to Customization"
+      }
+    }
+  }
+}

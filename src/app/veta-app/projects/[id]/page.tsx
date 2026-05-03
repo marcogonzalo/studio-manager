@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, useRef } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { PageLoading } from "@/components/loaders/page-loading";
@@ -50,6 +51,7 @@ const VALID_TABS = [
 ] as const;
 
 function ProjectDetailContent() {
+  const t = useTranslations("ProjectDetailPage");
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -166,7 +168,7 @@ function ProjectDetailContent() {
       .single();
 
     if (error) {
-      toast.error("Error al cargar proyecto", { id: "project-load" });
+      toast.error(t("toastLoadError"), { id: "project-load" });
     } else {
       setProject(data);
     }
@@ -261,7 +263,7 @@ function ProjectDetailContent() {
 
   if (loading) return <PageLoading variant="detail" />;
   if (!project)
-    return <div className="text-muted-foreground">Proyecto no encontrado</div>;
+    return <div className="text-muted-foreground">{t("notFound")}</div>;
 
   const isReadOnly =
     project.status === "completed" || project.status === "cancelled";
@@ -313,11 +315,11 @@ function ProjectDetailContent() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="bg-muted text-muted-foreground inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-                    Solo lectura
+                    {t("readOnly")}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent variant="tertiary">
-                  No se pueden editar datos ni añadir contenido.
+                  {t("readOnlyDescription")}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -338,7 +340,7 @@ function ProjectDetailContent() {
           ) : (
             <EyeOff className="mr-2 h-4 w-4" />
           )}
-          Vista pública
+          {t("publicView")}
         </Button>
         <Button
           variant="outline"
@@ -346,29 +348,29 @@ function ProjectDetailContent() {
           className="shrink-0"
         >
           <FileText className="mr-2 h-4 w-4" />
-          Detalle
+          {t("detail")}
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTabAndUrl}>
         <div className="scrollbar-hide -mx-4 overflow-x-auto px-4">
           <TabsList ref={tabsListRef} className="inline-flex w-max min-w-full">
-            <TabsTrigger value="overview">Resumen</TabsTrigger>
-            <TabsTrigger value="spaces">Espacios</TabsTrigger>
-            <TabsTrigger value="quotation">Presupuesto</TabsTrigger>
+            <TabsTrigger value="overview">{t("tabs.overview")}</TabsTrigger>
+            <TabsTrigger value="spaces">{t("tabs.spaces")}</TabsTrigger>
+            <TabsTrigger value="quotation">{t("tabs.quotation")}</TabsTrigger>
             <TabsTrigger value="expenses" disabled={costsDisabled}>
-              Control de costes
+              {t("tabs.expenses")}
             </TabsTrigger>
             <TabsTrigger value="purchases" disabled={purchasesDisabled}>
-              Compras
+              {t("tabs.purchases")}
             </TabsTrigger>
             <TabsTrigger value="payments" disabled={paymentsDisabled}>
-              Pagos
+              {t("tabs.payments")}
             </TabsTrigger>
             <TabsTrigger value="documents" disabled={documentsDisabled}>
-              Documentos
+              {t("tabs.documents")}
             </TabsTrigger>
-            <TabsTrigger value="notes">Notas</TabsTrigger>
+            <TabsTrigger value="notes">{t("tabs.notes")}</TabsTrigger>
           </TabsList>
         </div>
         {currentTabHasRestrictedContent && (
@@ -377,12 +379,12 @@ function ProjectDetailContent() {
             role="alert"
           >
             <span>
-              Algunas secciones no están disponibles en tu plan.{" "}
+              {t("upgradeHint")}{" "}
               <Link
                 href={appPath("/settings/plan/change")}
                 className="font-medium underline hover:no-underline"
               >
-                Mejora tu plan
+                {t("upgradeCta")}
               </Link>
             </span>
           </div>

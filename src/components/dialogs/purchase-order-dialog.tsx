@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -37,15 +38,17 @@ import { Card } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import type { Supplier } from "@/types";
 
-const formSchema = z.object({
-  supplier_id: z.string().min(1, "Proveedor requerido"),
-  order_number: z.string().min(1, "Número de orden requerido"),
-  order_date: z.string().min(1, "Fecha requerida"),
-  status: z.string().min(1, "Estado requerido"),
-  notes: z.string().optional(),
-  delivery_deadline: z.string().optional(),
-  delivery_date: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    supplier_id: z.string().min(1, t("validationSupplierRequired")),
+    order_number: z.string().min(1, t("validationOrderNumberRequired")),
+    order_date: z.string().min(1, t("validationDateRequired")),
+    status: z.string().min(1, t("validationStatusRequired")),
+    notes: z.string().optional(),
+    delivery_deadline: z.string().optional(),
+    delivery_date: z.string().optional(),
+  });
+}
 
 interface ProjectItem {
   id: string;
@@ -78,26 +81,14 @@ interface PurchaseOrderDialogProps {
   order?: PurchaseOrder | null;
 }
 
-const STATUS_OPTIONS = [
-  { value: "draft", label: "Borrador" },
-  { value: "sent", label: "Enviada" },
-  { value: "confirmed", label: "Confirmada" },
-  { value: "received", label: "Recibida" },
-  { value: "cancelled", label: "Cancelada" },
-];
-
-const DELIVERY_DEADLINE_OPTIONS = [
-  { value: "1w", label: "1 semana" },
-  { value: "2w", label: "2 semanas" },
-  { value: "3w", label: "3 semanas" },
-  { value: "4w", label: "4 semanas" },
-  { value: "6w", label: "6 semanas" },
-  { value: "tbd", label: "A convenir" },
-];
-
-const PREDEFINED_DEADLINE_VALUES = new Set(
-  DELIVERY_DEADLINE_OPTIONS.map((o) => o.value)
-);
+const PREDEFINED_DEADLINE_VALUES = new Set([
+  "1w",
+  "2w",
+  "3w",
+  "4w",
+  "6w",
+  "tbd",
+]);
 
 /** Item status from PO status: draft/sent → pending, confirmed → ordered, received → received. */
 function getItemStatusForPO(poStatus: string): string {
@@ -114,7 +105,24 @@ export function PurchaseOrderDialog({
   onSuccess,
   order,
 }: PurchaseOrderDialogProps) {
+  const t = useTranslations("DialogPurchaseOrder");
+  const statusOptions = [
+    { value: "draft", label: t("statusDraft") },
+    { value: "sent", label: t("statusSent") },
+    { value: "confirmed", label: t("statusConfirmed") },
+    { value: "received", label: t("statusReceived") },
+    { value: "cancelled", label: t("statusCancelled") },
+  ];
+  const deliveryDeadlineOptions = [
+    { value: "1w", label: t("deadline1w") },
+    { value: "2w", label: t("deadline2w") },
+    { value: "3w", label: t("deadline3w") },
+    { value: "4w", label: t("deadline4w") },
+    { value: "6w", label: t("deadline6w") },
+    { value: "tbd", label: t("deadlineTbd") },
+  ];
   const { user } = useAuth();
+  const formSchema = buildFormSchema(t);
   const isEditing = !!order;
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [availableItems, setAvailableItems] = useState<ProjectItem[]>([]);
@@ -161,7 +169,7 @@ export function PurchaseOrderDialog({
 
         if (itemsError) {
           reportError(itemsError, "Error fetching items:");
-          toast.error("Error al cargar los ítems", { id: "po-items-load" });
+          toast.error(t("toastItemsLoadError"), { id: "po-items-load" });
           setAvailableItems([]);
           setLoadingItems(false);
           return;
@@ -236,7 +244,7 @@ export function PurchaseOrderDialog({
         }
       } catch (error) {
         reportError(error, "Error in fetchAvailableItems:");
-        toast.error("Error al cargar los ítems", { id: "po-items-load" });
+        toast.error(t("toastItemsLoadError"), { id: "po-items-load" });
         setAvailableItems([]);
       } finally {
         setLoadingItems(false);
@@ -357,7 +365,7 @@ export function PurchaseOrderDialog({
       setSearchQuery("");
     } catch (error) {
       reportError(error, "Error resetting form:");
-      toast.error("Error al cargar los datos de la orden", {
+      toast.error(t("toastOrderLoadError"), {
         id: "po-form-load",
       });
     }
@@ -424,14 +432,14 @@ export function PurchaseOrderDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Orden Cancelada</DialogTitle>
+            <DialogTitle>{t("cancelledOrderTitle")}</DialogTitle>
           </DialogHeader>
           <div className="p-4">
             <p className="text-muted-foreground mb-4">
-              Esta orden de compra está cancelada y no puede ser editada.
+              {t("cancelledOrderDescription")}
             </p>
             <Button onClick={() => onOpenChange(false)} className="w-full">
-              Cerrar
+              {t("close")}
             </Button>
           </div>
         </DialogContent>
@@ -441,18 +449,18 @@ export function PurchaseOrderDialog({
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user?.id) {
-      toast.error("No se pudo identificar el usuario");
+      toast.error(t("toastUserError"));
       return;
     }
 
     if (selectedItemIds.size === 0) {
-      toast.error("Debe seleccionar al menos un ítem para la orden");
+      toast.error(t("toastSelectAtLeastOneItem"));
       return;
     }
 
     // Prevent editing cancelled orders
     if (isEditing && order?.status === "cancelled") {
-      toast.error("No se puede editar una orden cancelada");
+      toast.error(t("toastCannotEditCancelled"));
       return;
     }
 
@@ -608,7 +616,7 @@ export function PurchaseOrderDialog({
             .eq("purchase_order_id", order.id);
         }
 
-        toast.success("Orden de compra actualizada");
+        toast.success(t("toastUpdated"));
       } else {
         // Create new order
         const { data: newOrder, error: createError } = await supabase
@@ -640,7 +648,7 @@ export function PurchaseOrderDialog({
           })
           .in("id", Array.from(selectedItemIds));
 
-        toast.success("Orden de compra creada");
+        toast.success(t("toastCreated"));
       }
 
       onSuccess();
@@ -653,11 +661,7 @@ export function PurchaseOrderDialog({
         });
         return;
       }
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Error al guardar la orden de compra"
-      );
+      toast.error(error instanceof Error ? error.message : t("toastSaveError"));
     }
   };
 
@@ -667,7 +671,7 @@ export function PurchaseOrderDialog({
         <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {isEditing ? "Editar Orden de Compra" : "Nueva Orden de Compra"}
+              {isEditing ? t("titleEdit") : t("titleNew")}
               {order?.order_number && ` - ${order.order_number}`}
             </DialogTitle>
           </DialogHeader>
@@ -679,7 +683,7 @@ export function PurchaseOrderDialog({
                   name="order_number"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel required>Número de Orden</FormLabel>
+                      <FormLabel required>{t("orderNumberLabel")}</FormLabel>
                       <FormControl>
                         <Input {...field} placeholder="PO-001" />
                       </FormControl>
@@ -693,7 +697,7 @@ export function PurchaseOrderDialog({
                   name="order_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel required>Fecha</FormLabel>
+                      <FormLabel required>{t("dateLabel")}</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -709,14 +713,16 @@ export function PurchaseOrderDialog({
                   name="supplier_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel required>Proveedor</FormLabel>
+                      <FormLabel required>{t("supplierLabel")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona un proveedor" />
+                            <SelectValue
+                              placeholder={t("supplierPlaceholder")}
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -737,7 +743,7 @@ export function PurchaseOrderDialog({
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel required>Estado</FormLabel>
+                      <FormLabel required>{t("statusLabel")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
@@ -748,7 +754,7 @@ export function PurchaseOrderDialog({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {STATUS_OPTIONS.map((status) => (
+                          {statusOptions.map((status) => (
                             <SelectItem key={status.value} value={status.value}>
                               {status.label}
                             </SelectItem>
@@ -767,7 +773,7 @@ export function PurchaseOrderDialog({
                   name="delivery_deadline"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Plazo de Entrega</FormLabel>
+                      <FormLabel>{t("deliveryDeadlineLabel")}</FormLabel>
                       <Select
                         value={
                           PREDEFINED_DEADLINE_VALUES.has(field.value ?? "")
@@ -778,11 +784,13 @@ export function PurchaseOrderDialog({
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar plazo" />
+                            <SelectValue
+                              placeholder={t("deliveryDeadlinePlaceholder")}
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {DELIVERY_DEADLINE_OPTIONS.map((opt) => (
+                          {deliveryDeadlineOptions.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
                               {opt.label}
                             </SelectItem>
@@ -798,7 +806,7 @@ export function PurchaseOrderDialog({
                   name="delivery_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Fecha de Entrega</FormLabel>
+                      <FormLabel>{t("deliveryDateLabel")}</FormLabel>
                       <FormControl>
                         <Input type="date" {...field} />
                       </FormControl>
@@ -813,10 +821,10 @@ export function PurchaseOrderDialog({
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notas</FormLabel>
+                    <FormLabel>{t("notesLabel")}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Notas adicionales sobre la orden..."
+                        placeholder={t("notesPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -830,13 +838,13 @@ export function PurchaseOrderDialog({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium">
-                      Ítems a Incluir{" "}
+                      {t("itemsToInclude")}{" "}
                       <span className="text-destructive ml-1">*</span>
                     </label>
                     <div className="relative w-64">
                       <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
                       <Input
-                        placeholder="Buscar ítems..."
+                        placeholder={t("searchItemsPlaceholder")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-8"
@@ -853,8 +861,8 @@ export function PurchaseOrderDialog({
                   ) : filteredItems.length === 0 ? (
                     <div className="text-muted-foreground py-8 text-center">
                       {availableItems.length === 0
-                        ? "No hay ítems disponibles para este proveedor"
-                        : "No se encontraron ítems con la búsqueda"}
+                        ? t("emptyForSupplier")
+                        : t("emptySearch")}
                     </div>
                   ) : (
                     <div className="max-h-96 overflow-y-auto rounded-md border">
@@ -895,9 +903,10 @@ export function PurchaseOrderDialog({
                               <div className="flex-1">
                                 <div className="font-medium">{item.name}</div>
                                 <div className="text-muted-foreground text-sm">
-                                  Cantidad: {item.quantity} | Costo: $
-                                  {(item.unit_cost || 0).toFixed(2)} | Estado:{" "}
-                                  {item.status}
+                                  {t("quantityPrefix")} {item.quantity} |{" "}
+                                  {t("costPrefix")} $
+                                  {(item.unit_cost || 0).toFixed(2)} |{" "}
+                                  {t("statusPrefix")} {item.status}
                                 </div>
                               </div>
                             </div>
@@ -909,9 +918,7 @@ export function PurchaseOrderDialog({
 
                   {selectedItemIds.size > 0 && (
                     <div className="text-muted-foreground text-sm">
-                      {selectedItemIds.size} ítem
-                      {selectedItemIds.size !== 1 ? "s" : ""} seleccionado
-                      {selectedItemIds.size !== 1 ? "s" : ""}
+                      {t("selectedItemsCount", { count: selectedItemIds.size })}
                     </div>
                   )}
                 </div>
@@ -919,7 +926,7 @@ export function PurchaseOrderDialog({
 
               {!selectedSupplierId && !order?.supplier_id && (
                 <div className="text-muted-foreground py-4 text-center text-sm">
-                  Selecciona un proveedor para ver los ítems disponibles
+                  {t("selectSupplierHint")}
                 </div>
               )}
 
@@ -929,7 +936,7 @@ export function PurchaseOrderDialog({
                   variant="outline"
                   onClick={() => onOpenChange(false)}
                 >
-                  Cancelar
+                  {t("cancel")}
                 </Button>
                 <Button
                   type="submit"
@@ -938,7 +945,7 @@ export function PurchaseOrderDialog({
                     selectedItemIds.size === 0
                   }
                 >
-                  {isEditing ? "Actualizar" : "Crear"} Orden
+                  {isEditing ? t("updateOrder") : t("createOrder")}
                 </Button>
               </DialogFooter>
             </form>
@@ -952,14 +959,12 @@ export function PurchaseOrderDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Error</DialogTitle>
+            <DialogTitle>{t("errorTitle")}</DialogTitle>
           </DialogHeader>
           <div className="p-4">
-            <p className="text-destructive">
-              Error al cargar el diálogo. Por favor, recarga la página.
-            </p>
+            <p className="text-destructive">{t("errorLoadingDialog")}</p>
             <Button onClick={() => onOpenChange(false)} className="mt-4">
-              Cerrar
+              {t("close")}
             </Button>
           </div>
         </DialogContent>

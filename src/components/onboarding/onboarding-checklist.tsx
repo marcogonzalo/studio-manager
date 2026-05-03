@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Check, Circle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { OnboardingStepStatus } from "@/lib/onboarding";
@@ -16,6 +17,7 @@ export function OnboardingChecklist({
   steps,
   className,
 }: OnboardingChecklistProps) {
+  const t = useTranslations("Onboarding");
   const listSteps = steps.filter((s) => s.id !== "welcome");
   if (listSteps.length === 0) return null;
 
@@ -28,10 +30,10 @@ export function OnboardingChecklist({
     <Card className={cn("border-primary/20 bg-primary/5", className)}>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">
-          Completa tu configuración ({completedCount}/{total})
+          {t("checklistTitle", { completed: completedCount, total })}
         </CardTitle>
         <p className="text-muted-foreground text-sm">
-          Sigue estos pasos para sacar el máximo partido a Veta.
+          {t("checklistDescription")}
         </p>
       </CardHeader>
       <CardContent>
@@ -59,7 +61,7 @@ export function OnboardingChecklist({
                   />
                 )}
                 <span className={step.completed ? "line-through" : undefined}>
-                  {step.label}
+                  {t(`steps.${step.id}`)}
                 </span>
               </Link>
             </li>

@@ -121,7 +121,7 @@ export function maskShareToken(token: string): string {
   return `${token.slice(0, 4)}…${token.slice(-4)}`;
 }
 
-/** Path with token masked for logging (e.g. /view-project/a1b2…x9z0/products). */
+/** Path with token masked for logging (e.g. /view-project/a1b2…x9z0/spaces). */
 export function maskViewProjectPath(pathname: string): string {
   const match = pathname.match(/^\/view-project\/([^/]+)(\/.*)?$/);
   if (!match) return pathname;

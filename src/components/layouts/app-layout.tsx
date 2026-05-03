@@ -56,8 +56,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTheme } from "next-themes";
+import { useTranslations } from "next-intl";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -83,48 +84,32 @@ function AppLayoutSkeleton() {
   );
 }
 
-const navItems = [
-  { name: "Dashboard", href: appPath("/dashboard"), icon: LayoutDashboard },
-  { name: "Clientes", href: appPath("/clients"), icon: Users },
-  { name: "Proyectos", href: appPath("/projects"), icon: FolderKanban },
-  { name: "Catálogo", href: appPath("/catalog"), icon: ShoppingBag },
-  { name: "Proveedores", href: appPath("/suppliers"), icon: Truck },
-];
-
-const settingsNavItems = [
-  { name: "Volver atrás", href: appPath("/dashboard"), icon: ArrowLeft },
-  { name: "Cuenta", href: appPath("/settings/account"), icon: User },
-  {
-    name: "Personalización",
-    href: appPath("/settings/customization"),
-    icon: SlidersHorizontal,
-  },
-  { name: "Tu plan", href: appPath("/settings/plan"), icon: CreditCard },
-];
-
 const PLAN_DISPLAY_NAMES: Record<string, string> = {
   BASE: "Base",
   PRO: "Pro",
   STUDIO: "Studio",
 };
 
-const SETTINGS_BREADCRUMB_LABELS: Record<string, string> = {
-  [appPath("/settings")]: "Cuenta",
-  [appPath("/settings/account")]: "Cuenta",
-  [appPath("/settings/plan")]: "Tu plan",
-  [appPath("/settings/plan/change")]: "Cambiar plan",
-  [appPath("/settings/customization")]: "Personalización",
-};
-
 function getSettingsBreadcrumbs(
-  pathname: string
+  pathname: string,
+  t: (key: string) => string
 ): { label: string; href?: string }[] {
-  const base = { label: "Configuración", href: appPath("/settings") };
-  const current = SETTINGS_BREADCRUMB_LABELS[pathname];
-  if (!current) return [base];
-  const items = [base, { label: current }];
+  const base = { label: t("settings"), href: appPath("/settings") };
+  const pathToKey: Record<string, string> = {
+    [appPath("/settings")]: "account",
+    [appPath("/settings/account")]: "account",
+    [appPath("/settings/plan")]: "yourPlan",
+    [appPath("/settings/plan/change")]: "changePlan",
+    [appPath("/settings/customization")]: "customization",
+  };
+  const key = pathToKey[pathname];
+  if (!key) return [base];
+  const items = [base, { label: t(key) }];
   if (pathname === appPath("/settings/plan/change")) {
-    items.splice(1, 0, { label: "Tu plan", href: appPath("/settings/plan") });
+    items.splice(1, 0, {
+      label: t("yourPlan"),
+      href: appPath("/settings/plan"),
+    });
   }
   return items;
 }
@@ -153,6 +138,47 @@ function SidebarContent({
   /** Clases adicionales para el contenedor raíz (ej. en desktop: md:fixed md:w-64) */
   className?: string;
 }) {
+  const tNav = useTranslations("AppNav");
+  const navItems = useMemo(
+    () => [
+      {
+        name: tNav("dashboard"),
+        href: appPath("/dashboard"),
+        icon: LayoutDashboard,
+      },
+      { name: tNav("clients"), href: appPath("/clients"), icon: Users },
+      {
+        name: tNav("projects"),
+        href: appPath("/projects"),
+        icon: FolderKanban,
+      },
+      { name: tNav("catalog"), href: appPath("/catalog"), icon: ShoppingBag },
+      {
+        name: tNav("suppliers"),
+        href: appPath("/suppliers"),
+        icon: Truck,
+      },
+    ],
+    [tNav]
+  );
+  const settingsNavItems = useMemo(
+    () => [
+      { name: tNav("back"), href: appPath("/dashboard"), icon: ArrowLeft },
+      { name: tNav("account"), href: appPath("/settings/account"), icon: User },
+      {
+        name: tNav("customization"),
+        href: appPath("/settings/customization"),
+        icon: SlidersHorizontal,
+      },
+      {
+        name: tNav("yourPlan"),
+        href: appPath("/settings/plan"),
+        icon: CreditCard,
+      },
+    ],
+    [tNav]
+  );
+
   const { theme, setTheme } = useTheme();
   const [themeMounted, setThemeMounted] = useState(false);
   useEffect(() => setThemeMounted(true), []);
@@ -255,9 +281,7 @@ function SidebarContent({
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="bg-background border-border hover:bg-secondary absolute top-1/2 -right-3 z-10 hidden -translate-y-1/2 rounded-full border p-1 shadow-md transition-colors md:flex"
-        aria-label={
-          collapsed ? "Expandir barra lateral" : "Minimizar barra lateral"
-        }
+        aria-label={collapsed ? tNav("expandSidebar") : tNav("collapseSidebar")}
       >
         {collapsed ? (
           <PanelLeft className="text-muted-foreground h-4 w-4" />
@@ -287,16 +311,18 @@ function SidebarContent({
           >
             {(() => {
               const isDark = theme === "dark";
-              const oppositeLabel = isDark ? "Modo claro" : "Modo oscuro";
+              const oppositeLabel = isDark
+                ? tNav("lightMode")
+                : tNav("darkMode");
               const ariaLabel = isDark
-                ? "Cambiar a modo claro"
-                : "Cambiar a modo oscuro";
+                ? tNav("switchToLight")
+                : tNav("switchToDark");
               if (!themeMounted) {
                 return (
                   <div className="text-muted-foreground flex cursor-default items-center justify-between gap-2 rounded-xl px-4 py-2.5 text-sm font-medium">
                     <span className="flex items-center gap-3">
                       <Sun className="h-5 w-5 flex-shrink-0" />
-                      {!collapsed && "Tema"}
+                      {!collapsed && tNav("theme")}
                     </span>
                   </div>
                 );
@@ -360,7 +386,7 @@ function SidebarContent({
                 </Link>
               </TooltipTrigger>
               <TooltipContent side="right" variant="tertiary">
-                Mejorar plan
+                {tNav("upgradePlanTooltip")}
               </TooltipContent>
             </Tooltip>
           ) : (
@@ -369,7 +395,7 @@ function SidebarContent({
               className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20 mb-2 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors"
             >
               <Rocket className="h-4 w-4 shrink-0" />
-              <span>Mejora tu plan</span>
+              <span>{tNav("upgradePlanCta")}</span>
             </Link>
           ))}
         {collapsed ? (
@@ -413,7 +439,7 @@ function SidebarContent({
                   <DropdownMenuItem asChild>
                     <Link href={appPath("/settings")}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Configuración
+                      {tNav("settings")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
@@ -431,7 +457,7 @@ function SidebarContent({
                     className="cursor-pointer"
                   >
                     <Bug className="mr-2 h-4 w-4" />
-                    Reportar fallo
+                    {tNav("reportBug")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -439,7 +465,7 @@ function SidebarContent({
                     className="text-destructive focus:text-destructive cursor-pointer"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Cerrar Sesión
+                    {tNav("signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -470,7 +496,7 @@ function SidebarContent({
                   variant="ghost"
                   size="icon"
                   className="hover:bg-background text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer"
-                  aria-label="Cuenta y personalización"
+                  aria-label={tNav("accountMenuAria")}
                 >
                   <Settings className="h-4 w-4" />
                 </Button>
@@ -498,7 +524,7 @@ function SidebarContent({
                 <DropdownMenuItem asChild>
                   <Link href={appPath("/settings")}>
                     <Settings className="mr-2 h-4 w-4" />
-                    Configuración
+                    {tNav("settings")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -516,7 +542,7 @@ function SidebarContent({
                   className="cursor-pointer"
                 >
                   <Bug className="mr-2 h-4 w-4" />
-                  Reportar fallo
+                  {tNav("reportBug")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -524,7 +550,7 @@ function SidebarContent({
                   className="text-destructive focus:text-destructive cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Cerrar Sesión
+                  {tNav("signOut")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -540,6 +566,8 @@ export default function AppLayoutClient({
 }: {
   children: React.ReactNode;
 }) {
+  const tLayout = useTranslations("AppLayout");
+  const tCrumb = useTranslations("AppSettingsBreadcrumb");
   const { user, profileFullName, effectivePlan, signOut, loading } = useAuth();
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -603,7 +631,7 @@ export default function AppLayoutClient({
     <TooltipProvider>
       <AuthConfirmedTracker />
       <a href="#main-content" className="skip-link">
-        Saltar al contenido
+        {tLayout("skipToContent")}
       </a>
       {showOnboardingModal && firstPendingStepId && (
         <OnboardingStepModal
@@ -639,7 +667,7 @@ export default function AppLayoutClient({
               variant="ghost"
               size="icon"
               className="bg-background/80 border-border fixed bottom-4 left-1/2 z-50 h-12 w-12 -translate-x-1/2 overflow-hidden rounded-full border shadow-sm backdrop-blur-sm md:hidden print:hidden"
-              aria-label="Abrir menú"
+              aria-label={tLayout("openMenu")}
             >
               <VetaLogo
                 variant="icon"
@@ -652,12 +680,12 @@ export default function AppLayoutClient({
           <SheetContent
             side="left"
             className="border-border w-64 border-r p-0"
-            closeLabel="Cerrar menú"
+            closeLabel={tLayout("closeMenu")}
           >
             <SheetHeader className="sr-only">
-              <SheetTitle>Menú de Navegación</SheetTitle>
+              <SheetTitle>{tLayout("navMenuTitle")}</SheetTitle>
               <SheetDescription>
-                Navegación principal de la aplicación
+                {tLayout("navMenuDescription")}
               </SheetDescription>
             </SheetHeader>
             <SidebarContent
@@ -687,11 +715,11 @@ export default function AppLayoutClient({
           {(pathname.includes("/settings") ||
             pathname === appPath("/settings/customization")) && (
             <nav
-              aria-label="Breadcrumb"
+              aria-label={tLayout("breadcrumbAria")}
               className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"
             >
               <ol className="flex flex-wrap items-center gap-1.5">
-                {getSettingsBreadcrumbs(pathname).map((item, i) => (
+                {getSettingsBreadcrumbs(pathname, tCrumb).map((item, i) => (
                   <li key={i} className="flex items-center gap-1.5">
                     {i > 0 && (
                       <ChevronRight

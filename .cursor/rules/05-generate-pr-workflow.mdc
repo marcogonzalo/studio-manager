@@ -29,11 +29,12 @@ When either scenario is triggered, run **in this order**:
 - Run the formatter (e.g. `npm run format` or `npx prettier --write .`). Verify there are no format-only diffs left; fix any reported issues.
 - Do this **before** running tests and build so the build sees the final formatted code.
 
-## 3. Verify everything works
+## 3. Verify everything works (in container)
 
-- **Tests:** Run the test suite (e.g. `npm run test`). Fix failures before continuing. Minimum 80% coverage for new code (per project standards).
-- **Build:** Run the build (e.g. `npm run build`). Ensure it completes without errors.
-- Do not proceed to the next step if tests or build fail.
+- **Linter:** Run lint **inside the Docker/dev container** (e.g. `docker compose exec <service> npm run lint`). Fix all errors before continuing.
+- **Tests:** Run the test suite **inside the Docker/dev container** (e.g. `docker compose exec <service> npm run test`). Fix failures before continuing. Minimum 80% coverage for new code (per project standards).
+- **Build:** Run the build **inside the Docker/dev container** (e.g. `docker compose exec <service> npm run build`). Ensure it completes without errors.
+- Do not proceed to the next step if lint, tests, or build fail.
 
 ## 4. Update documentation
 
@@ -74,7 +75,7 @@ When either scenario is triggered, run **in this order**:
 
 **Summary:**
 
-- **Generate PR:** Branch → Clean → Format → Tests + Build → Documentation → [New routes: ask public/private if unknown, update middleware] → Commits → Push → PR
+- **Generate PR:** Branch → Clean → Format → Lint + Tests + Build (container) → Documentation → [New routes: ask public/private if unknown, update middleware] → Commits → Push → PR
 - **Push changes:** same flow, stop after Push.
 - **Rutas:** Si se añade una ruta nueva que no está en una carpeta conocida, preguntar si es pública; si es pública, añadirla a `PUBLIC_ROUTES` en el middleware.
 

@@ -1,0 +1,44 @@
+{
+  "Onboarding": {
+    "checklistTitle": "Completa tu configuración ({completed}/{total})",
+    "checklistDescription": "Sigue estos pasos para sacar el máximo partido a Veta.",
+    "steps": {
+      "welcome": "Bienvenida",
+      "config": "Configurar cuenta y personalización",
+      "client": "Añadir un cliente",
+      "project": "Crear un proyecto",
+      "public-profile": "Nombre público y correo público"
+    },
+    "welcome": {
+      "title": "¡Bienvenid@!",
+      "line1": "¡Qué alegría que hayas llegado hasta aquí!",
+      "line2": "Veta ha sido desarrollada con mucho cariño y dedicación y espero que sea de tu agrado.",
+      "line3": "Ahora, vamos a realizar unos primeros pasos de configuración...",
+      "continue": "Continuar"
+    },
+    "later": "Más tarde",
+    "step": {
+      "config": {
+        "title": "Configurar cuenta y personalización",
+        "description": "Completa tu perfil, moneda e impuesto por defecto para usar Veta con comodidad.",
+        "primaryLabel": "Ir a Cuenta",
+        "secondaryLabel": "Ir a Personalización"
+      },
+      "client": {
+        "title": "Añadir un cliente",
+        "description": "Crea tu primer cliente para asociarlo a proyectos.",
+        "primaryLabel": "Ir a Clientes"
+      },
+      "project": {
+        "title": "Crear un proyecto",
+        "description": "Crea tu primer proyecto para organizar espacios y presupuestos.",
+        "primaryLabel": "Ir a Proyectos"
+      },
+      "publicProfile": {
+        "title": "Nombre público y correo público",
+        "description": "Configura cómo quieres que aparezcan tu nombre y correo en los presupuestos.",
+        "primaryLabel": "Ir a Personalización"
+      }
+    }
+  }
+}

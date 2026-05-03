@@ -1,6 +1,7 @@
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,17 +41,19 @@ import { Plus } from "lucide-react";
 
 const MAX_PRODUCT_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
-const formSchema = z.object({
-  name: z.string().min(2, "Nombre requerido"),
-  reference_code: z.string().optional(),
-  reference_url: z.string().optional(),
-  description: z.string().optional(),
-  cost_price: z.string().transform((val) => parseFloat(val) || 0),
-  currency: z.string().optional(),
-  category: z.string().optional(),
-  supplier_id: z.string().optional(),
-  image_url: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    name: z.string().min(2, t("validationNameRequired")),
+    reference_code: z.string().optional(),
+    reference_url: z.string().optional(),
+    description: z.string().optional(),
+    cost_price: z.string().transform((val) => parseFloat(val) || 0),
+    currency: z.string().optional(),
+    category: z.string().optional(),
+    supplier_id: z.string().optional(),
+    image_url: z.string().optional(),
+  });
+}
 
 interface ProductDialogProps {
   open: boolean;
@@ -65,6 +68,7 @@ export function ProductDialog({
   product,
   onSuccess,
 }: ProductDialogProps) {
+  const t = useTranslations("DialogProduct");
   const { user, effectivePlan } = useAuth();
   const profileDefaults = useProfileDefaults();
   const supabase = getSupabaseClient();
@@ -84,6 +88,7 @@ export function ProductDialog({
   const uploadedAssetIdRef = useRef<string | null>(null);
 
   const productIdForUpload = product?.id ?? "";
+  const formSchema = buildFormSchema(t);
 
   type FormValues = {
     name: string;
@@ -185,7 +190,7 @@ export function ProductDialog({
         pendingImageFile &&
         pendingImageFile.size > MAX_PRODUCT_IMAGE_SIZE_BYTES
       ) {
-        throw new Error("La imagen no puede superar 5MB");
+        throw new Error(t("imageTooLarge"));
       }
 
       // Convert empty strings to null for optional fields to avoid overwriting existing data
@@ -262,7 +267,7 @@ export function ProductDialog({
         if (error) throw error;
         uploadedImageSizeBytesRef.current = null;
         uploadedAssetIdRef.current = null;
-        toast.success("Producto actualizado");
+        toast.success(t("toastUpdated"));
       } else {
         // New product: insert first (no image_url if we have a pending file to upload)
         const insertData = { ...data };
@@ -302,10 +307,8 @@ export function ProductDialog({
                 "Error rolling back product after upload failure:"
               );
             }
-            reportError(
-              new Error(uploadJson.error ?? "Error al subir la imagen")
-            );
-            toast.error(uploadJson.error ?? "Error al subir la imagen");
+            reportError(new Error(uploadJson.error ?? t("toastUploadError")));
+            toast.error(uploadJson.error ?? t("toastUploadError"));
             setPendingImageFile(null);
             return;
           }
@@ -330,7 +333,7 @@ export function ProductDialog({
           }
         }
         setPendingImageFile(null);
-        toast.success("Producto creado");
+        toast.success(t("toastCreated"));
       }
       onSuccess();
     } catch (error: unknown) {
@@ -342,7 +345,7 @@ export function ProductDialog({
         return;
       }
       reportError(error, "Error saving product:");
-      toast.error(error instanceof Error ? error.message : "Error al guardar");
+      toast.error(error instanceof Error ? error.message : t("toastSaveError"));
     }
   }
 
@@ -350,7 +353,7 @@ export function ProductDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>{product ? "Editar" : "Nuevo"} Producto</DialogTitle>
+          <DialogTitle>{product ? t("titleEdit") : t("titleNew")}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -360,7 +363,7 @@ export function ProductDialog({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>Nombre</FormLabel>
+                    <FormLabel required>{t("nameLabel")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -373,7 +376,7 @@ export function ProductDialog({
                 name="reference_code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Referencia</FormLabel>
+                    <FormLabel>{t("referenceLabel")}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -388,7 +391,7 @@ export function ProductDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descripción</FormLabel>
+                  <FormLabel>{t("descriptionLabel")}</FormLabel>
                   <FormControl>
                     <Textarea {...field} rows={2} />
                   </FormControl>
@@ -402,9 +405,13 @@ export function ProductDialog({
               name="reference_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL de Referencia</FormLabel>
+                  <FormLabel>{t("referenceUrlLabel")}</FormLabel>
                   <FormControl>
-                    <Input type="url" placeholder="https://..." {...field} />
+                    <Input
+                      type="url"
+                      placeholder={t("referenceUrlPlaceholder")}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -417,9 +424,12 @@ export function ProductDialog({
                 name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Categoría</FormLabel>
+                    <FormLabel>{t("categoryLabel")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Muebles, Iluminación..." {...field} />
+                      <Input
+                        placeholder={t("categoryPlaceholder")}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -430,7 +440,7 @@ export function ProductDialog({
                 name="cost_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Costo Base</FormLabel>
+                    <FormLabel>{t("baseCostLabel")}</FormLabel>
                     <div className="border-input flex overflow-hidden rounded-md border shadow-sm">
                       <FormControl>
                         <Input
@@ -488,7 +498,7 @@ export function ProductDialog({
                 name="supplier_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Proveedor</FormLabel>
+                    <FormLabel>{t("supplierLabel")}</FormLabel>
                     <div className="flex gap-2">
                       <Select
                         onValueChange={field.onChange}
@@ -496,7 +506,7 @@ export function ProductDialog({
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar" />
+                            <SelectValue placeholder={t("select")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -512,8 +522,8 @@ export function ProductDialog({
                         variant="outline"
                         size="icon"
                         onClick={() => setIsSupplierDialogOpen(true)}
-                        title="Agregar nuevo proveedor"
-                        aria-label="Agregar nuevo proveedor"
+                        title={t("addSupplier")}
+                        aria-label={t("addSupplier")}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -529,7 +539,7 @@ export function ProductDialog({
               name="image_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Imagen del producto</FormLabel>
+                  <FormLabel>{t("imageLabel")}</FormLabel>
                   {user?.id ? (
                     product ? (
                       <ProductImageUpload
@@ -540,7 +550,7 @@ export function ProductDialog({
                           uploadedImageSizeBytesRef.current =
                             fileSizeBytes ?? null;
                           uploadedAssetIdRef.current = assetId ?? null;
-                          toast.success("Imagen subida");
+                          toast.success(t("toastImageUploaded"));
                         }}
                         onUploadError={(msg) => toast.error(msg)}
                         className="mt-2"
@@ -569,7 +579,7 @@ export function ProductDialog({
             />
 
             <DialogFooter>
-              <Button type="submit">Guardar</Button>
+              <Button type="submit">{t("save")}</Button>
             </DialogFooter>
           </form>
         </Form>

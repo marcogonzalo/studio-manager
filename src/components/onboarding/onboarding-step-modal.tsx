@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -12,16 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { appPath } from "@/lib/app-paths";
 import type { OnboardingStepId } from "@/lib/onboarding";
-
-const WELCOME_COPY = {
-  title: "¡Bienvenid@!",
-  lines: [
-    "¡Qué alegría que hayas llegado hasta aquí!",
-    "Veta ha sido desarrollada con mucho cariño y dedicación y espero que sea de tu agrado.",
-    "Ahora, vamos a realizar unos primeros pasos de configuración...",
-  ],
-  cta: "Continuar",
-};
 
 function buildOnboardingUrl(href: string, stepId: OnboardingStepId): string {
   const base = href.startsWith("/") ? href : appPath(href);
@@ -44,6 +35,7 @@ export function OnboardingStepModal({
   onOmitir,
   onWelcomeComplete,
 }: OnboardingStepModalProps) {
+  const t = useTranslations("Onboarding");
   const handleOmitir = () => {
     onOmitir();
     onOpenChange(false);
@@ -58,14 +50,16 @@ export function OnboardingStepModal({
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader>
-            <DialogTitle className="text-2xl">{WELCOME_COPY.title}</DialogTitle>
+            <DialogTitle className="text-2xl">{t("welcome.title")}</DialogTitle>
             <div
               id="onboarding-welcome-desc"
               className="text-muted-foreground mt-2 space-y-2 text-sm"
             >
-              {WELCOME_COPY.lines.map((line, i) => (
-                <p key={i}>{line}</p>
-              ))}
+              {[t("welcome.line1"), t("welcome.line2"), t("welcome.line3")].map(
+                (line, i) => (
+                  <p key={i}>{line}</p>
+                )
+              )}
             </div>
           </DialogHeader>
           <DialogFooter className="flex-col gap-2 sm:flex-row">
@@ -76,14 +70,14 @@ export function OnboardingStepModal({
                 // No cerrar: el siguiente paso (config) se mostrará al actualizar firstPendingStepId
               }}
             >
-              {WELCOME_COPY.cta}
+              {t("welcome.continue")}
             </Button>
             <Button
               variant="ghost"
               className="w-full sm:w-auto"
               onClick={handleOmitir}
             >
-              Más tarde
+              {t("later")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -103,33 +97,30 @@ export function OnboardingStepModal({
     }
   > = {
     config: {
-      title: "Configurar cuenta y personalización",
-      description:
-        "Completa tu perfil, moneda e impuesto por defecto para usar Veta con comodidad.",
+      title: t("step.config.title"),
+      description: t("step.config.description"),
       primaryHref: appPath("/settings/account"),
-      primaryLabel: "Ir a Cuenta",
+      primaryLabel: t("step.config.primaryLabel"),
       secondaryHref: appPath("/settings/customization"),
-      secondaryLabel: "Ir a Personalización",
+      secondaryLabel: t("step.config.secondaryLabel"),
     },
     client: {
-      title: "Añadir un cliente",
-      description: "Crea tu primer cliente para asociarlo a proyectos.",
+      title: t("step.client.title"),
+      description: t("step.client.description"),
       primaryHref: appPath("/clients"),
-      primaryLabel: "Ir a Clientes",
+      primaryLabel: t("step.client.primaryLabel"),
     },
     project: {
-      title: "Crear un proyecto",
-      description:
-        "Crea tu primer proyecto para organizar espacios y presupuestos.",
+      title: t("step.project.title"),
+      description: t("step.project.description"),
       primaryHref: appPath("/projects"),
-      primaryLabel: "Ir a Proyectos",
+      primaryLabel: t("step.project.primaryLabel"),
     },
     "public-profile": {
-      title: "Nombre público y correo público",
-      description:
-        "Configura cómo quieres que aparezcan tu nombre y correo en los presupuestos.",
+      title: t("step.publicProfile.title"),
+      description: t("step.publicProfile.description"),
       primaryHref: appPath("/settings/customization"),
-      primaryLabel: "Ir a Personalización",
+      primaryLabel: t("step.publicProfile.primaryLabel"),
     },
   };
 
@@ -172,7 +163,7 @@ export function OnboardingStepModal({
             className="w-full sm:w-auto"
             onClick={handleOmitir}
           >
-            Más tarde
+            {t("later")}
           </Button>
         </DialogFooter>
       </DialogContent>

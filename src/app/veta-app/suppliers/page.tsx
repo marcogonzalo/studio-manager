@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,6 +43,7 @@ function getWebsiteHostname(website: string): string {
 }
 
 export default function SuppliersPage() {
+  const t = useTranslations("SuppliersPage");
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchInput, searchDebounced, setSearchInput] = useDebouncedState(
@@ -82,9 +84,7 @@ export default function SuppliersPage() {
       const { canDeleteSupplier } = await import("@/lib/validation");
       const canDelete = await canDeleteSupplier(id);
       if (!canDelete) {
-        toast.error(
-          "No se puede eliminar el proveedor porque está asociado a productos u órdenes de compra en proyectos"
-        );
+        toast.error(t("toastDeleteBlocked"));
         setDeleteTarget(null);
         return;
       }
@@ -96,11 +96,11 @@ export default function SuppliersPage() {
             duration: 5000,
           });
         } else {
-          toast.error("Error al eliminar");
+          toast.error(t("toastDeleteError"));
         }
         return;
       }
-      toast.success("Proveedor eliminado");
+      toast.success(t("toastDeleted"));
       setDeleteTarget(null);
       fetchSuppliers();
     } finally {
@@ -114,7 +114,7 @@ export default function SuppliersPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Truck className="text-primary h-8 w-8" />
-            <h1 className="text-3xl font-bold tracking-tight">Proveedores</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
           <Button
             onClick={() => {
@@ -122,13 +122,10 @@ export default function SuppliersPage() {
               setIsDialogOpen(true);
             }}
           >
-            <Plus className="mr-2 h-4 w-4" /> Nuevo Proveedor
+            <Plus className="mr-2 h-4 w-4" /> {t("newSupplier")}
           </Button>
         </div>
-        <p className="text-muted-foreground text-sm">
-          Gestiona proveedores y sus datos de contacto para el catálogo y las
-          compras.
-        </p>
+        <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
       <div className="flex items-center space-x-2">
@@ -139,11 +136,11 @@ export default function SuppliersPage() {
           />
           <Input
             type="search"
-            placeholder="Buscar proveedores…"
+            placeholder={t("searchPlaceholder")}
             className="pl-8"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            aria-label="Buscar proveedores"
+            aria-label={t("searchAria")}
           />
         </div>
       </div>
@@ -166,10 +163,10 @@ export default function SuppliersPage() {
                 <Truck className="text-muted-foreground h-8 w-8" />
               </div>
               <h3 className="text-foreground mt-4 font-medium">
-                No se encontraron proveedores
+                {t("emptyTitle")}
               </h3>
               <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-                Añade proveedores para asociarlos a productos del catálogo.
+                {t("emptyDescription")}
               </p>
               <Button
                 onClick={() => {
@@ -178,7 +175,7 @@ export default function SuppliersPage() {
                 }}
                 className="mt-4"
               >
-                <Plus className="mr-2 h-4 w-4" /> Nuevo Proveedor
+                <Plus className="mr-2 h-4 w-4" /> {t("newSupplier")}
               </Button>
             </CardContent>
           </Card>
@@ -237,7 +234,7 @@ export default function SuppliersPage() {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      aria-label="Acciones del proveedor"
+                      aria-label={t("actionsAria")}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <MoreVertical className="h-4 w-4" />
@@ -251,7 +248,7 @@ export default function SuppliersPage() {
                       }}
                     >
                       <Pencil className="mr-2 h-4 w-4" />
-                      Editar
+                      {t("edit")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={(e) => {
@@ -261,7 +258,7 @@ export default function SuppliersPage() {
                       className="text-destructive"
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
+                      {t("delete")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -284,8 +281,8 @@ export default function SuppliersPage() {
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
-        title="¿Eliminar proveedor?"
-        description="Esta acción no se puede deshacer. No podrá eliminarse si está asociado a productos u órdenes de compra."
+        title={t("confirmDeleteTitle")}
+        description={t("confirmDeleteDescription")}
         onConfirm={handleConfirmDelete}
         loading={deleteLoading}
       />

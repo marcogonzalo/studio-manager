@@ -1,0 +1,13 @@
+{
+  "Common": {
+    "skipToContent": "Saltar al contenido",
+    "openMenu": "Abrir menú",
+    "backToHome": "Volver al inicio",
+    "menuTitle": "Menú de navegación",
+    "signingIn": "Iniciando sesión…",
+    "themeMenuLabel": "Cambiar tema",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "themeSystem": "Sistema"
+  }
+}

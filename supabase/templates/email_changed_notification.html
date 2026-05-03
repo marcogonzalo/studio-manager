@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es">
+<html lang='{{ if and .Data (eq .Data.lang "en") }}en{{ else }}es{{ end }}'>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Correo modificado — Veta</title>
+    <title>{{ if and .Data (eq .Data.lang "en") }}Email updated — Veta{{ else }}Correo modificado — Veta{{ end }}</title>
     <style>
       body {
         font-family:
@@ -66,19 +66,10 @@
     <div class="wrapper">
       <div class="card">
         <div class="brand">Veta</div>
-        <h1>Correo de la cuenta actualizado</h1>
-        <p>
-          El correo de tu cuenta se ha cambiado de {{ .OldEmail }} a {{ .Email
-          }}.
-        </p>
-        <p style="font-size: 13px; color: #6b6560">
-          Si no fuiste tú quien realizó este cambio, contacta con soporte lo
-          antes posible.
-        </p>
-        <div class="footer">
-          <a href="{{ .SiteURL }}">Veta</a> — Gestión de proyectos de diseño
-          interior.
-        </div>
+        <h1>{{ if and .Data (eq .Data.lang "en") }}Account email updated{{ else }}Correo de la cuenta actualizado{{ end }}</h1>
+        <p>{{ if and .Data (eq .Data.lang "en") }}Your account email was changed from {{ .OldEmail }} to {{ .Email }}.{{ else }}El correo de tu cuenta se ha cambiado de {{ .OldEmail }} a {{ .Email }}.{{ end }}</p>
+        <p style="font-size: 13px; color: #6b6560">{{ if and .Data (eq .Data.lang "en") }}If you did not make this change, contact support as soon as possible.{{ else }}Si no fuiste tú quien realizó este cambio, contacta con soporte lo antes posible.{{ end }}</p>
+        <div class="footer">{{ if and .Data (eq .Data.lang "en") }}<a href="{{ .SiteURL }}">Veta</a> — Interior design project management.{{ else }}<a href="{{ .SiteURL }}">Veta</a> — Gestión de proyectos de diseño interior.{{ end }}</div>
       </div>
     </div>
   </body>

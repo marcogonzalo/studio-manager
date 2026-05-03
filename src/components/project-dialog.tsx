@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,34 +53,36 @@ import {
   getPlanErrorMessage,
 } from "@/lib/utils";
 
-const formSchema = z.object({
-  name: z.string().min(2, "Nombre requerido"),
-  description: z.string().optional(),
-  client_id: z.string().min(1, "Cliente requerido"),
-  status: z.enum(["active", "completed", "cancelled"]).default("active"),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-  address: z.string().optional(),
-  phase: z
-    .enum([
-      "diagnosis",
-      "design",
-      "executive",
-      "budget",
-      "construction",
-      "delivery",
-    ])
-    .optional(),
-  tax_rate: z
-    .string()
-    .optional()
-    .refine((val) => {
-      if (!val || val.trim() === "") return true;
-      const num = parseFloat(val);
-      return !isNaN(num) && num >= 0;
-    }, "El impuesto debe ser mayor o igual a 0"),
-  currency: z.string().optional(),
-});
+function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+  return z.object({
+    name: z.string().min(2, t("validationNameRequired")),
+    description: z.string().optional(),
+    client_id: z.string().min(1, t("validationClientRequired")),
+    status: z.enum(["active", "completed", "cancelled"]).default("active"),
+    start_date: z.string().optional(),
+    end_date: z.string().optional(),
+    address: z.string().optional(),
+    phase: z
+      .enum([
+        "diagnosis",
+        "design",
+        "executive",
+        "budget",
+        "construction",
+        "delivery",
+      ])
+      .optional(),
+    tax_rate: z
+      .string()
+      .optional()
+      .refine((val) => {
+        if (!val || val.trim() === "") return true;
+        const num = parseFloat(val);
+        return !isNaN(num) && num >= 0;
+      }, t("validationTaxNonNegative")),
+    currency: z.string().optional(),
+  });
+}
 
 interface ProjectDialogProps {
   open: boolean;
@@ -94,6 +97,8 @@ export function ProjectDialog({
   onSuccess,
   project,
 }: ProjectDialogProps) {
+  const t = useTranslations("DialogProject");
+  const formSchema = buildFormSchema(t);
   const { user, effectivePlan } = useAuth();
   const profileDefaults = useProfileDefaults();
   const supabase = getSupabaseClient();
@@ -329,7 +334,7 @@ export function ProjectDialog({
 
         if (error) throw error;
 
-        toast.success("Proyecto actualizado");
+        toast.success(t("toastUpdated"));
       } else {
         const { error } = await supabase.from("projects").insert([
           {
@@ -340,7 +345,7 @@ export function ProjectDialog({
 
         if (error) throw error;
 
-        toast.success("Proyecto creado");
+        toast.success(t("toastCreated"));
         form.reset();
       }
 
@@ -368,8 +373,8 @@ export function ProjectDialog({
         error instanceof Error
           ? error.message
           : project
-            ? "Error al actualizar proyecto"
-            : "Error al crear proyecto";
+            ? t("toastUpdateError")
+            : t("toastCreateError");
       toast.error(errorMessage);
     }
   }
@@ -397,32 +402,23 @@ export function ProjectDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>
               {pendingStatus === "completed"
-                ? "Marcar proyecto como completado"
-                : "Cancelar proyecto"}
+                ? t("confirmCompleteTitle")
+                : t("confirmCancelTitle")}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingStatus === "completed" ? (
-                <>
-                  Vas a marcar el proyecto como completado y pasará a modo de
-                  solo lectura. Asegúrate de que has registrado todos los
-                  cambios antes para garantizar que tu proyecto ha quedado a
-                  punto por si necesitas consultarlo en el futuro.
-                </>
+                <>{t("confirmCompleteDescription")}</>
               ) : (
-                <>
-                  Vas a cancelar un proyecto. Esta acción es irreversible y hará
-                  que el proyecto pase a modo lectura y no podrás editarlo. ¿Es
-                  lo que quieres hacer?
-                </>
+                <>{t("confirmCancelDescription")}</>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={handleCancelStatusChange}>
-              Cancelar
+              {t("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmStatusChange}>
-              Confirmar
+              {t("confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -431,11 +427,11 @@ export function ProjectDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>{project ? "Editar" : "Nuevo"} Proyecto</DialogTitle>
+            <DialogTitle>
+              {project ? t("titleEdit") : t("titleNew")}
+            </DialogTitle>
             <DialogDescription>
-              {project
-                ? "Edita la información del proyecto."
-                : "Crea un nuevo proyecto de diseño."}
+              {project ? t("descriptionEdit") : t("descriptionNew")}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -446,9 +442,9 @@ export function ProjectDialog({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>Nombre del Proyecto</FormLabel>
+                    <FormLabel required>{t("nameLabel")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Reforma Sala Principal" {...field} />
+                      <Input placeholder={t("namePlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -461,7 +457,7 @@ export function ProjectDialog({
                 name="client_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>Cliente</FormLabel>
+                    <FormLabel required>{t("clientLabel")}</FormLabel>
                     <div className="flex gap-2">
                       <Select
                         onValueChange={field.onChange}
@@ -469,7 +465,7 @@ export function ProjectDialog({
                       >
                         <FormControl>
                           <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Selecciona un cliente" />
+                            <SelectValue placeholder={t("clientPlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -485,8 +481,8 @@ export function ProjectDialog({
                         variant="outline"
                         size="icon"
                         onClick={() => setIsClientDialogOpen(true)}
-                        title="Agregar nuevo cliente"
-                        aria-label="Agregar nuevo cliente"
+                        title={t("addClientAria")}
+                        aria-label={t("addClientAria")}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -502,9 +498,9 @@ export function ProjectDialog({
                 name="address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Dirección</FormLabel>
+                    <FormLabel>{t("addressLabel")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Dirección del proyecto" {...field} />
+                      <Input placeholder={t("addressPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -517,10 +513,10 @@ export function ProjectDialog({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Descripción</FormLabel>
+                    <FormLabel>{t("descriptionLabel")}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Detalles del proyecto..."
+                        placeholder={t("descriptionPlaceholder")}
                         {...field}
                       />
                     </FormControl>
@@ -536,29 +532,35 @@ export function ProjectDialog({
                   name="phase"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Fase del Proyecto</FormLabel>
+                      <FormLabel>{t("phaseLabel")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecciona una fase" />
+                            <SelectValue placeholder={t("phasePlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="diagnosis">
-                            1. Diagnóstico
+                            {t("phaseDiagnosis")}
                           </SelectItem>
-                          <SelectItem value="design">2. Diseño</SelectItem>
+                          <SelectItem value="design">
+                            {t("phaseDesign")}
+                          </SelectItem>
                           <SelectItem value="executive">
-                            3. Proyecto Ejecutivo
+                            {t("phaseExecutive")}
                           </SelectItem>
                           <SelectItem value="budget">
-                            4. Presupuestos
+                            {t("phaseBudget")}
                           </SelectItem>
-                          <SelectItem value="construction">5. Obra</SelectItem>
-                          <SelectItem value="delivery">6. Entrega</SelectItem>
+                          <SelectItem value="construction">
+                            {t("phaseConstruction")}
+                          </SelectItem>
+                          <SelectItem value="delivery">
+                            {t("phaseDelivery")}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -571,20 +573,26 @@ export function ProjectDialog({
                   name="status"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Estado</FormLabel>
+                      <FormLabel>{t("statusLabel")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Estado" />
+                            <SelectValue placeholder={t("statusPlaceholder")} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="active">Activo</SelectItem>
-                          <SelectItem value="completed">Completado</SelectItem>
-                          <SelectItem value="cancelled">Cancelado</SelectItem>
+                          <SelectItem value="active">
+                            {t("statusActive")}
+                          </SelectItem>
+                          <SelectItem value="completed">
+                            {t("statusCompleted")}
+                          </SelectItem>
+                          <SelectItem value="cancelled">
+                            {t("statusCancelled")}
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -600,7 +608,7 @@ export function ProjectDialog({
                   name="start_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Fecha Inicio</FormLabel>
+                      <FormLabel>{t("startDateLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="date"
@@ -618,7 +626,7 @@ export function ProjectDialog({
                   name="end_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Fecha Estimada de Entrega</FormLabel>
+                      <FormLabel>{t("endDateLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="date"
@@ -639,7 +647,7 @@ export function ProjectDialog({
                   name="currency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Moneda</FormLabel>
+                      <FormLabel>{t("currencyLabel")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={
@@ -651,7 +659,9 @@ export function ProjectDialog({
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Moneda" />
+                            <SelectValue
+                              placeholder={t("currencyPlaceholder")}
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -673,13 +683,13 @@ export function ProjectDialog({
                   name="tax_rate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Impuesto (%)</FormLabel>
+                      <FormLabel>{t("taxLabel")}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           min="0"
                           step="0.01"
-                          placeholder="Ej: 21"
+                          placeholder={t("taxPlaceholder")}
                           {...field}
                           value={
                             taxRateDisabled
@@ -695,18 +705,18 @@ export function ProjectDialog({
                 />
                 {(currencyDisabled || taxRateDisabled) && (
                   <p className="text-muted-foreground col-span-2 text-xs">
-                    Moneda e impuesto definidos por tu perfil.{" "}
+                    {t("basePlanHint")}{" "}
                     <Link href="/pricing" className="underline">
-                      Mejora tu plan
+                      {t("upgradePlan")}
                     </Link>{" "}
-                    para definirlos por proyecto.
+                    {t("basePlanHintSuffix")}
                   </p>
                 )}
               </div>
 
               <DialogFooter>
                 <Button type="submit">
-                  {project ? "Guardar Cambios" : "Crear Proyecto"}
+                  {project ? t("saveChanges") : t("createProject")}
                 </Button>
               </DialogFooter>
             </form>

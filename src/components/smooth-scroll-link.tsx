@@ -2,8 +2,7 @@
 
 import * as React from "react";
 import { useCallback } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 const SMOOTH_SCROLL_DURATION_MS = 1500; // 0.5s slower than default ~1s
@@ -107,8 +106,18 @@ export function AnchorToHash({
       </SmoothScrollLink>
     );
   }
+  // next-intl's Link typing is strict about allowed pathnames; convert
+  // hash-only hrefs to UrlObject so TS/Next accepts them.
+  type LinkHref = React.ComponentProps<typeof Link>["href"];
+
+  const linkHref: LinkHref = href.startsWith("/#")
+    ? { pathname: "/", hash: href.slice(2) }
+    : href.startsWith("#")
+      ? { pathname, hash: href.slice(1) }
+      : (href as LinkHref);
+
   return (
-    <Link href={href} className={className} {...props}>
+    <Link href={linkHref} className={className} {...props}>
       {children}
     </Link>
   );

@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KeyboardHint } from "@/components/ui/keyboard-hint";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { useAuth } from "@/components/auth-provider";
 import { Trash2, MoreVertical, StickyNote } from "lucide-react";
 import {
@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getDemoAccountMessage } from "@/lib/utils";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface Note {
@@ -36,6 +37,8 @@ export function ProjectNotes({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
+  const t = useTranslations("ProjectModuleNotes");
+  const { formatDate } = useAppFormatting();
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -86,10 +89,10 @@ export function ProjectNotes({
           duration: 5000,
         });
       } else {
-        toast.error("Error al añadir nota");
+        toast.error(t("toastAddError"));
       }
     } else {
-      toast.success("Nota añadida");
+      toast.success(t("toastAdded"));
       setNewNote("");
       fetchNotes();
     }
@@ -97,7 +100,7 @@ export function ProjectNotes({
   };
 
   const handleDeleteNote = async (id: string) => {
-    if (!confirm("¿Eliminar esta nota?")) return;
+    if (!confirm(t("confirmDelete"))) return;
     const { error } = await supabase
       .from("project_notes")
       .delete()
@@ -110,10 +113,10 @@ export function ProjectNotes({
           duration: 5000,
         });
       } else {
-        toast.error("Error al eliminar nota");
+        toast.error(t("toastDeleteError"));
       }
     } else {
-      toast.success("Nota eliminada");
+      toast.success(t("toastDeleted"));
       fetchNotes();
     }
   };
@@ -131,10 +134,12 @@ export function ProjectNotes({
           duration: 5000,
         });
       } else {
-        toast.error("Error al actualizar nota");
+        toast.error(t("toastUpdateError"));
       }
     } else {
-      toast.success(currentArchived ? "Nota desarchivada" : "Nota archivada");
+      toast.success(
+        currentArchived ? t("toastUnarchived") : t("toastArchived")
+      );
       fetchNotes();
     }
   };
@@ -142,19 +147,19 @@ export function ProjectNotes({
   return (
     <ProjectTabContent
       disabled={disabled}
-      disabledMessage="Las notas no están incluidas en tu plan actual."
+      disabledMessage={t("disabledMessage")}
     >
       <div className="space-y-6">
-        <TabSectionHeader title="Notas" />
+        <TabSectionHeader title={t("title")} />
         <div className="grid gap-6 md:grid-cols-2">
           {!readOnly && (
             <Card className="h-full">
               <CardHeader>
-                <CardTitle>Añadir Nota</CardTitle>
+                <CardTitle>{t("addTitle")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Textarea
-                  placeholder="Escribe una nota..."
+                  placeholder={t("placeholder")}
                   value={newNote}
                   onChange={(e) => setNewNote(e.target.value)}
                   onKeyDown={(e) => {
@@ -167,11 +172,11 @@ export function ProjectNotes({
                 />
                 <div className="flex items-center gap-2">
                   <Button onClick={handleAddNote} disabled={loading}>
-                    {loading ? "Guardando..." : "Guardar Nota"}
+                    {loading ? t("saving") : t("save")}
                   </Button>
                   <KeyboardHint
                     keys="Ctrl/Cmd + Enter"
-                    description="para guardar"
+                    description={t("shortcutDescription")}
                   />
                 </div>
               </CardContent>
@@ -187,10 +192,10 @@ export function ProjectNotes({
               <Card className="flex h-full flex-col">
                 <CardContent className="flex flex-1 flex-col justify-center py-12 text-center">
                   <StickyNote className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-                  <p className="text-muted-foreground mb-4">No hay notas.</p>
+                  <p className="text-muted-foreground mb-4">{t("empty")}</p>
                   {!readOnly && (
                     <p className="text-muted-foreground text-sm">
-                      Añade la primera con el formulario de la izquierda.
+                      {t("emptyHint")}
                     </p>
                   )}
                 </CardContent>
@@ -217,7 +222,9 @@ export function ProjectNotes({
                                 handleToggleArchive(note.id, note.archived)
                               }
                               className="border-border h-4 w-4 rounded"
-                              title={note.archived ? "Desarchivar" : "Archivar"}
+                              title={
+                                note.archived ? t("unarchive") : t("archive")
+                              }
                             />
                             <label
                               className="text-muted-foreground cursor-pointer text-xs"
@@ -225,7 +232,7 @@ export function ProjectNotes({
                                 handleToggleArchive(note.id, note.archived)
                               }
                             >
-                              {note.archived ? "Archivada" : "Archivar"}
+                              {note.archived ? t("archived") : t("archive")}
                             </label>
                           </>
                         )}
@@ -236,7 +243,7 @@ export function ProjectNotes({
                             <Button
                               variant="ghost"
                               size="icon"
-                              aria-label="Acciones de la nota"
+                              aria-label={t("actionsAria")}
                             >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
@@ -247,7 +254,7 @@ export function ProjectNotes({
                               className="text-destructive"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Eliminar
+                              {t("delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -255,9 +262,15 @@ export function ProjectNotes({
                     </div>
                     <p className="mb-4 whitespace-pre-wrap">{note.content}</p>
                     <div className="text-muted-foreground flex justify-between text-xs">
-                      <span>{note.user?.full_name || "Usuario"}</span>
+                      <span>{note.user?.full_name || t("userFallback")}</span>
                       <span>
-                        {format(new Date(note.created_at), "dd/MM/yyyy HH:mm")}
+                        {formatDate(note.created_at, {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     </div>
                   </CardContent>
