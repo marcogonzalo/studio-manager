@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useForm } from "react-hook-form";
