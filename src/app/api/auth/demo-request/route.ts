@@ -16,6 +16,7 @@ import {
   getDemoAccessEmailText,
 } from "@/lib/email/templates/demo-access";
 import { resolveEmailLocale } from "@/lib/email/auth-email-lang";
+import { escapeHtml } from "@/lib/escape-html";
 import { appPath } from "@/lib/app-paths";
 
 const DEMO_EMAIL = "demo@veta.pro";
@@ -112,13 +113,16 @@ export async function POST(request: NextRequest) {
     }
 
     const contactTo = getContactFormToEmail();
+    const safeEmailHtml = escapeHtml(email);
+    const safeLangHtml = escapeHtml(lang);
+    const notifiedAt = new Date().toISOString();
     await sendTransactionalEmail({
       to: contactTo,
       subject: `[Veta] Demo request / Solicitud demo — ${email} (${lang})`,
       from: from.email,
       fromName: from.name,
-      html: `<p>Demo link requested / Se solicitó enlace de demo.</p><p>Visitor / Visitante: ${email}</p><p>Locale / Idioma formulario: ${lang}</p><p>Date / Fecha: ${new Date().toISOString()}</p>`,
-      text: `Demo request.\nEmail: ${email}\nForm locale: ${lang}\nDate: ${new Date().toISOString()}`,
+      html: `<p>Demo link requested / Se solicitó enlace de demo.</p><p>Visitor / Visitante: ${safeEmailHtml}</p><p>Locale / Idioma formulario: ${safeLangHtml}</p><p>Date / Fecha: ${escapeHtml(notifiedAt)}</p>`,
+      text: `Demo request.\nEmail: ${email}\nForm locale: ${lang}\nDate: ${notifiedAt}`,
     });
 
     return NextResponse.json({ success: true });
