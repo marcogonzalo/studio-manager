@@ -31,7 +31,9 @@ export default async function ViewProjectDocumentsPage({ params }: PageProps) {
     supabase.rpc("get_project_public_documents", { share_token: token }),
   ]);
 
-  if (shareRes.error || !shareRes.data?.length) notFound();
+  if (shareRes.error) throw shareRes.error;
+  if (!shareRes.data?.length) notFound();
+  if (documentsRes.error) throw documentsRes.error;
 
   const documents = (documentsRes.data ?? []) as {
     id: string;
