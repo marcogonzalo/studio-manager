@@ -118,11 +118,11 @@ export async function POST(request: NextRequest) {
     const notifiedAt = new Date().toISOString();
     await sendTransactionalEmail({
       to: contactTo,
-      subject: `[Veta] Demo request / Solicitud demo — ${email} (${lang})`,
+      subject: `[Veta] Solicitud de demo — ${email} (${lang})`,
       from: from.email,
       fromName: from.name,
-      html: `<p>Demo link requested / Se solicitó enlace de demo.</p><p>Visitor / Visitante: ${safeEmailHtml}</p><p>Locale / Idioma formulario: ${safeLangHtml}</p><p>Date / Fecha: ${escapeHtml(notifiedAt)}</p>`,
-      text: `Demo request.\nEmail: ${email}\nForm locale: ${lang}\nDate: ${notifiedAt}`,
+      html: `<p>Se solicitó enlace de demo.</p><p>Visitante: ${safeEmailHtml}</p><p>Idioma (locale): ${safeLangHtml}</p><p>Fecha: ${escapeHtml(notifiedAt)}</p>`,
+      text: `Solicitud de demo.\nCorreo: ${email}\nIdioma (locale): ${lang}\nFecha: ${notifiedAt}`,
     });
 
     return NextResponse.json({ success: true });

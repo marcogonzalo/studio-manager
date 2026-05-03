@@ -112,6 +112,10 @@ describe("POST /api/auth/demo-request", () => {
     expect(visitorEmail?.to).toBe("visitor@example.com");
     expect(visitorEmail?.subject).toContain("Your link");
     expect(visitorEmail?.html).toContain("Try the Veta demo");
+    const internal = vi.mocked(sendTransactionalEmail).mock.calls[1]?.[0];
+    expect(internal?.subject).toContain("Solicitud de demo");
+    expect(internal?.html).toContain("Idioma (locale): en");
+    expect(internal?.html).not.toContain("Visitor");
   });
 
   it("escapes visitor email in internal notification HTML", async () => {
