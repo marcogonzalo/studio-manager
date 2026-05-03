@@ -48,6 +48,9 @@ import {
   reportError,
   INPUT_CONFIG_STANDARD_CLASS,
 } from "@/lib/utils";
+import type { Locale } from "@/i18n/config";
+import { defaultLocale } from "@/i18n/config";
+import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
 import { ChevronDown } from "lucide-react";
 
 const profileFormSchema = z.object({
@@ -95,19 +98,23 @@ export default function SettingsAccountPage() {
 
   async function onChangeEmail(values: ChangeEmailValues) {
     try {
-      const locale =
+      const rawCookie =
         typeof document !== "undefined"
-          ? (document.cookie
+          ? document.cookie
               .split("; ")
               .find((r) => r.startsWith("NEXT_LOCALE="))
-              ?.split("=")[1] ?? "es")
-          : "es";
+              ?.split("=")[1]
+          : undefined;
+      const locale: Locale = isAppLocale(rawCookie) ? rawCookie : defaultLocale;
       const redirectTo =
         typeof window !== "undefined"
           ? `${window.location.origin}/${locale}/sign-in?email_updated=1`
           : undefined;
       const { error } = await supabase.auth.updateUser(
-        { email: values.new_email.trim().toLowerCase() },
+        {
+          email: values.new_email.trim().toLowerCase(),
+          data: { lang: locale },
+        },
         redirectTo ? { emailRedirectTo: redirectTo } : undefined
       );
       if (error) throw error;
@@ -198,14 +205,17 @@ export default function SettingsAccountPage() {
       deleteForm.reset();
       toast.success(t("toastDeleted"));
       await signOut();
-      const locale =
+      const rawDelLocale =
         typeof document !== "undefined"
-          ? (document.cookie
+          ? document.cookie
               .split("; ")
               .find((r) => r.startsWith("NEXT_LOCALE="))
-              ?.split("=")[1] ?? "es")
-          : "es";
-      router.push(`/${locale}/sign-in`);
+              ?.split("=")[1]
+          : undefined;
+      const delLocale: Locale = isAppLocale(rawDelLocale)
+        ? rawDelLocale
+        : defaultLocale;
+      router.push(`/${delLocale}/sign-in`);
     } catch (err) {
       reportError(err, "Delete account:");
       toast.error(t("toastDeleteError"));

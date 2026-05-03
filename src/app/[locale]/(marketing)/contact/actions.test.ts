@@ -119,6 +119,17 @@ describe("submitContactForm", () => {
     expect(call.html).toContain("Nuevo mensaje de contacto");
   });
 
+  it("uses English inbox copy when form_locale is en", async () => {
+    const data = formData();
+    data.set("form_locale", "en");
+    const result = await submitContactForm(null, data);
+    expect(result.success).toBe(true);
+    const call = mockSendTransactionalEmail.mock.calls[0][0];
+    expect(call.subject).toContain("[Veta Contact]");
+    expect(call.html).toContain("New contact message");
+    expect(call.html).toContain("Subject:");
+  });
+
   it("returns error when MailerSend returns failure", async () => {
     mockSendTransactionalEmail.mockResolvedValueOnce({
       success: false,

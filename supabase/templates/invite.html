@@ -1,11 +1,9 @@
 <!doctype html>
-<html lang="es">
+<html lang="{{ if and .Data (eq .Data.lang "en") }}en{{ else }}es{{ end }}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>
-      Invitación a Veta, la aplicación de proyectos de diseño interior
-    </title>
+    <title>{{ if and .Data (eq .Data.lang "en") }}Invitation to Veta{{ else }}Invitación a Veta{{ end }}</title>
     <style>
       body {
         font-family:
@@ -85,25 +83,13 @@
     <div class="wrapper">
       <div class="card">
         <div class="brand">Veta</div>
-        <h1>Te han invitado a Veta</h1>
+        <h1>{{ if and .Data (eq .Data.lang "en") }}You have been invited to Veta{{ else }}Te han invitado a Veta{{ end }}</h1>
+        <p>{{ if and .Data (eq .Data.lang "en") }}You have been invited to join Veta, the platform for managing interior design projects. Click the button to accept the invitation and create your account:{{ else }}Esta es una invitación para unirte a Veta, la plataforma para gestionar proyectos de diseño interior. Haz clic en el botón para aceptar la invitación y crear tu cuenta:{{ end }}</p>
         <p>
-          Esta es una invitación para unirte a Veta, la plataforma para
-          gestionar proyectos de diseño interior. Haz clic en el botón para
-          aceptar la invitación y crear tu cuenta:
+          <a href="{{ .ConfirmationURL }}" class="button">{{ if and .Data (eq .Data.lang "en") }}Accept invitation{{ else }}Aceptar invitación{{ end }}</a>
         </p>
-        <p>
-          <a href="{{ .ConfirmationURL }}" class="button">Aceptar invitación</a>
-        </p>
-        <p class="link-fallback">
-          Si el botón no funciona, copia y pega este enlace:<br /><a
-            href="{{ .ConfirmationURL }}"
-            >{{ .ConfirmationURL }}</a
-          >
-        </p>
-        <div class="footer">
-          <a href="{{ .SiteURL }}">Veta</a> — Gestión de proyectos de diseño
-          interior.
-        </div>
+        <p class="link-fallback">{{ if and .Data (eq .Data.lang "en") }}If the button does not work, copy and paste this link:{{ else }}Si el botón no funciona, copia y pega este enlace:{{ end }}<br /><a href="{{ .ConfirmationURL }}">{{ .ConfirmationURL }}</a></p>
+        <div class="footer">{{ if and .Data (eq .Data.lang "en") }}<a href="{{ .SiteURL }}">Veta</a> — Interior design project management.{{ else }}<a href="{{ .SiteURL }}">Veta</a> — Gestión de proyectos de diseño interior.{{ end }}</div>
       </div>
     </div>
   </body>

@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { pushDemoRequest } from "@/lib/gtm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function DemoRequestForm() {
   const t = useTranslations("DemoRequestForm");
+  const locale = useLocale();
   const [sent, setSent] = useState(false);
 
   const formSchema = z.object({
@@ -39,7 +40,10 @@ export function DemoRequestForm() {
       const res = await fetch("/api/auth/demo-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: values.email.trim() }),
+        body: JSON.stringify({
+          email: values.email.trim(),
+          lang: locale,
+        }),
       });
       const data = (await res.json().catch(() => ({}))) as {
         error?: string;

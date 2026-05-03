@@ -1,11 +1,24 @@
 # Plantillas de email de Supabase Auth (Veta)
 
-Plantillas de correo personalizadas para Supabase Auth, adaptadas a la marca Veta (español, paleta sage/cream, tipografía Montserrat).
+Plantillas de correo personalizadas para Supabase Auth, adaptadas a la marca Veta (inglés y español según preferencia del usuario, paleta sage/cream, tipografía Montserrat).
+
+## Idioma (ES / EN)
+
+El cuerpo del HTML usa [plantillas Go](https://supabase.com/docs/guides/auth/auth-email-templates) y la variable **`{{ .Data }}`**, que refleja `auth.users.user_metadata`.
+
+- Si **`user_metadata.lang`** es **`"en"`**, se muestra la variante en inglés.
+- En cualquier otro caso (incluido ausente o **`"es"`**), se usa español.
+
+La app guarda `lang` en metadata al enviar el magic link (`/api/auth/magic-link`, formularios sign-in / sign-up), al cambiar el correo en ajustes (junto con `updateUser`), y al guardar el idioma en **Ajustes → Personalización** (sincroniza `auth.updateUser({ data: { lang } })`).
+
+**Asunto del correo:** en Dashboard/hosting el asunto es una sola cadena por tipo de plantilla; en `config.toml` se usan líneas **bilingües** (ES | EN) para que el preheader sea claro en ambos idiomas. El cuerpo sigue siendo el que cambia según `lang`.
 
 ## Ubicación
 
 - **Local / self-hosted:** `supabase/templates/`
 - **Config:** `supabase/config.toml` (secciones `[auth.email.template.*]` y `[auth.email.notification.*]`).
+
+Los HTML mezclan atributos con sintaxis Go (`{{ ... }}`); **Prettier los ignora** (ver `.prettierignore`) para no romper el formateo del repo.
 
 ## Plantillas incluidas
 
@@ -45,14 +58,16 @@ En proyectos alojados en Supabase, **la config de `config.toml` no se aplica** a
 
 ### Subjects de referencia (producción)
 
-- Confirm signup: `Confirma tu cuenta en Veta`
-- Invite: `Invitación a Veta`
-- Reset password: `Restablece tu contraseña — Veta`
-- Magic link: `Tu enlace de acceso — Veta`
-- Change email: `Confirma el cambio de correo — Veta`
-- Reauthentication: `Confirmar identidad — Veta`
-- Password changed (notification): `Contraseña modificada — Veta`
-- Email changed (notification): `Correo de la cuenta actualizado — Veta`
+Copiar los mismos valores que en `supabase/config.toml` (`[auth.email.template.*]` y notificaciones):
+
+- Confirm signup: `Confirma tu cuenta | Confirm your account — Veta`
+- Invite: `Invitación a Veta | Invitation to Veta`
+- Reset password: `Restablece tu contraseña | Reset your password — Veta`
+- Magic link: `Tu enlace de acceso | Your sign-in link — Veta`
+- Change email: `Confirma el cambio de correo | Confirm email change — Veta`
+- Reauthentication: `Confirmar identidad | Confirm your identity — Veta`
+- Password changed (notification): `Contraseña modificada | Password updated — Veta`
+- Email changed (notification): `Correo actualizado | Email updated — Veta`
 
 ## Variables de plantilla (Go templates)
 
@@ -66,15 +81,16 @@ Supabase inyecta estas variables en el HTML:
 - `{{ .NewEmail }}` — Nuevo correo (solo plantilla change email).
 - `{{ .OldEmail }}` — Correo anterior (solo notificación email changed).
 - `{{ .RedirectTo }}` — URL de redirección tras confirmar.
+- `{{ .Data }}` — Metadatos del usuario; usar **`{{ .Data.lang }}`** con `eq` para bifurcar EN/ES en el HTML (ver archivos en `supabase/templates/`).
 
-No modificar los nombres de estas variables; solo se puede cambiar el texto y el diseño alrededor.
+No modificar los nombres de estas variables salvo al añadir condicionales alrededor del contenido; el diseño puede adaptarse manteniendo las variables de sustitución.
 
 ## Diseño
 
 - Marca: **Veta**, color principal `#759b6d` (verde).
 - Fondo: `#f5f3ef` (cream); tarjeta blanca, bordes redondeados.
 - Tipografía: Montserrat (en cliente de correo puede fallback a system fonts).
-- Pie: “Veta — Gestión de proyectos de diseño interior.” + enlace a `{{ .SiteURL }}`.
+- Pie: según idioma, texto equivalente en ES o EN + enlace a `{{ .SiteURL }}`.
 
 ## Error 500 "Error sending confirmation email" en producción
 

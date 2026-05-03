@@ -12,6 +12,32 @@ import {
   getClientIpFromHeaders,
   RATE_LIMIT_MESSAGE,
 } from "@/lib/rate-limit";
+import type { Locale } from "@/i18n/config";
+import { defaultLocale } from "@/i18n/config";
+import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
+
+function contactInboxLabels(locale: Locale) {
+  if (locale === "en") {
+    return {
+      subjectPrefix: "[Veta Contact]",
+      heading: "New contact message",
+      labelName: "Name",
+      labelEmail: "Email",
+      labelSubject: "Subject",
+      labelIp: "IP",
+      labelMessage: "Message",
+    };
+  }
+  return {
+    subjectPrefix: "[Veta Contacto]",
+    heading: "Nuevo mensaje de contacto",
+    labelName: "Nombre",
+    labelEmail: "Email",
+    labelSubject: "Asunto",
+    labelIp: "IP",
+    labelMessage: "Mensaje",
+  };
+}
 
 /** Minimum seconds the form must be open before submit (anti-bot). */
 const MIN_SUBMIT_SECONDS = 10;
@@ -84,16 +110,21 @@ export async function submitContactForm(
   }
 
   const { name, email, subject, message } = parsed.data;
+  const rawFormLocale = String(formData.get("form_locale") ?? "").trim();
+  const formLocale: Locale = isAppLocale(rawFormLocale)
+    ? rawFormLocale
+    : defaultLocale;
+  const L = contactInboxLabels(formLocale);
   const from = getDefaultFrom();
   const toEmail = getContactFormToEmail();
 
-  const text = `Nombre: ${name}\nEmail: ${email}\nIP: ${ip}\n\nMensaje:\n${message}`;
+  const text = `${L.labelName}: ${name}\n${L.labelEmail}: ${email}\n${L.labelIp}: ${ip}\n\n${L.labelMessage}:\n${message}`;
   const html = `
-    <h2>Nuevo mensaje de contacto</h2>
-    <p><strong>Nombre:</strong> ${escapeHtml(name)}</p>
-    <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-    <p><strong>Asunto:</strong> ${escapeHtml(subject)}</p>
-    <p><strong>IP:</strong> ${escapeHtml(ip)}</p>
+    <h2>${L.heading}</h2>
+    <p><strong>${L.labelName}:</strong> ${escapeHtml(name)}</p>
+    <p><strong>${L.labelEmail}:</strong> ${escapeHtml(email)}</p>
+    <p><strong>${L.labelSubject}:</strong> ${escapeHtml(subject)}</p>
+    <p><strong>${L.labelIp}:</strong> ${escapeHtml(ip)}</p>
     <hr>
     <p>${escapeHtml(message).replace(/\n/g, "<br>")}</p>
   `;
@@ -103,7 +134,7 @@ export async function submitContactForm(
     from: from.email,
     fromName: from.name,
     replyTo: { email, name },
-    subject: `[Veta Contacto] ${subject}`,
+    subject: `${L.subjectPrefix} ${subject}`,
     text,
     html,
   });

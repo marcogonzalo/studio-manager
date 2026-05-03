@@ -15,6 +15,7 @@ import {
   getDemoAccessEmailHtml,
   getDemoAccessEmailText,
 } from "@/lib/email/templates/demo-access";
+import { resolveEmailLocale } from "@/lib/email/auth-email-lang";
 import { appPath } from "@/lib/app-paths";
 
 const DEMO_EMAIL = "demo@veta.pro";
@@ -37,6 +38,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
+    const lang = resolveEmailLocale(
+      body.lang,
+      request.headers.get("accept-language")
+    );
     const email = typeof body.email === "string" ? body.email.trim() : "";
     if (!email) {
       return NextResponse.json(
@@ -89,11 +94,14 @@ export async function POST(request: NextRequest) {
 
     const sendResult = await sendTransactionalEmail({
       to: email,
-      subject: "Tu enlace para probar la demo de Veta",
+      subject:
+        lang === "en"
+          ? "Your link to try the Veta demo"
+          : "Tu enlace para probar la demo de Veta",
       from: from.email,
       fromName: from.name,
-      html: getDemoAccessEmailHtml(actionLink),
-      text: getDemoAccessEmailText(actionLink),
+      html: getDemoAccessEmailHtml(actionLink, lang),
+      text: getDemoAccessEmailText(actionLink, lang),
     });
 
     if (!sendResult.success) {
@@ -106,11 +114,11 @@ export async function POST(request: NextRequest) {
     const contactTo = getContactFormToEmail();
     await sendTransactionalEmail({
       to: contactTo,
-      subject: `[Veta] Nueva solicitud de demo - ${email}`,
+      subject: `[Veta] Demo request / Solicitud demo — ${email} (${lang})`,
       from: from.email,
       fromName: from.name,
-      html: `<p>Se ha solicitado un enlace de demo.</p><p>Correo del visitante: ${email}</p><p>Fecha: ${new Date().toISOString()}</p>`,
-      text: `Solicitud de demo.\nCorreo: ${email}\nFecha: ${new Date().toISOString()}`,
+      html: `<p>Demo link requested / Se solicitó enlace de demo.</p><p>Visitor / Visitante: ${email}</p><p>Locale / Idioma formulario: ${lang}</p><p>Date / Fecha: ${new Date().toISOString()}</p>`,
+      text: `Demo request.\nEmail: ${email}\nForm locale: ${lang}\nDate: ${new Date().toISOString()}`,
     });
 
     return NextResponse.json({ success: true });
