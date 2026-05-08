@@ -16,6 +16,7 @@ describe("verifyTurnstileToken", () => {
 
   it("returns ok true when siteverify reports success", async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
       json: () => Promise.resolve({ success: true }),
     });
     const result = await verifyTurnstileToken({
@@ -37,6 +38,7 @@ describe("verifyTurnstileToken", () => {
 
   it("returns ok false when siteverify reports failure", async () => {
     const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
       json: () =>
         Promise.resolve({
           success: false,

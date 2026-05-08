@@ -350,6 +350,7 @@ describe("POST /api/auth/magic-link", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
+        ok: true,
         json: () => Promise.resolve({ success: true }),
       })
     );
@@ -386,6 +387,7 @@ describe("POST /api/auth/magic-link", () => {
     });
     mockSignInWithOtp.mockResolvedValue({ error: null });
     const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
       json: () => Promise.resolve({ success: true }),
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -428,6 +430,7 @@ describe("POST /api/auth/magic-link", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
+        ok: true,
         json: () => Promise.resolve({ success: true }),
       })
     );

@@ -34,6 +34,7 @@ describe("resolveMagicLinkAntiSpam", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
+        ok: true,
         json: () =>
           Promise.resolve({
             success: false,
@@ -77,6 +78,7 @@ describe("resolveMagicLinkAntiSpam", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
+        ok: true,
         json: () => Promise.resolve({ success: true }),
       })
     );
@@ -104,6 +106,7 @@ describe("resolveMagicLinkAntiSpam", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue({
+        ok: true,
         json: () => Promise.resolve({ success: true }),
       })
     );
