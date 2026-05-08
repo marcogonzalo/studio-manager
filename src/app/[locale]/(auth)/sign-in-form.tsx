@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { pushLogin } from "@/lib/gtm";
-import { CaptchaGuard } from "@/lib/anti-spam";
+import { CaptchaGuard } from "@/lib/anti-spam/react";
 import { translateMagicLinkErrorCode } from "@/lib/auth/magic-link-error-i18n";
 
 type SignInValues = { email: string };

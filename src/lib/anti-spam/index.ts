@@ -5,8 +5,5 @@ export type {
   AntiSpamActionOnSpam,
   AntiSpamCaptchaProvider,
   AntiSpamMagicLinkConfig,
-  CaptchaGuardProvider,
   ResolveMagicLinkAntiSpamResult,
 } from "./types";
-export type { CaptchaGuardProps } from "./react/captcha-guard";
-export { CaptchaGuard } from "./react/captcha-guard";

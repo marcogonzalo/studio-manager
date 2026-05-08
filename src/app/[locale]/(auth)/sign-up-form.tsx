@@ -27,7 +27,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { pushSignUp } from "@/lib/gtm";
-import { CaptchaGuard } from "@/lib/anti-spam";
+import { CaptchaGuard } from "@/lib/anti-spam/react";
 import { translateMagicLinkErrorCode } from "@/lib/auth/magic-link-error-i18n";
 
 const VALID_PLAN_CODES = ["BASE", "PRO", "STUDIO"] as const;

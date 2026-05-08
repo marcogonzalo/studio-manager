@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CaptchaGuard } from "@/lib/anti-spam";
+import { CaptchaGuard } from "@/lib/anti-spam/react";
 import { translateMagicLinkErrorCode } from "@/lib/auth/magic-link-error-i18n";
 
 type DemoRequestFormProps = {
