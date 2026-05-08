@@ -18,6 +18,8 @@ import {
 import { resolveEmailLocale } from "@/lib/email/auth-email-lang";
 import { escapeHtml } from "@/lib/escape-html";
 import { appPath } from "@/lib/app-paths";
+import { resolveMagicLinkAntiSpam } from "@/lib/anti-spam";
+import { getMagicLinkAntiSpamConfig } from "@/lib/auth/magic-link-anti-spam-config";
 
 const DEMO_EMAIL = "demo@veta.pro";
 
@@ -43,6 +45,8 @@ export async function POST(request: NextRequest) {
       body.lang,
       request.headers.get("accept-language")
     );
+    const captchaToken =
+      typeof body.captchaToken === "string" ? body.captchaToken : undefined;
     const email = typeof body.email === "string" ? body.email.trim() : "";
     if (!email) {
       return NextResponse.json(
@@ -56,6 +60,31 @@ export async function POST(request: NextRequest) {
         { error: "Formato de correo no válido" },
         { status: 400 }
       );
+    }
+
+    const antiSpam = await resolveMagicLinkAntiSpam({
+      email,
+      captchaToken,
+      remoteIp: ip,
+      config: getMagicLinkAntiSpamConfig(),
+    });
+
+    if (antiSpam.action === "captcha_required") {
+      return NextResponse.json(
+        { error: "Captcha required", code: "captcha_required" },
+        { status: 400 }
+      );
+    }
+
+    if (antiSpam.action === "reject") {
+      return NextResponse.json(
+        { error: antiSpam.message, code: antiSpam.code },
+        { status: antiSpam.status }
+      );
+    }
+
+    if (antiSpam.action === "fake_success") {
+      return NextResponse.json({ success: true });
     }
 
     const serviceRoleKey = getSupabaseServiceRoleKey();

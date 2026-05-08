@@ -3,6 +3,7 @@ import { POST } from "./route";
 import { NextRequest } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendTransactionalEmail } from "@/lib/email/mailersend";
+import { getMagicLinkAntiSpamConfig } from "@/lib/auth/magic-link-anti-spam-config";
 
 vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseUrl: () => "https://test.supabase.co",
@@ -19,6 +20,10 @@ vi.mock("@/lib/email/mailersend", () => ({
   getDefaultFrom: () => ({ email: "noreply@test.com", name: "Test" }),
 }));
 
+vi.mock("@/lib/auth/magic-link-anti-spam-config", () => ({
+  getMagicLinkAntiSpamConfig: vi.fn(),
+}));
+
 vi.mock("@/lib/rate-limit", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/rate-limit")>();
   return {
@@ -31,6 +36,13 @@ vi.mock("@/lib/rate-limit", async (importOriginal) => {
 describe("POST /api/auth/demo-request", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(getMagicLinkAntiSpamConfig).mockReturnValue({
+      enabled: false,
+      captchaProvider: "none",
+      getTurnstileSecretKey: () => undefined,
+      riskThreshold: 100,
+      actionOnSpam: "silent_block",
+    });
     vi.mocked(checkRateLimit).mockReturnValue({
       allowed: true,
       remaining: 10,
@@ -183,5 +195,51 @@ describe("POST /api/auth/demo-request", () => {
     const internal = vi.mocked(sendTransactionalEmail).mock.calls[1]?.[0];
     expect(internal?.html).toContain("test&amp;visitor");
     expect(internal?.html).not.toContain("test&visitor");
+  });
+
+  it("returns 400 captcha_required when anti-spam requires captcha", async () => {
+    vi.mocked(getMagicLinkAntiSpamConfig).mockReturnValue({
+      enabled: true,
+      captchaProvider: "turnstile",
+      getTurnstileSecretKey: () => "secret",
+      riskThreshold: 0,
+      actionOnSpam: "silent_block",
+    });
+
+    const request = new NextRequest("http://localhost/api/auth/demo-request", {
+      method: "POST",
+      body: JSON.stringify({ email: "visitor@example.com" }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.code).toBe("captcha_required");
+    expect(vi.mocked(sendTransactionalEmail)).not.toHaveBeenCalled();
+  });
+
+  it("returns fake success without sending emails when anti-spam silent-blocks", async () => {
+    vi.mocked(getMagicLinkAntiSpamConfig).mockReturnValue({
+      enabled: true,
+      captchaProvider: "none",
+      getTurnstileSecretKey: () => undefined,
+      riskThreshold: 0,
+      actionOnSpam: "silent_block",
+    });
+    const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
+    vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
+
+    const request = new NextRequest("http://localhost/api/auth/demo-request", {
+      method: "POST",
+      body: JSON.stringify({ email: "visitor@example.com" }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(data.success).toBe(true);
+    expect(vi.mocked(sendTransactionalEmail)).not.toHaveBeenCalled();
   });
 });
