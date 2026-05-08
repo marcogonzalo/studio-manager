@@ -25,18 +25,28 @@ export async function verifyTurnstileToken(params: {
   }
 
   const fetchFn = params.fetchImpl ?? fetch;
-  const res = await fetchFn(SITE_VERIFY_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
 
-  const data = (await res.json()) as TurnstileSiteVerifyResponse;
-  if (!data.success) {
-    return {
-      ok: false,
-      errorCodes: data["error-codes"] ?? ["unknown-error"],
-    };
+  try {
+    const res = await fetchFn(SITE_VERIFY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    });
+
+    if (!res.ok) {
+      return { ok: false, errorCodes: ["turnstile-http-error"] };
+    }
+
+    const data = (await res.json()) as TurnstileSiteVerifyResponse;
+    if (!data.success) {
+      return {
+        ok: false,
+        errorCodes: data["error-codes"] ?? ["unknown-error"],
+      };
+    }
+
+    return { ok: true };
+  } catch {
+    return { ok: false, errorCodes: ["turnstile-request-failed"] };
   }
-  return { ok: true };
 }
