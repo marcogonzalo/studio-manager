@@ -35,7 +35,7 @@ export function getMagicLinkAntiSpamConfig(): AntiSpamMagicLinkConfig {
   const captchaProvider = hasSecret ? "turnstile" : "none";
   const rawThreshold = Number(process.env.ANTI_SPAM_RISK_THRESHOLD ?? "45");
   const riskThreshold =
-    Number.isFinite(rawThreshold) && rawThreshold > 0 && rawThreshold <= 100
+    Number.isFinite(rawThreshold) && rawThreshold >= 0 && rawThreshold <= 100
       ? rawThreshold
       : 45;
 

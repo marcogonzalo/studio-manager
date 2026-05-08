@@ -14,10 +14,16 @@ describe("magic-link-captcha-bypass", () => {
   });
 
   afterEach(() => {
-    process.env.TURNSTILE_SECRET_KEY = prevTurnstile;
-    process.env.MAGIC_LINK_CAPTCHA_BYPASS_SECRET = prevBypass;
-    if (prevBypass === undefined)
+    if (prevTurnstile === undefined) {
+      delete process.env.TURNSTILE_SECRET_KEY;
+    } else {
+      process.env.TURNSTILE_SECRET_KEY = prevTurnstile;
+    }
+    if (prevBypass === undefined) {
       delete process.env.MAGIC_LINK_CAPTCHA_BYPASS_SECRET;
+    } else {
+      process.env.MAGIC_LINK_CAPTCHA_BYPASS_SECRET = prevBypass;
+    }
   });
 
   it("issues and verifies a cookie value for the same email", () => {
