@@ -131,6 +131,7 @@ describe("Security Headers Configuration", () => {
     expect(cspValue).toContain("img-src");
     expect(cspValue).toContain("connect-src");
     expect(cspValue).toContain("frame-ancestors");
+    expect(cspValue).toContain("https://challenges.cloudflare.com");
   });
 
   it("should have frame-ancestors set to 'none' in CSP", async () => {

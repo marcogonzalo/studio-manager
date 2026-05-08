@@ -7,6 +7,47 @@ import {
 } from "@/lib/rate-limit";
 import type { Locale } from "@/i18n/config";
 import { resolveEmailLocale } from "@/lib/email/auth-email-lang";
+import {
+  evaluateEmailRisk,
+  resolveMagicLinkAntiSpam,
+  type AntiSpamMagicLinkConfig,
+} from "@/lib/anti-spam";
+import { getMagicLinkAntiSpamConfig } from "@/lib/auth/magic-link-anti-spam-config";
+import {
+  issueMagicLinkCaptchaBypassValue,
+  MAGIC_LINK_CAPTCHA_BYPASS_COOKIE,
+  verifyMagicLinkCaptchaBypassValue,
+} from "@/lib/auth/magic-link-captcha-bypass";
+
+function shouldIssueCaptchaBypassCookie(
+  email: string,
+  cfg: AntiSpamMagicLinkConfig
+): boolean {
+  if (!cfg.enabled || cfg.captchaProvider !== "turnstile") {
+    return false;
+  }
+  return evaluateEmailRisk(email.trim()).score >= cfg.riskThreshold;
+}
+
+function jsonSuccessWithCaptchaBypassRefresh(
+  email: string,
+  cfg: AntiSpamMagicLinkConfig
+): NextResponse {
+  const res = NextResponse.json({ success: true });
+  if (shouldIssueCaptchaBypassCookie(email, cfg)) {
+    const val = issueMagicLinkCaptchaBypassValue(email);
+    if (val) {
+      res.cookies.set(MAGIC_LINK_CAPTCHA_BYPASS_COOKIE, val, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 15 * 60,
+        path: "/",
+      });
+    }
+  }
+  return res;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, emailRedirectTo, data, lang: bodyLang } = body;
+    const { email, emailRedirectTo, data, lang: bodyLang, captchaToken } = body;
 
     const resolvedLang: Locale = resolveEmailLocale(
       bodyLang,
@@ -52,13 +93,54 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const antiSpamConfig = getMagicLinkAntiSpamConfig();
+    const captchaTokenStr =
+      typeof captchaToken === "string" ? captchaToken : undefined;
+    const bypassCookie = request.cookies.get(
+      MAGIC_LINK_CAPTCHA_BYPASS_COOKIE
+    )?.value;
+    const captchaBypassVerified = verifyMagicLinkCaptchaBypassValue(
+      bypassCookie,
+      email
+    );
+    const antiSpam = await resolveMagicLinkAntiSpam({
+      email,
+      captchaToken: captchaTokenStr,
+      remoteIp: ip,
+      captchaBypassVerified,
+      config: antiSpamConfig,
+    });
+
+    if (antiSpam.action === "captcha_required") {
+      return NextResponse.json(
+        { error: "Captcha required", code: "captcha_required" },
+        { status: 400 }
+      );
+    }
+
+    if (antiSpam.action === "reject") {
+      return NextResponse.json(
+        { error: antiSpam.message, code: antiSpam.code },
+        { status: antiSpam.status }
+      );
+    }
+
+    if (antiSpam.action === "fake_success") {
+      return NextResponse.json({ success: true });
+    }
+
+    const mergedWithAntiSpam =
+      antiSpam.action === "proceed" && antiSpam.metadataPatch
+        ? { ...mergedData, ...antiSpam.metadataPatch }
+        : mergedData;
+
     const supabase = await createClient();
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo,
-        data: mergedData,
+        data: mergedWithAntiSpam,
       },
     });
 
@@ -79,7 +161,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: message }, { status });
     }
 
-    return NextResponse.json({ success: true });
+    return jsonSuccessWithCaptchaBypassRefresh(email, antiSpamConfig);
   } catch {
     return NextResponse.json(
       { error: "Internal server error" },

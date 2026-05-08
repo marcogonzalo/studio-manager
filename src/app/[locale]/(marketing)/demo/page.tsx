@@ -87,7 +87,11 @@ export default async function DemoPage({
 
         <StaggerContainer className="mt-10 space-y-8">
           <StaggerItem>
-            <DemoRequestForm />
+            <DemoRequestForm
+              turnstileSiteKey={
+                process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null
+              }
+            />
           </StaggerItem>
         </StaggerContainer>
         <div className="text-muted-foreground mt-10 space-y-3 px-4 text-sm">

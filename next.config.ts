@@ -4,7 +4,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const PRODUCTION_CSP =
-  "https://*.supabase.co https://*.backblazeb2.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://fonts.gstatic.com https://va.vercel-scripts.com https://vercel.live";
+  "https://*.supabase.co https://*.backblazeb2.com https://www.googletagmanager.com https://*.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://fonts.gstatic.com https://va.vercel-scripts.com https://vercel.live https://challenges.cloudflare.com";
 
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
@@ -73,8 +73,8 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              // GTM + GA4: script origins (unsafe-inline/unsafe-eval required for Next.js and GTM)
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://va.vercel-scripts.com https://vercel.live",
+              // GTM + GA4 + Cloudflare Turnstile (magic-link anti-spam widget)
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://va.vercel-scripts.com https://vercel.live https://challenges.cloudflare.com",
               "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
               "img-src 'self' data: https: blob:",
               "font-src 'self' data: https://fonts.gstatic.com",
@@ -83,7 +83,7 @@ const nextConfig: NextConfig = {
                 ? "connect-src 'self' blob: " + PRODUCTION_CSP
                 : "connect-src 'self' blob: http://localhost:54321 http://127.0.0.1:54321 ws://localhost:3000 ws://127.0.0.1:3000 " +
                   PRODUCTION_CSP,
-              "frame-src 'self' https://www.googletagmanager.com",
+              "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
               "frame-ancestors 'none'",
             ].join("; "),
           },

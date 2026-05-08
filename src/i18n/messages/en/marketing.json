@@ -231,6 +231,12 @@
     "emailInvalid": "Enter a valid email",
     "errorRequest": "Error requesting link",
     "errorConnection": "Connection error. Please try again.",
+    "captchaRequired": "Complete the security check to continue.",
+    "captchaInvalid": "The security check failed. Please try again.",
+    "captchaMisconfigured": "The security check is unavailable. Please contact support.",
+    "emailNotAllowed": "We cannot use this email address. Please try another one.",
+    "captchaLoading": "Loading verification…",
+    "captchaLoadFailed": "Could not load verification (network, ad blocker, or widget hostname).",
     "successToast": "Check your email. We've sent you a link to access the demo.",
     "sentTitle": "Check your email. We've sent you a link to access the Veta demo. The link is valid for up to 1 hour.",
     "privacyNote": "By submitting your email you agree to receive a message from our team to learn about your experience with the application."

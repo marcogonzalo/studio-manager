@@ -27,6 +27,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { pushSignUp } from "@/lib/gtm";
+import { CaptchaGuard } from "@/lib/anti-spam/react";
+import { translateMagicLinkErrorCode } from "@/lib/auth/magic-link-error-i18n";
 
 const VALID_PLAN_CODES = ["BASE", "PRO", "STUDIO"] as const;
 type PlanCode = (typeof VALID_PLAN_CODES)[number];
@@ -41,12 +43,15 @@ type SignUpFormProps = {
   redirectTo?: string | null;
   planParam?: string | null;
   billingParam?: string | null;
+  /** From Server Component so Turnstile works without relying on client bundle env inlining. */
+  turnstileSiteKey?: string | null;
 };
 
 export function SignUpForm({
   redirectTo = null,
   planParam = null,
   billingParam = null,
+  turnstileSiteKey: turnstileSiteKeyProp = null,
 }: SignUpFormProps) {
   const t = useTranslations("SignUp");
   const locale = useLocale();
@@ -57,6 +62,7 @@ export function SignUpForm({
 
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [needsCaptcha, setNeedsCaptcha] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanCode>(
     planFromUrl ?? "BASE"
   );
@@ -89,40 +95,82 @@ export function SignUpForm({
     emailTrimmed.length > 0 &&
     z.string().email().safeParse(emailTrimmed).success;
 
+  const turnstileSiteKey =
+    turnstileSiteKeyProp?.trim() ||
+    process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ||
+    "";
+
+  useEffect(() => {
+    setNeedsCaptcha(false);
+  }, [watchedEmail]);
+
+  function applySuccessAfterMagicLink() {
+    const billingPeriod =
+      billingParam?.toLowerCase() === "annual" ? "annual" : "monthly";
+    pushSignUp({
+      method: "magic_link",
+      plan_code: selectedPlan,
+      billing_period: billingPeriod,
+    });
+    setEmailSent(true);
+    toast.success(t("toastSuccess"));
+  }
+
+  async function submitMagicLink(
+    values: SignUpValues,
+    captchaToken?: string
+  ): Promise<{ sent: boolean }> {
+    const finalRedirect = redirectTo || appPath("/dashboard");
+    const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
+
+    const response = await fetch("/api/auth/magic-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: values.email,
+        emailRedirectTo: callbackUrl,
+        lang: locale,
+        data: {
+          full_name: values.fullName,
+          signup_plan: selectedPlan,
+          ...(billingParam && { signup_billing: billingParam }),
+        },
+        ...(captchaToken ? { captchaToken } : {}),
+      }),
+    });
+
+    const errorData = (await response.json().catch(() => ({}))) as {
+      error?: string;
+      code?: string;
+    };
+
+    if (!response.ok) {
+      if (errorData.code === "captcha_required") {
+        setNeedsCaptcha(true);
+        toast.info(t("captchaRequired"));
+        if (!turnstileSiteKey) {
+          toast.error(t("captchaMisconfigured"));
+        }
+        return { sent: false };
+      }
+      const mapped = translateMagicLinkErrorCode(errorData.code, t);
+      throw new Error(
+        mapped ?? errorData.error ?? "Failed to send confirmation email"
+      );
+    }
+
+    setNeedsCaptcha(false);
+    return { sent: true };
+  }
+
   async function onSubmit(values: SignUpValues) {
     setLoading(true);
     try {
-      const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
-
-      const response = await fetch("/api/auth/magic-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: values.email,
-          emailRedirectTo: callbackUrl,
-          lang: locale,
-          data: {
-            full_name: values.fullName,
-            signup_plan: selectedPlan,
-            ...(billingParam && { signup_billing: billingParam }),
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to send confirmation email");
+      const { sent } = await submitMagicLink(values);
+      if (!sent) {
+        return;
       }
-      const billingPeriod =
-        billingParam?.toLowerCase() === "annual" ? "annual" : "monthly";
-      pushSignUp({
-        method: "magic_link",
-        plan_code: selectedPlan,
-        billing_period: billingPeriod,
-      });
-      setEmailSent(true);
-      toast.success(t("toastSuccess"));
+      applySuccessAfterMagicLink();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : t("toastError");
       toast.error(message);
@@ -138,29 +186,17 @@ export function SignUpForm({
 
     setLoading(true);
     try {
-      const finalRedirect = redirectTo || appPath("/dashboard");
-      const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
-
-      const response = await fetch("/api/auth/magic-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const { sent } = await submitMagicLink(
+        {
           email,
-          emailRedirectTo: callbackUrl,
-          lang: locale,
-          data: {
-            full_name: fullName,
-            signup_plan: selectedPlan,
-            ...(billingParam && { signup_billing: billingParam }),
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.error || "Failed to resend confirmation email"
-        );
+          fullName,
+          acceptTerms: true,
+        },
+        undefined
+      );
+      if (!sent) {
+        setEmailSent(false);
+        return;
       }
       toast.success(t("toastResend"));
     } catch (error: unknown) {
@@ -294,6 +330,59 @@ export function SignUpForm({
                 </FormItem>
               )}
             />
+            {needsCaptcha ? (
+              turnstileSiteKey ? (
+                <div
+                  className="border-primary/40 bg-muted/40 space-y-2 rounded-lg border p-3"
+                  role="region"
+                  aria-label={t("captchaRequired")}
+                >
+                  <p className="text-muted-foreground text-sm">
+                    {t("captchaRequired")}
+                  </p>
+                  <CaptchaGuard
+                    key={emailTrimmed}
+                    provider="turnstile"
+                    siteKey={turnstileSiteKey}
+                    loadingLabel={t("captchaLoading")}
+                    loadFailedLabel={t("captchaLoadFailed")}
+                    onError={(err) => toast.error(err.message)}
+                    onVerify={(token) => {
+                      void (async () => {
+                        setLoading(true);
+                        try {
+                          const { sent } = await submitMagicLink(
+                            form.getValues(),
+                            token
+                          );
+                          if (!sent) {
+                            return;
+                          }
+                          applySuccessAfterMagicLink();
+                        } catch (error: unknown) {
+                          const message =
+                            error instanceof Error
+                              ? error.message
+                              : t("toastError");
+                          toast.error(message);
+                        } finally {
+                          setLoading(false);
+                        }
+                      })();
+                    }}
+                  />
+                </div>
+              ) : (
+                <div
+                  className="border-destructive/40 bg-destructive/5 rounded-lg border p-3"
+                  role="alert"
+                >
+                  <p className="text-destructive text-sm font-medium">
+                    {t("captchaMisconfigured")}
+                  </p>
+                </div>
+              )
+            ) : null}
             <Button
               type="submit"
               className="w-full"
