@@ -7,6 +7,7 @@ import {
   getBlogPostSummaries,
   getBlogStaticParams,
 } from "@/lib/blog";
+import { resolveBlogLocaleSwitchPath } from "@/lib/blog-data";
 
 const tempDirectories: string[] = [];
 
@@ -110,5 +111,47 @@ describe("blog content module", () => {
         { locale: "en", slug: "interior-trends-2026" },
       ])
     );
+  });
+
+  it("resolves locale switch from ES post to EN translated path", async () => {
+    const blogRoot = await createTempBlogContent();
+    const target = await resolveBlogLocaleSwitchPath(
+      "es",
+      "en",
+      "/blog/tendencias-2026",
+      { blogRoot }
+    );
+    expect(target).toBe("/en/blog/interior-trends-2026");
+  });
+
+  it("resolves locale switch from EN post to ES translated path", async () => {
+    const blogRoot = await createTempBlogContent();
+    const target = await resolveBlogLocaleSwitchPath(
+      "en",
+      "es",
+      "/blog/interior-trends-2026",
+      { blogRoot }
+    );
+    expect(target).toBe("/blog/tendencias-2026");
+  });
+
+  it("resolves blog index for each locale", async () => {
+    expect(await resolveBlogLocaleSwitchPath("es", "en", "/blog")).toBe(
+      "/en/blog"
+    );
+    expect(await resolveBlogLocaleSwitchPath("en", "es", "/blog")).toBe(
+      "/blog"
+    );
+  });
+
+  it("falls back to target blog index when slug is unknown", async () => {
+    const blogRoot = await createTempBlogContent();
+    const target = await resolveBlogLocaleSwitchPath(
+      "es",
+      "en",
+      "/blog/no-existe",
+      { blogRoot }
+    );
+    expect(target).toBe("/en/blog");
   });
 });

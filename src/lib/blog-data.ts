@@ -66,6 +66,47 @@ type BlogIOptions = {
   blogRoot?: string;
 };
 
+/**
+ * Target URL path when switching locale on blog routes (pathname without locale
+ * prefix, e.g. `/blog` or `/blog/my-slug`). Uses `entryId` pairing; falls back to
+ * the blog index in the target locale if the post or translation is missing.
+ */
+export async function resolveBlogLocaleSwitchPath(
+  fromLocale: BlogLocale,
+  toLocale: BlogLocale,
+  pathWithoutLocalePrefix: string,
+  options: BlogIOptions = {}
+): Promise<string> {
+  const raw = pathWithoutLocalePrefix.trim() || "/";
+  const normalized =
+    raw.replace(/\/+$/, "") === "" ? "/" : raw.replace(/\/+$/, "");
+
+  if (normalized === "/blog") {
+    return getPublicBlogIndexPath(toLocale);
+  }
+
+  const postPrefix = "/blog/";
+  if (!normalized.startsWith(postPrefix)) {
+    return getPublicBlogIndexPath(toLocale);
+  }
+
+  const slug = normalized.slice(postPrefix.length);
+  if (!slug || slug.includes("/") || slug.includes("..")) {
+    return getPublicBlogIndexPath(toLocale);
+  }
+
+  const source = await getBlogPostSourceBySlug(fromLocale, slug, options);
+  if (!source) {
+    return getPublicBlogIndexPath(toLocale);
+  }
+
+  const targetSlug = source.translations[toLocale];
+  if (targetSlug) {
+    return getPublicBlogPostPath(toLocale, targetSlug);
+  }
+  return getPublicBlogIndexPath(toLocale);
+}
+
 function slugFromFilename(filePath: string): string {
   return path.basename(filePath, path.extname(filePath));
 }

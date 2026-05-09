@@ -15,6 +15,33 @@ function normalizePath(p: string): string {
   return p.replace(/\/+$/, "");
 }
 
+function getPathWithoutLocalePrefix(
+  currentFullPath: string,
+  currentLocale: Locales
+): string {
+  const currentPrefix = `/${currentLocale}`;
+  let pathWithoutPrefix = currentFullPath;
+  if (pathWithoutPrefix === currentPrefix) {
+    pathWithoutPrefix = "/";
+  } else if (pathWithoutPrefix.startsWith(`${currentPrefix}/`)) {
+    pathWithoutPrefix = pathWithoutPrefix.slice(currentPrefix.length);
+  }
+  return normalizePath(pathWithoutPrefix);
+}
+
+function isBlogPath(pathWithoutPrefix: string): boolean {
+  return (
+    pathWithoutPrefix === "/blog" || pathWithoutPrefix.startsWith("/blog/")
+  );
+}
+
+function fallbackBlogDestination(
+  newLocale: Locales,
+  defaultLocale: string
+): string {
+  return newLocale === defaultLocale ? "/blog" : "/en/blog";
+}
+
 /**
  * Builds the canonical destination URL for a locale switch.
  *
@@ -35,16 +62,10 @@ function buildDestinationUrl(
   defaultLocale: string
 ): string {
   const pathnames = routing.pathnames as unknown as PathnamesMap;
-
-  // Strip current locale prefix to get the locale-agnostic path segment.
-  const currentPrefix = `/${currentLocale}`;
-  let pathWithoutPrefix = currentFullPath;
-  if (pathWithoutPrefix === currentPrefix) {
-    pathWithoutPrefix = "/";
-  } else if (pathWithoutPrefix.startsWith(`${currentPrefix}/`)) {
-    pathWithoutPrefix = pathWithoutPrefix.slice(currentPrefix.length);
-  }
-  pathWithoutPrefix = normalizePath(pathWithoutPrefix);
+  const pathWithoutPrefix = getPathWithoutLocalePrefix(
+    currentFullPath,
+    currentLocale
+  );
 
   // Find the route key whose current-locale slug matches the stripped path.
   const routeKey = Object.keys(pathnames).find((key) => {
@@ -67,24 +88,76 @@ function buildDestinationUrl(
     : `/${newLocale}${destinationSlug}`;
 }
 
+async function resolveDestinationUrl(
+  currentFullPath: string,
+  currentLocale: Locales,
+  newLocale: Locales,
+  defaultLocale: string
+): Promise<string> {
+  const pathWithoutPrefix = getPathWithoutLocalePrefix(
+    currentFullPath,
+    currentLocale
+  );
+
+  if (isBlogPath(pathWithoutPrefix)) {
+    try {
+      const params = new URLSearchParams({
+        from: currentLocale,
+        to: newLocale,
+        path: pathWithoutPrefix,
+      });
+      const res = await fetch(`/api/blog/locale-target?${params}`, {
+        method: "GET",
+        credentials: "same-origin",
+      });
+      if (res.ok) {
+        const data: unknown = await res.json();
+        if (
+          typeof data === "object" &&
+          data !== null &&
+          "path" in data &&
+          typeof (data as { path: unknown }).path === "string"
+        ) {
+          const p = (data as { path: string }).path;
+          if (p.startsWith("/") && !p.includes("//")) {
+            return p;
+          }
+        }
+      }
+    } catch {
+      // use fallback below
+    }
+    return fallbackBlogDestination(newLocale, defaultLocale);
+  }
+
+  return buildDestinationUrl(
+    currentFullPath,
+    currentLocale,
+    newLocale,
+    defaultLocale
+  );
+}
+
 export function LanguageToggle() {
   const locale = useLocale() as Locale;
 
   const toggleLocale = () => {
-    const newLocale: Locale = locale === "en" ? "es" : "en";
-    const currentFullPath =
-      typeof window !== "undefined" ? window.location.pathname : "/";
+    void (async () => {
+      const newLocale: Locale = locale === "en" ? "es" : "en";
+      const currentFullPath =
+        typeof window !== "undefined" ? window.location.pathname : "/";
 
-    const destination = buildDestinationUrl(
-      currentFullPath,
-      locale,
-      newLocale,
-      routing.defaultLocale
-    );
+      const destination = await resolveDestinationUrl(
+        currentFullPath,
+        locale,
+        newLocale,
+        routing.defaultLocale
+      );
 
-    // Navigate using the browser directly to avoid next-intl re-applying
-    // locale prefix logic on top of the already-resolved canonical URL.
-    window.location.href = destination;
+      // Navigate using the browser directly to avoid next-intl re-applying
+      // locale prefix logic on top of the already-resolved canonical URL.
+      window.location.href = destination;
+    })();
   };
 
   return (
