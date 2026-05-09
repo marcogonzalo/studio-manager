@@ -23,7 +23,7 @@ La solución más práctica no es un diagrama de Gantt. Es un párrafo en el pre
 
 Un ejemplo real para la fase de diseño conceptual:
 
-> *"Esta fase incluye planimetría, selección de materiales y muebles con proveedores aprobados, y una ronda de revisión del cliente. No incluye la gestión de pedidos, coordinación de gremios ni visitas a obra."*
+> _"Esta fase incluye planimetría, selección de materiales y muebles con proveedores aprobados, y una ronda de revisión del cliente. No incluye la gestión de pedidos, coordinación de gremios ni visitas a obra."_
 
 Cuando ese párrafo existe, la conversación sobre extras cambia por completo. No hay que argumentar ni recordar lo que se dijo en una reunión: está por escrito, firmado y es parte del contrato.
 
@@ -37,11 +37,11 @@ La regla es simple: **un solo sitio para precios, estados y cambios**. No import
 
 Cuando el precio de un sofá cambia porque el proveedor actualizó su tarifa, ese cambio debe reflejarse en el mismo sitio donde están los pedidos y el presupuesto del cliente. Si hay que actualizar dos documentos distintos, tarde o temprano uno quedará desactualizado.
 
-| Sin fuente única | Con fuente única |
-|---|---|
-| Precio en el presupuesto vs precio real del pedido | Un dato, un lugar |
-| Estados duplicados o contradictorios | Estado actualizado visible para todo el equipo |
-| Tiempo perdido reconciliando versiones | Revisión semanal en minutos, no horas |
+| Sin fuente única                                   | Con fuente única                               |
+| -------------------------------------------------- | ---------------------------------------------- |
+| Precio en el presupuesto vs precio real del pedido | Un dato, un lugar                              |
+| Estados duplicados o contradictorios               | Estado actualizado visible para todo el equipo |
+| Tiempo perdido reconciliando versiones             | Revisión semanal en minutos, no horas          |
 
 Herramientas como [Veta](/) permiten gestionar el presupuesto, los proveedores y el estado de cada partida desde un mismo panel, evitando este problema sin necesidad de mantener hojas paralelas.
 

@@ -23,7 +23,7 @@ The most practical solution isn't a Gantt chart. It's a paragraph in the proposa
 
 A real-world example for the concept design phase:
 
-> *"This phase covers floor plans, material and furniture selection from approved vendors, and one round of client revisions. It does not include purchase order management, trade coordination, or site visits."*
+> _"This phase covers floor plans, material and furniture selection from approved vendors, and one round of client revisions. It does not include purchase order management, trade coordination, or site visits."_
 
 When that paragraph exists, the conversation about extras changes entirely. There's no need to recall what was said in a meeting three weeks ago — it's written, signed, and part of the contract.
 
@@ -37,11 +37,11 @@ The rule is simple: **one place for prices, statuses, and changes**. The tool do
 
 When a supplier raises their price, that update needs to hit the same place where purchase orders and the client budget live. If two documents need updating, one will fall behind — and the margin will take the hit.
 
-| Without a single source | With a single source |
-|---|---|
-| Budget price vs. actual order price | One figure, one place |
-| Conflicting or duplicated statuses | Status visible to the whole team |
-| Hours reconciling versions | Weekly review in minutes |
+| Without a single source             | With a single source             |
+| ----------------------------------- | -------------------------------- |
+| Budget price vs. actual order price | One figure, one place            |
+| Conflicting or duplicated statuses  | Status visible to the whole team |
+| Hours reconciling versions          | Weekly review in minutes         |
 
 Tools like [Veta](/) let you manage budgets, suppliers, and line-item statuses from a single dashboard, eliminating this problem without maintaining parallel spreadsheets.
 

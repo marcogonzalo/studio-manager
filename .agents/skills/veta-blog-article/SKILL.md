@@ -25,6 +25,7 @@ El objetivo no es volumen: es utilidad real. Un artículo que responde bien una 
 - El usuario pide un "post", "artículo", "borrador", "contenido para el blog" o similar.
 
 **Relación con otras skills:**
+
 - **`veta-blog-research`** — úsala antes si el tema aún no está definido o validado.
 - **`veta-marketing-strategy-seo-geo`** — para copy de producto, landings y emails. Esta skill es para artículos editoriales.
 - **`veta-marketing-i18n-content`** — para la implementación técnica ES+EN en el código de la web.
@@ -35,15 +36,15 @@ El objetivo no es volumen: es utilidad real. Un artículo que responde bien una 
 
 Antes de producir el artículo, confirma estos datos (si no los dio el usuario, pregúntalos o infierlos del contexto):
 
-| Campo | Qué definir |
-|---|---|
-| **Tema / ángulo** | Pregunta concreta que resuelve el artículo |
-| **Persona primaria** | Elena (propietaria/decisora), Javi (PM/obra) o Beatriz (ops/administración). Ver `memory-bank/buyerPersona.md` |
-| **Idioma(s)** | ES, EN, o ambos (ES primario → EN adaptado, no traducción literal) |
-| **Intención de búsqueda** | Informacional, comparativa, transaccional-suave |
-| **Keyword principal** | Frase que el lector busca; intégrala en H1 y primer párrafo |
-| **Keywords secundarias** | Entidades y variantes semánticas relacionadas |
-| **Longitud estimada** | Artículo de nicho: 800-1200 palabras. Guía o pilar: 1500-2500 palabras |
+| Campo                     | Qué definir                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Tema / ángulo**         | Pregunta concreta que resuelve el artículo                                                                     |
+| **Persona primaria**      | Elena (propietaria/decisora), Javi (PM/obra) o Beatriz (ops/administración). Ver `memory-bank/buyerPersona.md` |
+| **Idioma(s)**             | ES, EN, o ambos (ES primario → EN adaptado, no traducción literal)                                             |
+| **Intención de búsqueda** | Informacional, comparativa, transaccional-suave                                                                |
+| **Keyword principal**     | Frase que el lector busca; intégrala en H1 y primer párrafo                                                    |
+| **Keywords secundarias**  | Entidades y variantes semánticas relacionadas                                                                  |
+| **Longitud estimada**     | Artículo de nicho: 800-1200 palabras. Guía o pilar: 1500-2500 palabras                                         |
 
 Si el tema o la keyword no están definidos, usa **`veta-blog-research`** primero.
 
@@ -60,9 +61,11 @@ Los primeros 200-300 caracteres deben responder la intención de búsqueda. Si u
 - Incluir la keyword principal de forma natural.
 
 **Ejemplo correcto (interiorismo):**
+
 > Llevar el control de presupuesto en obra sin perder rentabilidad requiere tres hábitos: registrar gastos en el momento, separar costes fijos de variables y revisar la desviación semanalmente.
 
 **Ejemplo a evitar:**
+
 > En el apasionante mundo del diseño de interiores, gestionar un proyecto puede ser un verdadero desafío para los profesionales del sector...
 
 ### 2.2 Jerarquía de encabezados (H1 → H2 → H3)
@@ -139,14 +142,14 @@ La autoridad no se declara, se demuestra. Aplicar al menos dos de estos recursos
 
 El blog de Veta puede cubrir estas categorías:
 
-| Categoría | Ejemplos de ángulos |
-|---|---|
-| **Profesión** | Cómo se estructura un estudio boutique, diferencias entre arquitecto de interiores y decorador, salidas profesionales, asociaciones del sector (COAM, AID) |
-| **Gestión de proyectos** | Fases de un proyecto de interiorismo, cómo evitar desviaciones en obra, comunicación con cliente, gestión de cambios y extras |
-| **Herramientas y software** | Comparativa de herramientas de gestión, BIM para interiores, software de presupuestos, apps de seguimiento de obra |
-| **Tendencias** | Tendencias de diseño por temporada, materiales emergentes, sostenibilidad, diseño biofílico, minimalismo funcional |
-| **Negocio del estudio** | Cómo fijar honorarios, rentabilidad por proyecto, captación de clientes, personal branding para estudios |
-| **Eventos y referentes** | Ferias (Salone del Mobile, Maison & Objet, HábitatMadrid), premios, referentes internacionales, edición local |
+| Categoría                   | Ejemplos de ángulos                                                                                                                                        |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Profesión**               | Cómo se estructura un estudio boutique, diferencias entre arquitecto de interiores y decorador, salidas profesionales, asociaciones del sector (COAM, AID) |
+| **Gestión de proyectos**    | Fases de un proyecto de interiorismo, cómo evitar desviaciones en obra, comunicación con cliente, gestión de cambios y extras                              |
+| **Herramientas y software** | Comparativa de herramientas de gestión, BIM para interiores, software de presupuestos, apps de seguimiento de obra                                         |
+| **Tendencias**              | Tendencias de diseño por temporada, materiales emergentes, sostenibilidad, diseño biofílico, minimalismo funcional                                         |
+| **Negocio del estudio**     | Cómo fijar honorarios, rentabilidad por proyecto, captación de clientes, personal branding para estudios                                                   |
+| **Eventos y referentes**    | Ferias (Salone del Mobile, Maison & Objet, HábitatMadrid), premios, referentes internacionales, edición local                                              |
 
 El ángulo siempre debe conectarse con un **dolor o ambición de Elena, Javi o Beatriz** (ver `memory-bank/buyerPersona.md`). Un artículo sobre tendencias que no tiene ningún gancho de utilidad práctica para el lector no encaja bien en el blog de Veta.
 

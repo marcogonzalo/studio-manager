@@ -34,14 +34,14 @@ El blog de Veta debe posicionarse como un recurso editorial para profesionales d
 
 **Categorías editoriales principales:**
 
-| Categoría | Tipo de audiencia | Intención típica |
-|---|---|---|
-| Gestión de proyectos | Elena, Javi | Informacional, comparativa |
-| Gestión de estudio y negocio | Elena, Beatriz | Informacional, transaccional-suave |
-| Herramientas y software | Elena, Javi, Beatriz | Comparativa, informacional |
-| Tendencias de diseño | Elena | Informacional |
-| Profesión y carrera | Elena, Javi | Informacional |
-| Eventos y sector | Elena | Informacional, de comunidad |
+| Categoría                    | Tipo de audiencia    | Intención típica                   |
+| ---------------------------- | -------------------- | ---------------------------------- |
+| Gestión de proyectos         | Elena, Javi          | Informacional, comparativa         |
+| Gestión de estudio y negocio | Elena, Beatriz       | Informacional, transaccional-suave |
+| Herramientas y software      | Elena, Javi, Beatriz | Comparativa, informacional         |
+| Tendencias de diseño         | Elena                | Informacional                      |
+| Profesión y carrera          | Elena, Javi          | Informacional                      |
+| Eventos y sector             | Elena                | Informacional, de comunidad        |
 
 ---
 
@@ -73,12 +73,14 @@ Para cada artículo, definir:
 3. **Keywords de cola larga** para H2/H3 (frases que el lector usaría en búsqueda por voz o en formato pregunta).
 
 **Herramientas de apoyo:**
+
 - **[AnswerThePublic](https://answerthepublic.com/)** — preguntas reales que los usuarios hacen.
 - **Google Search Console** — consultas que ya generan impresiones (si hay acceso).
 - **Búsqueda manual en Google** — ver autocompletado, "Otras preguntas" y "Búsquedas relacionadas".
 - **Frase.io** — cobertura semántica vs. los artículos mejor posicionados.
 
 **Keywords de referencia del proyecto** (de `memory-bank/productContext.md`):
+
 - ES: gestión de proyectos, diseño interior, interiorismo, arquitectura de diseño interior, gestión de presupuestos.
 - EN: interior design project management, interior design software, architecture studio management.
 
@@ -96,6 +98,7 @@ Un artículo tiene buen ángulo cuando cumple al menos dos de estos criterios:
 Contrastar el tema con fuentes del sector antes de comprometerse:
 
 **Fuentes de referencia (arquitectura e interiorismo):**
+
 - [ArchDaily](https://www.archdaily.com/) / [ArchDaily ES](https://www.archdaily.cl/) — referente editorial global.
 - [Dezeen](https://www.dezeen.com/) — tendencias de diseño y arquitectura.
 - [Interior Design Magazine](https://interiordesign.net/) — tendencias mercado EN.
@@ -105,6 +108,7 @@ Contrastar el tema con fuentes del sector antes de comprometerse:
 - [AIA](https://www.aia.org/) — mercado EN (EE.UU.).
 
 **Para herramientas y software:**
+
 - G2, Capterra, Product Hunt — reviews de competidores y alternativas.
 - Blogs y canales de YouTube de profesionales del sector.
 
@@ -120,14 +124,14 @@ Algunos temas tienen ventana temporal. Identificar si el tema es:
 
 **Eventos anuales de referencia para el calendario:**
 
-| Evento | Período | Tipo de contenido |
-|---|---|---|
-| Salone del Mobile (Milán) | Abril | Tendencias, cobertura, crónica |
-| Maison & Objet (París) | Enero y Septiembre | Tendencias, novedades |
-| HábitatMadrid | Septiembre | Sector español, ferias |
-| Clerkenwell Design Week (Londres) | Mayo | Diseño de interiores EN |
-| DesignMiami | Diciembre | Premium, tendencias globales |
-| COAM / Colegios de Arquitectos | Todo el año | Normativa, eventos locales ES |
+| Evento                            | Período            | Tipo de contenido              |
+| --------------------------------- | ------------------ | ------------------------------ |
+| Salone del Mobile (Milán)         | Abril              | Tendencias, cobertura, crónica |
+| Maison & Objet (París)            | Enero y Septiembre | Tendencias, novedades          |
+| HábitatMadrid                     | Septiembre         | Sector español, ferias         |
+| Clerkenwell Design Week (Londres) | Mayo               | Diseño de interiores EN        |
+| DesignMiami                       | Diciembre          | Premium, tendencias globales   |
+| COAM / Colegios de Arquitectos    | Todo el año        | Normativa, eventos locales ES  |
 
 ---
 

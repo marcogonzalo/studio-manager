@@ -51,13 +51,13 @@ The most damaging error in residential lighting is mixing too many color tempera
 
 The practical recommendation: **a maximum of two color temperatures in the same sightline**. Keep ambient and accent in the same family (both warm or both neutral), and if you use a different temperature for task lighting, position it outside the direct field of view from the main rest position.
 
-| Zone | Recommended temperature | Reason |
-|---|---|---|
-| Living room | 2700 K – 3000 K | Warmth and visual comfort |
-| Kitchen (work areas) | 3000 K – 4000 K | Accurate color rendering for food |
-| Bathroom (mirror) | 3000 K – 3500 K | Reliable color rendering for skin and makeup |
-| Bedroom | 2700 K – 3000 K | Supports relaxation before sleep |
-| Home office | 3500 K – 4000 K | Alertness and focus |
+| Zone                 | Recommended temperature | Reason                                       |
+| -------------------- | ----------------------- | -------------------------------------------- |
+| Living room          | 2700 K – 3000 K         | Warmth and visual comfort                    |
+| Kitchen (work areas) | 3000 K – 4000 K         | Accurate color rendering for food            |
+| Bathroom (mirror)    | 3000 K – 3500 K         | Reliable color rendering for skin and makeup |
+| Bedroom              | 2700 K – 3000 K         | Supports relaxation before sleep             |
+| Home office          | 3500 K – 4000 K         | Alertness and focus                          |
 
 ## How do you document the lighting design in a project?
 

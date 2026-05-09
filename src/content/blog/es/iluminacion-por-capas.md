@@ -51,13 +51,13 @@ El error más destructivo en iluminación residencial es mezclar demasiadas temp
 
 La recomendación práctica: **máximo dos temperaturas de color en la misma sightline**. Ambiental + acento en la misma familia (ambas cálidas o ambas neutras) y, si se usa una temperatura diferente para tareas, que quede fuera del campo de visión directo desde el punto de reposo.
 
-| Zona | Temperatura recomendada | Razón |
-|---|---|---|
-| Sala de estar | 2700 K – 3000 K | Confort y calidez visual |
-| Cocina (trabajo) | 3000 K – 4000 K | Reconocimiento del color en alimentos |
-| Baño (espejo) | 3000 K – 3500 K | Fidelidad cromática para maquillaje y piel |
-| Dormitorio | 2700 K – 3000 K | Favorece la relajación previa al sueño |
-| Estudio o despacho | 3500 K – 4000 K | Alerta y concentración |
+| Zona               | Temperatura recomendada | Razón                                      |
+| ------------------ | ----------------------- | ------------------------------------------ |
+| Sala de estar      | 2700 K – 3000 K         | Confort y calidez visual                   |
+| Cocina (trabajo)   | 3000 K – 4000 K         | Reconocimiento del color en alimentos      |
+| Baño (espejo)      | 3000 K – 3500 K         | Fidelidad cromática para maquillaje y piel |
+| Dormitorio         | 2700 K – 3000 K         | Favorece la relajación previa al sueño     |
+| Estudio o despacho | 3500 K – 4000 K         | Alerta y concentración                     |
 
 ## ¿Cómo documentar el diseño de iluminación en el proyecto?
 
