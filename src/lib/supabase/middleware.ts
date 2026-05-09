@@ -32,6 +32,7 @@ const PUBLIC_ROUTES = [
   "/about",
   "/pricing",
   "/contact",
+  "/blog",
   "/legal",
   "/demo",
   "/sign-in",
@@ -58,6 +59,8 @@ function isPublicPath(pathname: string): boolean {
     pathname === "/auth/complete" ||
     pathnameWithoutLocale.startsWith("/plan-") ||
     pathname.startsWith("/plan-") ||
+    pathnameWithoutLocale.startsWith("/blog/") ||
+    pathname.startsWith("/blog/") ||
     pathname.startsWith("/view-project/")
   );
 }

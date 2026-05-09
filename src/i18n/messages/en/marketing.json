@@ -23,6 +23,7 @@
     "features": "Features",
     "pricing": "Pricing",
     "about": "About",
+    "blog": "Blog",
     "signIn": "Sign In",
     "startFree": "Start Free"
   },
@@ -37,10 +38,30 @@
     "tryDemo": "Try Demo",
     "company": "Company",
     "about": "About",
+    "blog": "Blog",
     "contact": "Contact",
     "legal": "Legal",
     "termsAndPrivacy": "Terms & Privacy",
     "copyright": "All rights reserved."
+  },
+  "Blog": {
+    "metaTitle": "Veta.blog — Ideas and guides for interior design studios",
+    "metaDescription": "Articles on interior design, workflow, and project management for designers and studios. Practical content from Veta.",
+    "ogTitle": "Veta.blog — Interior design and project operations",
+    "ogDescription": "Guides and notes for interior professionals who want calmer workflows and clearer delivery.",
+    "twitterTitle": "Veta.blog | Veta",
+    "twitterDescription": "Ideas and guides for interior design studios.",
+    "kicker": "Veta.blog",
+    "heroTitle": "Content for people who design",
+    "heroTitleHighlight": "memorable spaces",
+    "intro": "Short essays and guides on interior design, methodology, and the invisible work of running a studio: budgets, suppliers, and client handoff. Signal over noise.",
+    "readMore": "Read article",
+    "latest": "Latest articles",
+    "empty": "New articles are coming soon. Check back shortly.",
+    "coverAlt": "Residential interior with warm materials and natural light",
+    "postMetaDescriptionFallback": "Article on Veta.blog about interior design and project management.",
+    "postMetaTitleSuffix": " | Veta.blog",
+    "backToBlog": "Back to blog"
   },
   "HomePage": {
     "badge": "Designed for interior design professionals",

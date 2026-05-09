@@ -114,6 +114,8 @@ const nextConfig: NextConfig = {
       { source: "/sobre-veta", destination: "/es/about" },
       { source: "/contacto", destination: "/es/contact" },
       { source: "/demo", destination: "/es/demo" },
+      { source: "/blog", destination: "/es/blog" },
+      { source: "/blog/:slug", destination: "/es/blog/:slug" },
       { source: "/legal", destination: "/es/legal" },
       { source: "/sign-in", destination: "/es/sign-in" },
       { source: "/sign-up", destination: "/es/sign-up" },
@@ -164,6 +166,12 @@ const nextConfig: NextConfig = {
       },
       { source: "/es/contacto", destination: "/contacto", permanent: true },
       { source: "/es/demo", destination: "/demo", permanent: true },
+      { source: "/es/blog", destination: "/blog", permanent: true },
+      {
+        source: "/es/blog/:slug",
+        destination: "/blog/:slug",
+        permanent: true,
+      },
       { source: "/es/legal", destination: "/legal", permanent: true },
       { source: "/es/about", destination: "/sobre-veta", permanent: true },
       { source: "/es/contact", destination: "/contacto", permanent: true },
@@ -222,6 +230,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "**.backblazeb2.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
         pathname: "/**",
       },
     ],

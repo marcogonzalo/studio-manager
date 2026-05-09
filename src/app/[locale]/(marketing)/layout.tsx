@@ -114,6 +114,14 @@ async function Footer() {
               </li>
               <li>
                 <Link
+                  href="/blog"
+                  className="hover:text-foreground transition-colors"
+                >
+                  {t("blog")}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href="/contact"
                   className="hover:text-foreground transition-colors"
                 >

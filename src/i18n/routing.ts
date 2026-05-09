@@ -19,6 +19,8 @@ export const routing = defineRouting({
     "/about": { es: "/sobre-veta", en: "/about-veta" },
     "/contact": { es: "/contacto", en: "/contact" },
     "/demo": { es: "/demo", en: "/demo" },
+    "/blog": { es: "/blog", en: "/blog" },
+    "/blog/[slug]": { es: "/blog/[slug]", en: "/blog/[slug]" },
     "/legal": { es: "/legal", en: "/legal" },
     // Auth routes (no slug translation; keep stable path segments)
     "/sign-in": { es: "/sign-in", en: "/sign-in" },

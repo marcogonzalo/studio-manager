@@ -110,11 +110,13 @@ export function AnchorToHash({
   // hash-only hrefs to UrlObject so TS/Next accepts them.
   type LinkHref = React.ComponentProps<typeof Link>["href"];
 
-  const linkHref: LinkHref = href.startsWith("/#")
-    ? { pathname: "/", hash: href.slice(2) }
-    : href.startsWith("#")
-      ? { pathname, hash: href.slice(1) }
-      : (href as LinkHref);
+  const linkHref = (
+    href.startsWith("/#")
+      ? { pathname: "/", hash: href.slice(2) }
+      : href.startsWith("#")
+        ? { pathname, hash: href.slice(1) }
+        : href
+  ) as LinkHref;
 
   return (
     <Link href={linkHref} className={className} {...props}>
