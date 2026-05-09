@@ -37,9 +37,16 @@ const nextConfig: NextConfig = {
       });
     }
 
-    return [
-      {
-        // Long cache for hashed static assets (Lighthouse: efficient cache lifetimes)
+    // Long-lived cache for hashed chunks: only in production. In dev, Next warns
+    // that custom Cache-Control on /_next/static can break HMR; default dev
+    // caching is preferable.
+    const rules: Array<{
+      source: string;
+      headers: Array<{ key: string; value: string }>;
+    }> = [];
+
+    if (process.env.NODE_ENV === "production") {
+      rules.push({
         source: "/_next/static/:path*",
         headers: [
           {
@@ -47,59 +54,62 @@ const nextConfig: NextConfig = {
             value: "public, max-age=43800, immutable",
           },
         ],
-      },
-      {
-        // Apply to all routes
-        source: "/:path*",
-        headers: [
-          ...corsHeaders,
-          {
-            // Prevent clickjacking - don't allow page to be loaded in iframes
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          {
-            // Prevent MIME type sniffing - browser must respect Content-Type
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            // Control what referrer information is sent
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-          {
-            // Content Security Policy - control what resources can be loaded
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              // GTM + GA4 + Cloudflare Turnstile (magic-link anti-spam widget)
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://va.vercel-scripts.com https://vercel.live https://challenges.cloudflare.com",
-              "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
-              "img-src 'self' data: https: blob:",
-              "font-src 'self' data: https://fonts.gstatic.com",
-              // connect-src: Supabase, Backblaze, GTM/GA4, PDF fonts; blob: para react-pdf
-              process.env.NODE_ENV === "production"
-                ? "connect-src 'self' blob: " + PRODUCTION_CSP
-                : "connect-src 'self' blob: http://localhost:54321 http://127.0.0.1:54321 ws://localhost:3000 ws://127.0.0.1:3000 " +
-                  PRODUCTION_CSP,
-              "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
-              "frame-ancestors 'none'",
-            ].join("; "),
-          },
-          {
-            // Prevent automatic MIME type detection
-            key: "X-DNS-Prefetch-Control",
-            value: "on",
-          },
-          {
-            // Control which browser features can be used
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
-          },
-        ],
-      },
-    ];
+      });
+    }
+
+    rules.push({
+      // Apply to all routes
+      source: "/:path*",
+      headers: [
+        ...corsHeaders,
+        {
+          // Prevent clickjacking - don't allow page to be loaded in iframes
+          key: "X-Frame-Options",
+          value: "DENY",
+        },
+        {
+          // Prevent MIME type sniffing - browser must respect Content-Type
+          key: "X-Content-Type-Options",
+          value: "nosniff",
+        },
+        {
+          // Control what referrer information is sent
+          key: "Referrer-Policy",
+          value: "strict-origin-when-cross-origin",
+        },
+        {
+          // Content Security Policy - control what resources can be loaded
+          key: "Content-Security-Policy",
+          value: [
+            "default-src 'self'",
+            // GTM + GA4 + Cloudflare Turnstile (magic-link anti-spam widget)
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://va.vercel-scripts.com https://vercel.live https://challenges.cloudflare.com",
+            "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
+            "img-src 'self' data: https: blob:",
+            "font-src 'self' data: https://fonts.gstatic.com",
+            // connect-src: Supabase, Backblaze, GTM/GA4, PDF fonts; blob: para react-pdf
+            process.env.NODE_ENV === "production"
+              ? "connect-src 'self' blob: " + PRODUCTION_CSP
+              : "connect-src 'self' blob: http://localhost:54321 http://127.0.0.1:54321 ws://localhost:3000 ws://127.0.0.1:3000 " +
+                PRODUCTION_CSP,
+            "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
+            "frame-ancestors 'none'",
+          ].join("; "),
+        },
+        {
+          // Prevent automatic MIME type detection
+          key: "X-DNS-Prefetch-Control",
+          value: "on",
+        },
+        {
+          // Control which browser features can be used
+          key: "Permissions-Policy",
+          value: "camera=(), microphone=(), geolocation=()",
+        },
+      ],
+    });
+
+    return rules;
   },
 
   // Explicit rewrites map localized URL slugs to the internal Next.js filesystem
