@@ -75,7 +75,7 @@ When either scenario is triggered, run **in this order**:
 
 ## Triggers and opt-out (wording / Cursor UI)
 
-- **Full workflow is mandatory** for **Generate PR** requests: chat **or** Cursor actions such as **Create PR** that mean “open/create a pull request”. Run steps 0–8 in order (through PR creation when applicable); do not skip to “push + MCP PR” only.
+- **Full workflow is mandatory** for **Generate PR** requests: chat **or** Cursor actions such as **Create PR** that mean “open/create a pull request”. Run steps 0–8 in order (through PR creation when applicable); do not skip to “push + create PR” only.
 - **Opt-out** — shorten or skip parts of this rule **only** if the user **explicitly** says so, for example: **"PR mínima"**, **"minimal PR"**, **"solo crear el PR sin workflow"**, **"solo push, sin workflow"**, **"push sin regla 05"**, or a clear equivalent. If in doubt, run the full workflow.
 - If the user combines “Create PR” with a **narrow** instruction (e.g. “no new commits”, “solo push”), follow the **strictest safe interpretation**: still run verification (lint/tests/build) when possible without violating the explicit constraint; call out in the PR body or reply if something could not be run (e.g. Docker unavailable).
 
