@@ -23,6 +23,7 @@
     "features": "Características",
     "pricing": "Precios",
     "about": "Nosotros",
+    "blog": "Blog",
     "signIn": "Iniciar Sesión",
     "startFree": "Comenzar Gratis"
   },
@@ -37,10 +38,30 @@
     "tryDemo": "Probar demo",
     "company": "Empresa",
     "about": "Nosotros",
+    "blog": "Blog",
     "contact": "Contacto",
     "legal": "Legal",
     "termsAndPrivacy": "Términos y Privacidad",
     "copyright": "Todos los derechos reservados."
+  },
+  "Blog": {
+    "metaTitle": "Veta.blog — Ideas y guías para estudios de diseño interior",
+    "metaDescription": "Artículos sobre interiorismo, flujo de trabajo y gestión de proyectos para interioristas y estudios. Contenido práctico de Veta.",
+    "ogTitle": "Veta.blog — Diseño interior y gestión de proyectos",
+    "ogDescription": "Guías y reflexiones para profesionales del interiorismo que quieren trabajar con más orden y claridad.",
+    "twitterTitle": "Veta.blog | Veta",
+    "twitterDescription": "Ideas y guías para estudios de diseño interior.",
+    "kicker": "Veta.blog",
+    "heroTitle": "Contenido para quienes diseñan",
+    "heroTitleHighlight": "espacios memorables",
+    "intro": "Historias breves, guías y aprendizajes sobre interiorismo, metodología y la parte invisible del estudio: presupuestos, proveedores y entrega al cliente. Sin ruido: solo lo que te ayuda a avanzar.",
+    "readMore": "Leer artículo",
+    "latest": "Últimos artículos",
+    "empty": "Pronto publicaremos nuevos artículos. Vuelve en unos días.",
+    "coverAlt": "Interior residencial con materiales cálidos y luz natural",
+    "postMetaDescriptionFallback": "Artículo en Veta.blog sobre diseño interior y gestión de proyectos.",
+    "postMetaTitleSuffix": " | Veta.blog",
+    "backToBlog": "Volver al blog"
   },
   "HomePage": {
     "badge": "Diseñado para profesionales del diseño interior",

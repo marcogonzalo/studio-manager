@@ -11,10 +11,12 @@ description: >-
 
 ## Cuándo usar
 
-- **Blog:** artículos, guías, casos de uso, glosario sectorial.
-- **Contenido público:** landings, FAQs ampliadas, recursos descargables, copy de ampliación más allá del checklist i18n.
+- **Contenido público de producto:** landings, FAQs ampliadas, recursos descargables, copy de ampliación más allá del checklist i18n.
 - **Contenido privado o semi-privado:** textos en la app autenticada (onboarding, empty states, ayuda contextual, emails transaccionales, notas de producto internas que acaban en Help Center).
 - El usuario pide “SEO”, “posicionamiento”, “contenido para ChatGPT/perplexity”, “GEO”, “pensado para Elena/Javi/Beatriz”, o alinear copy con **buyer personas**.
+- Estrategia de contenido: qué decir, para quién, y en qué tono en cada canal.
+
+> **Para artículos del blog:** usar **`veta-blog-article`** (escritura) y **`veta-blog-research`** (investigación de temas y briefs). Esta skill define la estrategia de fondo (personas, tono, keywords base); aquellas, el proceso operativo de producción.
 
 ## Fuentes de verdad en el repo
 
@@ -70,6 +72,8 @@ Un mismo **artículo** puede tener secciones orientadas a perfiles distintos; un
 
 ## Relación con otras skills
 
+- **`veta-blog-research`** — investigación de temas, briefs y validación de keywords para artículos del blog.
+- **`veta-blog-article`** — escritura operativa de artículos del blog con SEO/GEO 2026.
 - **`veta-marketing-i18n-content`** — implementación ES+EN, `marketing.json`, `routing.ts`, sitemap, rewrites.
 - **`veta-multilanguage-views`** — SEO avanzado, canónicos, hreflang, depuración de URLs.
 - **`veta-app-routing`** — si el contenido implica nuevas rutas públicas vs privadas (`PUBLIC_ROUTES`).

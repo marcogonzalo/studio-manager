@@ -31,6 +31,7 @@ export function MarketingHeader() {
     },
     { href: "/pricing" as const, label: t("pricing") },
     { href: "/about" as const, label: t("about") },
+    { href: "/blog" as const, label: t("blog") },
   ] as const;
 
   useEffect(() => {
