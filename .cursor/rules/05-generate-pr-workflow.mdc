@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Two scenarios
 
-1. **Generate PR** (or equivalent: "generate the PR", "create the PR", "open the PR", "prepare the PR"): Run all steps including creating the PR.
+1. **Generate PR** (or equivalent: "generate the PR", "create the PR", "open the PR", "prepare the PR", **"crear la PR"**, **"abrir la PR"**, **"generar la PR"**): Run all steps including creating the PR. This **includes** using Cursor’s **Create PR** (or similar UI that creates/opens a pull request): treat it as **scenario 1**, not as “only open GitHub”.
 
 2. **Push changes** (or equivalent: "sube los cambios", "push changes", "commit and push", "subir cambios"): Run all steps **except** creating the PR (stop after pushing to remote).
 
@@ -63,7 +63,7 @@ When either scenario is triggered, run **in this order**:
 
 ## 8. Create the PR (only if user asked to "generate PR")
 
-- **Only execute this step if the user explicitly asked to generate/create the PR.**
+- **Only execute this step if the user explicitly asked to generate/create/open the PR** (including via Cursor **Create PR** / equivalent UI).
 - **If the user only asked to "push changes" or "subir cambios", skip this step.**
 - Create the Pull Request with:
   - Descriptive title.
@@ -72,6 +72,12 @@ When either scenario is triggered, run **in this order**:
 - **Use the GitHub MCP** (`user-github` server, tool `create_pull_request`) to create the PR. Required args: `owner`, `repo`, `title`, `head` (branch name), `base` (e.g. `main`), and `body` (description). If MCP is unavailable, provide the PR content and compare URL for manual creation.
 
 ---
+
+## Triggers and opt-out (wording / Cursor UI)
+
+- **Full workflow is mandatory** for **Generate PR** requests: chat **or** Cursor actions such as **Create PR** that mean “open/create a pull request”. Run steps 0–8 in order (through PR creation when applicable); do not skip to “push + MCP PR” only.
+- **Opt-out** — shorten or skip parts of this rule **only** if the user **explicitly** says so, for example: **"PR mínima"**, **"minimal PR"**, **"solo crear el PR sin workflow"**, **"solo push, sin workflow"**, **"push sin regla 05"**, or a clear equivalent. If in doubt, run the full workflow.
+- If the user combines “Create PR” with a **narrow** instruction (e.g. “no new commits”, “solo push”), follow the **strictest safe interpretation**: still run verification (lint/tests/build) when possible without violating the explicit constraint; call out in the PR body or reply if something could not be run (e.g. Docker unavailable).
 
 **Summary:**
 
