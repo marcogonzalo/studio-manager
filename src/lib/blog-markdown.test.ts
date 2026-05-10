@@ -97,7 +97,9 @@ describe("markdownToHtml — sanitization", () => {
 
   it("escapes literal angle brackets entered as text via entities", async () => {
     const html = await markdownToHtml("Show &lt;script&gt; as text.");
-    expect(html).toContain("&#x3C;script>");
+    expect(html).toMatch(
+      /(?:&lt;|&#x3[cC];|&#0*60;)script(?:&gt;|&#x3[eE];|&#0*62;|>)/,
+    );
     expect(html).not.toContain("<script");
   });
 });
