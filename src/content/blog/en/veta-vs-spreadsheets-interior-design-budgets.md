@@ -104,8 +104,8 @@ Yes. **Any project you've tracked in a spreadsheet can be replicated in Veta** w
 No—only the project link, with public access enabled by you.
 
 **Can I use Veta as a solo freelance designer?**
-Yes. The [Base Plan](/plan-base-primer-proyecto-interiorismo) is for people starting out or running a smaller volume of projects.
+Yes. The [Base Plan](/en/base-plan-first-interior-design-project) is for people starting out or running a smaller volume of projects.
 
 ---
 
-If you want budget, orders, payments, PDF, and a client-facing project site in one workflow, [Veta offers a 30-day free trial](/). No credit card required.
+If you want budget, orders, payments, PDF, and a client-facing project site in one workflow, [Veta offers a 30-day free trial](/en). No credit card required.
