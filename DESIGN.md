@@ -167,7 +167,7 @@ components:
     padding: 4px
   badge-primary:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.foreground}"
+    textColor: "{colors.primary-foreground}"
     rounded: "{rounded.full}"
     padding: 4px
   badge-golden:
