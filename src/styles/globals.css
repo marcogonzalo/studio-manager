@@ -535,7 +535,7 @@
 
 /* react-phone-number-input: tema alineado con Input (border, radius, colores) */
 .PhoneInput {
-  --PhoneInput-color--focus: hsl(var(--ring));
+  --PhoneInput-color--focus: var(--ring);
   --PhoneInputCountrySelect-marginRight: 0.5rem;
   --PhoneInputCountrySelectArrow-width: 0.3rem;
   --PhoneInputCountrySelectArrow-marginLeft: var(
@@ -543,20 +543,18 @@
   );
   --PhoneInputCountrySelectArrow-borderWidth: 1px;
   --PhoneInputCountrySelectArrow-opacity: 0.45;
-  --PhoneInputCountrySelectArrow-color: hsl(var(--muted-foreground));
+  --PhoneInputCountrySelectArrow-color: var(--muted-foreground);
   --PhoneInputCountrySelectArrow-color--focus: var(--PhoneInput-color--focus);
   --PhoneInputCountrySelectArrow-transform: rotate(45deg);
   --PhoneInputCountryFlag-height: 1rem;
   --PhoneInputCountryFlag-aspectRatio: 1.5;
   display: flex;
   align-items: center;
-  border: 1px solid hsl(var(--border));
   border-radius: var(--radius-md);
-  background: hsl(var(--background));
+  background: var(--background);
 }
 .PhoneInput:focus-within {
   outline: none;
-  box-shadow: 0 0 0 1px hsl(var(--ring));
 }
 .PhoneInputInput {
   flex: 1;
@@ -565,7 +563,7 @@
   background: transparent;
   padding: 0.5rem 0.75rem;
   font-size: inherit;
-  color: hsl(var(--foreground));
+  color: var(--foreground);
 }
 .PhoneInputInput::placeholder {
   color: var(--placeholder-foreground);
@@ -607,14 +605,14 @@
   cursor: pointer;
   /* Asegura que el contenido del dropdown sea legible en dark mode.
      Aunque el <select> esté con opacidad 0, los estilos suelen afectar al menú nativo. */
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background: var(--background);
+  color: var(--foreground);
   font: inherit;
 }
 
 .PhoneInputCountrySelect option {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background: var(--background);
+  color: var(--foreground);
 }
 .PhoneInputCountrySelect:focus + * + .PhoneInputCountrySelectArrow {
   opacity: 1;
