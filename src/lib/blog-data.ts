@@ -1,6 +1,5 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { z } from "zod";
 
@@ -39,8 +38,8 @@ export type BlogPostSource = BlogPostSummary & {
 };
 
 const defaultBlogContentRoot = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
+  process.cwd(),
+  "src",
   "content",
   "blog"
 );
