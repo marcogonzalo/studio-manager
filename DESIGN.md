@@ -132,7 +132,7 @@ components:
     padding: 12px
   button-destructive:
     backgroundColor: "{colors.destructive}"
-    textColor: "#000000"
+    textColor: "{colors.destructive-foreground}"
     rounded: "{rounded.md}"
     padding: 12px
   card:
