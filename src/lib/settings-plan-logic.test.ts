@@ -7,12 +7,51 @@ import {
   getFallbackNumericConsumableLimit,
   getPastHistory,
   getSettingsPlanExpiryMessageKey,
+  localCalendarDayString,
+  planAssignmentExpiresCalendarDay,
+  planExpiresOnOrAfterLocalDay,
   resolveNumericConsumableLimit,
   resolveStorageLimitMb,
   shouldShowPlanExpiryText,
   startOfLocalDay,
   storageUsageBarPercent,
 } from "./settings-plan-logic";
+
+describe("planAssignmentExpiresCalendarDay", () => {
+  it("keeps Postgres DATE YYYY-MM-DD as calendar string", () => {
+    expect(planAssignmentExpiresCalendarDay("2026-05-10")).toBe("2026-05-10");
+    expect(planAssignmentExpiresCalendarDay(" 2026-05-10 ")).toBe("2026-05-10");
+  });
+
+  it("uses date part for midnight ISO (avoids UTC-only Date parsing)", () => {
+    expect(planAssignmentExpiresCalendarDay("2026-05-10T00:00:00.000Z")).toBe(
+      "2026-05-10"
+    );
+    expect(planAssignmentExpiresCalendarDay("2026-05-10T00:00:00+00:00")).toBe(
+      "2026-05-10"
+    );
+  });
+
+  it("uses local calendar day for non-midnight timestamps", () => {
+    const d = new Date(2026, 4, 10, 15, 30, 0);
+    const iso = d.toISOString();
+    expect(planAssignmentExpiresCalendarDay(iso)).toBe("2026-05-10");
+  });
+
+  it("returns null for unparseable values", () => {
+    expect(planAssignmentExpiresCalendarDay("")).toBeNull();
+    expect(planAssignmentExpiresCalendarDay("not-a-date")).toBeNull();
+  });
+});
+
+describe("calendar day vs UTC-parsed Date (Postgres DATE)", () => {
+  it("compares DATE-only API strings to local today (no timestamp fixtures)", () => {
+    const may10Local = startOfLocalDay(new Date(2026, 4, 10));
+    expect(localCalendarDayString(may10Local)).toBe("2026-05-10");
+    expect(planExpiresOnOrAfterLocalDay("2026-05-10", may10Local)).toBe(true);
+    expect(planExpiresOnOrAfterLocalDay("2026-05-09", may10Local)).toBe(false);
+  });
+});
 
 describe("startOfLocalDay", () => {
   it("zeros time components in local timezone", () => {
@@ -29,6 +68,7 @@ describe("startOfLocalDay", () => {
 });
 
 describe("getPastHistory / getCurrentAssignment", () => {
+  // Fixtures use YYYY-MM-DD like plan_assignments.expires_at (Postgres date) from Supabase.
   const may10 = new Date(2026, 4, 10, 0, 0, 0, 0);
 
   it("returns empty / undefined when history is empty", () => {
@@ -36,10 +76,10 @@ describe("getPastHistory / getCurrentAssignment", () => {
     expect(getCurrentAssignment([], may10)).toBeUndefined();
   });
 
-  it("splits past vs current by expires_at compared to today start", () => {
+  it("splits past vs current by calendar expires_at vs local today", () => {
     const rows = [
-      { id: "a", expires_at: "2026-05-09T00:00:00.000Z" },
-      { id: "b", expires_at: "2026-06-01T00:00:00.000Z" },
+      { id: "a", expires_at: "2026-05-09" },
+      { id: "b", expires_at: "2026-06-01" },
     ];
     const past = getPastHistory(rows, may10);
     const current = getCurrentAssignment(rows, may10);
@@ -47,17 +87,28 @@ describe("getPastHistory / getCurrentAssignment", () => {
     expect(current?.id).toBe("b");
   });
 
+  it("boundary: expiry on same local calendar day as today is current (like expires_at >= current_date)", () => {
+    const row = { id: "expires-today", expires_at: "2026-05-10" };
+    expect(getCurrentAssignment([row], may10)?.id).toBe("expires-today");
+    expect(getPastHistory([row], may10)).toEqual([]);
+  });
+
+  it("boundary: day before local today is past only (DATE-only strings)", () => {
+    const row = { id: "yesterday", expires_at: "2026-05-09" };
+    expect(getCurrentAssignment([row], may10)).toBeUndefined();
+    expect(getPastHistory([row], may10)).toEqual([row]);
+  });
+
   it("uses find order: first row that is still valid wins", () => {
     const rows = [
-      { id: "first", expires_at: "2026-12-31T00:00:00.000Z" },
-      { id: "second", expires_at: "2026-12-31T00:00:00.000Z" },
+      { id: "first", expires_at: "2026-12-31" },
+      { id: "second", expires_at: "2026-12-31" },
     ];
     expect(getCurrentAssignment(rows, may10)?.id).toBe("first");
   });
 
   it("keeps a far-future assignment in current and out of past", () => {
-    const may10 = new Date(2026, 4, 10, 0, 0, 0, 0);
-    const row = { id: "x", expires_at: "2030-06-01T00:00:00.000Z" };
+    const row = { id: "x", expires_at: "2030-06-01" };
     expect(getPastHistory([row], may10)).toEqual([]);
     expect(getCurrentAssignment([row], may10)?.id).toBe("x");
   });

@@ -4,6 +4,50 @@ export interface PlanAssignmentHistoryRow {
   expires_at: string;
 }
 
+/** YYYY-MM-DD in the given Date's *local* calendar (aligns with startOfLocalDay / "today" in the UI). */
+export function localCalendarDayString(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Normalizes plan_assignments.expires_at for comparison with local "today".
+ * Postgres DATE is usually "YYYY-MM-DD"; some serializers append T00:00:00… which must not be parsed as UTC
+ * (Date-only strings are UTC midnight in JS and shift the local calendar day behind UTC-positive offsets).
+ * Full timestamps use the instant's local calendar day.
+ */
+export function planAssignmentExpiresCalendarDay(
+  expiresAt: string
+): string | null {
+  const s = expiresAt.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    return s;
+  }
+  const midnightIso = s.match(
+    /^(\d{4}-\d{2}-\d{2})T00:00:00(\.\d+)?(Z|[+-]\d{2}:\d{2})?$/
+  );
+  if (midnightIso) {
+    return midnightIso[1];
+  }
+  const ms = Date.parse(s);
+  if (Number.isNaN(ms)) {
+    return null;
+  }
+  return localCalendarDayString(new Date(ms));
+}
+
+export function planExpiresOnOrAfterLocalDay(
+  expiresAt: string,
+  todayStart: Date
+): boolean {
+  const exp = planAssignmentExpiresCalendarDay(expiresAt);
+  if (!exp) return false;
+  const today = localCalendarDayString(todayStart);
+  return exp >= today;
+}
+
 export function startOfLocalDay(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -14,14 +58,18 @@ export function getCurrentAssignment<T extends PlanAssignmentHistoryRow>(
   history: T[],
   todayStart: Date
 ): T | undefined {
-  return history.find((r) => new Date(r.expires_at) >= todayStart);
+  return history.find((r) =>
+    planExpiresOnOrAfterLocalDay(r.expires_at, todayStart)
+  );
 }
 
 export function getPastHistory<T extends PlanAssignmentHistoryRow>(
   history: T[],
   todayStart: Date
 ): T[] {
-  return history.filter((r) => new Date(r.expires_at) < todayStart);
+  return history.filter(
+    (r) => !planExpiresOnOrAfterLocalDay(r.expires_at, todayStart)
+  );
 }
 
 export type SettingsPlanExpiryMessageKey = "renewsOn" | "endsOn";
