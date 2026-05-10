@@ -47,7 +47,7 @@ Extract both light (`:root`) and dark (`@variant dark`) values for each token.
 From `layout.tsx`, capture:
 
 - Font family name and `variable` CSS custom property
-- Weights loaded (the `weight` array in the font config)
+- Weight information from the font config: if a `weight` field is present, record the configured weight value(s); if no `weight` field is specified (for example, when using a variable font), note that no explicit weights are configured and do not invent a weight array in `DESIGN.md`
 
 ---
 
