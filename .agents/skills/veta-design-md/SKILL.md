@@ -96,17 +96,37 @@ colors:
   card: "<hex>"
   card-foreground: "<hex>"
   border: "<hex>"
+  input: "<hex>"
+  ring: "<hex>"
   destructive: "<hex>"
   destructive-foreground: "<hex>"
   brand-golden: "<hex>" # --brand-secondary
   brand-golden-foreground: "<hex>"
   brand-cream: "<hex>" # --brand-tertiary
   brand-cream-foreground: "<hex>"
+  sidebar: "<hex>"
+  sidebar-foreground: "<hex>"
+  sidebar-primary: "<hex>"
+  sidebar-primary-foreground: "<hex>"
+  sidebar-accent: "<hex>"
+  sidebar-accent-foreground: "<hex>"
+  sidebar-border: "<hex>"
+  sidebar-ring: "<hex>"
   # Dark mode variants (for component contrast reference)
   background-dark: "<hex>"
   foreground-dark: "<hex>"
   card-dark: "<hex>"
   border-dark: "<hex>"
+  input-dark: "<hex>"
+  ring-dark: "<hex>"
+  sidebar-dark: "<hex>"
+  sidebar-foreground-dark: "<hex>"
+  sidebar-primary-dark: "<hex>"
+  sidebar-primary-foreground-dark: "<hex>"
+  sidebar-accent-dark: "<hex>"
+  sidebar-accent-foreground-dark: "<hex>"
+  sidebar-border-dark: "<hex>"
+  sidebar-ring-dark: "<hex>"
 typography:
   # Populate from next/font config — family name and weights loaded
   display:
