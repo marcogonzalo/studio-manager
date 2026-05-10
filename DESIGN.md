@@ -203,7 +203,7 @@ La paleta está construida alrededor de una sola familia de verdes sage y una es
 
 - **Destructive (`#ca5551` / dark `#b32517`):** Rojo tierra para errores, confirmaciones de borrado y estados de alerta. Su temperatura cálida lo mantiene dentro de la familia cromática.
 
-Todos los pares texto/fondo cumplen WCAG AA (4.5:1) en ambos modos. El primary sobre primary-foreground y el destructive sobre su foreground son los únicos pares que requieren verificación cuidadosa al cambiar los tokens.
+Todos los pares texto/fondo cumplen WCAG AA (4.5:1) en ambos modos. Los únicos pares que requieren verificación cuidadosa al cambiar los tokens son `primary-foreground` sobre fondos `primary` y `destructive-foreground` sobre fondos `destructive`.
 
 ## Typography
 
