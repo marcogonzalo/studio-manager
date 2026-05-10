@@ -115,7 +115,7 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.foreground}"
+    textColor: "{colors.primary-foreground}"
     rounded: "{rounded.md}"
     padding: 12px
   button-primary-hover:
