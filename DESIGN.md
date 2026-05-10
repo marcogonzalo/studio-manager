@@ -156,8 +156,8 @@ components:
     rounded: "{rounded.sm}"
     padding: 8px
   sidebar-item-active:
-    backgroundColor: "{colors.sidebar-accent}"
-    textColor: "{colors.foreground}"
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.primary-foreground}"
     rounded: "{rounded.sm}"
     padding: 8px
   badge-default:
