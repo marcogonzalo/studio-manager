@@ -2,7 +2,6 @@
   "name": "interior-design-project",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -48,7 +47,7 @@
     "libphonenumber-js": "^1.12.40",
     "lucide-react": "^0.577.0",
     "mailersend": "^2.6.0",
-    "next": "^16.1.7",
+    "next": "^16.2.6",
     "next-intl": "^4.8.3",
     "next-themes": "^0.4.6",
     "react": "^19.2.4",
