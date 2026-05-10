@@ -84,6 +84,9 @@ describe("markdownToHtml — sanitization", () => {
 
     expect(html).not.toContain("onclick");
     expect(html).not.toContain("alert(1)");
+    expect(html).toContain("<a");
+    expect(html).toContain('href="#"');
+    expect(html).toContain(">click</a>");
   });
 
   it("removes javascript: URLs in markdown links", async () => {
