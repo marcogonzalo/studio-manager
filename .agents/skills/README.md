@@ -116,6 +116,16 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ---
 
+## 14. veta-design-md (implementada)
+
+**Objetivo:** Generar y mantener `DESIGN.md` en la raíz del proyecto — identidad visual de Veta en formato estándar `google-labs-code/design.md` (frontmatter YAML con tokens + prosa Markdown).
+
+**Cuándo usar:** Al crear `DESIGN.md` por primera vez, al actualizar el sistema de diseño (colores, tipografía, radius), o cuando otra skill hace referencia a la documentación de identidad visual del producto.
+
+**Contenido:** Workflow completo — leer `globals.css`, convertir oklch → hex, escribir frontmatter YAML (colores, tipografía Montserrat, espaciado, componentes), escribir secciones prose y validar con `npx @google/design.md lint`.
+
+---
+
 ## Resumen
 
 | Skill                           | Estado       | Prioridad |
@@ -133,5 +143,6 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 | veta-supabase-production        | Implementada | Alta      |
 | veta-blog-article               | Implementada | Media     |
 | veta-blog-research              | Implementada | Media     |
+| veta-design-md                  | Implementada | Media     |
 
-**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`, `veta-marketing-strategy-seo-geo`, `veta-supabase-production`, `veta-blog-article`, `veta-blog-research`.
+**Skills con `SKILL.md` en `.agents/skills/`:** `veta-supabase-rls`, `veta-forms-validation`, `veta-testing`, `veta-multilanguage-views`, `veta-marketing-i18n-content`, `veta-db-migrations`, `veta-app-routing`, `veta-frontend-components`, `veta-security-owasp`, `veta-marketing-strategy-seo-geo`, `veta-supabase-production`, `veta-blog-article`, `veta-blog-research`, `veta-design-md`.

@@ -84,6 +84,9 @@ describe("markdownToHtml — sanitization", () => {
 
     expect(html).not.toContain("onclick");
     expect(html).not.toContain("alert(1)");
+    // Default hast-util-sanitize drops the unsafe anchor; text content survives in a block.
+    expect(html).toMatch(/<p>\s*click\s*<\/p>/);
+    expect(html).not.toMatch(/<a[\s>]/i);
   });
 
   it("removes javascript: URLs in markdown links", async () => {
@@ -97,7 +100,9 @@ describe("markdownToHtml — sanitization", () => {
 
   it("escapes literal angle brackets entered as text via entities", async () => {
     const html = await markdownToHtml("Show &lt;script&gt; as text.");
-    expect(html).toContain("&#x3C;script>");
+    expect(html).toMatch(
+      /(?:&lt;|&#x3[cC];|&#0*60;)script(?:&gt;|&#x3[eE];|&#0*62;|>)/
+    );
     expect(html).not.toContain("<script");
   });
 });
