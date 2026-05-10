@@ -22,6 +22,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-placeholder-foreground: var(--placeholder-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
@@ -78,6 +79,13 @@
     --muted: oklch(0.96 0.015 98);
     --muted-foreground: oklch(0.17 0.02 100);
 
+    /* Hints: más tenue que el texto del campo (no confundir con valor relleno) */
+    --placeholder-foreground: color-mix(
+      in oklch,
+      var(--foreground) 42%,
+      var(--background)
+    );
+
     --secondary: oklch(0.94 0.03 95); /* Sand/Beige */
     --secondary-foreground: oklch(0.17 0.02 100);
     --accent: oklch(0.92 0.04 140);
@@ -121,6 +129,13 @@
       /* Profundidad: muted (L 0.18) un escalón por encima del fondo */
       --muted: oklch(0.18 0.018 78);
       --muted-foreground: oklch(0.98 0.008 95);
+
+      /* Hints: más tenue que el texto del campo (no confundir con valor relleno) */
+      --placeholder-foreground: color-mix(
+        in oklch,
+        var(--foreground) 58%,
+        var(--background)
+      );
 
       /* Cards/popover (L 0.18): elevación clara */
       --card: oklch(0.18 0.018 80);
@@ -520,7 +535,7 @@
 
 /* react-phone-number-input: tema alineado con Input (border, radius, colores) */
 .PhoneInput {
-  --PhoneInput-color--focus: hsl(var(--ring));
+  --PhoneInput-color--focus: var(--ring);
   --PhoneInputCountrySelect-marginRight: 0.5rem;
   --PhoneInputCountrySelectArrow-width: 0.3rem;
   --PhoneInputCountrySelectArrow-marginLeft: var(
@@ -528,20 +543,18 @@
   );
   --PhoneInputCountrySelectArrow-borderWidth: 1px;
   --PhoneInputCountrySelectArrow-opacity: 0.45;
-  --PhoneInputCountrySelectArrow-color: hsl(var(--muted-foreground));
+  --PhoneInputCountrySelectArrow-color: var(--muted-foreground);
   --PhoneInputCountrySelectArrow-color--focus: var(--PhoneInput-color--focus);
   --PhoneInputCountrySelectArrow-transform: rotate(45deg);
   --PhoneInputCountryFlag-height: 1rem;
   --PhoneInputCountryFlag-aspectRatio: 1.5;
   display: flex;
   align-items: center;
-  border: 1px solid hsl(var(--border));
   border-radius: var(--radius-md);
-  background: hsl(var(--background));
+  background: var(--background);
 }
 .PhoneInput:focus-within {
   outline: none;
-  box-shadow: 0 0 0 1px hsl(var(--ring));
 }
 .PhoneInputInput {
   flex: 1;
@@ -550,10 +563,10 @@
   background: transparent;
   padding: 0.5rem 0.75rem;
   font-size: inherit;
-  color: hsl(var(--foreground));
+  color: var(--foreground);
 }
 .PhoneInputInput::placeholder {
-  color: hsl(var(--muted-foreground));
+  color: var(--placeholder-foreground);
 }
 .PhoneInputInput:focus {
   outline: none;
@@ -592,14 +605,14 @@
   cursor: pointer;
   /* Asegura que el contenido del dropdown sea legible en dark mode.
      Aunque el <select> esté con opacidad 0, los estilos suelen afectar al menú nativo. */
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background: var(--background);
+  color: var(--foreground);
   font: inherit;
 }
 
 .PhoneInputCountrySelect option {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background: var(--background);
+  color: var(--foreground);
 }
 .PhoneInputCountrySelect:focus + * + .PhoneInputCountrySelectArrow {
   opacity: 1;
