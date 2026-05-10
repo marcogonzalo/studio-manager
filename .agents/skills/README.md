@@ -122,7 +122,7 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 **Cuándo usar:** Al crear `DESIGN.md` por primera vez, al actualizar el sistema de diseño (colores, tipografía, radius), o cuando otra skill hace referencia a la documentación de identidad visual del producto.
 
-**Contenido:** Workflow completo — leer `globals.css`, convertir oklch → hex, escribir frontmatter YAML (colores, tipografía Montserrat, espaciado, componentes), escribir secciones prose, validar con `npx @google/design.md lint`. Incluye tabla de valores hex aproximados de la paleta actual de Veta.
+**Contenido:** Workflow completo — leer `globals.css`, convertir oklch → hex, escribir frontmatter YAML (colores, tipografía Montserrat, espaciado, componentes), escribir secciones prose y validar con `npx @google/design.md lint`.
 
 ---
 
