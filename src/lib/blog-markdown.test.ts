@@ -84,9 +84,9 @@ describe("markdownToHtml — sanitization", () => {
 
     expect(html).not.toContain("onclick");
     expect(html).not.toContain("alert(1)");
-    expect(html).toContain("<a");
-    expect(html).toContain('href="#"');
-    expect(html).toContain(">click</a>");
+    // Default hast-util-sanitize drops the unsafe anchor; text content survives in a block.
+    expect(html).toMatch(/<p>\s*click\s*<\/p>/);
+    expect(html).not.toMatch(/<a[\s>]/i);
   });
 
   it("removes javascript: URLs in markdown links", async () => {
