@@ -167,7 +167,7 @@ export function ContactForm() {
                     id="message"
                     rows={5}
                     placeholder={t("messagePlaceholder")}
-                    className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                    className="border-input bg-background text-foreground ring-offset-background placeholder:text-placeholder-foreground focus-visible:ring-ring flex w-full resize-y rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                     {...field}
                     disabled={isPending}
                   />

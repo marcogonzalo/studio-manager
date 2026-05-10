@@ -22,6 +22,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-placeholder-foreground: var(--placeholder-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
@@ -78,6 +79,13 @@
     --muted: oklch(0.96 0.015 98);
     --muted-foreground: oklch(0.17 0.02 100);
 
+    /* Hints: más tenue que el texto del campo (no confundir con valor relleno) */
+    --placeholder-foreground: color-mix(
+      in oklch,
+      var(--foreground) 42%,
+      var(--background)
+    );
+
     --secondary: oklch(0.94 0.03 95); /* Sand/Beige */
     --secondary-foreground: oklch(0.17 0.02 100);
     --accent: oklch(0.92 0.04 140);
@@ -121,6 +129,13 @@
       /* Profundidad: muted (L 0.18) un escalón por encima del fondo */
       --muted: oklch(0.18 0.018 78);
       --muted-foreground: oklch(0.98 0.008 95);
+
+      /* Hints: más tenue que el texto del campo (no confundir con valor relleno) */
+      --placeholder-foreground: color-mix(
+        in oklch,
+        var(--foreground) 58%,
+        var(--background)
+      );
 
       /* Cards/popover (L 0.18): elevación clara */
       --card: oklch(0.18 0.018 80);
@@ -553,7 +568,7 @@
   color: hsl(var(--foreground));
 }
 .PhoneInputInput::placeholder {
-  color: hsl(var(--muted-foreground));
+  color: var(--placeholder-foreground);
 }
 .PhoneInputInput:focus {
   outline: none;

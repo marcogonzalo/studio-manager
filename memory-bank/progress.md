@@ -4,6 +4,8 @@
 
 ## Completado (resumen por áreas)
 
+- **Rama feat/form-placeholder-foreground-typography:** Token `--placeholder-foreground` en `globals.css` (light/dark vía `color-mix`) para que los hints no usen el mismo color que el texto del campo; utilidad Tailwind `placeholder-foreground`; `Input`, `Textarea`, `SelectTrigger` con `text-foreground` y `placeholder:text-placeholder-foreground` / `data-[placeholder]:text-placeholder-foreground`; placeholder del `PhoneInput` alineado al token; formulario de contacto (textarea) actualizado. Lint, tests y build en Docker OK.
+
 - **Infra y auth:** Next.js 16 (App Router), Docker, Supabase (schema, RLS, Auth). Login/signup, magic links, sesión, caducidad con redirección. Migración desde Vite.
 - **CRUD:** Clientes, proveedores, catálogo (productos), proyectos. Layout app (sidebar, responsive). Eliminación de proyectos desde la lista (menú ⋮ en cada card, confirmación con `ConfirmDeleteDialog`; RLS solo permite borrar los propios).
 - **Detalle de proyecto:** Info general, espacios, renders por espacio, presupuesto (ítems, partidas por fase/categoría, edición, exclusión), órdenes de compra (gestionables, cobertura), **pagos** (registro por proyecto, tipos, vinculación a PO/costes), costes adicionales, documentos (URL + subida), notas (archivado).
