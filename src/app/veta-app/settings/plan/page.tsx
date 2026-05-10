@@ -10,8 +10,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Rocket, FolderKanban, Users, Truck, ShoppingBag } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
-import type { PlanConfig } from "@/types";
 import { appPath } from "@/lib/app-paths";
+import {
+  consumableUsageBarPercent,
+  getCurrentAssignment,
+  getPastHistory,
+  getSettingsPlanExpiryMessageKey,
+  resolveNumericConsumableLimit,
+  resolveStorageLimitMb,
+  shouldShowPlanExpiryText,
+  startOfLocalDay,
+  storageUsageBarPercent,
+} from "@/lib/settings-plan-logic";
 import { reportError } from "@/lib/utils";
 
 interface PlanAssignmentRow {
@@ -40,22 +50,6 @@ const CONSUMABLE_ICONS: Record<
   suppliers: Truck,
   products: ShoppingBag,
   storage: ShoppingBag, // TODO: use a better icon for storage
-};
-
-const CONFIG_LIMIT_KEYS: Record<
-  Exclude<keyof UsageCounts, "storage">,
-  keyof Pick<
-    PlanConfig,
-    | "projects_limit"
-    | "clients_limit"
-    | "suppliers_limit"
-    | "catalog_products_limit"
-  >
-> = {
-  projects: "projects_limit",
-  clients: "clients_limit",
-  suppliers: "suppliers_limit",
-  products: "catalog_products_limit",
 };
 
 function formatBytes(bytes: number): string {
@@ -174,19 +168,16 @@ export default function SettingsPlanPage() {
   const currentPlanCode = effectivePlan?.plan_code ?? "BASE";
   const currentPlanLabel = planDisplayNames[currentPlanCode] ?? currentPlanCode;
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const currentAssignment = history.find(
-    (r) => new Date(r.expires_at) >= today
+  const today = startOfLocalDay(new Date());
+  const currentAssignment = getCurrentAssignment(history, today);
+  const pastHistory = getPastHistory(history, today);
+  const showExpiryText = shouldShowPlanExpiryText({
+    planCode: currentPlanCode,
+    assignment: currentAssignment,
+  });
+  const expiryLabel = t(
+    getSettingsPlanExpiryMessageKey(currentAssignment?.next_period_duration)
   );
-  const pastHistory = history.filter((r) => new Date(r.expires_at) < today);
-  const showExpiryText =
-    currentPlanCode !== "BASE" &&
-    currentAssignment &&
-    currentAssignment.expires_at;
-  const expiryLabel = currentAssignment?.next_period_duration
-    ? t("renewsOn")
-    : t("endsOn");
   const expiryDateFormatted = currentAssignment
     ? formatDate(currentAssignment.expires_at, {
         day: "numeric",
@@ -253,15 +244,12 @@ export default function SettingsPlanPage() {
                 ).map((key) => {
                   if (key === "storage") {
                     const usedBytes = usage.storage;
-                    const limitMB =
-                      effectivePlan?.config?.storage_limit_mb ?? 500;
+                    const limitMB = resolveStorageLimitMb(
+                      effectivePlan?.config
+                    );
                     const limitBytes = limitMB * 1024 * 1024;
                     const isUnlimited = limitMB === -1;
-                    const percent = isUnlimited
-                      ? 5
-                      : limitMB === 0
-                        ? 0
-                        : Math.min(100, (usedBytes / limitBytes) * 100);
+                    const percent = storageUsageBarPercent(usedBytes, limitMB);
                     const label = consumableLabels.storage;
                     const Icon = CONSUMABLE_ICONS.storage;
                     return (
@@ -288,15 +276,12 @@ export default function SettingsPlanPage() {
                   }
 
                   const used = usage[key];
-                  const limit =
-                    effectivePlan?.config?.[CONFIG_LIMIT_KEYS[key]] ??
-                    (key === "projects" ? 1 : key === "products" ? 50 : 10);
+                  const limit = resolveNumericConsumableLimit(
+                    key,
+                    effectivePlan?.config
+                  );
                   const isUnlimited = limit === -1;
-                  const percent = isUnlimited
-                    ? 5
-                    : limit === 0
-                      ? 0
-                      : Math.min(100, (used / limit) * 100);
+                  const percent = consumableUsageBarPercent(used, limit);
                   const label = consumableLabels[key];
                   const Icon = CONSUMABLE_ICONS[key];
                   return (
