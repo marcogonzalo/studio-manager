@@ -101,7 +101,12 @@ export default async function RootLayout({
   const defaultDeniedPayload = getDefaultGtmConsent(true);
 
   return (
-    <html lang="es" suppressHydrationWarning className={montserrat.variable}>
+    <html
+      lang="es"
+      suppressHydrationWarning
+      className={montserrat.variable}
+      data-scroll-behavior="smooth"
+    >
       <head>
         {/* Aplicar tema antes del primer pintado para evitar que la 404 (y el resto) pierda formato al hidratar (next-themes aplica la clase después). */}
         <script
