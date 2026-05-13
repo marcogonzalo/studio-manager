@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import {
   checkRateLimit,
@@ -18,6 +19,16 @@ import {
   MAGIC_LINK_CAPTCHA_BYPASS_COOKIE,
   verifyMagicLinkCaptchaBypassValue,
 } from "@/lib/auth/magic-link-captcha-bypass";
+
+/** RFC 5321 max length; caps input before Zod email check (ReDoS / abuse mitigation). */
+const MAGIC_LINK_EMAIL_MAX = 254;
+
+const magicLinkEmailSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(MAGIC_LINK_EMAIL_MAX)
+  .email();
 
 function shouldIssueCaptchaBypassCookie(
   email: string,
@@ -84,14 +95,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: "Invalid email format" },
-        { status: 400 }
-      );
+    const parsedEmail = magicLinkEmailSchema.safeParse(email);
+    if (!parsedEmail.success) {
+      const code = parsedEmail.error.issues[0]?.code;
+      const message =
+        code === "too_small" ? "Email is required" : "Invalid email format";
+      return NextResponse.json({ error: message }, { status: 400 });
     }
+
+    const normalizedEmail = parsedEmail.data;
 
     const antiSpamConfig = getMagicLinkAntiSpamConfig();
     const captchaTokenStr =
@@ -101,10 +113,10 @@ export async function POST(request: NextRequest) {
     )?.value;
     const captchaBypassVerified = verifyMagicLinkCaptchaBypassValue(
       bypassCookie,
-      email
+      normalizedEmail
     );
     const antiSpam = await resolveMagicLinkAntiSpam({
-      email,
+      email: normalizedEmail,
       captchaToken: captchaTokenStr,
       remoteIp: ip,
       captchaBypassVerified,
@@ -137,7 +149,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     const { error } = await supabase.auth.signInWithOtp({
-      email,
+      email: normalizedEmail,
       options: {
         emailRedirectTo,
         data: mergedWithAntiSpam,
@@ -161,7 +173,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: message }, { status });
     }
 
-    return jsonSuccessWithCaptchaBypassRefresh(email, antiSpamConfig);
+    return jsonSuccessWithCaptchaBypassRefresh(normalizedEmail, antiSpamConfig);
   } catch {
     return NextResponse.json(
       { error: "Internal server error" },
