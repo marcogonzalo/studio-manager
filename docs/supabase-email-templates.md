@@ -115,6 +115,7 @@ No modificar los nombres de estas variables salvo al añadir condicionales alred
 - Fondo: `#f5f3ef` (cream); tarjeta blanca, bordes redondeados.
 - Tipografía: Montserrat (en cliente de correo puede fallback a system fonts).
 - Pie: según idioma, texto equivalente en ES o EN + enlace a `{{ .SiteURL }}`.
+- **Botón CTA:** además de la clase `.button` en `<style>`, el `<a>` del botón debe incluir **`style="color: #ffffff !important"`** en línea. Clientes como Gmail suelen forzar el azul de enlace si el color solo está en la hoja de estilos embebida; el mismo patrón está en `src/lib/email/templates/demo-access.ts`.
 
 ## Error 500 "Error sending confirmation email" en producción
 
