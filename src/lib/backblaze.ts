@@ -301,6 +301,17 @@ export async function uploadDocument(params: {
   };
 }
 
+/** B2 download/file URLs use hostnames like f003.backblazeb2.com (never bare registrable-only checks). */
+const BACKBLAZE_B2_FILE_HOST_SUFFIX = ".backblazeb2.com";
+
+function isTrustedBackblazeB2FileHostname(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  return (
+    h.endsWith(BACKBLAZE_B2_FILE_HOST_SUFFIX) &&
+    h.length > BACKBLAZE_B2_FILE_HOST_SUFFIX.length
+  );
+}
+
 /**
  * Comprueba si una URL es de nuestro bucket B2.
  */
@@ -309,10 +320,11 @@ function isOurB2Url(imageUrl: string): boolean {
   if (!bucketName || !imageUrl?.trim()) return false;
   try {
     const url = new URL(imageUrl);
+    if (url.protocol !== "https:") return false;
+    if (!isTrustedBackblazeB2FileHostname(url.hostname)) return false;
     const pathParts = url.pathname.split("/").filter(Boolean);
     // Formato: /file/{bucketName}/{fileName}
     return (
-      url.hostname.includes("backblazeb2.com") &&
       pathParts[0] === "file" &&
       pathParts[1] === bucketName &&
       pathParts.length >= 3
@@ -331,6 +343,8 @@ function extractFileNameFromB2Url(imageUrl: string): string | null {
   if (!bucketName || !imageUrl?.trim()) return null;
   try {
     const url = new URL(imageUrl);
+    if (url.protocol !== "https:") return null;
+    if (!isTrustedBackblazeB2FileHostname(url.hostname)) return null;
     const pathParts = url.pathname.split("/").filter(Boolean);
     if (pathParts[0] !== "file" || pathParts[1] !== bucketName) return null;
     return decodeURIComponent(pathParts.slice(2).join("/"));

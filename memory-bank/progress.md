@@ -6,6 +6,8 @@
 
 - **Rama chore/pnpm-docker-ci:** El proyecto usa **pnpm** (`packageManager` en `package.json`, `pnpm-lock.yaml`, sin `package-lock.json`). Dockerfile (`corepack` + `pnpm install --frozen-lockfile`), CI (pnpm/action-setup + caché pnpm), `.dockerignore`, scripts de seed (`pnpm exec tsx`), README y `docs/ci-cd.md` alineados. Reglas Cursor y skills de agente actualizadas a comandos pnpm.
 
+- **Rama fix/security-codeql-magic-link-b2:** CodeQL / seguridad: `POST /api/auth/magic-link` valida el email con Zod (`trim`, máx. 254, `.email()`) en lugar de una regex polinómica (ReDoS). `src/lib/backblaze.ts`: comprobación de host B2 por sufijo `.backblazeb2.com` y solo `https:`; `src/lib/backblaze.url-guard.test.ts`.
+
 - **Rama fix/email-auth-cta-white-text (issue #158):** En plantillas Supabase Auth (`magic_link`, `confirmation`, `recovery`, `invite`, `email_change`), el enlace del botón CTA lleva `style="color: #ffffff !important"` en línea para que el texto no salga en azul en Gmail y clientes similares. Doc actualizada en `docs/supabase-email-templates.md`.
 
 - **Rama feat/form-placeholder-foreground-typography:** Token `--placeholder-foreground` en `globals.css` (light/dark vía `color-mix`) para que los hints no usen el mismo color que el texto del campo; utilidad Tailwind `placeholder-foreground`; `Input`, `Textarea`, `SelectTrigger` con `text-foreground` y `placeholder:text-placeholder-foreground` / `data-[placeholder]:text-placeholder-foreground`; placeholder del `PhoneInput` alineado al token; formulario de contacto (textarea) actualizado. Lint, tests y build en Docker OK.
