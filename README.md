@@ -62,7 +62,7 @@ A modern, full-stack web application designed to streamline the workflow of inte
 
 - Docker and Docker Compose
 - Supabase account (or local Supabase CLI)
-- (Optional) Node.js 20+ and npm for local development without Docker
+- (Optional) Node.js 20+ and [pnpm](https://pnpm.io) for local development without Docker
 
 ### Installation
 
@@ -157,20 +157,20 @@ docker compose down
 docker compose up --build
 ```
 
-#### Using npm directly (Local Development)
+#### Using pnpm directly (local development)
 
 If you prefer to run the application locally without Docker:
 
 1. **Install dependencies:**
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. **Start the development server:**
 
    ```bash
-   npm run dev
+   pnpm run dev
    ```
 
 3. **Open your browser**
@@ -303,31 +303,31 @@ The project uses Vitest and React Testing Library for testing. Tests can be run 
 **Run all tests:**
 
 ```bash
-docker compose exec app npm test
+docker compose exec app pnpm test
 ```
 
 Or if the container is not running:
 
 ```bash
-docker compose run --rm app npm test
+docker compose run --rm app pnpm test
 ```
 
 **Run tests in watch mode:**
 
 ```bash
-docker compose exec app npm run test:watch
+docker compose exec app pnpm run test:watch
 ```
 
 **Run tests with UI (interactive mode):**
 
 ```bash
-docker compose exec app npm run test:ui
+docker compose exec app pnpm run test:ui
 ```
 
 **Generate coverage report:**
 
 ```bash
-docker compose exec app npm run test:coverage
+docker compose exec app pnpm run test:coverage
 ```
 
 The coverage report will be generated in the `coverage/` directory.
@@ -338,16 +338,16 @@ If you have Node.js installed locally, you can run tests directly:
 
 ```bash
 # Run all tests
-npm test
+pnpm test
 
 # Run tests in watch mode
-npm run test:watch
+pnpm run test:watch
 
 # Run tests with UI (interactive mode)
-npm run test:ui
+pnpm run test:ui
 
 # Generate coverage report
-npm run test:coverage
+pnpm run test:coverage
 ```
 
 ### Test Structure
@@ -378,14 +378,14 @@ docker compose build
 
 You can create a production Dockerfile or use docker compose with a production configuration.
 
-### Using npm directly
+### Using pnpm directly
 
 ```bash
 # Build the application
-npm run build
+pnpm run build
 
 # Preview the production build
-npm run preview
+pnpm run start
 ```
 
 The production build will be available in the `dist/` directory.
@@ -425,8 +425,8 @@ docker compose logs -f app
 **Execute commands in container:**
 
 ```bash
-# Run npm commands
-docker compose exec app npm <command>
+# Run pnpm commands
+docker compose exec app pnpm <command>
 
 # Access shell
 docker compose exec app sh
@@ -443,7 +443,7 @@ docker compose down -v
 The project includes a CI/CD pipeline configured in `.github/workflows/ci.yml`:
 
 - **Automated testing**: Runs on every push and PR
-- **Dependency verification**: Uses `npm ci` for reproducible builds
+- **Dependency verification**: Uses `pnpm install --frozen-lockfile` for reproducible builds
 - **Security audits**: Automated vulnerability scanning
 - **Build verification**: Ensures the application builds successfully
 
@@ -460,7 +460,7 @@ See `docs/ci-cd.md` for detailed documentation on the CI/CD process, including:
 2. Write tests for new features
 3. Ensure all security guidelines are met
 4. Use conventional commits
-5. Run `npm ci` and verify tests pass before pushing
+5. Run `pnpm install --frozen-lockfile` and verify tests pass before pushing
 
 ## 📄 License
 

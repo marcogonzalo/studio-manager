@@ -36,7 +36,7 @@ globs: **/*.ts, **/*.tsx, **/*.sql
 
 ## 5. Security Misconfiguration
 
-- **Rule:** Keep dependencies updated (`npm audit`).
+- **Rule:** Keep dependencies updated (`pnpm audit`).
 - **Rule:** Ensure storage buckets are private by default unless intended to be public.
 
 ## 6. Vulnerable and Outdated Components
@@ -51,7 +51,7 @@ globs: **/*.ts, **/*.tsx, **/*.sql
 ## 8. Software and Data Integrity Failures
 
 - **Rule:** Verify CI/CD pipelines.
-- **Rule:** Use `npm ci` for reproducible builds.
+- **Rule:** Use `pnpm install --frozen-lockfile` for reproducible builds in CI and production installs.
 
 ## 9. Security Logging and Monitoring
 

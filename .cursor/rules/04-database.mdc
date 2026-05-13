@@ -2,18 +2,18 @@
 
 ## Migration Management
 
-**CRITICAL**: In development, only apply migrations with `supabase db push --local` (or `npm run db:push`). Never use `supabase db push` without `--local` unless you are intentionally deploying to production.
+**CRITICAL**: In development, only apply migrations with `supabase db push --local` (or `pnpm run db:push`). Never use `supabase db push` without `--local` unless you are intentionally deploying to production.
 
 ### Commands
 
-- **`supabase db push --local`** (or **`npm run db:push`**): Applies pending migrations without data loss. Preserves existing data. Use for normal development.
+- **`supabase db push --local`** (or **`pnpm run db:push`**): Applies pending migrations without data loss. Preserves existing data. Use for normal development.
 - **`supabase db reset`**: Full database reset; deletes data in `public`. Use only when explicitly authorized by the user (e.g. major problem or explicit request).
 
 ### Workflow
 
 1. Create migration: `supabase migration new migration_name`
 2. Write SQL in the migration file
-3. Apply: `npm run db:push` or `supabase db push --local`
+3. Apply: `pnpm run db:push` or `supabase db push --local`
 4. Check status: `supabase migration list` or `supabase migration list --local`
 
 ### Rollback
@@ -32,7 +32,7 @@
 
 1. **Do not link production.** Do not run `supabase link` with your production project on your dev machine. Use a staging project or a separate profile for types/diff if needed; never use it for `db push`/`db reset`.
 
-2. **Use the safeguard script.** Prefer `npm run db:push` to apply migrations: it only runs `supabase db push --local` and refuses to run if `.env.local` points to production (supabase.co).
+2. **Use the safeguard script.** Prefer `pnpm run db:push` to apply migrations: it only runs `supabase db push --local` and refuses to run if `.env.local` points to production (supabase.co).
 
 3. **Production migrations only via controlled process.** Apply migrations to production only via:
    - **CI/CD:** e.g. GitHub Action on main/production branch with approval and secrets (`SUPABASE_ACCESS_TOKEN`, project ref); no production link on dev machines.

@@ -67,10 +67,10 @@ Verificación manual rápida:
 | **A02 Cryptographic Failures**    | Sin secretos en cliente; HTTPS (hosting); contraseñas solo vía Supabase Auth.                                                                                         |
 | **A03 Injection**                 | Zod en servidor; cliente Supabase; sin SQL concatenado con input.                                                                                                     |
 | **A04 Insecure Design**           | Defensa en profundidad: UI + API + RLS; rate limiting en rutas sensibles si aplica.                                                                                   |
-| **A05 Security Misconfiguration** | `npm audit`; buckets/storage no más públicos de lo necesario; cabeceras y config de Next revisadas en cambios relevantes.                                             |
+| **A05 Security Misconfiguration** | `pnpm audit`; buckets/storage no más públicos de lo necesario; cabeceras y config de Next revisadas en cambios relevantes.                                            |
 | **A06 Vulnerable Components**     | Dependencias actualizadas; eliminar paquetes sin uso.                                                                                                                 |
 | **A07 Auth failures**             | Sesión vía Supabase; cookies coherentes con el flujo documentado en middleware; flujos demo/restricciones donde existan.                                              |
-| **A08 Data integrity**            | CI reproducible (`npm ci`); no ejecutar código no confiable en build.                                                                                                 |
+| **A08 Data integrity**            | CI reproducible (`pnpm install --frozen-lockfile`); no ejecutar código no confiable en build.                                                                         |
 | **A09 Logging / monitoring**      | Logs sin PII innecesaria; errores críticos rastreables sin filtrar secretos.                                                                                          |
 | **A10 SSRF**                      | Si el servidor **fetch**ea URLs elegidas por el usuario (imágenes, webhooks), validar esquema/host y allowlist cuando sea posible.                                    |
 

@@ -9,7 +9,7 @@ description: Write and run tests with Vitest and React Testing Library in the Ve
 
 - **Runner:** Vitest.
 - **UI tests:** React Testing Library (`@testing-library/react`, `@testing-library/user-event`).
-- **Coverage:** Aim for ≥85% on new code. Run `npm run test:coverage`.
+- **Coverage:** Aim for ≥85% on new code. Run `pnpm run test:coverage`.
 
 ## What to test
 
@@ -30,7 +30,7 @@ description: Write and run tests with Vitest and React Testing Library in the Ve
 
 ## Commands
 
-- `npm run test` — run once.
-- `npm run test:watch` — watch mode.
-- `npm run test:coverage` — coverage report.
-- `npm run test:ui` — Vitest UI.
+- `pnpm run test` — run once.
+- `pnpm run test:watch` — watch mode.
+- `pnpm run test:coverage` — coverage report.
+- `pnpm run test:ui` — Vitest UI.

@@ -26,14 +26,14 @@ When either scenario is triggered, run **in this order**:
 
 ## 2. Verify and fix formatting (Prettier)
 
-- Run the formatter (e.g. `npm run format` or `npx prettier --write .`). Verify there are no format-only diffs left; fix any reported issues.
+- Run the formatter (e.g. `pnpm run format` or `pnpm exec prettier --write .`). Verify there are no format-only diffs left; fix any reported issues.
 - Do this **before** running tests and build so the build sees the final formatted code.
 
 ## 3. Verify everything works (in container)
 
-- **Linter:** Run lint **inside the Docker/dev container** (e.g. `docker compose exec <service> npm run lint`). Fix all errors before continuing.
-- **Tests:** Run the test suite **inside the Docker/dev container** (e.g. `docker compose exec <service> npm run test`). Fix failures before continuing. Minimum 80% coverage for new code (per project standards).
-- **Build:** Run the build **inside the Docker/dev container** (e.g. `docker compose exec <service> npm run build`). Ensure it completes without errors.
+- **Linter:** Run lint **inside the Docker/dev container** (e.g. `docker compose exec <service> pnpm run lint`). Fix all errors before continuing.
+- **Tests:** Run the test suite **inside the Docker/dev container** (e.g. `docker compose exec <service> pnpm test`). Fix failures before continuing. Minimum 80% coverage for new code (per project standards).
+- **Build:** Run the build **inside the Docker/dev container** (e.g. `docker compose exec <service> pnpm run build`). Ensure it completes without errors.
 - Do not proceed to the next step if lint, tests, or build fail.
 
 ## 4. Update documentation
