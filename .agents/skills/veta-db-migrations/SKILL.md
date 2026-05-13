@@ -13,8 +13,8 @@ description: Safe Supabase migration workflow for Veta — local-only push/reset
 
 ## Scripts (package.json)
 
-- **`npm run db:push`** → `supabase db push --local` only. Use to apply pending migrations to the **local** database.
-- **`npm run db:reset`** → `supabase db reset --local`. **Destructive** (drops local data). Run only when the user explicitly asks or agrees.
+- **`pnpm run db:push`** → `supabase db push --local` only. Use to apply pending migrations to the **local** database.
+- **`pnpm run db:reset`** → `supabase db reset --local`. **Destructive** (drops local data). Run only when the user explicitly asks or agrees.
 
 Do not change these scripts to remove `--local` without team approval.
 

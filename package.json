@@ -2,6 +2,7 @@
   "name": "interior-design-project",
   "private": true,
   "version": "0.0.0",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

@@ -1,6 +1,6 @@
 /**
  * Seed (or reset) the demo account demo@veta.pro with Studio plan and sample data.
- * Run with: npx tsx scripts/seed-demo-account.ts
+ * Run with: pnpm exec tsx scripts/seed-demo-account.ts
  * Requires: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in env.
  *
  * Flow: get or create demo user → assign Studio plan → delete existing demo data → insert seed data.

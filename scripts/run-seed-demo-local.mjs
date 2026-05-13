@@ -62,7 +62,7 @@ const env = {
   SUPABASE_SERVICE_ROLE_KEY: serviceRoleKey,
 };
 
-execSync("npx tsx scripts/seed-demo-account.ts", {
+execSync("pnpm exec tsx scripts/seed-demo-account.ts", {
   cwd: projectRoot,
   env,
   stdio: "inherit",

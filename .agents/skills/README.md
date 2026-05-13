@@ -62,7 +62,7 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 **Cuándo usar:** Al crear migraciones, ejecutar `db push`, `db reset` o tocar esquema de Supabase.
 
-**Contenido:** `npm run db:push` / `db:reset` con `--local`; convención de nombres de migración; RLS en tablas nuevas; actualizar tipos TS; sin operaciones implícitas contra producción; `migration repair` solo con criterio. Ver `SKILL.md` en `.agents/skills/veta-db-migrations/`.
+**Contenido:** `pnpm run db:push` / `db:reset` con `--local`; convención de nombres de migración; RLS en tablas nuevas; actualizar tipos TS; sin operaciones implícitas contra producción; `migration repair` solo con criterio. Ver `SKILL.md` en `.agents/skills/veta-db-migrations/`.
 
 ---
 

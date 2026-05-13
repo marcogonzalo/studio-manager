@@ -10,8 +10,8 @@ When adding new dependencies (especially when using Shadcn components), follow t
    # For Shadcn components:
    npx shadcn@latest add <component-name>
    
-   # For regular npm packages:
-   npm install <package-name>
+   # For regular packages:
+   pnpm add <package-name>
    ```
 
 2. **If using Docker:**
@@ -27,7 +27,7 @@ When adding new dependencies (especially when using Shadcn components), follow t
    **Option B: Install inside running container**
 
    ```bash
-   docker compose exec app npm install
+   docker compose exec app pnpm install
    ```
 
 3. **Verify the installation:**
@@ -37,10 +37,10 @@ When adding new dependencies (especially when using Shadcn components), follow t
 
 ## Why This Happens
 
-Docker Compose uses a volume mount for `node_modules` (`/app/node_modules`) to isolate dependencies inside the container. When `package.json` changes, the container's `node_modules` doesn't automatically update. You must either rebuild the image or run `npm install` inside the container.
+Docker Compose uses a volume mount for `node_modules` (`/app/node_modules`) to isolate dependencies inside the container. When `package.json` changes, the container's `node_modules` doesn't automatically update. You must either rebuild the image or run `pnpm install` inside the container.
 
 ## Best Practice
 
 - After adding components via Shadcn CLI, always rebuild the Docker container or install dependencies inside it
-- Commit `package.json` and `package-lock.json` together after adding dependencies
+- Commit `package.json` and `pnpm-lock.yaml` together after adding dependencies
 - Document dependency additions in commit messages
