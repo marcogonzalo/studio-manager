@@ -146,7 +146,7 @@ function ProjectLayoutContent({
       (activeTab === "payments" && paymentsDisabled) ||
       (activeTab === "documents" && documentsDisabled)
     ) {
-      router.replace(appPath(`/projects/${id}`));
+      router.replace(appPath(`/projects/${id}`), { scroll: false });
     }
   }, [
     activeTab,
