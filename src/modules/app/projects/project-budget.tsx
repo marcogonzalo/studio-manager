@@ -675,11 +675,10 @@ export function ProjectBudget({
                                 >
                                   <Image
                                     src={imageSrc}
-                                    width={32}
-                                    height={32}
-                                    className="object-cover"
-                                    style={{ width: "auto", height: "auto" }}
                                     alt={item.product?.name || item.name}
+                                    fill
+                                    className="object-cover"
+                                    sizes="32px"
                                   />
                                 </button>
                               );

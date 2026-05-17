@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { PageLoading } from "@/components/loaders/page-loading";
+import { ProjectDetailShell } from "./project-detail-shell";
 
 type Props = {
+  children: React.ReactNode;
   params: Promise<{ id: string }>;
 };
 
@@ -17,10 +21,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: `Veta > ${name}` };
 }
 
-export default function ProjectDetailLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return children;
+export default async function ProjectDetailLayout({ children, params }: Props) {
+  const { id } = await params;
+  return (
+    <Suspense fallback={<PageLoading variant="detail" />}>
+      <ProjectDetailShell projectId={id}>{children}</ProjectDetailShell>
+    </Suspense>
+  );
 }
