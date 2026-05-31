@@ -1,4 +1,4 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import {
   checkRateLimit,
@@ -6,12 +6,23 @@ import {
   getRouteGroup,
   RATE_LIMIT_MESSAGE,
 } from "@/lib/rate-limit";
+import { isWwwVetaHost } from "@/lib/site-url";
 import { updateSession } from "@/lib/supabase/middleware";
 import { routing } from "@/i18n/routing";
 
 const handleI18nRouting = createMiddleware(routing);
 
 export default async function proxy(request: NextRequest) {
+  const host = request.headers.get("host");
+
+  // Canonical host: apex HTTPS (www and http variants redirect here).
+  if (isWwwVetaHost(host)) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.host = "veta.pro";
+    return NextResponse.redirect(url, 308);
+  }
+
   const pathname = request.nextUrl.pathname;
 
   // 1) Rate limiting (para todas las rutas que pasan por el proxy)

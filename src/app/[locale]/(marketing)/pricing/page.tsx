@@ -20,12 +20,9 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/ui/animated-section";
+import { getSiteUrl } from "@/lib/site-url";
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_APP_URL ??
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "https://veta.pro");
+const baseUrl = getSiteUrl();
 
 const PRICING_CURRENCY = "EUR";
 

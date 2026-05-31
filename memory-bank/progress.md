@@ -4,6 +4,8 @@
 
 ## Completado (resumen por áreas)
 
+- **Rama feat/canonical-site-url:** Origen canónico unificado `https://veta.pro` (apex HTTPS, sin `www`) vía `src/lib/site-url.ts` (`getSiteUrl`, `isWwwVetaHost`). `metadataBase` en layout raíz y URLs absolutas en sitemap, robots, JSON-LD y landings marketing usan el helper. Redirect 308 de `www.veta.pro` en `proxy.ts` y redirect permanente en `vercel.json`. Tests unitarios en `site-url.test.ts`. Lint, tests (336) y build OK en host (Docker no disponible en la sesión).
+
 - **Rama chore/pnpm-docker-ci:** El proyecto usa **pnpm** (`packageManager` en `package.json`, `pnpm-lock.yaml`, sin `package-lock.json`). Dockerfile (`corepack` + `pnpm install --frozen-lockfile`), CI (pnpm/action-setup + caché pnpm), `.dockerignore`, scripts de seed (`pnpm exec tsx`), README y `docs/ci-cd.md` alineados. Reglas Cursor y skills de agente actualizadas a comandos pnpm.
 
 - **Rama fix/security-codeql-magic-link-b2:** CodeQL / seguridad: `POST /api/auth/magic-link` valida el email con Zod (`trim`, máx. 254, `.email()`) en lugar de una regex polinómica (ReDoS). `src/lib/backblaze.ts`: comprobación de host B2 por sufijo `.backblazeb2.com` y solo `https:`; `src/lib/backblaze.url-guard.test.ts`.
