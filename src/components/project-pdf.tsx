@@ -842,7 +842,7 @@ export function ProjectPDF({
               />
             )}
             <Text style={styles.vetaFooterText}>
-              Document generated with Veta - www.veta.pro
+              Document generated with Veta - veta.pro
             </Text>
           </View>
         )}
