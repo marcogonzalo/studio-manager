@@ -4,6 +4,8 @@
 
 ## Completado (resumen por áreas)
 
+- **Rama feat/perf-fcp-lcp:** Rendimiento marketing (FCP/LCP): hero `instantReveal` en `AnimatedSection`, mockup visible al pintar + `dynamic()` con skeleton, `GtmScriptGate` (GTM solo con consentimiento analytics), `GtmPageView` acotado, redirect Supabase en `/` vía `requestIdleCallback`, Montserrat con pesos 300–700. Herramientas: `scripts/performance-audit.mts` (`pnpm perf:audit`, `perf:audit:throttle`), Playwright y `@next/bundle-analyzer` (`pnpm analyze`). Ajustes canónicos residuales: `vercel.json` www→apex `/` y `/:path+`, pie PDF y email demo sin `www`. Auditoría local (prod, 3p bloqueado): `/` FCP ~168 ms; throttled 4G FCP ~852 ms. Lint, tests (336) y build OK en host.
+
 - **Rama fix/canonical-site-url-www:** Fix redirect `www.veta.pro` homepage (`/`): `vercel.json` rule `/:path*` no cubría la raíz → HTML en www + assets en apex → CSP bloqueaba CSS. Reglas explícitas `/` y `/:path+`. Links internos sin www en demo email y pie PDF. Tests demo-access.
 
 - **Rama feat/canonical-site-url (#166):** Origen canónico unificado `https://veta.pro` (apex HTTPS, sin `www`) vía `src/lib/site-url.ts` (`getSiteUrl`, `isWwwVetaHost`). `metadataBase` en layout raíz y URLs absolutas en sitemap, robots, JSON-LD y landings marketing usan el helper. Redirect 308 de `www.veta.pro` en `proxy.ts` y redirect permanente en `vercel.json`. Tests unitarios en `site-url.test.ts`. Lint, tests (336) y build OK en host (Docker no disponible en la sesión).
