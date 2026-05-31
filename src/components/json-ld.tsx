@@ -1,3 +1,5 @@
+import { getSiteUrl } from "@/lib/site-url";
+
 /**
  * Renders JSON-LD structured data for SEO/GEO (Schema.org).
  */
@@ -10,7 +12,7 @@ export function JsonLd<T extends object>({ data }: { data: T }) {
   );
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://veta.pro";
+const BASE_URL = getSiteUrl();
 
 export const organizationJsonLd = {
   "@context": "https://schema.org",

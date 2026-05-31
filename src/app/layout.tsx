@@ -12,6 +12,7 @@ import {
   organizationJsonLd,
   softwareApplicationJsonLd,
 } from "@/components/json-ld";
+import { getSiteUrl } from "@/lib/site-url";
 import "@/styles/globals.css";
 
 const montserrat = Montserrat({
@@ -20,14 +21,8 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_APP_URL ??
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "https://veta.pro");
-
 export const metadata: Metadata = {
-  metadataBase: new URL(baseUrl),
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: "Gestión de Proyectos de Diseño Interior",
     template: "%s | Veta",

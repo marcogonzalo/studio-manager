@@ -8,6 +8,7 @@ import { AnimatedSection } from "@/components/ui/animated-section";
 import { ProductMockup } from "@/components/product-mockup";
 import { SmoothScrollLink } from "@/components/smooth-scroll-link";
 import { TrackedCtaLink } from "@/components/gtm";
+import { getSiteUrl } from "@/lib/site-url";
 
 /** Below-the-fold sections lazy-loaded to reduce initial JS bundle (framer-motion, etc.). */
 const HomeStatsSection = dynamic(
@@ -90,11 +91,7 @@ export async function generateMetadata({
   };
 }
 
-const baseUrl =
-  process.env.NEXT_PUBLIC_APP_URL ??
-  (process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "https://veta.pro");
+const baseUrl = getSiteUrl();
 
 export default async function HomePage({
   params,
