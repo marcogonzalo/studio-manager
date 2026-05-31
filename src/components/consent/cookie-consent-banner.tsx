@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   CONSENT_STORAGE_KEY,
+  CONSENT_UPDATE_EVENT,
   DEFAULT_STATE,
   loadStoredConsent,
   consentStateToGtmPayload,
@@ -51,6 +52,7 @@ export function CookieConsentBanner() {
   const applyAndClose = React.useCallback((state: ConsentState) => {
     saveConsent(state);
     pushConsentUpdate(consentStateToGtmPayload(state));
+    window.dispatchEvent(new Event(CONSENT_UPDATE_EVENT));
     setVisible(false);
     setCustomOpen(false);
   }, []);

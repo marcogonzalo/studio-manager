@@ -5,10 +5,25 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { JsonLd, faqPageJsonLd } from "@/components/json-ld";
 import { AnimatedSection } from "@/components/ui/animated-section";
-import { ProductMockup } from "@/components/product-mockup";
 import { SmoothScrollLink } from "@/components/smooth-scroll-link";
 import { TrackedCtaLink } from "@/components/gtm";
 import { getSiteUrl } from "@/lib/site-url";
+
+const ProductMockup = dynamic(
+  () =>
+    import("@/components/product-mockup").then((m) => ({
+      default: m.ProductMockup,
+    })),
+  {
+    ssr: true,
+    loading: () => (
+      <div
+        className="bg-card border-border relative mx-auto h-[320px] w-full max-w-lg animate-pulse rounded-2xl border shadow-2xl"
+        aria-hidden
+      />
+    ),
+  }
+);
 
 /** Below-the-fold sections lazy-loaded to reduce initial JS bundle (framer-motion, etc.). */
 const HomeStatsSection = dynamic(
@@ -139,14 +154,24 @@ export default async function HomePage({
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Left: Copy */}
             <div className="text-center lg:text-left">
-              <AnimatedSection delay={0} duration={0.5} triggerOnMount>
+              <AnimatedSection
+                delay={0}
+                duration={0.5}
+                triggerOnMount
+                instantReveal
+              >
                 <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
                   <Leaf className="h-4 w-4" />
                   <span>{t("badge")}</span>
                 </div>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.1} duration={0.5} triggerOnMount>
+              <AnimatedSection
+                delay={0.1}
+                duration={0.5}
+                triggerOnMount
+                instantReveal
+              >
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
                   {t("title")}{" "}
                   <strong className="text-primary">
@@ -155,13 +180,23 @@ export default async function HomePage({
                 </h1>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.2} duration={0.5} triggerOnMount>
+              <AnimatedSection
+                delay={0.2}
+                duration={0.5}
+                triggerOnMount
+                instantReveal
+              >
                 <p className="text-muted-foreground mt-6 text-lg md:text-xl">
                   {t("subtitle")}
                 </p>
               </AnimatedSection>
 
-              <AnimatedSection delay={0.3} duration={0.5} triggerOnMount>
+              <AnimatedSection
+                delay={0.3}
+                duration={0.5}
+                triggerOnMount
+                instantReveal
+              >
                 <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
                   <Button
                     size="lg"

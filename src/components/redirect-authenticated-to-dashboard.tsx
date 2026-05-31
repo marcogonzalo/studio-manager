@@ -19,8 +19,9 @@ export function RedirectAuthenticatedToDashboard() {
 
     const supabase = getSupabaseClient();
     const dashboardPath = appPath("/dashboard");
+    let subscription: { unsubscribe: () => void } | undefined;
 
-    const checkAndRedirect = () => {
+    const start = () => {
       supabase.auth
         .getSession()
         .then((res: { data: { session: { user?: unknown } | null } }) => {
@@ -29,21 +30,30 @@ export function RedirectAuthenticatedToDashboard() {
             router.replace(dashboardPath);
           }
         });
+
+      const { data } = supabase.auth.onAuthStateChange(
+        (_event: string, session: { user?: unknown } | null) => {
+          if (session?.user) {
+            router.replace(dashboardPath);
+          }
+        }
+      );
+      subscription = data.subscription;
     };
 
-    checkAndRedirect();
+    const idleId =
+      typeof requestIdleCallback === "function"
+        ? requestIdleCallback(start)
+        : window.setTimeout(start, 1);
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(
-      (_event: string, session: { user?: unknown } | null) => {
-        if (session?.user) {
-          router.replace(dashboardPath);
-        }
+    return () => {
+      if (typeof cancelIdleCallback === "function") {
+        cancelIdleCallback(idleId);
+      } else {
+        window.clearTimeout(idleId);
       }
-    );
-
-    return () => subscription.unsubscribe();
+      subscription?.unsubscribe();
+    };
   }, [pathname, router]);
 
   return null;

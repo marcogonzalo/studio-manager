@@ -18,10 +18,10 @@ export function ProductMockup() {
   const reducedMotion = useReducedMotion();
   const mainTransition = reducedMotion
     ? { duration: 0, delay: 0 }
-    : { duration: 0.8, delay: 0.3, ease: [0.25, 0.4, 0.25, 1] as const };
+    : { duration: 0.5, delay: 0, ease: [0.25, 0.4, 0.25, 1] as const };
   const mainInitial = reducedMotion
     ? finalState
-    : { opacity: 0, y: 20, scale: 0.95 };
+    : { opacity: 1, y: 8, scale: 0.98 };
 
   return (
     <div className="relative mx-auto w-full max-w-lg -translate-x-[10px]">

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { CONSENT_UPDATE_EVENT, loadStoredConsent } from "@/lib/consent";
 import { pushPageView } from "@/lib/gtm";
 
 /**
@@ -14,16 +15,23 @@ export function GtmPageView() {
 
   useEffect(() => {
     if (!pathname) return;
-    // Avoid duplicate push on first mount if another component already pushed
-    if (previousPath.current === pathname) return;
-    previousPath.current = pathname;
 
-    pushPageView({
-      path: pathname,
-      title: typeof document !== "undefined" ? document.title : undefined,
-      location:
-        typeof window !== "undefined" ? window.location.href : undefined,
-    });
+    const trackIfAllowed = () => {
+      if (loadStoredConsent()?.analytics !== true) return;
+      if (previousPath.current === pathname) return;
+      previousPath.current = pathname;
+      pushPageView({
+        path: pathname,
+        title: typeof document !== "undefined" ? document.title : undefined,
+        location:
+          typeof window !== "undefined" ? window.location.href : undefined,
+      });
+    };
+
+    trackIfAllowed();
+    window.addEventListener(CONSENT_UPDATE_EVENT, trackIfAllowed);
+    return () =>
+      window.removeEventListener(CONSENT_UPDATE_EVENT, trackIfAllowed);
   }, [pathname]);
 
   return null;
