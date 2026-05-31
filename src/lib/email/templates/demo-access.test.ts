@@ -7,6 +7,8 @@ describe("demo-access email templates", () => {
   it("defaults to Spanish copy", () => {
     expect(getDemoAccessEmailHtml(link)).toContain("Prueba la demo");
     expect(getDemoAccessEmailText(link)).toContain("Hola");
+    expect(getDemoAccessEmailHtml(link)).toContain('href="https://veta.pro"');
+    expect(getDemoAccessEmailHtml(link)).not.toContain("www.veta.pro");
   });
 
   it("uses English when lang is en", () => {

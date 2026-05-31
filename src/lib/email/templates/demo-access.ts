@@ -3,6 +3,7 @@
  */
 
 import type { Locale } from "@/i18n/config";
+import { CANONICAL_SITE_ORIGIN } from "@/lib/site-url";
 
 function escapeHtml(link: string): string {
   return link
@@ -107,8 +108,8 @@ export function getDemoAccessEmailHtml(
     ? "If you did not request this link, you can ignore this email."
     : "Si no has solicitado este enlace, puedes ignorar este correo.";
   const footer = isEn
-    ? `<a href="https://www.veta.pro">Veta</a> — Interior design project management.`
-    : `<a href="https://www.veta.pro">Veta</a> — Gestión de proyectos de diseño interior.`;
+    ? `<a href="${CANONICAL_SITE_ORIGIN}">Veta</a> — Interior design project management.`
+    : `<a href="${CANONICAL_SITE_ORIGIN}">Veta</a> — Gestión de proyectos de diseño interior.`;
 
   return `<!doctype html>
 <html lang="${htmlLang}">

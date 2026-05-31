@@ -4,7 +4,9 @@
 
 ## Completado (resumen por áreas)
 
-- **Rama feat/canonical-site-url:** Origen canónico unificado `https://veta.pro` (apex HTTPS, sin `www`) vía `src/lib/site-url.ts` (`getSiteUrl`, `isWwwVetaHost`). `metadataBase` en layout raíz y URLs absolutas en sitemap, robots, JSON-LD y landings marketing usan el helper. Redirect 308 de `www.veta.pro` en `proxy.ts` y redirect permanente en `vercel.json`. Tests unitarios en `site-url.test.ts`. Lint, tests (336) y build OK en host (Docker no disponible en la sesión).
+- **Rama fix/canonical-site-url-www:** Fix redirect `www.veta.pro` homepage (`/`): `vercel.json` rule `/:path*` no cubría la raíz → HTML en www + assets en apex → CSP bloqueaba CSS. Reglas explícitas `/` y `/:path+`. Links internos sin www en demo email y pie PDF. Tests demo-access.
+
+- **Rama feat/canonical-site-url (#166):** Origen canónico unificado `https://veta.pro` (apex HTTPS, sin `www`) vía `src/lib/site-url.ts` (`getSiteUrl`, `isWwwVetaHost`). `metadataBase` en layout raíz y URLs absolutas en sitemap, robots, JSON-LD y landings marketing usan el helper. Redirect 308 de `www.veta.pro` en `proxy.ts` y redirect permanente en `vercel.json`. Tests unitarios en `site-url.test.ts`. Lint, tests (336) y build OK en host (Docker no disponible en la sesión).
 
 - **Rama chore/pnpm-docker-ci:** El proyecto usa **pnpm** (`packageManager` en `package.json`, `pnpm-lock.yaml`, sin `package-lock.json`). Dockerfile (`corepack` + `pnpm install --frozen-lockfile`), CI (pnpm/action-setup + caché pnpm), `.dockerignore`, scripts de seed (`pnpm exec tsx`), README y `docs/ci-cd.md` alineados. Reglas Cursor y skills de agente actualizadas a comandos pnpm.
 
