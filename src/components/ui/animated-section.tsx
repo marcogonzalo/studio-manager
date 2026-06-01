@@ -131,11 +131,9 @@ export function AnimatedSection({
               }
       }
       transition={{
-      transition={{
         duration: paintImmediate ? 0 : effectiveDuration,
-        delay: paintImmediate ? 0 : delay,
+        delay: paintImmediate ? 0 : reducedMotion ? 0 : delay,
         ease: [0.25, 0.4, 0.25, 1],
-      }}
       }}
     >
       {children}
