@@ -1,9 +1,13 @@
 /**
  * Playwright performance audit — FCP, LCP, TTFB, CLS, resource waterfall.
- * Run against production server: pnpm build && pnpm start, then:
- *   pnpm perf:audit
+ *
+ * First time (or after Playwright upgrade): pnpm perf:install-browsers
+ * Then: pnpm build && pnpm start, and in another terminal: pnpm perf:audit
+ *
+ * Uses playwright-core (no browser download on pnpm install). CI sets
+ * PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1; run perf:install-browsers only in perf jobs.
  */
-import { chromium, type Page } from "playwright";
+import { chromium, type Browser, type Page } from "playwright-core";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
@@ -302,10 +306,19 @@ function printReport(reports: RouteReport[]) {
 async function main() {
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  const browser = await chromium.launch({
-    headless: true,
-    args: ["--disable-dev-shm-usage"],
-  });
+  let browser: Browser;
+  try {
+    browser = await chromium.launch({
+      headless: true,
+      args: ["--disable-dev-shm-usage"],
+    });
+  } catch {
+    console.error(
+      "Chromium not installed. Run: pnpm perf:install-browsers\n" +
+        "(playwright-core does not download browsers on pnpm install)"
+    );
+    process.exit(1);
+  }
 
   const viewport =
     process.env.PERF_VIEWPORT === "desktop"
