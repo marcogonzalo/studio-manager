@@ -328,15 +328,28 @@ async function main() {
 
   if (BLOCK_THIRD_PARTY) {
     await context.route("**/*", (route) => {
-      const url = route.request().url();
-      if (
-        url.includes("googletagmanager.com") ||
-        url.includes("google-analytics.com") ||
-        url.includes("analytics.google.com") ||
-        url.includes("va.vercel-scripts.com")
-      ) {
-        return route.abort();
+      const requestUrl = route.request().url();
+      const blockedHosts = [
+        "googletagmanager.com",
+        "google-analytics.com",
+        "analytics.google.com",
+        "va.vercel-scripts.com",
+      ];
+
+      try {
+        const host = new URL(requestUrl).hostname.toLowerCase();
+        if (
+          blockedHosts.some(
+            (blockedHost) =>
+              host === blockedHost || host.endsWith(`.${blockedHost}`)
+          )
+        ) {
+          return route.abort();
+        }
+      } catch {
+        // If URL parsing fails, don't block by hostname rule.
       }
+
       return route.continue();
     });
   }
