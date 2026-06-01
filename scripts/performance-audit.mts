@@ -196,11 +196,7 @@ async function auditRoute(page: Page, route: string): Promise<RouteReport> {
     }
     const timing = response.request().timing();
     const durationMs = timing ? timing.responseEnd - timing.requestStart : 0;
-    const renderBlocking =
-      type === "stylesheet" ||
-      (type === "script" &&
-        !url.includes("_next/static") &&
-        response.headers()["defer"] !== "true");
+    const renderBlocking = type === "stylesheet";
 
     resources.push({
       url,
