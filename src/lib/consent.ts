@@ -5,6 +5,9 @@
 
 export const CONSENT_STORAGE_KEY = "veta_cookie_consent";
 
+/** Dispatched when the user saves cookie preferences (loads GTM if analytics granted). */
+export const CONSENT_UPDATE_EVENT = "veta:consent-update";
+
 /** GTM consent types (Tag Manager consent mode) */
 export const CONSENT_TYPES = [
   "ad_storage",

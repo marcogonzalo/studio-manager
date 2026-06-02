@@ -5,7 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
-import { GtmScript } from "@/components/gtm";
+import { GtmScriptGate } from "@/components/gtm/gtm-script-gate";
 import { CONSENT_STORAGE_KEY, getDefaultGtmConsent } from "@/lib/consent";
 import {
   JsonLd,
@@ -17,6 +17,7 @@ import "@/styles/globals.css";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
   variable: "--font-montserrat",
   display: "swap",
 });
@@ -109,9 +110,6 @@ export default async function RootLayout({
             __html: `(function(){try{var k='theme';var t=localStorage.getItem(k);var s=window.matchMedia('(prefers-color-scheme: dark)').matches;var isDark=!t||t==='system'?s:t==='dark';document.documentElement.classList.remove('light');document.documentElement.classList.toggle('dark',isDark);}catch(e){}})();`,
           }}
         />
-        {/* Preconnect to third-party origins (faster TTFB, keeps third-party budget &lt; 200 KB). */}
-        <link rel="preconnect" href="https://www.googletagmanager.com" />
-
         {/* Consent default must be read from localStorage in the browser so returning users who already accepted get analytics_storage: granted before GTM/GA runs. Server cannot read localStorage, so we inject default-denied and let this script override from storage. */}
         <script
           id="gtm-consent-default"
@@ -150,7 +148,7 @@ gtag('set', 'url_passthrough', false);
         />
       </head>
       <body className="bg-background min-h-screen font-sans antialiased">
-        <GtmScript />
+        <GtmScriptGate />
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={softwareApplicationJsonLd} />
         <ThemeProvider

@@ -18,7 +18,12 @@
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "lighthouse": "lighthouse http://localhost:3000 --view"
+    "lighthouse": "lighthouse http://localhost:3000 --view",
+    "perf:install-browsers": "node node_modules/playwright-core/cli.js install chromium",
+    "perf:audit": "tsx scripts/performance-audit.mts",
+    "perf:audit:desktop": "PERF_VIEWPORT=desktop tsx scripts/performance-audit.mts",
+    "perf:audit:throttle": "PERF_THROTTLE=1 tsx scripts/performance-audit.mts",
+    "analyze": "ANALYZE=true pnpm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -66,6 +71,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.6",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.39.1",
     "@tailwindcss/postcss": "^4.2.1",
@@ -84,6 +90,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.5.0",
     "jsdom": "^28.1.0",
+    "playwright-core": "^1.58.2",
     "postcss": "^8.5.8",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",

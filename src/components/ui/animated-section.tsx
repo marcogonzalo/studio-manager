@@ -22,6 +22,11 @@ interface AnimatedSectionProps {
   once?: boolean;
   /** When true (default), animate on mount so content always shows. When false, animate only when scrolling into view. */
   triggerOnMount?: boolean;
+  /**
+   * When true, content is visible on first paint (no opacity:0 initial).
+   * Use for above-the-fold hero copy to improve FCP/LCP before hydration.
+   */
+  instantReveal?: boolean;
   /** HTML tag to render */
   as?: "div" | "section" | "article" | "aside" | "header" | "footer" | "span";
 }
@@ -69,6 +74,7 @@ export function AnimatedSection({
   threshold = 0.05,
   once = true,
   triggerOnMount = true,
+  instantReveal = false,
   as = "div",
 }: AnimatedSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -88,6 +94,7 @@ export function AnimatedSection({
 
   const effectiveDuration = reducedMotion ? 0 : duration;
   const effectiveDistance = reducedMotion ? 0 : distance;
+  const paintImmediate = instantReveal || reducedMotion;
 
   const directionOffset = {
     up: { x: 0, y: effectiveDistance },
@@ -103,13 +110,8 @@ export function AnimatedSection({
     <MotionComponent
       ref={ref}
       className={cn(className)}
-      initial={{
-        opacity: 0,
-        x: directionOffset[direction].x,
-        y: directionOffset[direction].y,
-      }}
-      animate={
-        isInView
+      initial={
+        paintImmediate
           ? { opacity: 1, x: 0, y: 0 }
           : {
               opacity: 0,
@@ -117,9 +119,20 @@ export function AnimatedSection({
               y: directionOffset[direction].y,
             }
       }
+      animate={
+        isInView
+          ? { opacity: 1, x: 0, y: 0 }
+          : paintImmediate
+            ? { opacity: 1, x: 0, y: 0 }
+            : {
+                opacity: 0,
+                x: directionOffset[direction].x,
+                y: directionOffset[direction].y,
+              }
+      }
       transition={{
-        duration: effectiveDuration,
-        delay: reducedMotion ? 0 : delay,
+        duration: paintImmediate ? 0 : effectiveDuration,
+        delay: paintImmediate ? 0 : reducedMotion ? 0 : delay,
         ease: [0.25, 0.4, 0.25, 1],
       }}
     >
