@@ -703,6 +703,20 @@ export function ProjectBudget({
                               : `Entrega: ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
                             : null;
                         const statusLabel = deliveryInfo ?? statusDisplay.label;
+                        const statusIndicator = (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="flex items-center justify-center">
+                                <StatusIcon
+                                  className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
+                                />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent variant="tertiary">
+                              <p>{statusLabel}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        );
 
                         return (
                           <Fragment key={item.id}>
@@ -728,35 +742,47 @@ export function ProjectBudget({
                                 ) : null}
                               </TableCellMd>
                               <TableCell>
-                                <div className="max-w-[10rem] font-medium sm:max-w-none">
-                                  {item.product?.name || item.name}
-                                </div>
-                                {item.internal_reference && (
-                                  <div className="text-muted-foreground mt-1 font-mono text-xs">
-                                    Cód.: {item.internal_reference}
+                                <div className="flex items-center gap-2.5">
+                                  {imageSrc ? (
+                                    <button
+                                      type="button"
+                                      className="relative h-10 w-10 shrink-0 overflow-hidden rounded md:hidden"
+                                      onClick={() => {
+                                        setSelectedItem(item);
+                                        setIsProductModalOpen(true);
+                                      }}
+                                    >
+                                      <Image
+                                        src={imageSrc}
+                                        alt={item.product?.name || item.name}
+                                        fill
+                                        className="object-cover"
+                                        sizes="40px"
+                                      />
+                                    </button>
+                                  ) : null}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="max-w-[10rem] font-medium sm:max-w-none">
+                                      {item.product?.name || item.name}
+                                    </div>
+                                    {item.internal_reference && (
+                                      <div className="text-muted-foreground mt-1 font-mono text-xs">
+                                        Cód.: {item.internal_reference}
+                                      </div>
+                                    )}
+                                    <div className="text-muted-foreground text-xs">
+                                      {item.product?.supplier?.name || "-"}
+                                    </div>
                                   </div>
-                                )}
-                                <div className="text-muted-foreground text-xs">
-                                  {item.product?.supplier?.name || "-"}
+                                  <span className="shrink-0 md:hidden">
+                                    {statusIndicator}
+                                  </span>
                                 </div>
                               </TableCell>
                               <TableCellMd>
                                 {item.space?.name || t("spaceGeneral")}
                               </TableCellMd>
-                              <TableCellMd>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className="flex items-center justify-center">
-                                      <StatusIcon
-                                        className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
-                                      />
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent variant="tertiary">
-                                    <p>{statusLabel}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TableCellMd>
+                              <TableCellMd>{statusIndicator}</TableCellMd>
                               <TableCellMd className="text-right tabular-nums">
                                 {item.quantity}
                               </TableCellMd>
@@ -789,38 +815,9 @@ export function ProjectBudget({
                               colSpan={mobileVisibleColumnCount}
                             >
                               <div className="space-y-2">
-                                {imageSrc ? (
-                                  <MobileDetailField
-                                    label="Imagen"
-                                    value={
-                                      <button
-                                        type="button"
-                                        className="relative ml-auto block h-10 w-10 overflow-hidden rounded"
-                                        onClick={() => {
-                                          setSelectedItem(item);
-                                          setIsProductModalOpen(true);
-                                        }}
-                                      >
-                                        <Image
-                                          src={imageSrc}
-                                          alt={item.product?.name || item.name}
-                                          fill
-                                          className="object-cover"
-                                          sizes="40px"
-                                        />
-                                      </button>
-                                    }
-                                  />
-                                ) : null}
                                 <MobileDetailField
                                   label="Ubicación"
-                                  value={
-                                    item.space?.name || t("spaceGeneral")
-                                  }
-                                />
-                                <MobileDetailField
-                                  label="Estado"
-                                  value={statusLabel}
+                                  value={item.space?.name || t("spaceGeneral")}
                                 />
                                 <MobileDetailField
                                   label="Cant."
@@ -968,7 +965,9 @@ export function ProjectBudget({
                                                     label: "Editar",
                                                     icon: Pencil,
                                                     onClick: () =>
-                                                      handleEditBudgetLine(line),
+                                                      handleEditBudgetLine(
+                                                        line
+                                                      ),
                                                   },
                                                   {
                                                     id: "delete",
@@ -986,13 +985,16 @@ export function ProjectBudget({
                                             <Fragment key={line.id}>
                                               <TableRow>
                                                 <TableCell className="max-w-[8rem] truncate font-medium sm:max-w-none">
-                                                  {subcategoryLabels[category]?.[
-                                                    line.subcategory
-                                                  ] ?? line.subcategory}
+                                                  {subcategoryLabels[
+                                                    category
+                                                  ]?.[line.subcategory] ??
+                                                    line.subcategory}
                                                 </TableCell>
                                                 <TableCell className="text-right font-semibold tabular-nums">
                                                   {formatCurrency(
-                                                    Number(line.estimated_amount)
+                                                    Number(
+                                                      line.estimated_amount
+                                                    )
                                                   )}
                                                 </TableCell>
                                                 <TableCellMd className="text-muted-foreground">
@@ -1015,7 +1017,9 @@ export function ProjectBudget({
                                               </TableRow>
                                               <TableRowMobileDetail
                                                 open={expanded}
-                                                colSpan={mobileVisibleColumnCount}
+                                                colSpan={
+                                                  mobileVisibleColumnCount
+                                                }
                                               >
                                                 <div className="space-y-2">
                                                   <MobileDetailField
