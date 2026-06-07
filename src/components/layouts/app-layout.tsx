@@ -593,7 +593,7 @@ function SidebarContent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="hover:bg-background text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer"
+                  className="hover:bg-background text-muted-foreground hover:text-foreground cursor-pointer"
                   aria-label={tNav("accountMenuAria")}
                 >
                   <Settings className="h-4 w-4" />

@@ -223,7 +223,7 @@ export default function ClientsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
+                      className="shrink-0"
                       aria-label={t("actionsAria")}
                       onClick={(e) => e.stopPropagation()}
                     >

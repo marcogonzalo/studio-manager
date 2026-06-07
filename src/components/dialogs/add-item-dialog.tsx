@@ -901,7 +901,7 @@ export function AddItemDialog({
                 />
               </div>
 
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                 <FormField
                   control={form.control}
                   name="quantity"

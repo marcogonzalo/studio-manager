@@ -121,7 +121,7 @@ export function ExpandableRowActionsMenu({
           type="button"
           variant="ghost"
           size="icon"
-          className={cn("h-11 w-11", className)}
+          className={className}
           aria-label={menuAriaLabel}
         >
           <MoreVertical className="h-4 w-4" />
@@ -177,7 +177,7 @@ export function ExpandableRowActionsPanel({
               variant="outline"
               size="sm"
               className={cn(
-                "h-11 min-h-11 w-[7.25rem] shrink-0 justify-center px-2",
+                "w-[7.25rem] shrink-0 justify-center px-2",
                 action.destructive &&
                   "text-destructive hover:bg-destructive/10 hover:text-destructive"
               )}
@@ -229,7 +229,6 @@ export function TableRowExpandTrigger({
         type="button"
         variant="ghost"
         size="icon"
-        className="h-11 w-11"
         onClick={onToggle}
         aria-expanded={expanded}
         aria-label={expanded ? collapseLabel : expandLabel}

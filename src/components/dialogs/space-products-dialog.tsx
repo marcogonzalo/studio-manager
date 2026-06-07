@@ -107,7 +107,7 @@ export function SpaceProductsDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="flex max-h-[80vh] max-w-4xl flex-col">
+        <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="text-2xl">{space.name}</DialogTitle>
             <p className="text-muted-foreground mt-1 text-sm">
@@ -132,7 +132,7 @@ export function SpaceProductsDialog({
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                 {items.map((item) => {
                   const imageSrc = item.image_url || item.product?.image_url;
 
