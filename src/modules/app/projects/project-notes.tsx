@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getDemoAccountMessage } from "@/lib/utils";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
@@ -44,6 +45,8 @@ export function ProjectNotes({
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchNotes = async () => {
     const { data, error } = await supabase
@@ -99,25 +102,31 @@ export function ProjectNotes({
     setLoading(false);
   };
 
-  const handleDeleteNote = async (id: string) => {
-    if (!confirm(t("confirmDelete"))) return;
-    const { error } = await supabase
-      .from("project_notes")
-      .delete()
-      .eq("id", id);
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase
+        .from("project_notes")
+        .delete()
+        .eq("id", deleteTargetId);
 
-    if (error) {
-      const demoMsg = getDemoAccountMessage(error);
-      if (demoMsg) {
-        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
-          duration: 5000,
-        });
-      } else {
-        toast.error(t("toastDeleteError"));
+      if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error(t("toastDeleteError"));
+        }
+        return;
       }
-    } else {
       toast.success(t("toastDeleted"));
+      setDeleteTargetId(null);
       fetchNotes();
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -250,7 +259,7 @@ export function ProjectNotes({
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem
-                              onClick={() => handleDeleteNote(note.id)}
+                              onClick={() => setDeleteTargetId(note.id)}
                               className="text-destructive"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
@@ -280,6 +289,15 @@ export function ProjectNotes({
           )}
         </div>
       </div>
+
+      <ConfirmDeleteDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+        title={t("confirmDelete")}
+        description={t("confirmDeleteDescription")}
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
+      />
     </ProjectTabContent>
   );
 }

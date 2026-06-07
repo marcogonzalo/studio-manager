@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Wallet, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { PaymentDialog } from "@/components/dialogs/payment-dialog";
 import {
   ExpandableRowActionsMenu,
@@ -68,6 +69,8 @@ export function ProjectPayments({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const { toggleRow, isExpanded } = useExpandableTableRow();
   const mobileVisibleColumnCount = 4;
 
@@ -129,28 +132,31 @@ export function ProjectPayments({
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (paymentId: string) => {
-    if (!confirm("¿Está seguro de eliminar este pago?")) {
-      return;
-    }
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase
+        .from("payments")
+        .delete()
+        .eq("id", deleteTargetId);
 
-    const { error } = await supabase
-      .from("payments")
-      .delete()
-      .eq("id", paymentId);
-
-    if (error) {
-      const demoMsg = getDemoAccountMessage(error);
-      if (demoMsg) {
-        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
-          duration: 5000,
-        });
-      } else {
-        toast.error("Error al eliminar pago");
+      if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error("Error al eliminar pago");
+        }
+        return;
       }
-    } else {
       toast.success("Pago eliminado");
+      setDeleteTargetId(null);
       fetchPayments();
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -322,7 +328,7 @@ export function ProjectPayments({
                                 id: "delete",
                                 label: "Eliminar",
                                 icon: Trash2,
-                                onClick: () => handleDelete(payment.id),
+                                onClick: () => setDeleteTargetId(payment.id),
                                 destructive: true,
                               },
                             ];
@@ -417,6 +423,15 @@ export function ProjectPayments({
           projectId={projectId}
           payment={editingPayment}
           currency={projectCurrency}
+        />
+
+        <ConfirmDeleteDialog
+          open={deleteTargetId !== null}
+          onOpenChange={(open) => !open && setDeleteTargetId(null)}
+          title="¿Eliminar este pago?"
+          description="Esta acción no se puede deshacer."
+          onConfirm={handleConfirmDelete}
+          loading={deleteLoading}
         />
       </div>
     </ProjectTabContent>

@@ -8,6 +8,7 @@ import { ShoppingBag, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { PurchaseOrderDialog } from "@/components/dialogs/purchase-order-dialog";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import {
   MobileDetailField,
   TableCellMd,
@@ -86,6 +87,8 @@ export function ProjectPurchases({
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const { toggleRow, isExpanded } = useExpandableTableRow();
   const mobileVisibleColumnCount = 3;
 
@@ -118,84 +121,77 @@ export function ProjectPurchases({
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (orderId: string) => {
-    if (
-      !confirm(
-        "¿Está seguro de eliminar esta orden de compra? Los ítems asociados volverán a estado pendiente, a menos que estén en otra orden activa."
-      )
-    ) {
-      return;
-    }
-
-    // Get all items in this order
-    const { data: itemsInOrder } = await supabase
-      .from("project_items")
-      .select("id")
-      .eq("purchase_order_id", orderId);
-
-    if (itemsInOrder && itemsInOrder.length > 0) {
-      // Get all non-cancelled orders (excluding this one)
-      const { data: activeOrders } = await supabase
-        .from("purchase_orders")
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    const orderId = deleteTargetId;
+    setDeleteLoading(true);
+    try {
+      const { data: itemsInOrder } = await supabase
+        .from("project_items")
         .select("id")
-        .eq("project_id", projectId)
-        .neq("id", orderId)
-        .neq("status", "cancelled");
+        .eq("purchase_order_id", orderId);
 
-      const activeOrderIds =
-        activeOrders?.map((po: { id: string }) => po.id) || [];
+      if (itemsInOrder && itemsInOrder.length > 0) {
+        const { data: activeOrders } = await supabase
+          .from("purchase_orders")
+          .select("id")
+          .eq("project_id", projectId)
+          .neq("id", orderId)
+          .neq("status", "cancelled");
 
-      // For each item, check if it's in another active order
-      for (const item of itemsInOrder) {
-        let hasOtherActiveOrder = false;
+        const activeOrderIds =
+          activeOrders?.map((po: { id: string }) => po.id) || [];
 
-        if (activeOrderIds.length > 0) {
-          // Check if this item is in any active order
-          const { data: itemInOtherOrder, error: checkError } = await supabase
-            .from("project_items")
-            .select("id")
-            .eq("id", item.id)
-            .in("purchase_order_id", activeOrderIds)
-            .limit(1)
-            .maybeSingle();
+        for (const item of itemsInOrder) {
+          let hasOtherActiveOrder = false;
 
-          hasOtherActiveOrder = !checkError && !!itemInOtherOrder;
+          if (activeOrderIds.length > 0) {
+            const { data: itemInOtherOrder, error: checkError } = await supabase
+              .from("project_items")
+              .select("id")
+              .eq("id", item.id)
+              .in("purchase_order_id", activeOrderIds)
+              .limit(1)
+              .maybeSingle();
+
+            hasOtherActiveOrder = !checkError && !!itemInOtherOrder;
+          }
+
+          if (!hasOtherActiveOrder) {
+            await supabase
+              .from("project_items")
+              .update({ purchase_order_id: null, status: "pending" })
+              .eq("id", item.id);
+          } else {
+            await supabase
+              .from("project_items")
+              .update({ purchase_order_id: null })
+              .eq("id", item.id);
+          }
         }
+      }
 
-        if (!hasOtherActiveOrder) {
-          // No other active order, set to pending
-          await supabase
-            .from("project_items")
-            .update({ purchase_order_id: null, status: "pending" })
-            .eq("id", item.id);
+      const { error } = await supabase
+        .from("purchase_orders")
+        .delete()
+        .eq("id", orderId);
+
+      if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
         } else {
-          // Item is in another active order, just unlink from this order
-          await supabase
-            .from("project_items")
-            .update({ purchase_order_id: null })
-            .eq("id", item.id);
+          toast.error("Error al eliminar la orden");
         }
+        return;
       }
-    }
-
-    // Then delete the order
-    const { error } = await supabase
-      .from("purchase_orders")
-      .delete()
-      .eq("id", orderId);
-
-    if (error) {
-      const demoMsg = getDemoAccountMessage(error);
-      if (demoMsg) {
-        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
-          duration: 5000,
-        });
-      } else {
-        toast.error("Error al eliminar la orden");
-      }
-    } else {
       toast.success("Orden eliminada");
+      setDeleteTargetId(null);
       fetchOrders();
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -324,7 +320,7 @@ export function ProjectPurchases({
                               Editar
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleDelete(po.id)}
+                              onClick={() => setDeleteTargetId(po.id)}
                               className="text-destructive"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
@@ -465,6 +461,14 @@ export function ProjectPurchases({
             setIsDialogOpen(false);
             setEditingOrder(null);
           }}
+        />
+        <ConfirmDeleteDialog
+          open={deleteTargetId !== null}
+          onOpenChange={(open) => !open && setDeleteTargetId(null)}
+          title="¿Eliminar esta orden de compra?"
+          description="Los ítems asociados volverán a estado pendiente, a menos que estén en otra orden activa. Esta acción no se puede deshacer."
+          onConfirm={handleConfirmDelete}
+          loading={deleteLoading}
         />
       </div>
     </ProjectTabContent>

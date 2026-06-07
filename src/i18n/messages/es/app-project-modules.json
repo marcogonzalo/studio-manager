@@ -15,6 +15,7 @@
     "delete": "Eliminar",
     "userFallback": "Usuario",
     "confirmDelete": "¿Eliminar esta nota?",
+    "confirmDeleteDescription": "Esta acción no se puede deshacer.",
     "disabledMessage": "Las notas no están incluidas en tu plan actual.",
     "toastAddError": "Error al añadir nota",
     "toastAdded": "Nota añadida",
@@ -33,6 +34,7 @@
     "actionsAria": "Acciones del documento",
     "delete": "Eliminar",
     "confirmDelete": "¿Eliminar documento?",
+    "confirmDeleteDescription": "Esta acción no se puede deshacer.",
     "disabledMessage": "Los documentos no están incluidos en tu plan actual."
   },
   "ProjectModuleDashboard": {

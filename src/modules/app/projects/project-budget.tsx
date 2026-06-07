@@ -65,6 +65,7 @@ import {
   type BudgetPrintOption,
 } from "@/components/dialogs/budget-print-options-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
@@ -136,6 +137,10 @@ export function ProjectBudget({
   });
   const { toggleRow, isExpanded } = useExpandableTableRow();
   const mobileVisibleColumnCount = 3;
+  const [deleteTarget, setDeleteTarget] = useState<
+    { kind: "item"; id: string } | { kind: "budgetLine"; id: string } | null
+  >(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -190,32 +195,39 @@ export function ProjectBudget({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
-  const handleDeleteItem = async (id: string) => {
-    if (!confirm("¿Eliminar ítem?")) return;
-    await supabase.from("project_items").delete().eq("id", id);
-    toast.success("Ítem eliminado");
-    fetchData();
-  };
-
-  const handleDeleteBudgetLine = async (id: string) => {
-    if (!confirm("¿Eliminar partida?")) return;
-    const { error } = await supabase
-      .from("project_budget_lines")
-      .delete()
-      .eq("id", id);
-    if (error) {
-      const demoMsg = getDemoAccountMessage(error);
-      if (demoMsg) {
-        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
-          duration: 5000,
-        });
-      } else {
-        toast.error("Error al eliminar la partida");
-        reportError(error, "Error deleting budget line:");
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      if (deleteTarget.kind === "item") {
+        await supabase.from("project_items").delete().eq("id", deleteTarget.id);
+        toast.success("Ítem eliminado");
+        setDeleteTarget(null);
+        fetchData();
+        return;
       }
-    } else {
+
+      const { error } = await supabase
+        .from("project_budget_lines")
+        .delete()
+        .eq("id", deleteTarget.id);
+      if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error("Error al eliminar la partida");
+          reportError(error, "Error deleting budget line:");
+        }
+        return;
+      }
       toast.success("Partida eliminada");
+      setDeleteTarget(null);
       refetchBudgetLines();
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -684,7 +696,11 @@ export function ProjectBudget({
                                 id: "delete",
                                 label: "Eliminar",
                                 icon: Trash2,
-                                onClick: () => handleDeleteItem(item.id),
+                                onClick: () =>
+                                  setDeleteTarget({
+                                    kind: "item",
+                                    id: item.id,
+                                  }),
                                 destructive: true,
                               },
                             ];
@@ -974,9 +990,10 @@ export function ProjectBudget({
                                                     label: "Eliminar",
                                                     icon: Trash2,
                                                     onClick: () =>
-                                                      handleDeleteBudgetLine(
-                                                        line.id
-                                                      ),
+                                                      setDeleteTarget({
+                                                        kind: "budgetLine",
+                                                        id: line.id,
+                                                      }),
                                                     destructive: true,
                                                   },
                                                 ];
@@ -1106,6 +1123,19 @@ export function ProjectBudget({
             onConfirm={handleGeneratePDF}
             isGenerating={isGeneratingPDF}
             printFilterOptionsEnabled={printFilterOptionsEnabled}
+          />
+
+          <ConfirmDeleteDialog
+            open={deleteTarget !== null}
+            onOpenChange={(open) => !open && setDeleteTarget(null)}
+            title={
+              deleteTarget?.kind === "item"
+                ? "¿Eliminar ítem?"
+                : "¿Eliminar partida?"
+            }
+            description="Esta acción no se puede deshacer."
+            onConfirm={handleConfirmDelete}
+            loading={deleteLoading}
           />
         </div>
       </TooltipProvider>

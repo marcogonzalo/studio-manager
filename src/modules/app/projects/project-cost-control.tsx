@@ -44,6 +44,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { BudgetLineDialog } from "@/components/dialogs/budget-line-dialog";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
 import {
   getPhaseLabel,
@@ -135,6 +136,8 @@ export function ProjectCostControl({
   const [isBudgetLineDialogOpen, setIsBudgetLineDialogOpen] = useState(false);
   const [editingBudgetLine, setEditingBudgetLine] =
     useState<ProjectBudgetLine | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     construction: true,
     external_services: true,
@@ -168,25 +171,31 @@ export function ProjectCostControl({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
-  const handleDeleteBudgetLine = async (id: string) => {
-    if (!confirm("¿Eliminar partida?")) return;
-    const { error } = await supabase
-      .from("project_budget_lines")
-      .delete()
-      .eq("id", id);
-    if (error) {
-      const demoMsg = getDemoAccountMessage(error);
-      if (demoMsg) {
-        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
-          duration: 5000,
-        });
-      } else {
-        toast.error("Error al eliminar la partida");
-        reportError(error, "Error deleting budget line:");
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase
+        .from("project_budget_lines")
+        .delete()
+        .eq("id", deleteTargetId);
+      if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error("Error al eliminar la partida");
+          reportError(error, "Error deleting budget line:");
+        }
+        return;
       }
-    } else {
       toast.success("Partida eliminada");
+      setDeleteTargetId(null);
       refetchBudgetLines();
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -479,8 +488,7 @@ export function ProjectCostControl({
                                       id: "delete",
                                       label: "Eliminar",
                                       icon: Trash2,
-                                      onClick: () =>
-                                        handleDeleteBudgetLine(line.id),
+                                      onClick: () => setDeleteTargetId(line.id),
                                       destructive: true,
                                     },
                                   ]
@@ -735,6 +743,15 @@ export function ProjectCostControl({
           setEditingBudgetLine(null);
           refetchBudgetLines();
         }}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+        title="¿Eliminar partida?"
+        description="Esta acción no se puede deshacer."
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
       />
     </div>
   );

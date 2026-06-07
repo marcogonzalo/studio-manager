@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, Trash2, Pencil, DollarSign } from "lucide-react";
 import { AdditionalCostDialog } from "@/components/dialogs/additional-cost-dialog";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { getDemoAccountMessage } from "@/lib/utils";
@@ -55,6 +56,8 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCost, setEditingCost] = useState<AdditionalCost | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const { toggleRow, isExpanded } = useExpandableTableRow();
   const mobileVisibleColumnCount = 3;
 
@@ -81,25 +84,31 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar este coste adicional?")) return;
-    const { error } = await supabase
-      .from("additional_project_costs")
-      .delete()
-      .eq("id", id);
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase
+        .from("additional_project_costs")
+        .delete()
+        .eq("id", deleteTargetId);
 
-    if (error) {
-      const demoMsg = getDemoAccountMessage(error);
-      if (demoMsg) {
-        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
-          duration: 5000,
-        });
-      } else {
-        toast.error("Error al eliminar coste adicional");
+      if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error("Error al eliminar coste adicional");
+        }
+        return;
       }
-    } else {
       toast.success("Coste adicional eliminado");
+      setDeleteTargetId(null);
       fetchCosts();
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -220,7 +229,7 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                               id: "delete",
                               label: "Eliminar",
                               icon: Trash2,
-                              onClick: () => handleDelete(cost.id),
+                              onClick: () => setDeleteTargetId(cost.id),
                               destructive: true,
                             },
                           ];
@@ -294,6 +303,15 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
           setEditingCost(null);
           fetchCosts();
         }}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+        title="¿Eliminar este coste adicional?"
+        description="Esta acción no se puede deshacer."
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
       />
     </div>
   );

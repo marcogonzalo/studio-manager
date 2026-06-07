@@ -182,8 +182,8 @@ export default function ProjectsPage() {
         <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <div className="relative w-full min-w-0 flex-1 sm:max-w-sm">
+      <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
+        <div className="relative w-full min-w-0 flex-1 md:max-w-sm">
           <Search
             className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4"
             aria-hidden
@@ -201,7 +201,7 @@ export default function ProjectsPage() {
           value={statusFilter}
           onValueChange={(v) => setStatusFilter(v as StatusFilter)}
         >
-          <SelectTrigger className="w-full min-w-0 sm:w-[160px]">
+          <SelectTrigger className="w-full min-w-0 md:w-[160px]">
             <SelectValue placeholder={t("statusPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
@@ -215,7 +215,7 @@ export default function ProjectsPage() {
           value={sortBy}
           onValueChange={(v) => setSortBy(v as SortOption)}
         >
-          <SelectTrigger className="w-full min-w-0 sm:w-[200px]">
+          <SelectTrigger className="w-full min-w-0 md:w-[200px]">
             <SelectValue placeholder={t("sortPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
