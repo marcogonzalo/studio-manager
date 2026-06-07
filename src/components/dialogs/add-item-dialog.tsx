@@ -596,7 +596,7 @@ export function AddItemDialog({
                           </div>
 
                           {filteredProducts.length > 0 ? (
-                            <div className="bg-background grid max-h-[300px] grid-cols-2 gap-3 overflow-y-auto rounded-md border p-2 sm:grid-cols-3 lg:grid-cols-3">
+                            <div className="bg-background grid max-h-[300px] grid-cols-1 gap-3 overflow-y-auto rounded-md border p-2 sm:grid-cols-2 lg:grid-cols-3">
                               {filteredProducts.map((product) => (
                                 <button
                                   key={product.id}
@@ -605,7 +605,7 @@ export function AddItemDialog({
                                     field.onChange(product.id);
                                     handleProductSelect(product.id);
                                   }}
-                                  className={`flex min-h-32 w-full items-center gap-4 overflow-hidden rounded-xl border p-4 shadow-sm transition-shadow hover:shadow-md ${
+                                  className={`flex w-full flex-row items-center gap-3 overflow-hidden rounded-xl border p-3 shadow-sm transition-shadow hover:shadow-md sm:min-h-32 sm:gap-4 sm:p-4 ${
                                     field.value === product.id
                                       ? "border-primary bg-primary/10"
                                       : "border-border bg-card"

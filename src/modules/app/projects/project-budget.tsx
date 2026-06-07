@@ -1,11 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
+import {
+  ExpandableRowActionsMenu,
+  ExpandableRowActionsPanel,
+  MobileDetailField,
+  TableCellMd,
+  TableHeadExpandPlaceholder,
+  TableHeadMd,
+  TableRowExpandTrigger,
+  TableRowMobileDetail,
+  useExpandableTableRow,
+  type ExpandableTableRowAction,
+} from "@/components/ui/expandable-table";
 import {
   Table,
   TableBody,
@@ -33,7 +45,6 @@ import {
   Printer,
   Pencil,
   ChevronDown,
-  MoreVertical,
   Clock,
   Truck,
   PackageCheck,
@@ -123,6 +134,8 @@ export function ProjectBudget({
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     products: true,
   });
+  const { toggleRow, isExpanded } = useExpandableTableRow();
+  const mobileVisibleColumnCount = 3;
 
   const fetchData = async () => {
     try {
@@ -639,90 +652,102 @@ export function ProjectBudget({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[50px]">Img</TableHead>
+                        <TableHeadMd className="w-[50px]">Img</TableHeadMd>
                         <TableHead>Ítem</TableHead>
-                        <TableHead>Ubicación</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead className="text-right">Cant.</TableHead>
-                        <TableHead className="text-right">
+                        <TableHeadMd>Ubicación</TableHeadMd>
+                        <TableHeadMd>Estado</TableHeadMd>
+                        <TableHeadMd className="text-right">Cant.</TableHeadMd>
+                        <TableHeadMd className="text-right">
                           Costo Unit.
-                        </TableHead>
-                        <TableHead className="text-right">
+                        </TableHeadMd>
+                        <TableHeadMd className="text-right">
                           Precio Venta
-                        </TableHead>
+                        </TableHeadMd>
                         <TableHead className="text-right">Total</TableHead>
-                        <TableHead className="w-[80px]"></TableHead>
+                        <TableHeadMd className="w-[80px]" />
+                        <TableHeadExpandPlaceholder srLabel="Expandir fila" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {includedItems.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>
-                            {(() => {
-                              const imageSrc =
-                                item.image_url || item.product?.image_url;
+                      {includedItems.map((item) => {
+                        const expanded = isExpanded(item.id);
+                        const rowActions: ExpandableTableRowAction[] = readOnly
+                          ? []
+                          : [
+                              {
+                                id: "edit",
+                                label: "Editar",
+                                icon: Pencil,
+                                onClick: () => handleEditItem(item),
+                              },
+                              {
+                                id: "delete",
+                                label: "Eliminar",
+                                icon: Trash2,
+                                onClick: () => handleDeleteItem(item.id),
+                                destructive: true,
+                              },
+                            ];
+                        const imageSrc =
+                          item.image_url || item.product?.image_url;
+                        const statusDisplay = getStatusDisplay(item.status);
+                        const StatusIcon = statusDisplay.icon;
+                        const po = item.purchase_order;
+                        const isOrderedNotReceived =
+                          item.status === "ordered" && po;
+                        const deliveryInfo =
+                          isOrderedNotReceived &&
+                          (po.delivery_date || po.delivery_deadline)
+                            ? po.delivery_date
+                              ? `Entrega: ${new Date(po.delivery_date).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })}`
+                              : `Entrega: ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
+                            : null;
+                        const statusLabel = deliveryInfo ?? statusDisplay.label;
 
-                              if (!imageSrc) return null;
-
-                              return (
-                                <button
-                                  type="button"
-                                  className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
-                                  onClick={() => {
-                                    setSelectedItem(item);
-                                    setIsProductModalOpen(true);
-                                  }}
-                                >
-                                  <Image
-                                    src={imageSrc}
-                                    alt={item.product?.name || item.name}
-                                    fill
-                                    className="object-cover"
-                                    sizes="32px"
-                                  />
-                                </button>
-                              );
-                            })()}
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-medium">
-                              {item.product?.name || item.name}
-                            </div>
-                            {item.internal_reference && (
-                              <div className="text-muted-foreground mt-1 font-mono text-xs">
-                                Cód.: {item.internal_reference}
-                              </div>
-                            )}
-                            <div className="text-muted-foreground text-xs">
-                              {item.product?.supplier?.name || "-"}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {item.space?.name || t("spaceGeneral")}
-                          </TableCell>
-                          <TableCell>
-                            {(() => {
-                              const statusDisplay = getStatusDisplay(
-                                item.status
-                              );
-                              const Icon = statusDisplay.icon;
-                              const po = item.purchase_order;
-                              const isOrderedNotReceived =
-                                item.status === "ordered" && po;
-                              const deliveryInfo =
-                                isOrderedNotReceived &&
-                                (po.delivery_date || po.delivery_deadline)
-                                  ? po.delivery_date
-                                    ? `Entrega: ${new Date(po.delivery_date).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })}`
-                                    : `Entrega: ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
-                                  : null;
-                              const statusLabel =
-                                deliveryInfo ?? statusDisplay.label;
-                              return (
+                        return (
+                          <Fragment key={item.id}>
+                            <TableRow>
+                              <TableCellMd>
+                                {imageSrc ? (
+                                  <button
+                                    type="button"
+                                    className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
+                                    onClick={() => {
+                                      setSelectedItem(item);
+                                      setIsProductModalOpen(true);
+                                    }}
+                                  >
+                                    <Image
+                                      src={imageSrc}
+                                      alt={item.product?.name || item.name}
+                                      fill
+                                      className="object-cover"
+                                      sizes="32px"
+                                    />
+                                  </button>
+                                ) : null}
+                              </TableCellMd>
+                              <TableCell>
+                                <div className="max-w-[10rem] font-medium sm:max-w-none">
+                                  {item.product?.name || item.name}
+                                </div>
+                                {item.internal_reference && (
+                                  <div className="text-muted-foreground mt-1 font-mono text-xs">
+                                    Cód.: {item.internal_reference}
+                                  </div>
+                                )}
+                                <div className="text-muted-foreground text-xs">
+                                  {item.product?.supplier?.name || "-"}
+                                </div>
+                              </TableCell>
+                              <TableCellMd>
+                                {item.space?.name || t("spaceGeneral")}
+                              </TableCellMd>
+                              <TableCellMd>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <span className="flex items-center justify-center">
-                                      <Icon
+                                      <StatusIcon
                                         className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
                                       />
                                     </span>
@@ -731,63 +756,96 @@ export function ProjectBudget({
                                     <p>{statusLabel}</p>
                                   </TooltipContent>
                                 </Tooltip>
-                              );
-                            })()}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {item.quantity}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-right">
-                            {formatCurrency(item.unit_cost)}
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            {formatCurrency(item.unit_price)}
-                          </TableCell>
-                          <TableCell className="text-right font-bold">
-                            {formatCurrency(item.unit_price * item.quantity)}
-                          </TableCell>
-                          <TableCell
-                            className={
-                              !readOnly
-                                ? "flex items-center justify-end"
-                                : undefined
-                            }
-                          >
-                            {!readOnly && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    aria-label="Acciones de la partida"
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => handleEditItem(item)}
-                                  >
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => handleDeleteItem(item.id)}
-                                    className="text-destructive"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Eliminar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                              </TableCellMd>
+                              <TableCellMd className="text-right tabular-nums">
+                                {item.quantity}
+                              </TableCellMd>
+                              <TableCellMd className="text-muted-foreground text-right tabular-nums">
+                                {formatCurrency(item.unit_cost)}
+                              </TableCellMd>
+                              <TableCellMd className="text-right font-medium tabular-nums">
+                                {formatCurrency(item.unit_price)}
+                              </TableCellMd>
+                              <TableCell className="text-right font-bold tabular-nums">
+                                {formatCurrency(
+                                  item.unit_price * item.quantity
+                                )}
+                              </TableCell>
+                              <TableCellMd className="text-right">
+                                <ExpandableRowActionsMenu
+                                  actions={rowActions}
+                                  menuAriaLabel="Acciones del producto"
+                                />
+                              </TableCellMd>
+                              <TableRowExpandTrigger
+                                expanded={expanded}
+                                onToggle={() => toggleRow(item.id)}
+                                expandLabel="Ver detalles del producto"
+                                collapseLabel="Ocultar detalles del producto"
+                              />
+                            </TableRow>
+                            <TableRowMobileDetail
+                              open={expanded}
+                              colSpan={mobileVisibleColumnCount}
+                            >
+                              <div className="space-y-2">
+                                {imageSrc ? (
+                                  <MobileDetailField
+                                    label="Imagen"
+                                    value={
+                                      <button
+                                        type="button"
+                                        className="relative ml-auto block h-10 w-10 overflow-hidden rounded"
+                                        onClick={() => {
+                                          setSelectedItem(item);
+                                          setIsProductModalOpen(true);
+                                        }}
+                                      >
+                                        <Image
+                                          src={imageSrc}
+                                          alt={item.product?.name || item.name}
+                                          fill
+                                          className="object-cover"
+                                          sizes="40px"
+                                        />
+                                      </button>
+                                    }
+                                  />
+                                ) : null}
+                                <MobileDetailField
+                                  label="Ubicación"
+                                  value={
+                                    item.space?.name || t("spaceGeneral")
+                                  }
+                                />
+                                <MobileDetailField
+                                  label="Estado"
+                                  value={statusLabel}
+                                />
+                                <MobileDetailField
+                                  label="Cant."
+                                  value={item.quantity}
+                                />
+                                <MobileDetailField
+                                  label="Costo Unit."
+                                  value={formatCurrency(item.unit_cost)}
+                                />
+                                <MobileDetailField
+                                  label="Precio Venta"
+                                  value={formatCurrency(item.unit_price)}
+                                />
+                                <ExpandableRowActionsPanel
+                                  actions={rowActions}
+                                />
+                              </div>
+                            </TableRowMobileDetail>
+                          </Fragment>
+                        );
+                      })}
                       {items.length === 0 && (
                         <TableRow>
                           <TableCell
-                            colSpan={9}
+                            colSpan={10}
                             className="text-muted-foreground py-8 text-center"
                           >
                             No hay productos añadidos.
@@ -890,75 +948,90 @@ export function ProjectBudget({
                                       <TableHeader>
                                         <TableRow>
                                           <TableHead>Concepto</TableHead>
-                                          <TableHead>Descripción</TableHead>
                                           <TableHead className="text-right">
                                             Importe
                                           </TableHead>
-                                          <TableHead className="w-[80px]"></TableHead>
+                                          <TableHeadMd>Descripción</TableHeadMd>
+                                          <TableHeadMd className="w-[80px]" />
+                                          <TableHeadExpandPlaceholder srLabel="Expandir fila" />
                                         </TableRow>
                                       </TableHeader>
                                       <TableBody>
-                                        {lines.map((line) => (
-                                          <TableRow key={line.id}>
-                                            <TableCell className="font-medium">
-                                              {subcategoryLabels[category]?.[
-                                                line.subcategory
-                                              ] ?? line.subcategory}
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground">
-                                              {line.description || "-"}
-                                            </TableCell>
-                                            <TableCell className="text-right font-semibold">
-                                              {formatCurrency(
-                                                Number(line.estimated_amount)
-                                              )}
-                                            </TableCell>
-                                            <TableCell
-                                              className={
-                                                !readOnly
-                                                  ? "flex items-center justify-end"
-                                                  : undefined
-                                              }
-                                            >
-                                              {!readOnly && (
-                                                <DropdownMenu>
-                                                  <DropdownMenuTrigger asChild>
-                                                    <Button
-                                                      variant="ghost"
-                                                      size="icon"
-                                                      aria-label="Acciones de la partida"
-                                                    >
-                                                      <MoreVertical className="h-4 w-4" />
-                                                    </Button>
-                                                  </DropdownMenuTrigger>
-                                                  <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem
-                                                      onClick={() =>
-                                                        handleEditBudgetLine(
-                                                          line
-                                                        )
-                                                      }
-                                                    >
-                                                      <Pencil className="mr-2 h-4 w-4" />
-                                                      Editar
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem
-                                                      onClick={() =>
-                                                        handleDeleteBudgetLine(
-                                                          line.id
-                                                        )
-                                                      }
-                                                      className="text-destructive"
-                                                    >
-                                                      <Trash2 className="mr-2 h-4 w-4" />
-                                                      Eliminar
-                                                    </DropdownMenuItem>
-                                                  </DropdownMenuContent>
-                                                </DropdownMenu>
-                                              )}
-                                            </TableCell>
-                                          </TableRow>
-                                        ))}
+                                        {lines.map((line) => {
+                                          const expanded = isExpanded(line.id);
+                                          const rowActions: ExpandableTableRowAction[] =
+                                            readOnly
+                                              ? []
+                                              : [
+                                                  {
+                                                    id: "edit",
+                                                    label: "Editar",
+                                                    icon: Pencil,
+                                                    onClick: () =>
+                                                      handleEditBudgetLine(line),
+                                                  },
+                                                  {
+                                                    id: "delete",
+                                                    label: "Eliminar",
+                                                    icon: Trash2,
+                                                    onClick: () =>
+                                                      handleDeleteBudgetLine(
+                                                        line.id
+                                                      ),
+                                                    destructive: true,
+                                                  },
+                                                ];
+
+                                          return (
+                                            <Fragment key={line.id}>
+                                              <TableRow>
+                                                <TableCell className="max-w-[8rem] truncate font-medium sm:max-w-none">
+                                                  {subcategoryLabels[category]?.[
+                                                    line.subcategory
+                                                  ] ?? line.subcategory}
+                                                </TableCell>
+                                                <TableCell className="text-right font-semibold tabular-nums">
+                                                  {formatCurrency(
+                                                    Number(line.estimated_amount)
+                                                  )}
+                                                </TableCell>
+                                                <TableCellMd className="text-muted-foreground">
+                                                  {line.description || "-"}
+                                                </TableCellMd>
+                                                <TableCellMd className="text-right">
+                                                  <ExpandableRowActionsMenu
+                                                    actions={rowActions}
+                                                    menuAriaLabel="Acciones de la partida"
+                                                  />
+                                                </TableCellMd>
+                                                <TableRowExpandTrigger
+                                                  expanded={expanded}
+                                                  onToggle={() =>
+                                                    toggleRow(line.id)
+                                                  }
+                                                  expandLabel="Ver detalles de la partida"
+                                                  collapseLabel="Ocultar detalles de la partida"
+                                                />
+                                              </TableRow>
+                                              <TableRowMobileDetail
+                                                open={expanded}
+                                                colSpan={mobileVisibleColumnCount}
+                                              >
+                                                <div className="space-y-2">
+                                                  <MobileDetailField
+                                                    label="Descripción"
+                                                    value={
+                                                      line.description || "-"
+                                                    }
+                                                  />
+                                                  <ExpandableRowActionsPanel
+                                                    actions={rowActions}
+                                                  />
+                                                </div>
+                                              </TableRowMobileDetail>
+                                            </Fragment>
+                                          );
+                                        })}
                                       </TableBody>
                                     </Table>
                                   </CardContent>
