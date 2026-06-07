@@ -62,22 +62,17 @@ export function OnboardingStepModal({
               )}
             </div>
           </DialogHeader>
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
+          <DialogFooter>
+            <Button variant="outline" onClick={handleOmitir}>
+              {t("later")}
+            </Button>
             <Button
-              className="w-full sm:w-auto"
               onClick={async () => {
                 await onWelcomeComplete();
                 // No cerrar: el siguiente paso (config) se mostrará al actualizar firstPendingStepId
               }}
             >
               {t("welcome.continue")}
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full sm:w-auto"
-              onClick={handleOmitir}
-            >
-              {t("later")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -142,30 +137,30 @@ export function OnboardingStepModal({
             {config.description}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button asChild className="w-full sm:w-auto">
-            <Link href={primaryUrl} onClick={() => onOpenChange(false)}>
-              {config.primaryLabel}
-            </Link>
-          </Button>
-          {config.secondaryHref && config.secondaryLabel && (
-            <Button asChild variant="outline" className="w-full sm:w-auto">
-              <Link
-                href={buildOnboardingUrl(config.secondaryHref, stepId)}
-                onClick={() => onOpenChange(false)}
-              >
-                {config.secondaryLabel}
+        <div className="space-y-3">
+          <DialogFooter>
+            {config.secondaryHref && config.secondaryLabel && (
+              <Button asChild variant="outline">
+                <Link
+                  href={buildOnboardingUrl(config.secondaryHref, stepId)}
+                  onClick={() => onOpenChange(false)}
+                >
+                  {config.secondaryLabel}
+                </Link>
+              </Button>
+            )}
+            <Button asChild>
+              <Link href={primaryUrl} onClick={() => onOpenChange(false)}>
+                {config.primaryLabel}
               </Link>
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            className="w-full sm:w-auto"
-            onClick={handleOmitir}
-          >
-            {t("later")}
-          </Button>
-        </DialogFooter>
+          </DialogFooter>
+          <div className="flex justify-center sm:justify-end">
+            <Button variant="link" size="sm" onClick={handleOmitir}>
+              {t("later")}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );

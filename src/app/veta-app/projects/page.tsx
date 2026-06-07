@@ -319,7 +319,11 @@ export default function ProjectsPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <Button asChild className="w-full" variant="outline">
+                  <Button
+                    asChild
+                    className="w-full sm:w-auto"
+                    variant="outline"
+                  >
                     <Link href={appPath(`/projects/${project.id}`)}>
                       {t("viewDetails")}
                     </Link>

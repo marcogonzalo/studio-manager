@@ -19,6 +19,16 @@ description: Veta UI conventions — Tailwind v4, Shadcn/Radix, next-themes, Fra
 - Use **`cn()`** from `@/lib/utils` for conditional classes.
 - **Responsive:** mobile-first (`w-full md:w-1/2`, etc.).
 
+## Responsive button width
+
+- **Single primary CTA** (form submit, sticky bottom action): `className="w-full sm:w-auto"` and prefer `size="lg"` (48px height) on mobile.
+- **Paired choices** (Cancel/Confirm, Accept/Decline): always **side-by-side** via `DialogFooter` / `AlertDialogFooter` / `SheetFooter` — never stack two full-width buttons.
+- **Inside cards** on tablet/desktop: avoid `w-full`; use `w-full sm:w-auto` or auto width.
+- **Tertiary actions** (e.g. “Later”, “Customize”): use `variant="link"` or `ghost`, not a third full-width bar.
+- Dialog/sheet footers use a horizontal row with `[&>*]:w-auto` so actions do not stretch on any breakpoint.
+- **Tab section actions** (`TabSectionHeader` children): right-align at all breakpoints (`justify-end`), including below `sm`.
+- **Icon + label buttons:** below `sm` (<640px) icon-only is OK when the button is full-width; from **`sm` onward** use `w-auto` / `sm:w-auto` and show the text label (`hidden sm:inline` on the label span, `sm:mr-2` on the icon). Keep `aria-label` when the label is hidden.
+
 ## Animations (marketing and app)
 
 - Reveal on scroll: **`AnimatedSection`** with props `direction`, `delay`, `duration`, `once`, `triggerOnMount`; honor **`useReducedMotion`** (already wired in the component).

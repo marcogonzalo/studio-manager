@@ -26,7 +26,7 @@ export function TabSectionHeader({
         )}
       </div>
       {children != null && (
-        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:shrink-0 sm:justify-end">
+        <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto sm:shrink-0">
           {children}
         </div>
       )}

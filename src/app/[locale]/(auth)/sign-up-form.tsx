@@ -230,10 +230,9 @@ export function SignUpForm({
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-2">
+        <CardFooter className="flex flex-row flex-wrap items-center justify-center gap-3">
           <Button
             variant="outline"
-            className="w-full"
             onClick={() => {
               setEmailSent(false);
               form.reset();
@@ -241,12 +240,7 @@ export function SignUpForm({
           >
             {t("back")}
           </Button>
-          <Button
-            variant="link"
-            className="w-full"
-            onClick={handleResend}
-            disabled={loading}
-          >
+          <Button variant="link" onClick={handleResend} disabled={loading}>
             {loading ? t("resending") : t("resend")}
           </Button>
         </CardFooter>
@@ -385,7 +379,8 @@ export function SignUpForm({
             ) : null}
             <Button
               type="submit"
-              className="w-full"
+              size="lg"
+              className="w-full sm:w-auto"
               disabled={loading || !isEmailValid || !form.watch("acceptTerms")}
             >
               {loading ? t("submitting") : t("submit")}
