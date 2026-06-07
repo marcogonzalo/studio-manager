@@ -369,11 +369,11 @@ function ProjectDetailShellContent({
               aria-label={t("publicView")}
             >
               {shareViewEnabled ? (
-                <Eye className="h-4 w-4 shrink-0 sm:mr-2" />
+                <Eye className="mr-2 h-4 w-4 shrink-0" />
               ) : (
-                <EyeOff className="h-4 w-4 shrink-0 sm:mr-2" />
+                <EyeOff className="mr-2 h-4 w-4 shrink-0" />
               )}
-              <span className="hidden sm:inline">{t("publicView")}</span>
+              {t("publicView")}
             </Button>
             <Button
               variant="outline"
@@ -381,8 +381,8 @@ function ProjectDetailShellContent({
               className="h-11 sm:h-9 sm:w-auto"
               aria-label={t("detail")}
             >
-              <FileText className="h-4 w-4 shrink-0 sm:mr-2" />
-              <span className="hidden sm:inline">{t("detail")}</span>
+              <FileText className="mr-2 h-4 w-4 shrink-0" />
+              {t("detail")}
             </Button>
           </div>
         </div>

@@ -27,7 +27,7 @@ description: Veta UI conventions — Tailwind v4, Shadcn/Radix, next-themes, Fra
 - **Tertiary actions** (e.g. “Later”, “Customize”): use `variant="link"` or `ghost`, not a third full-width bar.
 - Dialog/sheet footers use a horizontal row with `[&>*]:w-auto` so actions do not stretch on any breakpoint.
 - **Tab section actions** (`TabSectionHeader` children): right-align at all breakpoints (`justify-end`), including below `sm`.
-- **Icon + label buttons:** below `sm` (<640px) icon-only is OK when the button is full-width; from **`sm` onward** use `w-auto` / `sm:w-auto` and show the text label (`hidden sm:inline` on the label span, `sm:mr-2` on the icon). Keep `aria-label` when the label is hidden.
+- **Icon + label buttons:** icon-only below `sm` only when the button is full-width and space is tight; compact/auto-width buttons show icon + label at every breakpoint (`mr-2` on icon). Keep `aria-label` when the visible label is hidden.
 
 ## Animations (marketing and app)
 
