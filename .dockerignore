@@ -1,3 +1,12 @@
 node_modules
 .next
 .git
+.gitignore
+coverage
+.cursor
+.agents
+memory-bank
+*.md
+!README.md
+.env*
+!.env.example

@@ -23,7 +23,13 @@
     "perf:audit": "tsx scripts/performance-audit.mts",
     "perf:audit:desktop": "PERF_VIEWPORT=desktop tsx scripts/performance-audit.mts",
     "perf:audit:throttle": "PERF_THROTTLE=1 tsx scripts/performance-audit.mts",
-    "analyze": "ANALYZE=true pnpm run build"
+    "analyze": "ANALYZE=true pnpm run build",
+    "docker:dev": "docker compose up",
+    "docker:dev:build": "docker compose up --build",
+    "docker:test": "docker compose --profile test run --rm test",
+    "docker:prod": "docker compose --profile prod up --build app-prod",
+    "docker:lint": "docker compose exec app pnpm run lint",
+    "docker:build-check": "docker compose exec app pnpm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
