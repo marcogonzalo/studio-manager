@@ -40,7 +40,9 @@ import {
   CreditCard,
   Bug,
   ChevronRight,
+  MoreHorizontal,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
 import {
   Sheet,
@@ -48,7 +50,6 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import {
   Tooltip,
@@ -114,6 +115,103 @@ function getSettingsBreadcrumbs(
   return items;
 }
 
+const MOBILE_BOTTOM_TABS: {
+  messageKey: "dashboard" | "clients" | "projects" | "suppliers";
+  path: string;
+  icon: LucideIcon;
+}[] = [
+  { messageKey: "dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { messageKey: "projects", path: "/projects", icon: FolderKanban },
+  { messageKey: "clients", path: "/clients", icon: Users },
+  { messageKey: "suppliers", path: "/suppliers", icon: Truck },
+];
+
+function isMobileTabActive(pathname: string, path: string): boolean {
+  const href = appPath(path);
+  if (href === appPath("/dashboard")) {
+    return pathname === href;
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function isMobileMoreActive(pathname: string, isMenuOpen: boolean): boolean {
+  return (
+    isMenuOpen ||
+    pathname.startsWith(appPath("/catalog")) ||
+    pathname.includes("/settings") ||
+    pathname.startsWith(appPath("/profile"))
+  );
+}
+
+function MobileBottomNav({
+  pathname,
+  isMenuOpen,
+  onMenuOpen,
+  tNav,
+  tLayout,
+}: {
+  pathname: string;
+  isMenuOpen: boolean;
+  onMenuOpen: () => void;
+  tNav: ReturnType<typeof useTranslations<"AppNav">>;
+  tLayout: ReturnType<typeof useTranslations<"AppLayout">>;
+}) {
+  const tabClass = (active: boolean) =>
+    cn(
+      "flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 transition-colors",
+      active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+    );
+
+  return (
+    <nav
+      aria-label={tLayout("mobileNavAria")}
+      className="border-border bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed inset-x-0 bottom-0 z-40 touch-manipulation border-t pb-[env(safe-area-inset-bottom,0px)] backdrop-blur-sm md:hidden print:hidden"
+    >
+      <div className="flex h-16 items-stretch px-1">
+        {MOBILE_BOTTOM_TABS.map((tab) => {
+          const isActive = isMobileTabActive(pathname, tab.path);
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.path}
+              href={appPath(tab.path)}
+              className={tabClass(isActive)}
+              aria-current={isActive ? "page" : undefined}
+            >
+              <Icon
+                className={cn("h-5 w-5 shrink-0", isActive && "scale-105")}
+                aria-hidden
+              />
+              <span className="max-w-full truncate text-[10px] leading-tight font-medium">
+                {tNav(tab.messageKey)}
+              </span>
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          onClick={onMenuOpen}
+          className={tabClass(isMobileMoreActive(pathname, isMenuOpen))}
+          aria-label={tLayout("openMenu")}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-nav-sheet"
+        >
+          <MoreHorizontal
+            className={cn(
+              "h-5 w-5 shrink-0",
+              isMobileMoreActive(pathname, isMenuOpen) && "scale-105"
+            )}
+            aria-hidden
+          />
+          <span className="max-w-full truncate text-[10px] leading-tight font-medium">
+            {tNav("more")}
+          </span>
+        </button>
+      </div>
+    </nav>
+  );
+}
+
 function SidebarContent({
   collapsed = false,
   user,
@@ -146,18 +244,18 @@ function SidebarContent({
         href: appPath("/dashboard"),
         icon: LayoutDashboard,
       },
-      { name: tNav("clients"), href: appPath("/clients"), icon: Users },
       {
         name: tNav("projects"),
         href: appPath("/projects"),
         icon: FolderKanban,
       },
-      { name: tNav("catalog"), href: appPath("/catalog"), icon: ShoppingBag },
+      { name: tNav("clients"), href: appPath("/clients"), icon: Users },
       {
         name: tNav("suppliers"),
         href: appPath("/suppliers"),
         icon: Truck,
       },
+      { name: tNav("catalog"), href: appPath("/catalog"), icon: ShoppingBag },
     ],
     [tNav]
   );
@@ -568,6 +666,7 @@ export default function AppLayoutClient({
 }) {
   const tLayout = useTranslations("AppLayout");
   const tCrumb = useTranslations("AppSettingsBreadcrumb");
+  const tNav = useTranslations("AppNav");
   const { user, profileFullName, effectivePlan, signOut, loading } = useAuth();
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -619,6 +718,10 @@ export default function AppLayoutClient({
     return () => document.body.classList.remove("veta-app");
   }, []);
 
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [pathname]);
+
   if (loading) {
     return (
       <div className="flex h-screen flex-col p-6">
@@ -660,26 +763,12 @@ export default function AppLayoutClient({
           )}
         />
 
-        {/* Mobile Sidebar */}
+        {/* Mobile nav sheet */}
         <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
-          <SheetTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-background/80 border-border fixed bottom-4 left-1/2 z-50 h-12 w-12 -translate-x-1/2 overflow-hidden rounded-full border shadow-sm backdrop-blur-sm md:hidden print:hidden"
-              aria-label={tLayout("openMenu")}
-            >
-              <VetaLogo
-                variant="icon"
-                height={24}
-                width={34}
-                className="shrink-0"
-              />
-            </Button>
-          </SheetTrigger>
           <SheetContent
-            side="left"
-            className="border-border w-64 border-r p-0"
+            id="mobile-nav-sheet"
+            side="right"
+            className="border-border w-64 border-l p-0 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
             closeLabel={tLayout("closeMenu")}
           >
             <SheetHeader className="sr-only">
@@ -702,53 +791,63 @@ export default function AppLayoutClient({
           </SheetContent>
         </Sheet>
 
-        {/* Main Content */}
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className={cn(
-            "flex-1 overflow-x-hidden p-4 transition-all duration-300 md:p-5 print:ml-0 print:p-0",
-            isCollapsed ? "md:ml-16" : "md:ml-64",
-            "animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500"
-          )}
-        >
-          {(pathname.includes("/settings") ||
-            pathname === appPath("/settings/customization")) && (
-            <nav
-              aria-label={tLayout("breadcrumbAria")}
-              className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"
-            >
-              <ol className="flex flex-wrap items-center gap-1.5">
-                {getSettingsBreadcrumbs(pathname, tCrumb).map((item, i) => (
-                  <li key={i} className="flex items-center gap-1.5">
-                    {i > 0 && (
-                      <ChevronRight
-                        className="h-4 w-4 shrink-0 opacity-60"
-                        aria-hidden
-                      />
-                    )}
-                    {item.href ? (
-                      <Link
-                        href={item.href}
-                        className="hover:text-foreground transition-colors"
-                      >
-                        {item.label}
-                      </Link>
-                    ) : (
-                      <span
-                        className="text-foreground font-medium"
-                        aria-current="page"
-                      >
-                        {item.label}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </nav>
-          )}
-          {children}
-        </main>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className={cn(
+              "flex-1 overflow-x-hidden px-4 pt-4 transition-all duration-300 md:p-5 print:ml-0 print:p-0",
+              "pb-[calc(4rem+max(1rem,env(safe-area-inset-bottom,0px)))] md:pb-5",
+              isCollapsed ? "md:ml-16" : "md:ml-64",
+              "animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500"
+            )}
+          >
+            {(pathname.includes("/settings") ||
+              pathname === appPath("/settings/customization")) && (
+              <nav
+                aria-label={tLayout("breadcrumbAria")}
+                className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"
+              >
+                <ol className="flex flex-wrap items-center gap-1.5">
+                  {getSettingsBreadcrumbs(pathname, tCrumb).map((item, i) => (
+                    <li key={i} className="flex items-center gap-1.5">
+                      {i > 0 && (
+                        <ChevronRight
+                          className="h-4 w-4 shrink-0 opacity-60"
+                          aria-hidden
+                        />
+                      )}
+                      {item.href ? (
+                        <Link
+                          href={item.href}
+                          className="hover:text-foreground transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <span
+                          className="text-foreground font-medium"
+                          aria-current="page"
+                        >
+                          {item.label}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            )}
+            {children}
+          </main>
+
+          <MobileBottomNav
+            pathname={pathname}
+            isMenuOpen={isMobileOpen}
+            onMenuOpen={() => setIsMobileOpen(true)}
+            tNav={tNav}
+            tLayout={tLayout}
+          />
+        </div>
       </div>
     </TooltipProvider>
   );
