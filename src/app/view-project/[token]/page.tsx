@@ -122,19 +122,35 @@ export default async function ViewProjectPage({ params }: PageProps) {
           className="mt-6 flex flex-col gap-3 pt-4"
           aria-label={t("moreInfoNavAria")}
         >
-          <div className="flex flex-col items-center justify-center gap-2 md:flex-row md:flex-wrap md:justify-between md:gap-2">
-            <Button variant="secondary" asChild className="min-h-12 text-base">
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-3">
+            <Button
+              variant="secondary"
+              asChild
+              className="min-h-12 w-full text-base"
+            >
               <Link href={`/view-project/${token}/spaces`}>{t("spaces")}</Link>
             </Button>
-            <Button variant="secondary" asChild className="min-h-12 text-base">
+            <Button
+              variant="secondary"
+              asChild
+              className="min-h-12 w-full text-base"
+            >
               <Link href={`/view-project/${token}/costs`}>{t("costs")}</Link>
             </Button>
-            <Button variant="secondary" asChild className="min-h-12 text-base">
+            <Button
+              variant="secondary"
+              asChild
+              className="min-h-12 w-full text-base"
+            >
               <Link href={`/view-project/${token}/payments`}>
                 {t("payments")}
               </Link>
             </Button>
-            <Button variant="secondary" asChild className="min-h-12 text-base">
+            <Button
+              variant="secondary"
+              asChild
+              className="min-h-12 w-full text-base"
+            >
               <Link href={`/view-project/${token}/documents`}>
                 {t("documents")}
               </Link>
