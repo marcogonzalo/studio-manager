@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,16 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import {
+  ExpandableRowActionsMenu,
+  ExpandableRowActionsPanel,
+  TableHeadExpandPlaceholder,
+  TableHeadMd,
+  TableRowExpandTrigger,
+  TableRowMobileDetail,
+  useExpandableTableRow,
+  type ExpandableTableRowAction,
+} from "@/components/ui/expandable-table";
+import {
   Table,
   TableBody,
   TableCell,
@@ -18,13 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trash2, Pencil, DollarSign, MoreVertical } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Plus, Trash2, Pencil, DollarSign } from "lucide-react";
 import { AdditionalCostDialog } from "@/components/dialogs/additional-cost-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -50,6 +54,8 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCost, setEditingCost] = useState<AdditionalCost | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toggleRow, isExpanded } = useExpandableTableRow();
+  const mobileVisibleColumnCount = 3;
 
   const fetchCosts = async () => {
     setLoading(true);
@@ -193,54 +199,66 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                         <TableRow>
                           <TableHead>Descripción</TableHead>
                           <TableHead className="text-right">Importe</TableHead>
-                          <TableHead className="text-right">Acciones</TableHead>
+                          <TableHeadMd className="text-right">
+                            Acciones
+                          </TableHeadMd>
+                          <TableHeadExpandPlaceholder srLabel="Expandir fila" />
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {typeCosts.map((cost) => (
-                          <TableRow key={cost.id}>
-                            <TableCell>
-                              {cost.description || (
-                                <span className="text-muted-foreground italic">
-                                  Sin descripción
-                                </span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right font-medium">
-                              ${Number(cost.amount).toFixed(2)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex justify-end">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      aria-label="Acciones del coste"
-                                    >
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                      onClick={() => handleEdit(cost)}
-                                    >
-                                      <Pencil className="mr-2 h-4 w-4" />
-                                      Editar
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => handleDelete(cost.id)}
-                                      className="text-destructive"
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Eliminar
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {typeCosts.map((cost) => {
+                          const expanded = isExpanded(cost.id);
+                          const rowActions: ExpandableTableRowAction[] = [
+                            {
+                              id: "edit",
+                              label: "Editar",
+                              icon: Pencil,
+                              onClick: () => handleEdit(cost),
+                            },
+                            {
+                              id: "delete",
+                              label: "Eliminar",
+                              icon: Trash2,
+                              onClick: () => handleDelete(cost.id),
+                              destructive: true,
+                            },
+                          ];
+
+                          return (
+                            <Fragment key={cost.id}>
+                              <TableRow>
+                                <TableCell className="max-w-[10rem] truncate sm:max-w-none">
+                                  {cost.description || (
+                                    <span className="text-muted-foreground italic">
+                                      Sin descripción
+                                    </span>
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-right font-medium tabular-nums">
+                                  ${Number(cost.amount).toFixed(2)}
+                                </TableCell>
+                                <TableCellMd className="text-right">
+                                  <ExpandableRowActionsMenu
+                                    actions={rowActions}
+                                    menuAriaLabel="Acciones del coste"
+                                  />
+                                </TableCellMd>
+                                <TableRowExpandTrigger
+                                  expanded={expanded}
+                                  onToggle={() => toggleRow(cost.id)}
+                                  expandLabel="Ver acciones del coste"
+                                  collapseLabel="Ocultar acciones del coste"
+                                />
+                              </TableRow>
+                              <TableRowMobileDetail
+                                open={expanded}
+                                colSpan={mobileVisibleColumnCount}
+                              >
+                                <ExpandableRowActionsPanel actions={rowActions} />
+                              </TableRowMobileDetail>
+                            </Fragment>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +10,18 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { PaymentDialog } from "@/components/dialogs/payment-dialog";
 import {
+  ExpandableRowActionsMenu,
+  ExpandableRowActionsPanel,
+  MobileDetailField,
+  TableCellMd,
+  TableHeadExpandPlaceholder,
+  TableHeadMd,
+  TableRowExpandTrigger,
+  TableRowMobileDetail,
+  useExpandableTableRow,
+  type ExpandableTableRowAction,
+} from "@/components/ui/expandable-table";
+import {
   Table,
   TableBody,
   TableCell,
@@ -17,13 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { MoreVertical } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -63,6 +68,8 @@ export function ProjectPayments({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
+  const { toggleRow, isExpanded } = useExpandableTableRow();
+  const mobileVisibleColumnCount = 4;
 
   const fetchPayments = async () => {
     setLoading(true);
@@ -288,75 +295,113 @@ export function ProjectPayments({
                     <TableHeader>
                       <TableRow>
                         <TableHead>Fecha</TableHead>
-                        <TableHead>Monto</TableHead>
                         <TableHead>Tipo</TableHead>
-                        <TableHead>Referencia</TableHead>
-                        <TableHead>Fase</TableHead>
-                        <TableHead>Descripción</TableHead>
-                        <TableHead className="text-right">Acciones</TableHead>
+                        <TableHead>Monto</TableHead>
+                        <TableHeadMd>Referencia</TableHeadMd>
+                        <TableHeadMd>Fase</TableHeadMd>
+                        <TableHeadMd>Descripción</TableHeadMd>
+                        <TableHeadMd className="text-right">
+                          Acciones
+                        </TableHeadMd>
+                        <TableHeadExpandPlaceholder srLabel="Expandir fila" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredPayments.map((payment) => (
-                        <TableRow key={payment.id}>
-                          <TableCell>
-                            {format(
-                              new Date(payment.payment_date),
-                              "dd/MM/yyyy"
-                            )}
-                          </TableCell>
-                          <TableCell className="font-semibold">
-                            {formatCurrencyUtil(
-                              Number(payment.amount),
-                              projectCurrency
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <span className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs">
-                              {PAYMENT_TYPE_LABELS[payment.payment_type]}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {payment.reference_number || "-"}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {payment.phase ? getPhaseLabel(payment.phase) : "-"}
-                          </TableCell>
-                          <TableCell className="text-muted-foreground max-w-xs truncate">
-                            {payment.description || "-"}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {!readOnly && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    aria-label="Acciones del pago"
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem
-                                    onClick={() => handleEdit(payment)}
-                                  >
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => handleDelete(payment.id)}
-                                    className="text-destructive"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Eliminar
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {filteredPayments.map((payment) => {
+                        const expanded = isExpanded(payment.id);
+                        const rowActions: ExpandableTableRowAction[] = readOnly
+                          ? []
+                          : [
+                              {
+                                id: "edit",
+                                label: "Editar",
+                                icon: Pencil,
+                                onClick: () => handleEdit(payment),
+                              },
+                              {
+                                id: "delete",
+                                label: "Eliminar",
+                                icon: Trash2,
+                                onClick: () => handleDelete(payment.id),
+                                destructive: true,
+                              },
+                            ];
+
+                        const typeBadge = (
+                          <span className="bg-primary/10 text-primary inline-flex max-w-[7rem] truncate rounded-full px-2 py-1 text-xs sm:max-w-none">
+                            {PAYMENT_TYPE_LABELS[payment.payment_type]}
+                          </span>
+                        );
+
+                        return (
+                          <Fragment key={payment.id}>
+                            <TableRow>
+                              <TableCell className="whitespace-nowrap">
+                                {format(
+                                  new Date(payment.payment_date),
+                                  "dd/MM/yyyy"
+                                )}
+                              </TableCell>
+                              <TableCell>{typeBadge}</TableCell>
+                              <TableCell className="font-semibold tabular-nums">
+                                {formatCurrencyUtil(
+                                  Number(payment.amount),
+                                  projectCurrency
+                                )}
+                              </TableCell>
+                              <TableCellMd className="text-muted-foreground">
+                                {payment.reference_number || "-"}
+                              </TableCellMd>
+                              <TableCellMd className="text-muted-foreground">
+                                {payment.phase
+                                  ? getPhaseLabel(payment.phase)
+                                  : "-"}
+                              </TableCellMd>
+                              <TableCellMd className="text-muted-foreground max-w-xs truncate">
+                                {payment.description || "-"}
+                              </TableCellMd>
+                              <TableCellMd className="text-right">
+                                <ExpandableRowActionsMenu
+                                  actions={rowActions}
+                                  menuAriaLabel="Acciones del pago"
+                                />
+                              </TableCellMd>
+                              <TableRowExpandTrigger
+                                expanded={expanded}
+                                onToggle={() => toggleRow(payment.id)}
+                                expandLabel="Ver detalles del pago"
+                                collapseLabel="Ocultar detalles del pago"
+                              />
+                            </TableRow>
+                            <TableRowMobileDetail
+                              open={expanded}
+                              colSpan={mobileVisibleColumnCount}
+                            >
+                              <div className="space-y-2">
+                                <MobileDetailField
+                                  label="Referencia"
+                                  value={payment.reference_number || "-"}
+                                />
+                                <MobileDetailField
+                                  label="Fase"
+                                  value={
+                                    payment.phase
+                                      ? getPhaseLabel(payment.phase)
+                                      : "-"
+                                  }
+                                />
+                                <MobileDetailField
+                                  label="Descripción"
+                                  value={payment.description || "-"}
+                                />
+                                <ExpandableRowActionsPanel
+                                  actions={rowActions}
+                                />
+                              </div>
+                            </TableRowMobileDetail>
+                          </Fragment>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>

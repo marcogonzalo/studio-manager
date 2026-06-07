@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,15 @@ import { ShoppingBag, Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { PurchaseOrderDialog } from "@/components/dialogs/purchase-order-dialog";
+import {
+  MobileDetailField,
+  TableCellMd,
+  TableHeadExpandPlaceholder,
+  TableHeadMd,
+  TableRowExpandTrigger,
+  TableRowMobileDetail,
+  useExpandableTableRow,
+} from "@/components/ui/expandable-table";
 import {
   Table,
   TableBody,
@@ -77,6 +86,8 @@ export function ProjectPurchases({
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
+  const { toggleRow, isExpanded } = useExpandableTableRow();
+  const mobileVisibleColumnCount = 3;
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -331,44 +342,80 @@ export function ProjectPurchases({
                           <TableHeader>
                             <TableRow>
                               <TableHead>Ítem</TableHead>
-                              <TableHead className="text-right">
+                              <TableHead className="text-right">Total</TableHead>
+                              <TableHeadMd className="text-right">
                                 Cantidad
-                              </TableHead>
-                              <TableHead className="text-right">
+                              </TableHeadMd>
+                              <TableHeadMd className="text-right">
                                 Costo Unit.
-                              </TableHead>
-                              <TableHead className="text-right">
-                                Total
-                              </TableHead>
+                              </TableHeadMd>
+                              <TableHeadExpandPlaceholder srLabel="Expandir fila" />
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {po.project_items.map((item) => (
-                              <TableRow key={item.id}>
-                                <TableCell className="font-medium">
-                                  {item.name}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {item.quantity}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  ${(item.unit_cost || 0).toFixed(2)}
-                                </TableCell>
-                                <TableCell className="text-right font-medium">
-                                  $
-                                  {(
-                                    (item.unit_cost || 0) * item.quantity
-                                  ).toFixed(2)}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                            <TableRow className="bg-secondary/30 font-bold">
-                              <TableCell colSpan={3} className="text-right">
+                            {po.project_items.map((item) => {
+                              const expanded = isExpanded(item.id);
+                              const lineTotal =
+                                (item.unit_cost || 0) * item.quantity;
+
+                              return (
+                                <Fragment key={item.id}>
+                                  <TableRow>
+                                    <TableCell className="max-w-[10rem] truncate font-medium sm:max-w-none">
+                                      {item.name}
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium tabular-nums">
+                                      ${lineTotal.toFixed(2)}
+                                    </TableCell>
+                                    <TableCellMd className="text-right tabular-nums">
+                                      {item.quantity}
+                                    </TableCellMd>
+                                    <TableCellMd className="text-right tabular-nums">
+                                      ${(item.unit_cost || 0).toFixed(2)}
+                                    </TableCellMd>
+                                    <TableRowExpandTrigger
+                                      expanded={expanded}
+                                      onToggle={() => toggleRow(item.id)}
+                                      expandLabel="Ver detalles del ítem"
+                                      collapseLabel="Ocultar detalles del ítem"
+                                    />
+                                  </TableRow>
+                                  <TableRowMobileDetail
+                                    open={expanded}
+                                    colSpan={mobileVisibleColumnCount}
+                                  >
+                                    <div className="space-y-2">
+                                      <MobileDetailField
+                                        label="Cantidad"
+                                        value={item.quantity}
+                                      />
+                                      <MobileDetailField
+                                        label="Costo Unit."
+                                        value={`$${(item.unit_cost || 0).toFixed(2)}`}
+                                      />
+                                    </div>
+                                  </TableRowMobileDetail>
+                                </Fragment>
+                              );
+                            })}
+                            <TableRow className="bg-secondary/30 font-bold md:hidden">
+                              <TableCell className="text-right">
                                 Total de la Orden:
                               </TableCell>
-                              <TableCell className="text-right">
+                              <TableCell className="text-right tabular-nums">
                                 ${total.toFixed(2)}
                               </TableCell>
+                              <TableCell />
+                            </TableRow>
+                            <TableRow className="bg-secondary/30 hidden font-bold md:table-row">
+                              <TableCell className="text-right">
+                                Total de la Orden:
+                              </TableCell>
+                              <TableCell className="text-right tabular-nums">
+                                ${total.toFixed(2)}
+                              </TableCell>
+                              <TableCellMd />
+                              <TableCellMd />
                             </TableRow>
                           </TableBody>
                         </Table>
