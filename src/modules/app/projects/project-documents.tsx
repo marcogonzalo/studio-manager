@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DocumentDialog } from "@/components/dialogs/document-dialog";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface Document {
@@ -35,6 +36,8 @@ export function ProjectDocuments({
   const supabase = getSupabaseClient();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchDocs = async () => {
     const { data } = await supabase
@@ -50,10 +53,19 @@ export function ProjectDocuments({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t("confirmDelete"))) return;
-    await supabase.from("project_documents").delete().eq("id", id);
-    fetchDocs();
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    try {
+      await supabase
+        .from("project_documents")
+        .delete()
+        .eq("id", deleteTargetId);
+      setDeleteTargetId(null);
+      fetchDocs();
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   return (
@@ -121,7 +133,7 @@ export function ProjectDocuments({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => handleDelete(doc.id)}
+                            onClick={() => setDeleteTargetId(doc.id)}
                             className="text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -142,6 +154,15 @@ export function ProjectDocuments({
           onOpenChange={setIsDialogOpen}
           projectId={projectId}
           onSuccess={fetchDocs}
+        />
+
+        <ConfirmDeleteDialog
+          open={deleteTargetId !== null}
+          onOpenChange={(open) => !open && setDeleteTargetId(null)}
+          title={t("confirmDelete")}
+          description={t("confirmDeleteDescription")}
+          onConfirm={handleConfirmDelete}
+          loading={deleteLoading}
         />
       </div>
     </ProjectTabContent>

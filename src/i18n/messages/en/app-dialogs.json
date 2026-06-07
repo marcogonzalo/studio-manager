@@ -371,6 +371,7 @@
   },
   "DialogSpaceProducts": {
     "confirmDelete": "Remove product from space?",
+    "confirmDeleteDescription": "This action cannot be undone.",
     "toastDeleted": "Product removed",
     "noDescription": "No description",
     "empty": "There are no products in this space",

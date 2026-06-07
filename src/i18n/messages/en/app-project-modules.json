@@ -15,6 +15,7 @@
     "delete": "Delete",
     "userFallback": "User",
     "confirmDelete": "Delete this note?",
+    "confirmDeleteDescription": "This action cannot be undone.",
     "disabledMessage": "Notes are not included in your current plan.",
     "toastAddError": "Error adding note",
     "toastAdded": "Note added",
@@ -33,6 +34,7 @@
     "actionsAria": "Document actions",
     "delete": "Delete",
     "confirmDelete": "Delete document?",
+    "confirmDeleteDescription": "This action cannot be undone.",
     "disabledMessage": "Documents are not included in your current plan."
   },
   "ProjectModuleDashboard": {

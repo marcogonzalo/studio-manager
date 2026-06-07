@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { AddItemDialog } from "@/components/dialogs/add-item-dialog";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import type { Space } from "@/types";
 import type { ProjectItem } from "@/types";
@@ -56,6 +57,8 @@ export function SpaceProductsDialog({
   const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
   const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -80,11 +83,17 @@ export function SpaceProductsDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when open or space.id changes only
   }, [open, space.id]);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t("confirmDelete"))) return;
-    await supabase.from("project_items").delete().eq("id", id);
-    toast.success(t("toastDeleted"));
-    fetchItems();
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    try {
+      await supabase.from("project_items").delete().eq("id", deleteTargetId);
+      toast.success(t("toastDeleted"));
+      setDeleteTargetId(null);
+      fetchItems();
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const handleEdit = (item: ProjectItem) => {
@@ -107,7 +116,7 @@ export function SpaceProductsDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="flex max-h-[80vh] max-w-4xl flex-col">
+        <DialogContent className="flex max-h-[80vh] flex-col sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="text-2xl">{space.name}</DialogTitle>
             <p className="text-muted-foreground mt-1 text-sm">
@@ -132,7 +141,7 @@ export function SpaceProductsDialog({
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                 {items.map((item) => {
                   const imageSrc = item.image_url || item.product?.image_url;
 
@@ -211,7 +220,7 @@ export function SpaceProductsDialog({
                                   {t("edit")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handleDelete(item.id)}
+                                  onClick={() => setDeleteTargetId(item.id)}
                                   className="text-destructive"
                                 >
                                   <Trash2 className="mr-2 h-4 w-4" />
@@ -262,6 +271,15 @@ export function SpaceProductsDialog({
           setIsProductModalOpen(false);
           handleEdit(selectedItem!);
         }}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+        title={t("confirmDelete")}
+        description={t("confirmDeleteDescription")}
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
       />
     </>
   );

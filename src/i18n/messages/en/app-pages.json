@@ -122,6 +122,7 @@
     "readOnlyDescription": "You cannot edit data or add content.",
     "publicView": "Public view",
     "detail": "Detail",
+    "tabsSelectAria": "Project section",
     "tabs": {
       "overview": "Overview",
       "spaces": "Spaces",

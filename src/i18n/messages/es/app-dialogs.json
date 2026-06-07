@@ -371,6 +371,7 @@
   },
   "DialogSpaceProducts": {
     "confirmDelete": "¿Eliminar producto del espacio?",
+    "confirmDeleteDescription": "Esta acción no se puede deshacer.",
     "toastDeleted": "Producto eliminado",
     "noDescription": "Sin descripción",
     "empty": "No hay productos en este espacio",

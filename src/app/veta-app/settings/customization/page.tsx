@@ -488,7 +488,7 @@ export default function CustomizationPage() {
                       control={formDefaults.control}
                       name="default_currency"
                       render={({ field }) => (
-                        <FormItem className="w-[125px]">
+                        <FormItem className="w-full min-w-0 sm:w-[125px]">
                           <FormLabel className="flex items-center gap-2">
                             <Coins className="h-4 w-4" />
                             {t("currencyLabel")}
@@ -520,7 +520,7 @@ export default function CustomizationPage() {
                       control={formDefaults.control}
                       name="default_tax_rate"
                       render={({ field }) => (
-                        <FormItem className="w-[125px]">
+                        <FormItem className="w-full min-w-0 sm:w-[125px]">
                           <FormLabel className="flex items-center gap-2">
                             <Percent className="h-4 w-4" />
                             {t("taxLabel")}

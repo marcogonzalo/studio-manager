@@ -6,7 +6,6 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.next
     extra_hosts:
       # Make localhost resolve to host machine for Supabase access
       - "localhost:host-gateway"

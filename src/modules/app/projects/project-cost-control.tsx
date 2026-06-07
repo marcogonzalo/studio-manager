@@ -1,10 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
+import {
+  ExpandableRowActionsMenu,
+  ExpandableRowActionsPanel,
+  MobileDetailField,
+  TableCellMd,
+  TableHeadExpandPlaceholder,
+  TableHeadMd,
+  TableRowExpandTrigger,
+  TableRowMobileDetail,
+  useExpandableTableRow,
+  type ExpandableTableRowAction,
+} from "@/components/ui/expandable-table";
 import {
   Table,
   TableBody,
@@ -21,12 +33,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Plus,
   Trash2,
   Pencil,
@@ -36,9 +42,9 @@ import {
   Minus,
   Eye,
   EyeOff,
-  MoreVertical,
 } from "lucide-react";
 import { BudgetLineDialog } from "@/components/dialogs/budget-line-dialog";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
 import {
   getPhaseLabel,
@@ -116,6 +122,8 @@ export function ProjectCostControl({
     },
   };
   const canEdit = !readOnly && !disabled;
+  const { toggleRow, isExpanded } = useExpandableTableRow();
+  const mobileVisibleColumnCount = 3;
   const [project, setProject] = useState<{ currency?: string } | null>(null);
   const {
     budgetLines,
@@ -128,6 +136,8 @@ export function ProjectCostControl({
   const [isBudgetLineDialogOpen, setIsBudgetLineDialogOpen] = useState(false);
   const [editingBudgetLine, setEditingBudgetLine] =
     useState<ProjectBudgetLine | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     construction: true,
     external_services: true,
@@ -161,25 +171,31 @@ export function ProjectCostControl({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when projectId changes only
   }, [projectId]);
 
-  const handleDeleteBudgetLine = async (id: string) => {
-    if (!confirm("¿Eliminar partida?")) return;
-    const { error } = await supabase
-      .from("project_budget_lines")
-      .delete()
-      .eq("id", id);
-    if (error) {
-      const demoMsg = getDemoAccountMessage(error);
-      if (demoMsg) {
-        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
-          duration: 5000,
-        });
-      } else {
-        toast.error("Error al eliminar la partida");
-        reportError(error, "Error deleting budget line:");
+  const handleConfirmDelete = async () => {
+    if (!deleteTargetId) return;
+    setDeleteLoading(true);
+    try {
+      const { error } = await supabase
+        .from("project_budget_lines")
+        .delete()
+        .eq("id", deleteTargetId);
+      if (error) {
+        const demoMsg = getDemoAccountMessage(error);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error("Error al eliminar la partida");
+          reportError(error, "Error deleting budget line:");
+        }
+        return;
       }
-    } else {
       toast.success("Partida eliminada");
+      setDeleteTargetId(null);
       refetchBudgetLines();
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -337,7 +353,7 @@ export function ProjectCostControl({
             <CardContent className="pt-6">
               <div className="space-y-3">
                 {/* Totals row */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="bg-secondary/30 rounded-lg p-3">
                     <p className="text-muted-foreground text-xs">
                       Total Estimado
@@ -437,16 +453,19 @@ export function ProjectCostControl({
                         <TableHeader>
                           <TableRow>
                             <TableHead>Concepto</TableHead>
-                            <TableHead>Descripción</TableHead>
-                            <TableHead>Fase</TableHead>
                             <TableHead className="text-right">
                               Estimado
                             </TableHead>
-                            <TableHead className="text-right">Real</TableHead>
-                            <TableHead className="text-right">
+                            <TableHeadMd>Descripción</TableHeadMd>
+                            <TableHeadMd>Fase</TableHeadMd>
+                            <TableHeadMd className="text-right">
+                              Real
+                            </TableHeadMd>
+                            <TableHeadMd className="text-right">
                               Desviación
-                            </TableHead>
-                            <TableHead className="w-[100px]"></TableHead>
+                            </TableHeadMd>
+                            <TableHeadMd className="w-[100px]" />
+                            <TableHeadExpandPlaceholder srLabel="Expandir fila" />
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -455,83 +474,140 @@ export function ProjectCostControl({
                               Number(line.estimated_amount),
                               Number(line.actual_amount)
                             );
+                            const expanded = isExpanded(line.id);
+                            const rowActions: ExpandableTableRowAction[] =
+                              canEdit
+                                ? [
+                                    {
+                                      id: "edit",
+                                      label: "Editar",
+                                      icon: Pencil,
+                                      onClick: () => handleEditBudgetLine(line),
+                                    },
+                                    {
+                                      id: "delete",
+                                      label: "Eliminar",
+                                      icon: Trash2,
+                                      onClick: () => setDeleteTargetId(line.id),
+                                      destructive: true,
+                                    },
+                                  ]
+                                : [];
+                            const visibilityLabel = line.is_internal_cost
+                              ? "Coste interno (no visible para cliente)"
+                              : "Visible para cliente";
+
                             return (
-                              <TableRow key={line.id}>
-                                <TableCell className="font-medium">
-                                  {subcategoryLabels[category]?.[
-                                    line.subcategory
-                                  ] ?? line.subcategory}
-                                </TableCell>
-                                <TableCell className="text-muted-foreground max-w-[200px] truncate">
-                                  {line.description || "-"}
-                                </TableCell>
-                                <TableCell className="text-muted-foreground text-xs">
-                                  {line.phase ? getPhaseLabel(line.phase) : "-"}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  {formatCurrency(
-                                    Number(line.estimated_amount)
-                                  )}
-                                </TableCell>
-                                <TableCell className="text-right font-semibold">
-                                  {formatCurrency(Number(line.actual_amount))}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                  <div
-                                    className={`flex items-center justify-end gap-1 ${deviation.color}`}
-                                  >
-                                    <deviation.icon className="h-3 w-3" />
-                                    <span className="text-sm">
-                                      {deviation.text}
-                                    </span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center justify-end gap-2">
-                                    {line.is_internal_cost ? (
-                                      <span title="Coste interno (no visible para cliente)">
-                                        <EyeOff className="text-muted-foreground h-4 w-4" />
-                                      </span>
-                                    ) : (
-                                      <span title="Visible para cliente">
-                                        <Eye className="text-muted-foreground h-4 w-4" />
-                                      </span>
+                              <Fragment key={line.id}>
+                                <TableRow>
+                                  <TableCell className="max-w-[8rem] truncate font-medium sm:max-w-none">
+                                    {subcategoryLabels[category]?.[
+                                      line.subcategory
+                                    ] ?? line.subcategory}
+                                  </TableCell>
+                                  <TableCell className="text-right tabular-nums">
+                                    {formatCurrency(
+                                      Number(line.estimated_amount)
                                     )}
-                                    {!readOnly && (
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            aria-label="Acciones de la partida"
-                                          >
-                                            <MoreVertical className="h-4 w-4" />
-                                          </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                          <DropdownMenuItem
-                                            onClick={() =>
-                                              handleEditBudgetLine(line)
-                                            }
-                                          >
-                                            <Pencil className="mr-2 h-4 w-4" />
-                                            Editar
-                                          </DropdownMenuItem>
-                                          <DropdownMenuItem
-                                            onClick={() =>
-                                              handleDeleteBudgetLine(line.id)
-                                            }
-                                            className="text-destructive"
-                                          >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Eliminar
-                                          </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
-                                    )}
+                                  </TableCell>
+                                  <TableCellMd className="text-muted-foreground max-w-[200px] truncate">
+                                    {line.description || "-"}
+                                  </TableCellMd>
+                                  <TableCellMd className="text-muted-foreground text-xs">
+                                    {line.phase
+                                      ? getPhaseLabel(line.phase)
+                                      : "-"}
+                                  </TableCellMd>
+                                  <TableCellMd className="text-right font-semibold tabular-nums">
+                                    {formatCurrency(Number(line.actual_amount))}
+                                  </TableCellMd>
+                                  <TableCellMd className="text-right">
+                                    <div
+                                      className={`flex items-center justify-end gap-1 ${deviation.color}`}
+                                    >
+                                      <deviation.icon className="h-3 w-3" />
+                                      <span className="text-sm">
+                                        {deviation.text}
+                                      </span>
+                                    </div>
+                                  </TableCellMd>
+                                  <TableCellMd>
+                                    <div className="flex items-center justify-end gap-2">
+                                      {line.is_internal_cost ? (
+                                        <span title={visibilityLabel}>
+                                          <EyeOff className="text-muted-foreground h-4 w-4" />
+                                        </span>
+                                      ) : (
+                                        <span title={visibilityLabel}>
+                                          <Eye className="text-muted-foreground h-4 w-4" />
+                                        </span>
+                                      )}
+                                      <ExpandableRowActionsMenu
+                                        actions={rowActions}
+                                        menuAriaLabel="Acciones de la partida"
+                                      />
+                                    </div>
+                                  </TableCellMd>
+                                  <TableRowExpandTrigger
+                                    expanded={expanded}
+                                    onToggle={() => toggleRow(line.id)}
+                                    expandLabel="Ver detalles de la partida"
+                                    collapseLabel="Ocultar detalles de la partida"
+                                  />
+                                </TableRow>
+                                <TableRowMobileDetail
+                                  open={expanded}
+                                  colSpan={mobileVisibleColumnCount}
+                                >
+                                  <div className="space-y-2">
+                                    <MobileDetailField
+                                      label="Descripción"
+                                      value={line.description || "-"}
+                                    />
+                                    <MobileDetailField
+                                      label="Fase"
+                                      value={
+                                        line.phase
+                                          ? getPhaseLabel(line.phase)
+                                          : "-"
+                                      }
+                                    />
+                                    <MobileDetailField
+                                      label="Real"
+                                      value={formatCurrency(
+                                        Number(line.actual_amount)
+                                      )}
+                                    />
+                                    <MobileDetailField
+                                      label="Desviación"
+                                      value={
+                                        <span
+                                          className={`inline-flex items-center gap-1 ${deviation.color}`}
+                                        >
+                                          <deviation.icon className="h-3 w-3" />
+                                          {deviation.text}
+                                        </span>
+                                      }
+                                    />
+                                    <MobileDetailField
+                                      label="Visibilidad"
+                                      value={
+                                        <span className="inline-flex items-center gap-1">
+                                          {line.is_internal_cost ? (
+                                            <EyeOff className="h-4 w-4" />
+                                          ) : (
+                                            <Eye className="h-4 w-4" />
+                                          )}
+                                          {visibilityLabel}
+                                        </span>
+                                      }
+                                    />
+                                    <ExpandableRowActionsPanel
+                                      actions={rowActions}
+                                    />
                                   </div>
-                                </TableCell>
-                              </TableRow>
+                                </TableRowMobileDetail>
+                              </Fragment>
                             );
                           })}
                         </TableBody>
@@ -592,8 +668,8 @@ export function ProjectCostControl({
                   <div
                     className={
                       advancedCostOptionsEnabled
-                        ? "grid grid-cols-3 gap-4 text-center"
-                        : "grid grid-cols-2 gap-4 text-center"
+                        ? "grid grid-cols-1 gap-4 text-center sm:grid-cols-2 lg:grid-cols-3"
+                        : "grid grid-cols-1 gap-4 text-center sm:grid-cols-2"
                     }
                   >
                     <div className="bg-secondary/30 rounded-lg p-4">
@@ -667,6 +743,15 @@ export function ProjectCostControl({
           setEditingBudgetLine(null);
           refetchBudgetLines();
         }}
+      />
+
+      <ConfirmDeleteDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+        title="¿Eliminar partida?"
+        description="Esta acción no se puede deshacer."
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
       />
     </div>
   );

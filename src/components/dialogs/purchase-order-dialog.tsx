@@ -668,7 +668,7 @@ export function PurchaseOrderDialog({
   try {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>
               {isEditing ? t("titleEdit") : t("titleNew")}
@@ -841,12 +841,12 @@ export function PurchaseOrderDialog({
               {/* Items Selection */}
               {(selectedSupplierId || (order?.supplier_id && isEditing)) && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <label className="text-sm font-medium">
                       {t("itemsToInclude")}{" "}
                       <span className="text-destructive ml-1">*</span>
                     </label>
-                    <div className="relative w-64">
+                    <div className="relative w-full sm:w-64">
                       <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
                       <Input
                         placeholder={t("searchItemsPlaceholder")}
