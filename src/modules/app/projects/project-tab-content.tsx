@@ -18,14 +18,18 @@ export function TabSectionHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-[48px] justify-between gap-4">
+    <div className="flex min-h-[48px] flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
       <div className="space-y-1">
         <h3 className="text-lg font-medium">{title}</h3>
         {subtitle && (
           <p className="text-muted-foreground text-sm">{subtitle}</p>
         )}
       </div>
-      {children != null && <div className="shrink-0">{children}</div>}
+      {children != null && (
+        <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:shrink-0 sm:justify-end">
+          {children}
+        </div>
+      )}
     </div>
   );
 }

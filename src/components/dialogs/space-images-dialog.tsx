@@ -110,7 +110,7 @@ export function SpaceImagesDialog({
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           {images.map((img) => (
             <button
               key={img.id}

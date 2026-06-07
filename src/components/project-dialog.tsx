@@ -531,7 +531,7 @@ export function ProjectDialog({
               />
 
               {/* Quinta línea: Fase y Estado */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="phase"
@@ -607,7 +607,7 @@ export function ProjectDialog({
               </div>
 
               {/* Quinta línea: Fechas */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="start_date"
@@ -646,7 +646,7 @@ export function ProjectDialog({
               </div>
 
               {/* Moneda e Impuesto (deshabilitados en plan BASE: solo perfil) */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="currency"

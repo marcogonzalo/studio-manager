@@ -21,7 +21,8 @@
     "settings": "Settings",
     "reportBug": "Report a bug",
     "signOut": "Sign out",
-    "accountMenuAria": "Account and settings"
+    "accountMenuAria": "Account and settings",
+    "more": "More"
   },
   "AppLayout": {
     "skipToContent": "Skip to content",
@@ -29,7 +30,10 @@
     "closeMenu": "Close menu",
     "navMenuTitle": "Navigation menu",
     "navMenuDescription": "Main application navigation",
-    "breadcrumbAria": "Breadcrumb"
+    "breadcrumbAria": "Breadcrumb",
+    "mobileNavAria": "Mobile navigation",
+    "projectDetail": "Project",
+    "profile": "Profile"
   },
   "AppSettingsBreadcrumb": {
     "settings": "Settings",

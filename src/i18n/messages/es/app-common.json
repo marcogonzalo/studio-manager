@@ -21,7 +21,8 @@
     "settings": "Configuración",
     "reportBug": "Reportar fallo",
     "signOut": "Cerrar sesión",
-    "accountMenuAria": "Cuenta y personalización"
+    "accountMenuAria": "Cuenta y personalización",
+    "more": "Más"
   },
   "AppLayout": {
     "skipToContent": "Saltar al contenido",
@@ -29,7 +30,10 @@
     "closeMenu": "Cerrar menú",
     "navMenuTitle": "Menú de Navegación",
     "navMenuDescription": "Navegación principal de la aplicación",
-    "breadcrumbAria": "Breadcrumb"
+    "breadcrumbAria": "Breadcrumb",
+    "mobileNavAria": "Navegación móvil",
+    "projectDetail": "Proyecto",
+    "profile": "Perfil"
   },
   "AppSettingsBreadcrumb": {
     "settings": "Configuración",

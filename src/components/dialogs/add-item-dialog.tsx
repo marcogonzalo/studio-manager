@@ -691,7 +691,7 @@ export function AddItemDialog({
                     )}
                   />
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <FormField
                       control={form.control}
                       name="supplier_id"
@@ -851,7 +851,7 @@ export function AddItemDialog({
 
             {/* Campos de project_item - siempre visibles */}
             <div className="space-y-4 border-t pt-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="space_id"
