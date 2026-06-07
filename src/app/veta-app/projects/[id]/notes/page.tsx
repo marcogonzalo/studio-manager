@@ -1,16 +1,7 @@
 "use client";
 
-import { use } from "react";
-import { ProjectNotes } from "@/modules/app/projects/project-notes";
-import { useProjectContext } from "../project-context";
+import { NotesTab } from "../_tabs/notes-tab";
 
-export default function NotesPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
-  const { isReadOnly } = useProjectContext();
-
-  return <ProjectNotes projectId={id} readOnly={isReadOnly} disabled={false} />;
+export default function NotesPage() {
+  return <NotesTab />;
 }

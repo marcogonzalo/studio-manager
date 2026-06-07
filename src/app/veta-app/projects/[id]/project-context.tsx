@@ -17,7 +17,7 @@ export type ProjectCapabilities = {
 };
 
 type ProjectContextType = {
-  project: Project | null;
+  project: Project;
   isReadOnly: boolean;
   capabilities: ProjectCapabilities;
 };

@@ -37,7 +37,7 @@ import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklis
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
 import { reportError } from "@/lib/utils";
-import { useProjectStatusLabel } from "@/lib/use-project-labels";
+import { usePhaseLabel } from "@/lib/use-project-labels";
 import { toast } from "sonner";
 import type { Project, Profile } from "@/types";
 
@@ -104,7 +104,7 @@ function getFirstName(fullName: string | null | undefined): string {
 
 export default function DashboardPage() {
   const t = useTranslations("DashboardPage");
-  const projectStatusLabel = useProjectStatusLabel();
+  const phaseLabel = usePhaseLabel();
   const { formatDate } = useAppFormatting();
   const { user } = useAuth();
   const { steps: onboardingSteps, allComplete: onboardingComplete } =
@@ -531,8 +531,8 @@ export default function DashboardPage() {
                                     </span>
                                   </div>
                                 )}
-                                <span className="shrink-0 capitalize">
-                                  {projectStatusLabel(project.status)}
+                                <span className="shrink-0">
+                                  {phaseLabel(project.phase)}
                                 </span>
                               </div>
                             </div>
