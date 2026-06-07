@@ -63,7 +63,7 @@ export function OnboardingStepModal({
             </div>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={handleOmitir}>
+            <Button variant="ghost" onClick={handleOmitir}>
               {t("later")}
             </Button>
             <Button
