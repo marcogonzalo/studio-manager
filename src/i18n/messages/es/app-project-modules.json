@@ -248,10 +248,10 @@
     "unknownSupplier": "Proveedor Desconocido",
     "status": {
       "draft": "Borrador",
-      "sent": "Enviada",
-      "confirmed": "Confirmada",
-      "received": "Recibida",
-      "cancelled": "Cancelada"
+      "sent": "Enviado",
+      "confirmed": "Confirmado",
+      "received": "Recibido",
+      "cancelled": "Cancelado"
     },
     "ref": "Ref:",
     "requestDate": "Fecha de solicitud:",
