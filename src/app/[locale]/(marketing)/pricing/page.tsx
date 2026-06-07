@@ -129,8 +129,11 @@ export default async function PricingPage({
   const pricingUrl = `${baseUrl}${locale === "es" ? "/precios" : "/en/pricing"}`;
   return (
     <>
-      <JsonLd data={faqPageJsonLd(faqs, pricingUrl)} />
-      <JsonLd data={softwareApplicationPricingJsonLd(pricingUrl)} />
+      <JsonLd id="json-ld-faq-pricing" data={faqPageJsonLd(faqs, pricingUrl)} />
+      <JsonLd
+        id="json-ld-pricing-software"
+        data={softwareApplicationPricingJsonLd(pricingUrl)}
+      />
 
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-32">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />

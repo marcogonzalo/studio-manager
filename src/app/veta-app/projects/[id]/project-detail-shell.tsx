@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import type { Project } from "@/types";
 import { appPath } from "@/lib/app-paths";
-import { getPhaseLabel, getProjectStatusLabel } from "@/lib/utils";
+import { usePhaseLabel, useProjectStatusLabel } from "@/lib/use-project-labels";
 import { ProjectDialog } from "@/components/project-dialog";
 import { ProjectDetailModal } from "@/components/project-detail-modal";
 import {
@@ -41,6 +41,8 @@ function ProjectDetailShellContent({
   projectId: string;
 }) {
   const t = useTranslations("ProjectDetailPage");
+  const phaseLabel = usePhaseLabel();
+  const projectStatusLabel = useProjectStatusLabel();
   const pathname = usePathname();
   const router = useRouter();
   const id = projectId;
@@ -301,7 +303,7 @@ function ProjectDetailShellContent({
   return (
     <ProjectContext.Provider value={{ project, isReadOnly, capabilities }}>
       <div className="space-y-6">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
             <div className="w-full min-w-0 self-start md:w-auto md:max-w-full">
               <Select value={id} onValueChange={handleProjectSwitch}>
@@ -330,7 +332,7 @@ function ProjectDetailShellContent({
                       <span className="font-medium">{p.name}</span>
                       {p.status !== "active" && (
                         <span className="text-muted-foreground ml-2 text-xs">
-                          {getProjectStatusLabel(p.status)}
+                          {projectStatusLabel(p.status)}
                         </span>
                       )}
                     </SelectItem>
@@ -339,7 +341,7 @@ function ProjectDetailShellContent({
               </Select>
             </div>
             <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize">
-              {getProjectStatusLabel(project.status)}
+              {projectStatusLabel(project.status)}
             </span>
             {isReadOnly && (
               <TooltipProvider>
@@ -357,11 +359,11 @@ function ProjectDetailShellContent({
             )}
             {project.phase && (
               <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-                {getPhaseLabel(project.phase)}
+                {phaseLabel(project.phase)}
               </span>
             )}
           </div>
-          <div className="flex w-full justify-center gap-2">
+          <div className="flex w-full shrink-0 justify-center gap-2 sm:w-auto sm:justify-end">
             <Button
               variant="secondary"
               onClick={() => setIsShareDialogOpen(true)}
@@ -388,9 +390,16 @@ function ProjectDetailShellContent({
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTabAndUrl}>
-          <div className="md:hidden">
+          <div className="bg-muted dark:bg-sidebar/70 dark:border-border/30 rounded-lg border p-1 md:hidden dark:border">
             <Select value={activeTab} onValueChange={setActiveTabAndUrl}>
-              <SelectTrigger aria-label={t("tabsSelectAria")}>
+              <SelectTrigger
+                aria-label={t("tabsSelectAria")}
+                className={cn(
+                  "text-foreground bg-background dark:bg-card dark:ring-border/80 h-9 w-full rounded-md border-0 px-3 py-1 text-lg font-medium shadow dark:ring-1",
+                  "focus:ring-0 focus-visible:ring-0",
+                  "[&>span]:line-clamp-1 [&>svg]:h-5 [&>svg]:w-5 [&>svg]:shrink-0 [&>svg]:opacity-60"
+                )}
+              >
                 <SelectValue>{activeTabLabel}</SelectValue>
               </SelectTrigger>
               <SelectContent>

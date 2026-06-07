@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
-import { CURRENCIES, getProjectStatusLabel } from "@/lib/utils";
+import { CURRENCIES } from "@/lib/utils";
+import { useProjectStatusLabel } from "@/lib/use-project-labels";
 import type { Project } from "@/types";
 import { Pencil } from "lucide-react";
 
@@ -35,6 +36,7 @@ export function ProjectDetailModal({
   const tPhases = useTranslations("Phases");
   const tVP = useTranslations("ViewProject");
   const t = useTranslations("ProjectDetailModal");
+  const projectStatusLabel = useProjectStatusLabel();
 
   if (!project) return null;
 
@@ -95,7 +97,7 @@ export function ProjectDetailModal({
           <div>
             <dt className="text-muted-foreground text-sm">{t("status")}</dt>
             <dd className="font-medium">
-              {getProjectStatusLabel(project.status)}
+              {projectStatusLabel(project.status)}
             </dd>
           </div>
           <div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ export function ProjectSpaces({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
+  const t = useTranslations("ProjectModuleSpaces");
   const addRendersAndDocumentsEnabled = usePlanCapability("documents");
   const canAddRenders = !readOnly && !disabled && addRendersAndDocumentsEnabled;
   const supabase = getSupabaseClient();
@@ -100,13 +102,13 @@ export function ProjectSpaces({
     <TooltipProvider>
       <ProjectTabContent
         disabled={disabled}
-        disabledMessage="Los espacios no están incluidos en tu plan actual."
+        disabledMessage={t("disabledMessage")}
       >
         <div className="space-y-6">
-          <TabSectionHeader title="Espacios del Proyecto">
+          <TabSectionHeader title={t("title")}>
             {!readOnly && (
               <Button onClick={() => setIsDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Nuevo Espacio
+                <Plus className="mr-2 h-4 w-4" /> {t("newSpace")}
               </Button>
             )}
           </TabSectionHeader>
@@ -149,7 +151,7 @@ export function ProjectSpaces({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent variant="tertiary">
-                        Productos del espacio
+                        {t("spaceProductsTooltip")}
                       </TooltipContent>
                     </Tooltip>
                     <Tooltip>
@@ -166,18 +168,18 @@ export function ProjectSpaces({
                       <TooltipContent variant="tertiary">
                         {!canAddRenders ? (
                           <p>
-                            No disponible en tu plan.{" "}
+                            {t("rendersNotAvailable")}{" "}
                             <Link
                               href="/pricing"
                               className="underline"
                               onClick={(e) => e.stopPropagation()}
                             >
-                              Mejora tu plan
+                              {t("upgradePlan")}
                             </Link>{" "}
-                            para subir renders.
+                            {t("upgradeRendersSuffix")}
                           </p>
                         ) : (
-                          "Visualizaciones del espacio"
+                          t("spaceRendersTooltip")
                         )}
                       </TooltipContent>
                     </Tooltip>
@@ -187,7 +189,7 @@ export function ProjectSpaces({
             })}
             {spaces.length === 0 && (
               <div className="text-muted-foreground col-span-full rounded-md border border-dashed py-8 text-center">
-                No hay espacios registrados.
+                {t("empty")}
               </div>
             )}
           </div>

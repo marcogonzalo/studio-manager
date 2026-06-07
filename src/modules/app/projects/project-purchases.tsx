@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,14 +56,6 @@ interface PurchaseOrder {
   }[];
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Borrador",
-  sent: "Enviada",
-  confirmed: "Confirmada",
-  received: "Recibida",
-  cancelled: "Cancelada",
-};
-
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-foreground",
   sent: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
@@ -82,7 +75,17 @@ export function ProjectPurchases({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
+  const t = useTranslations("ProjectModulePurchases");
+  const ts = useTranslations("ProjectModuleShared");
   const supabase = getSupabaseClient();
+
+  const statusLabels: Record<string, string> = {
+    draft: t("status.draft"),
+    sent: t("status.sent"),
+    confirmed: t("status.confirmed"),
+    received: t("status.received"),
+    cancelled: t("status.cancelled"),
+  };
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -183,11 +186,11 @@ export function ProjectPurchases({
             duration: 5000,
           });
         } else {
-          toast.error("Error al eliminar la orden");
+          toast.error(t("toastDeleteError"));
         }
         return;
       }
-      toast.success("Orden eliminada");
+      toast.success(t("toastDeleted"));
       setDeleteTargetId(null);
       fetchOrders();
     } finally {
@@ -214,13 +217,13 @@ export function ProjectPurchases({
   return (
     <ProjectTabContent
       disabled={disabled}
-      disabledMessage="Las órdenes de compra no están incluidas en tu plan actual."
+      disabledMessage={t("disabledMessage")}
     >
       <div className="space-y-6">
-        <TabSectionHeader title="Órdenes de compra y fabricación">
+        <TabSectionHeader title={t("title")}>
           {!readOnly && (
             <Button onClick={handleCreateNew} disabled={loading}>
-              <Plus className="mr-2 h-4 w-4" /> Nueva Orden
+              <Plus className="mr-2 h-4 w-4" /> {t("newOrder")}
             </Button>
           )}
         </TabSectionHeader>
@@ -229,12 +232,10 @@ export function ProjectPurchases({
           <Card>
             <CardContent className="py-12 text-center">
               <ShoppingBag className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-              <p className="text-muted-foreground mb-4">
-                No hay órdenes de compra.
-              </p>
+              <p className="text-muted-foreground mb-4">{t("empty")}</p>
               {!readOnly && (
                 <Button onClick={handleCreateNew} variant="outline">
-                  <Plus className="mr-2 h-4 w-4" /> Crear Primera Orden
+                  <Plus className="mr-2 h-4 w-4" /> {t("createFirstOrder")}
                 </Button>
               )}
             </CardContent>
@@ -250,24 +251,24 @@ export function ProjectPurchases({
                       <div className="flex-1">
                         <div className="mb-2 flex items-center gap-3">
                           <CardTitle className="text-lg">
-                            {po.supplier?.name || "Proveedor Desconocido"}
+                            {po.supplier?.name || t("unknownSupplier")}
                           </CardTitle>
                           <span
                             className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_COLORS[po.status] || STATUS_COLORS.draft}`}
                           >
-                            {STATUS_LABELS[po.status] || po.status}
+                            {statusLabels[po.status] || po.status}
                           </span>
                         </div>
                         <div className="text-muted-foreground text-sm">
                           <div className="flex flex-wrap justify-between gap-x-4 gap-y-1">
                             <span>
-                              Ref:{" "}
+                              {t("ref")}{" "}
                               <span className="font-medium">
                                 {po.order_number}
                               </span>
                             </span>
                             <span>
-                              Fecha de solicitud:{" "}
+                              {t("requestDate")}{" "}
                               <span className="font-medium">
                                 {format(
                                   new Date(po.order_date || po.created_at),
@@ -277,7 +278,7 @@ export function ProjectPurchases({
                             </span>
                             {po.delivery_deadline && !po.delivery_date && (
                               <span>
-                                Plazo de Entrega:{" "}
+                                {t("deliveryDeadline")}{" "}
                                 <span className="font-medium">
                                   {po.delivery_deadline}
                                 </span>
@@ -285,7 +286,7 @@ export function ProjectPurchases({
                             )}
                             {po.delivery_date && (
                               <span>
-                                Fecha de Entrega:{" "}
+                                {t("deliveryDate")}{" "}
                                 <span className="font-medium">
                                   {format(
                                     new Date(po.delivery_date),
@@ -306,7 +307,7 @@ export function ProjectPurchases({
                             <Button
                               variant="ghost"
                               size="icon"
-                              aria-label="Acciones de la compra"
+                              aria-label={t("purchaseActionsAria")}
                             >
                               <MoreVertical className="h-4 w-4" />
                             </Button>
@@ -317,14 +318,14 @@ export function ProjectPurchases({
                               disabled={po.status === "cancelled"}
                             >
                               <Pencil className="mr-2 h-4 w-4" />
-                              Editar
+                              {ts("edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => setDeleteTargetId(po.id)}
                               className="text-destructive"
                             >
                               <Trash2 className="mr-2 h-4 w-4" />
-                              Eliminar
+                              {ts("delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -337,17 +338,19 @@ export function ProjectPurchases({
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead>Ítem</TableHead>
+                              <TableHead>{ts("colItem")}</TableHead>
                               <TableHead className="text-right">
-                                Total
+                                {ts("colTotal")}
                               </TableHead>
                               <TableHeadMd className="text-right">
-                                Cantidad
+                                {ts("colQuantity")}
                               </TableHeadMd>
                               <TableHeadMd className="text-right">
-                                Costo Unit.
+                                {ts("colUnitCost")}
                               </TableHeadMd>
-                              <TableHeadExpandPlaceholder srLabel="Expandir fila" />
+                              <TableHeadExpandPlaceholder
+                                srLabel={ts("expandRow")}
+                              />
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -374,8 +377,8 @@ export function ProjectPurchases({
                                     <TableRowExpandTrigger
                                       expanded={expanded}
                                       onToggle={() => toggleRow(item.id)}
-                                      expandLabel="Ver detalles del ítem"
-                                      collapseLabel="Ocultar detalles del ítem"
+                                      expandLabel={t("expandItemDetails")}
+                                      collapseLabel={t("collapseItemDetails")}
                                     />
                                   </TableRow>
                                   <TableRowMobileDetail
@@ -384,11 +387,11 @@ export function ProjectPurchases({
                                   >
                                     <div className="space-y-2">
                                       <MobileDetailField
-                                        label="Cantidad"
+                                        label={ts("colQuantity")}
                                         value={item.quantity}
                                       />
                                       <MobileDetailField
-                                        label="Costo Unit."
+                                        label={ts("colUnitCost")}
                                         value={`$${(item.unit_cost || 0).toFixed(2)}`}
                                       />
                                     </div>
@@ -398,7 +401,7 @@ export function ProjectPurchases({
                             })}
                             <TableRow className="bg-secondary/30 font-bold md:hidden">
                               <TableCell className="text-right">
-                                Total de la Orden:
+                                {t("orderTotal")}
                               </TableCell>
                               <TableCell className="text-right tabular-nums">
                                 ${total.toFixed(2)}
@@ -407,7 +410,7 @@ export function ProjectPurchases({
                             </TableRow>
                             <TableRow className="bg-secondary/30 hidden font-bold md:table-row">
                               <TableCell className="text-right">
-                                Total de la Orden:
+                                {t("orderTotal")}
                               </TableCell>
                               <TableCell className="text-right tabular-nums">
                                 ${total.toFixed(2)}
@@ -420,7 +423,7 @@ export function ProjectPurchases({
                       </div>
                     ) : (
                       <div className="text-muted-foreground py-4 text-center text-sm">
-                        No hay ítems en esta orden
+                        {t("noItemsInOrder")}
                       </div>
                     )}
                   </CardContent>
@@ -465,8 +468,8 @@ export function ProjectPurchases({
         <ConfirmDeleteDialog
           open={deleteTargetId !== null}
           onOpenChange={(open) => !open && setDeleteTargetId(null)}
-          title="¿Eliminar esta orden de compra?"
-          description="Los ítems asociados volverán a estado pendiente, a menos que estén en otra orden activa. Esta acción no se puede deshacer."
+          title={t("confirmDelete")}
+          description={t("confirmDeleteDescription")}
           onConfirm={handleConfirmDelete}
           loading={deleteLoading}
         />

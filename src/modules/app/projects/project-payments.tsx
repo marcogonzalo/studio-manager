@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,17 +41,10 @@ import {
 import type { Payment, PaymentType } from "@/types";
 import {
   getDemoAccountMessage,
-  getPhaseLabel,
   formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
+import { usePhaseLabel } from "@/lib/use-project-labels";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
-
-const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
-  fees: "Honorarios",
-  purchase_provision: "Provisión de Compras",
-  additional_cost: "Coste Adicional",
-  other: "Otro",
-};
 
 export function ProjectPayments({
   projectId,
@@ -61,7 +55,12 @@ export function ProjectPayments({
   readOnly?: boolean;
   disabled?: boolean;
 }) {
+  const t = useTranslations("ProjectModulePayments");
+  const ts = useTranslations("ProjectModuleShared");
+  const phaseLabel = usePhaseLabel();
   const supabase = getSupabaseClient();
+
+  const paymentTypeLabel = (type: PaymentType) => t(`paymentType.${type}`);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [projectCurrency, setProjectCurrency] = useState<string>("EUR");
   const [budgetGrandTotal, setBudgetGrandTotal] = useState<number>(0);
@@ -99,7 +98,7 @@ export function ProjectPayments({
     ]);
     if (projectData?.currency) setProjectCurrency(projectData.currency);
     if (error) {
-      toast.error("Error al cargar pagos", { id: "payments-load" });
+      toast.error(t("toastLoadError"), { id: "payments-load" });
     } else {
       setPayments(data || []);
     }
@@ -148,11 +147,11 @@ export function ProjectPayments({
             duration: 5000,
           });
         } else {
-          toast.error("Error al eliminar pago");
+          toast.error(t("toastDeleteError"));
         }
         return;
       }
-      toast.success("Pago eliminado");
+      toast.success(t("toastDeleted"));
       setDeleteTargetId(null);
       fetchPayments();
     } finally {
@@ -202,28 +201,32 @@ export function ProjectPayments({
   return (
     <ProjectTabContent
       disabled={disabled}
-      disabledMessage="La gestión de pagos no está incluida en tu plan actual."
+      disabledMessage={t("disabledMessage")}
     >
       <div className="space-y-6">
-        <TabSectionHeader title="Pagos del Proyecto">
+        <TabSectionHeader title={t("title")}>
           <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row">
             <Select value={filterType} onValueChange={setFilterType}>
               <SelectTrigger className="w-full min-w-0 sm:w-[200px]">
-                <SelectValue placeholder="Filtrar por tipo" />
+                <SelectValue placeholder={t("filterPlaceholder")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los tipos</SelectItem>
-                <SelectItem value="fees">Honorarios</SelectItem>
+                <SelectItem value="all">{t("filterAll")}</SelectItem>
+                <SelectItem value="fees">{paymentTypeLabel("fees")}</SelectItem>
                 <SelectItem value="purchase_provision">
-                  Provisión de Compras
+                  {paymentTypeLabel("purchase_provision")}
                 </SelectItem>
-                <SelectItem value="additional_cost">Coste Adicional</SelectItem>
-                <SelectItem value="other">Otro</SelectItem>
+                <SelectItem value="additional_cost">
+                  {paymentTypeLabel("additional_cost")}
+                </SelectItem>
+                <SelectItem value="other">
+                  {paymentTypeLabel("other")}
+                </SelectItem>
               </SelectContent>
             </Select>
             {!readOnly && (
               <Button onClick={handleCreateNew} className="w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" /> Nuevo Pago
+                <Plus className="mr-2 h-4 w-4" /> {t("newPayment")}
               </Button>
             )}
           </div>
@@ -234,13 +237,17 @@ export function ProjectPayments({
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="bg-secondary/30 rounded-lg p-3">
-                <p className="text-muted-foreground text-xs">Total pendiente</p>
+                <p className="text-muted-foreground text-xs">
+                  {t("totalPending")}
+                </p>
                 <p className="text-xl font-bold">
                   {formatCurrencyUtil(totalPending, projectCurrency)}
                 </p>
               </div>
               <div className="bg-secondary/30 rounded-lg p-3">
-                <p className="text-muted-foreground text-xs">Total recibido</p>
+                <p className="text-muted-foreground text-xs">
+                  {t("totalReceived")}
+                </p>
                 <p className="text-xl font-bold">
                   {formatCurrencyUtil(totalReceived, projectCurrency)}
                 </p>
@@ -253,7 +260,7 @@ export function ProjectPayments({
                 aria-valuenow={paidPercentage}
                 aria-valuemin={0}
                 aria-valuemax={100}
-                aria-label="Porcentaje cobrado del presupuesto"
+                aria-label={t("paidPercentageAria")}
               >
                 <div
                   className="bg-primary h-full rounded-full transition-all duration-300"
@@ -271,12 +278,10 @@ export function ProjectPayments({
           <Card>
             <CardContent className="py-12 text-center">
               <Wallet className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-              <p className="text-muted-foreground mb-4">
-                No hay pagos registrados.
-              </p>
+              <p className="text-muted-foreground mb-4">{t("empty")}</p>
               {!readOnly && (
                 <Button onClick={handleCreateNew} variant="outline">
-                  <Plus className="mr-2 h-4 w-4" /> Registrar Primer Pago
+                  <Plus className="mr-2 h-4 w-4" /> {t("registerFirstPayment")}
                 </Button>
               )}
             </CardContent>
@@ -286,9 +291,9 @@ export function ProjectPayments({
             <Card>
               <CardHeader>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <CardTitle>Historial de Pagos</CardTitle>
+                  <CardTitle>{t("historyTitle")}</CardTitle>
                   <div className="text-muted-foreground text-sm">
-                    Total:{" "}
+                    {ts("totalLabel")}{" "}
                     <span className="font-semibold">
                       {formatCurrencyUtil(totalAmount, projectCurrency)}
                     </span>
@@ -300,16 +305,18 @@ export function ProjectPayments({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Fecha</TableHead>
-                        <TableHead>Tipo</TableHead>
-                        <TableHead>Monto</TableHead>
-                        <TableHeadMd>Referencia</TableHeadMd>
-                        <TableHeadMd>Fase</TableHeadMd>
-                        <TableHeadMd>Descripción</TableHeadMd>
+                        <TableHead>{ts("colDate")}</TableHead>
+                        <TableHead>{ts("colType")}</TableHead>
+                        <TableHead className="text-right">
+                          {ts("colAmount")}
+                        </TableHead>
+                        <TableHeadMd>{ts("colReference")}</TableHeadMd>
+                        <TableHeadMd>{ts("colPhase")}</TableHeadMd>
+                        <TableHeadMd>{ts("colDescription")}</TableHeadMd>
                         <TableHeadMd className="text-right">
-                          Acciones
+                          {ts("colActions")}
                         </TableHeadMd>
-                        <TableHeadExpandPlaceholder srLabel="Expandir fila" />
+                        <TableHeadExpandPlaceholder srLabel={ts("expandRow")} />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -320,13 +327,13 @@ export function ProjectPayments({
                           : [
                               {
                                 id: "edit",
-                                label: "Editar",
+                                label: ts("edit"),
                                 icon: Pencil,
                                 onClick: () => handleEdit(payment),
                               },
                               {
                                 id: "delete",
-                                label: "Eliminar",
+                                label: ts("delete"),
                                 icon: Trash2,
                                 onClick: () => setDeleteTargetId(payment.id),
                                 destructive: true,
@@ -335,7 +342,7 @@ export function ProjectPayments({
 
                         const typeBadge = (
                           <span className="bg-primary/10 text-primary inline-flex max-w-[7rem] truncate rounded-full px-2 py-1 text-xs sm:max-w-none">
-                            {PAYMENT_TYPE_LABELS[payment.payment_type]}
+                            {paymentTypeLabel(payment.payment_type)}
                           </span>
                         );
 
@@ -349,7 +356,7 @@ export function ProjectPayments({
                                 )}
                               </TableCell>
                               <TableCell>{typeBadge}</TableCell>
-                              <TableCell className="font-semibold tabular-nums">
+                              <TableCell className="text-right font-semibold tabular-nums">
                                 {formatCurrencyUtil(
                                   Number(payment.amount),
                                   projectCurrency
@@ -360,7 +367,7 @@ export function ProjectPayments({
                               </TableCellMd>
                               <TableCellMd className="text-muted-foreground">
                                 {payment.phase
-                                  ? getPhaseLabel(payment.phase)
+                                  ? phaseLabel(payment.phase)
                                   : "-"}
                               </TableCellMd>
                               <TableCellMd className="text-muted-foreground max-w-xs truncate">
@@ -369,14 +376,14 @@ export function ProjectPayments({
                               <TableCellMd className="text-right">
                                 <ExpandableRowActionsMenu
                                   actions={rowActions}
-                                  menuAriaLabel="Acciones del pago"
+                                  menuAriaLabel={t("paymentActionsAria")}
                                 />
                               </TableCellMd>
                               <TableRowExpandTrigger
                                 expanded={expanded}
                                 onToggle={() => toggleRow(payment.id)}
-                                expandLabel="Ver detalles del pago"
-                                collapseLabel="Ocultar detalles del pago"
+                                expandLabel={t("expandPaymentDetails")}
+                                collapseLabel={t("collapsePaymentDetails")}
                               />
                             </TableRow>
                             <TableRowMobileDetail
@@ -385,19 +392,19 @@ export function ProjectPayments({
                             >
                               <div className="space-y-2">
                                 <MobileDetailField
-                                  label="Referencia"
+                                  label={ts("colReference")}
                                   value={payment.reference_number || "-"}
                                 />
                                 <MobileDetailField
-                                  label="Fase"
+                                  label={ts("colPhase")}
                                   value={
                                     payment.phase
-                                      ? getPhaseLabel(payment.phase)
+                                      ? phaseLabel(payment.phase)
                                       : "-"
                                   }
                                 />
                                 <MobileDetailField
-                                  label="Descripción"
+                                  label={ts("colDescription")}
                                   value={payment.description || "-"}
                                 />
                                 <ExpandableRowActionsPanel
@@ -428,8 +435,8 @@ export function ProjectPayments({
         <ConfirmDeleteDialog
           open={deleteTargetId !== null}
           onOpenChange={(open) => !open && setDeleteTargetId(null)}
-          title="¿Eliminar este pago?"
-          description="Esta acción no se puede deshacer."
+          title={t("confirmDelete")}
+          description={ts("confirmDeleteDescription")}
           onConfirm={handleConfirmDelete}
           loading={deleteLoading}
         />

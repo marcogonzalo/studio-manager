@@ -25,7 +25,7 @@ description: Veta UI conventions — Tailwind v4, Shadcn/Radix, next-themes, Fra
 - **Paired choices** (Cancel/Confirm, Accept/Decline): always **side-by-side** via `DialogFooter` / `AlertDialogFooter` / `SheetFooter` — never stack two full-width buttons.
 - **Inside cards** on tablet/desktop: avoid `w-full`; use `w-full sm:w-auto` or auto width.
 - **Tertiary actions** (e.g. “Later”, “Customize”): use `variant="link"` or `ghost`, not a third full-width bar.
-- Dialog/sheet footers use a horizontal row with `[&>*]:w-auto` so actions do not stretch on any breakpoint.
+- Dialog/sheet footers use a horizontal row with `flex-nowrap` and `[&>*]:w-auto` so Cancel/Confirm stay on one line and buttons shrink instead of wrapping.
 - **Tab section actions** (`TabSectionHeader` children): right-align at all breakpoints (`justify-end`), including below `sm`.
 - **Icon + label buttons:** icon-only below `sm` only when the button is full-width and space is tight; compact/auto-width buttons show icon + label at every breakpoint (`mr-2` on icon). Keep `aria-label` when the visible label is hidden.
 

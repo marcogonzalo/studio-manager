@@ -51,6 +51,15 @@
     "construction": "Construction",
     "delivery": "Delivery"
   },
+  "ProjectTabContent": {
+    "disabledMessageDefault": "This section is not included in your current plan."
+  },
+  "ProjectStatus": {
+    "active": "Active",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "draft": "Draft"
+  },
   "ProjectDetailModal": {
     "title": "Project details",
     "description": "Project information. Use Edit to modify.",

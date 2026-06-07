@@ -23,6 +23,10 @@
     "quickAccessDescription": "Frequent actions",
     "registerClient": "Register Client",
     "addNewContact": "Add new contact",
+    "createNewProject": "Create new project",
+    "createNewProjectDescription": "Start a new design project",
+    "registerSupplier": "Register supplier",
+    "registerNewSupplierDescription": "Add a new supplier",
     "addProduct": "Add Product",
     "updateCatalog": "Update catalog"
   },

@@ -141,7 +141,7 @@ export default async function HomePage({
 
   return (
     <>
-      <JsonLd data={faqPageJsonLd(homeFaqs, homeUrl)} />
+      <JsonLd id="json-ld-faq-home" data={faqPageJsonLd(homeFaqs, homeUrl)} />
 
       {/* Hero Section – momento hero: badge → título → subtítulo → CTAs con delays escalonados */}
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-28">

@@ -1,12 +1,25 @@
+import Script from "next/script";
+import type { ComponentProps } from "react";
 import { getSiteUrl } from "@/lib/site-url";
 
 /**
- * Renders JSON-LD structured data for SEO/GEO (Schema.org).
+ * JSON-LD for SEO/GEO (Schema.org). Uses next/script so React never tries to
+ * reconcile a raw <script> during client render.
  */
-export function JsonLd<T extends object>({ data }: { data: T }) {
+export function JsonLd<T extends object>({
+  data,
+  id,
+  strategy = "afterInteractive",
+}: {
+  data: T;
+  id: string;
+  strategy?: ComponentProps<typeof Script>["strategy"];
+}) {
   return (
-    <script
+    <Script
+      id={id}
       type="application/ld+json"
+      strategy={strategy}
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
   );

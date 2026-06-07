@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
   Dialog,
   DialogContent,
@@ -13,34 +14,12 @@ import { Printer } from "lucide-react";
 
 export type BudgetPrintOption = "full" | "products" | "lines";
 
-const OPTIONS: {
-  value: BudgetPrintOption;
-  label: string;
-  description: string;
-}[] = [
-  {
-    value: "full",
-    label: "Presupuesto completo",
-    description: "Productos y partidas de presupuesto",
-  },
-  {
-    value: "products",
-    label: "Solo productos",
-    description: "Solo mobiliario y productos por ubicación",
-  },
-  {
-    value: "lines",
-    label: "Solo partidas",
-    description: "Solo servicios y partidas de presupuesto",
-  },
-];
-
 interface BudgetPrintOptionsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (option: BudgetPrintOption) => void;
   isGenerating?: boolean;
-  /** Si false, solo se permite "Presupuesto completo"; "Solo productos" y "Solo partidas" quedan deshabilitados. */
+  /** Si false, solo se permite exportación completa; productos y partidas quedan deshabilitados. */
   printFilterOptionsEnabled?: boolean;
 }
 
@@ -51,7 +30,30 @@ export function BudgetPrintOptionsDialog({
   isGenerating = false,
   printFilterOptionsEnabled = true,
 }: BudgetPrintOptionsDialogProps) {
+  const t = useTranslations("DialogBudgetPrintOptions");
   const [selected, setSelected] = useState<BudgetPrintOption>("full");
+
+  const options: {
+    value: BudgetPrintOption;
+    label: string;
+    description: string;
+  }[] = [
+    {
+      value: "full",
+      label: t("optionFullLabel"),
+      description: t("optionFullDescription"),
+    },
+    {
+      value: "products",
+      label: t("optionProductsLabel"),
+      description: t("optionProductsDescription"),
+    },
+    {
+      value: "lines",
+      label: t("optionLinesLabel"),
+      description: t("optionLinesDescription"),
+    },
+  ];
 
   useEffect(() => {
     if (open && !printFilterOptionsEnabled) setSelected("full");
@@ -68,10 +70,10 @@ export function BudgetPrintOptionsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Opciones al exportar presupuesto</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3 py-2">
-          {OPTIONS.map((opt) => {
+          {options.map((opt) => {
             const isDisabled =
               !printFilterOptionsEnabled &&
               (opt.value === "products" || opt.value === "lines");
@@ -100,7 +102,7 @@ export function BudgetPrintOptionsDialog({
                   </p>
                   {isDisabled && (
                     <p className="text-muted-foreground mt-1 text-xs">
-                      Mejora tu plan para exportar por productos o partidas.
+                      {t("upgradeHint")}
                     </p>
                   )}
                 </div>
@@ -114,11 +116,11 @@ export function BudgetPrintOptionsDialog({
             onClick={() => onOpenChange(false)}
             disabled={isGenerating}
           >
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button onClick={handleConfirm} disabled={isGenerating}>
             <Printer className="mr-2 h-4 w-4" />
-            {isGenerating ? "Generando..." : "Generar PDF"}
+            {isGenerating ? t("generating") : t("generatePdf")}
           </Button>
         </DialogFooter>
       </DialogContent>

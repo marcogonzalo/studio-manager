@@ -44,7 +44,7 @@ import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { appPath } from "@/lib/app-paths";
-import { getProjectStatusLabel } from "@/lib/utils";
+import { useProjectStatusLabel } from "@/lib/use-project-labels";
 
 import type { Project } from "@/types";
 
@@ -71,6 +71,7 @@ type SortOption = "status" | "created_at" | "end_date";
 
 export default function ProjectsPage() {
   const t = useTranslations("ProjectsPage");
+  const projectStatusLabel = useProjectStatusLabel();
   const { formatDate } = useAppFormatting();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -313,7 +314,7 @@ export default function ProjectsPage() {
                             : "text-foreground font-medium"
                         }
                       >
-                        {getProjectStatusLabel(project.status)}
+                        {projectStatusLabel(project.status)}
                       </span>
                     </div>
                   </div>

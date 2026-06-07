@@ -1,22 +1,7 @@
 "use client";
 
-import { use } from "react";
-import { ProjectPayments } from "@/modules/app/projects/project-payments";
-import { useProjectContext } from "../project-context";
+import { PaymentsTab } from "../_tabs/payments-tab";
 
-export default function PaymentsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
-  const { isReadOnly, capabilities } = useProjectContext();
-
-  return (
-    <ProjectPayments
-      projectId={id}
-      readOnly={isReadOnly}
-      disabled={capabilities.paymentsDisabled}
-    />
-  );
+export default function PaymentsPage() {
+  return <PaymentsTab />;
 }
