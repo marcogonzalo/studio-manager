@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,20 +38,22 @@ import { toast } from "sonner";
 import { getDemoAccountMessage } from "@/lib/utils";
 import type { AdditionalCost } from "@/types";
 
-const COST_TYPE_LABELS: Record<string, string> = {
-  shipping: "Envío",
-  packaging: "Embalaje",
-  installation: "Instalación",
-  assembly: "Montaje",
-  transport: "Transporte",
-  insurance: "Seguro",
-  customs: "Aduanas",
-  storage: "Almacenamiento",
-  handling: "Manejo",
-  other: "Otro",
-};
+const COST_TYPE_VALUES = [
+  "shipping",
+  "packaging",
+  "installation",
+  "assembly",
+  "transport",
+  "insurance",
+  "customs",
+  "storage",
+  "handling",
+  "other",
+] as const;
 
 export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
+  const t = useTranslations("ProjectModuleAdditionalCosts");
+  const ts = useTranslations("ProjectModuleShared");
   const supabase = getSupabaseClient();
   const [costs, setCosts] = useState<AdditionalCost[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -61,6 +64,11 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
   const { toggleRow, isExpanded } = useExpandableTableRow();
   const mobileVisibleColumnCount = 3;
 
+  const costTypeLabel = (type: string) =>
+    (COST_TYPE_VALUES as readonly string[]).includes(type)
+      ? t(`costType.${type}` as "costType.shipping")
+      : type;
+
   const fetchCosts = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -70,7 +78,7 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
       .order("created_at", { ascending: false });
 
     if (error) {
-      toast.error("Error al cargar costes adicionales", {
+      toast.error(t("toastLoadError"), {
         id: "additional-costs-load",
       });
     } else {
@@ -100,11 +108,11 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
             duration: 5000,
           });
         } else {
-          toast.error("Error al eliminar coste adicional");
+          toast.error(t("toastDeleteError"));
         }
         return;
       }
-      toast.success("Coste adicional eliminado");
+      toast.success(t("toastDeleted"));
       setDeleteTargetId(null);
       fetchCosts();
     } finally {
@@ -129,7 +137,6 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
     }
   };
 
-  // Group costs by type
   const costsByType = costs.reduce(
     (acc, cost) => {
       if (!acc[cost.cost_type]) {
@@ -147,16 +154,16 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <h3 className="text-lg font-medium">Costes Adicionales</h3>
+          <h3 className="text-lg font-medium">{t("title")}</h3>
           <div className="text-muted-foreground text-sm">
-            Total: ${totalAmount.toFixed(2)}
+            {t("total")} ${totalAmount.toFixed(2)}
           </div>
         </div>
         <Button
           onClick={handleAddNew}
           className="w-full sm:w-auto print:hidden"
         >
-          <Plus className="mr-2 h-4 w-4" /> Añadir Coste
+          <Plus className="mr-2 h-4 w-4" /> {t("addCost")}
         </Button>
       </div>
 
@@ -170,17 +177,14 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
         <Card>
           <CardContent className="py-12 text-center">
             <DollarSign className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-            <p className="text-muted-foreground">
-              No hay costes adicionales registrados.
-            </p>
+            <p className="text-muted-foreground">{t("empty")}</p>
             <Button onClick={handleAddNew} className="mt-4">
-              <Plus className="mr-2 h-4 w-4" /> Añadir Primer Coste
+              <Plus className="mr-2 h-4 w-4" /> {t("addFirstCost")}
             </Button>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-6">
-          {/* Grouped view by cost type */}
           {Object.entries(costsByType).map(([type, typeCosts]) => {
             const typeTotal = typeCosts.reduce(
               (sum, cost) => sum + Number(cost.amount),
@@ -192,12 +196,11 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                   <div className="flex items-center justify-between">
                     <div>
                       <CardTitle className="text-base">
-                        {COST_TYPE_LABELS[type] || type}
+                        {costTypeLabel(type)}
                       </CardTitle>
                       <CardDescription>
-                        {typeCosts.length}{" "}
-                        {typeCosts.length === 1 ? "coste" : "costes"} • Total: $
-                        {typeTotal.toFixed(2)}
+                        {t("costCount", { count: typeCosts.length })} •{" "}
+                        {t("groupTotal")} ${typeTotal.toFixed(2)}
                       </CardDescription>
                     </div>
                   </div>
@@ -207,12 +210,16 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Descripción</TableHead>
-                          <TableHead className="text-right">Importe</TableHead>
+                          <TableHead>{ts("colDescription")}</TableHead>
+                          <TableHead className="text-right">
+                            {ts("colAmount")}
+                          </TableHead>
                           <TableHeadMd className="text-right">
-                            Acciones
+                            {ts("colActions")}
                           </TableHeadMd>
-                          <TableHeadExpandPlaceholder srLabel="Expandir fila" />
+                          <TableHeadExpandPlaceholder
+                            srLabel={ts("expandRow")}
+                          />
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -221,13 +228,13 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                           const rowActions: ExpandableTableRowAction[] = [
                             {
                               id: "edit",
-                              label: "Editar",
+                              label: ts("edit"),
                               icon: Pencil,
                               onClick: () => handleEdit(cost),
                             },
                             {
                               id: "delete",
-                              label: "Eliminar",
+                              label: ts("delete"),
                               icon: Trash2,
                               onClick: () => setDeleteTargetId(cost.id),
                               destructive: true,
@@ -240,7 +247,7 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                                 <TableCell className="max-w-[10rem] truncate sm:max-w-none">
                                   {cost.description || (
                                     <span className="text-muted-foreground italic">
-                                      Sin descripción
+                                      {t("noDescription")}
                                     </span>
                                   )}
                                 </TableCell>
@@ -250,14 +257,14 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                                 <TableCellMd className="text-right">
                                   <ExpandableRowActionsMenu
                                     actions={rowActions}
-                                    menuAriaLabel="Acciones del coste"
+                                    menuAriaLabel={t("costActionsAria")}
                                   />
                                 </TableCellMd>
                                 <TableRowExpandTrigger
                                   expanded={expanded}
                                   onToggle={() => toggleRow(cost.id)}
-                                  expandLabel="Ver acciones del coste"
-                                  collapseLabel="Ocultar acciones del coste"
+                                  expandLabel={t("expandCostActions")}
+                                  collapseLabel={t("collapseCostActions")}
                                 />
                               </TableRow>
                               <TableRowMobileDetail
@@ -279,11 +286,10 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
             );
           })}
 
-          {/* Summary card */}
           <Card className="bg-secondary/30/50">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
-                <span className="text-lg font-semibold">Total General</span>
+                <span className="text-lg font-semibold">{t("grandTotal")}</span>
                 <span className="text-2xl font-bold">
                   ${totalAmount.toFixed(2)}
                 </span>
@@ -308,8 +314,8 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
       <ConfirmDeleteDialog
         open={deleteTargetId !== null}
         onOpenChange={(open) => !open && setDeleteTargetId(null)}
-        title="¿Eliminar este coste adicional?"
-        description="Esta acción no se puede deshacer."
+        title={t("confirmDelete")}
+        description={ts("confirmDeleteDescription")}
         onConfirm={handleConfirmDelete}
         loading={deleteLoading}
       />

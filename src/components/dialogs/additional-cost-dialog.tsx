@@ -50,18 +50,18 @@ interface AdditionalCostDialogProps {
   cost?: AdditionalCost | null;
 }
 
-const COST_TYPES = [
-  { value: "shipping", label: "Envío" },
-  { value: "packaging", label: "Embalaje" },
-  { value: "installation", label: "Instalación" },
-  { value: "assembly", label: "Montaje" },
-  { value: "transport", label: "Transporte" },
-  { value: "insurance", label: "Seguro" },
-  { value: "customs", label: "Aduanas" },
-  { value: "storage", label: "Almacenamiento" },
-  { value: "handling", label: "Manejo" },
-  { value: "other", label: "Otro" },
-];
+const COST_TYPE_VALUES = [
+  "shipping",
+  "packaging",
+  "installation",
+  "assembly",
+  "transport",
+  "insurance",
+  "customs",
+  "storage",
+  "handling",
+  "other",
+] as const;
 
 export function AdditionalCostDialog({
   open,
@@ -197,9 +197,9 @@ export function AdditionalCostDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {COST_TYPES.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.label}
+                      {COST_TYPE_VALUES.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {t(`costType.${type}`)}
                         </SelectItem>
                       ))}
                     </SelectContent>

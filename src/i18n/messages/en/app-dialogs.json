@@ -230,6 +230,19 @@
     "toastUpdated": "Line item updated",
     "toastCreated": "Line item added"
   },
+  "DialogBudgetPrintOptions": {
+    "title": "Budget export options",
+    "optionFullLabel": "Full budget",
+    "optionFullDescription": "Products and budget line items",
+    "optionProductsLabel": "Products only",
+    "optionProductsDescription": "Furniture and products by location only",
+    "optionLinesLabel": "Line items only",
+    "optionLinesDescription": "Services and budget line items only",
+    "upgradeHint": "Upgrade your plan to export by products or line items.",
+    "cancel": "Cancel",
+    "generatePdf": "Generate PDF",
+    "generating": "Generating..."
+  },
   "DialogPurchaseOrder": {
     "titleEdit": "Edit Purchase Order",
     "titleNew": "New Purchase Order",
@@ -353,7 +366,19 @@
     "toastCreateError": "Error creating additional cost",
     "toastUpdated": "Additional cost updated",
     "toastCreated": "Additional cost added",
-    "validationTypeRequired": "Cost type is required"
+    "validationTypeRequired": "Cost type is required",
+    "costType": {
+      "shipping": "Shipping",
+      "packaging": "Packaging",
+      "installation": "Installation",
+      "assembly": "Assembly",
+      "transport": "Transport",
+      "insurance": "Insurance",
+      "customs": "Customs",
+      "storage": "Storage",
+      "handling": "Handling",
+      "other": "Other"
+    }
   },
   "DialogSpaceImages": {
     "title": "Renders - {name}",

@@ -70,12 +70,12 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import {
-  getPhaseLabel,
   getDemoAccountMessage,
   getErrorMessage,
   reportError,
   formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
+import { usePhaseLabel } from "@/lib/use-project-labels";
 
 import type {
   Project,
@@ -96,6 +96,8 @@ export function ProjectBudget({
   disabled?: boolean;
 }) {
   const t = useTranslations("ProjectModuleBudget");
+  const ts = useTranslations("ProjectModuleShared");
+  const phaseLabel = usePhaseLabel();
   const { user, effectivePlan } = useAuth();
   const printFilterOptionsEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "full",
@@ -158,7 +160,7 @@ export function ProjectBudget({
         setProject(projectData);
       } else if (projectError) {
         reportError(projectError, "Error fetching project:");
-        setError("Error al cargar el proyecto");
+        setError(t("toastLoadProjectError"));
       }
 
       // Fetch project items (products)
@@ -181,7 +183,7 @@ export function ProjectBudget({
     } catch (error: unknown) {
       reportError(error, "Unexpected error in fetchData:");
       setError(
-        "Error inesperado al cargar los datos: " + getErrorMessage(error)
+        t("toastUnexpectedLoadError", { message: getErrorMessage(error) })
       );
       setItems([]);
       await refetchBudgetLines();
@@ -201,7 +203,7 @@ export function ProjectBudget({
     try {
       if (deleteTarget.kind === "item") {
         await supabase.from("project_items").delete().eq("id", deleteTarget.id);
-        toast.success("Ítem eliminado");
+        toast.success(t("toastItemDeleted"));
         setDeleteTarget(null);
         fetchData();
         return;
@@ -218,12 +220,12 @@ export function ProjectBudget({
             duration: 5000,
           });
         } else {
-          toast.error("Error al eliminar la partida");
+          toast.error(t("toastDeleteLineError"));
           reportError(error, "Error deleting budget line:");
         }
         return;
       }
-      toast.success("Partida eliminada");
+      toast.success(t("toastLineDeleted"));
       setDeleteTarget(null);
       refetchBudgetLines();
     } finally {
@@ -253,7 +255,7 @@ export function ProjectBudget({
 
   const handleGeneratePDF = async (option: BudgetPrintOption) => {
     if (!project) {
-      toast.error("No se pudo cargar la información del proyecto");
+      toast.error(t("toastProjectInfoError"));
       return;
     }
 
@@ -328,16 +330,16 @@ export function ProjectBudget({
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Presupuesto_${project.name.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
+      link.download = `${t("pdfFilenamePrefix")}_${project.name.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success("PDF generado correctamente");
+      toast.success(t("toastPdfGenerated"));
     } catch (error) {
       reportError(error, "Error generating PDF:");
-      toast.error("Error al generar el PDF");
+      toast.error(t("toastPdfError"));
     } finally {
       setIsGeneratingPDF(false);
     }
@@ -434,12 +436,12 @@ export function ProjectBudget({
 
   // Map delivery_deadline codes to readable labels (same as purchase-order-dialog options)
   const deliveryDeadlineLabel: Record<string, string> = {
-    "1w": "1 semana",
-    "2w": "2 semanas",
-    "3w": "3 semanas",
-    "4w": "4 semanas",
-    "6w": "6 semanas",
-    tbd: "A convenir",
+    "1w": t("deliveryDeadline.1w"),
+    "2w": t("deliveryDeadline.2w"),
+    "3w": t("deliveryDeadline.3w"),
+    "4w": t("deliveryDeadline.4w"),
+    "6w": t("deliveryDeadline.6w"),
+    tbd: t("deliveryDeadline.tbd"),
   };
 
   // Helper function to get status icon and label
@@ -534,7 +536,7 @@ export function ProjectBudget({
         <div className="space-y-4 text-center">
           <p className="text-destructive font-medium">{error}</p>
           <Button onClick={fetchData} variant="outline">
-            Reintentar
+            {ts("retry")}
           </Button>
         </div>
       </div>
@@ -544,20 +546,20 @@ export function ProjectBudget({
   return (
     <ProjectTabContent
       disabled={disabled}
-      disabledMessage="El presupuesto no está incluido en tu plan actual."
+      disabledMessage={t("disabledMessage")}
     >
       <TooltipProvider>
         <div className="space-y-6">
-          <TabSectionHeader title="Presupuesto">
+          <TabSectionHeader title={t("title")}>
             <div className="flex space-x-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="outline"
                     className="shrink-0 print:hidden"
-                    aria-label="Exportar"
+                    aria-label={t("exportAria")}
                   >
-                    Exportar
+                    {t("export")}
                     <ChevronDown className="ml-2 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -567,7 +569,7 @@ export function ProjectBudget({
                     disabled={isGeneratingPDF || !project}
                   >
                     <Printer className="mr-2 h-4 w-4" />
-                    {isGeneratingPDF ? "Generando PDF..." : "Exportar PDF"}
+                    {isGeneratingPDF ? t("generatingPdf") : t("exportPdf")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -576,20 +578,20 @@ export function ProjectBudget({
                   <DropdownMenuTrigger asChild>
                     <Button
                       className="shrink-0 print:hidden"
-                      aria-label="Añadir"
+                      aria-label={t("addAria")}
                     >
-                      Añadir
+                      {t("add")}
                       <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleAddBudgetLine}>
                       <Plus className="mr-2 h-4 w-4" />
-                      Nueva Partida
+                      {t("newBudgetLine")}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleAddItem}>
                       <Plus className="mr-2 h-4 w-4" />
-                      Añadir Producto
+                      {t("addProduct")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -601,15 +603,19 @@ export function ProjectBudget({
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="pt-6">
               <h4 className="text-muted-foreground mb-2 font-medium">
-                Total Presupuesto
+                {t("totalBudget")}
               </h4>
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-muted-foreground text-xs">
-                    Partidas: {formatCurrency(totalBudgetLinesEstimated)}
+                    {t("budgetLinesTotal", {
+                      amount: formatCurrency(totalBudgetLinesEstimated),
+                    })}
                   </p>
                   <p className="text-muted-foreground text-xs">
-                    Productos: {formatCurrency(totalItemsPrice)}
+                    {t("productsTotal", {
+                      amount: formatCurrency(totalItemsPrice),
+                    })}
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
@@ -627,10 +633,13 @@ export function ProjectBudget({
                 return (
                   <div className="flex items-center justify-between pt-2">
                     <p className="text-muted-foreground text-xs">
-                      Impuesto ({taxRate}%): {formatCurrency(taxAmount)}
+                      {t("taxLabel", {
+                        rate: taxRate,
+                        amount: formatCurrency(taxAmount),
+                      })}
                     </p>
                     <p className="text-muted-foreground text-xs font-medium">
-                      Con impuestos: {formatCurrency(totalWithTax)}
+                      {t("withTax", { amount: formatCurrency(totalWithTax) })}
                     </p>
                   </div>
                 );
@@ -651,7 +660,7 @@ export function ProjectBudget({
                       <ChevronDown
                         className={`h-4 w-4 transition-transform ${openSections.products ? "" : "-rotate-90"}`}
                       />
-                      Mobiliario y Productos
+                      {t("furnitureAndProducts")}
                     </CardTitle>
                     <span className="text-foreground font-semibold">
                       {formatCurrency(totalItemsPrice)}
@@ -664,20 +673,23 @@ export function ProjectBudget({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHeadMd className="w-[50px]">Img</TableHeadMd>
-                        <TableHead>Ítem</TableHead>
-                        <TableHeadMd>Ubicación</TableHeadMd>
-                        <TableHeadMd>Estado</TableHeadMd>
-                        <TableHeadMd className="text-right">Cant.</TableHeadMd>
+                        <TableHead>{ts("colItem")}</TableHead>
+                        <TableHeadMd>{ts("colLocation")}</TableHeadMd>
+                        <TableHeadMd>{ts("colStatus")}</TableHeadMd>
                         <TableHeadMd className="text-right">
-                          Costo Unit.
+                          {ts("colQuantity")}
                         </TableHeadMd>
                         <TableHeadMd className="text-right">
-                          Precio Venta
+                          {ts("colUnitCost")}
                         </TableHeadMd>
-                        <TableHead className="text-right">Total</TableHead>
+                        <TableHeadMd className="text-right">
+                          {ts("colSalePrice")}
+                        </TableHeadMd>
+                        <TableHead className="text-right">
+                          {ts("colTotal")}
+                        </TableHead>
                         <TableHeadMd className="w-[80px]" />
-                        <TableHeadExpandPlaceholder srLabel="Expandir fila" />
+                        <TableHeadExpandPlaceholder srLabel={ts("expandRow")} />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -688,13 +700,13 @@ export function ProjectBudget({
                           : [
                               {
                                 id: "edit",
-                                label: "Editar",
+                                label: ts("edit"),
                                 icon: Pencil,
                                 onClick: () => handleEditItem(item),
                               },
                               {
                                 id: "delete",
-                                label: "Eliminar",
+                                label: ts("delete"),
                                 icon: Trash2,
                                 onClick: () =>
                                   setDeleteTarget({
@@ -715,8 +727,8 @@ export function ProjectBudget({
                           isOrderedNotReceived &&
                           (po.delivery_date || po.delivery_deadline)
                             ? po.delivery_date
-                              ? `Entrega: ${new Date(po.delivery_date).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })}`
-                              : `Entrega: ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
+                              ? `${t("deliveryPrefix")} ${new Date(po.delivery_date).toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" })}`
+                              : `${t("deliveryPrefix")} ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
                             : null;
                         const statusLabel = deliveryInfo ?? statusDisplay.label;
                         const statusIndicator = (
@@ -737,32 +749,12 @@ export function ProjectBudget({
                         return (
                           <Fragment key={item.id}>
                             <TableRow>
-                              <TableCellMd>
-                                {imageSrc ? (
-                                  <button
-                                    type="button"
-                                    className="relative h-8 w-8 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80"
-                                    onClick={() => {
-                                      setSelectedItem(item);
-                                      setIsProductModalOpen(true);
-                                    }}
-                                  >
-                                    <Image
-                                      src={imageSrc}
-                                      alt={item.product?.name || item.name}
-                                      fill
-                                      className="object-cover"
-                                      sizes="32px"
-                                    />
-                                  </button>
-                                ) : null}
-                              </TableCellMd>
                               <TableCell>
                                 <div className="flex items-center gap-2.5">
                                   {imageSrc ? (
                                     <button
                                       type="button"
-                                      className="relative h-10 w-10 shrink-0 overflow-hidden rounded md:hidden"
+                                      className="relative h-10 w-10 shrink-0 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80 md:h-8 md:w-8"
                                       onClick={() => {
                                         setSelectedItem(item);
                                         setIsProductModalOpen(true);
@@ -783,7 +775,8 @@ export function ProjectBudget({
                                     </div>
                                     {item.internal_reference && (
                                       <div className="text-muted-foreground mt-1 font-mono text-xs">
-                                        Cód.: {item.internal_reference}
+                                        {t("codePrefix")}{" "}
+                                        {item.internal_reference}
                                       </div>
                                     )}
                                     <div className="text-muted-foreground text-xs">
@@ -816,14 +809,14 @@ export function ProjectBudget({
                               <TableCellMd className="text-right">
                                 <ExpandableRowActionsMenu
                                   actions={rowActions}
-                                  menuAriaLabel="Acciones del producto"
+                                  menuAriaLabel={t("productActionsAria")}
                                 />
                               </TableCellMd>
                               <TableRowExpandTrigger
                                 expanded={expanded}
                                 onToggle={() => toggleRow(item.id)}
-                                expandLabel="Ver detalles del producto"
-                                collapseLabel="Ocultar detalles del producto"
+                                expandLabel={t("expandProductDetails")}
+                                collapseLabel={t("collapseProductDetails")}
                               />
                             </TableRow>
                             <TableRowMobileDetail
@@ -832,19 +825,19 @@ export function ProjectBudget({
                             >
                               <div className="space-y-2">
                                 <MobileDetailField
-                                  label="Ubicación"
+                                  label={ts("colLocation")}
                                   value={item.space?.name || t("spaceGeneral")}
                                 />
                                 <MobileDetailField
-                                  label="Cant."
+                                  label={ts("colQuantity")}
                                   value={item.quantity}
                                 />
                                 <MobileDetailField
-                                  label="Costo Unit."
+                                  label={ts("colUnitCost")}
                                   value={formatCurrency(item.unit_cost)}
                                 />
                                 <MobileDetailField
-                                  label="Precio Venta"
+                                  label={ts("colSalePrice")}
                                   value={formatCurrency(item.unit_price)}
                                 />
                                 <ExpandableRowActionsPanel
@@ -858,10 +851,10 @@ export function ProjectBudget({
                       {items.length === 0 && (
                         <TableRow>
                           <TableCell
-                            colSpan={10}
+                            colSpan={9}
                             className="text-muted-foreground py-8 text-center"
                           >
-                            No hay productos añadidos.
+                            {t("noProducts")}
                           </TableCell>
                         </TableRow>
                       )}
@@ -910,8 +903,8 @@ export function ProjectBudget({
                               className={`h-4 w-4 transition-transform ${openSections[phaseSectionKey] !== false ? "" : "-rotate-90"}`}
                             />
                             {phase === "no_phase"
-                              ? "Sin Fase"
-                              : getPhaseLabel(phase as ProjectPhase)}
+                              ? t("noPhase")
+                              : phaseLabel(phase as ProjectPhase)}
                           </CardTitle>
                           <span className="text-foreground font-semibold">
                             {formatCurrency(phaseTotal)}
@@ -960,13 +953,19 @@ export function ProjectBudget({
                                     <Table>
                                       <TableHeader>
                                         <TableRow>
-                                          <TableHead>Concepto</TableHead>
-                                          <TableHead className="text-right">
-                                            Importe
+                                          <TableHead>
+                                            {ts("colConcept")}
                                           </TableHead>
-                                          <TableHeadMd>Descripción</TableHeadMd>
+                                          <TableHead className="text-right">
+                                            {ts("colAmount")}
+                                          </TableHead>
+                                          <TableHeadMd>
+                                            {ts("colDescription")}
+                                          </TableHeadMd>
                                           <TableHeadMd className="w-[80px]" />
-                                          <TableHeadExpandPlaceholder srLabel="Expandir fila" />
+                                          <TableHeadExpandPlaceholder
+                                            srLabel={ts("expandRow")}
+                                          />
                                         </TableRow>
                                       </TableHeader>
                                       <TableBody>
@@ -978,7 +977,7 @@ export function ProjectBudget({
                                               : [
                                                   {
                                                     id: "edit",
-                                                    label: "Editar",
+                                                    label: ts("edit"),
                                                     icon: Pencil,
                                                     onClick: () =>
                                                       handleEditBudgetLine(
@@ -987,7 +986,7 @@ export function ProjectBudget({
                                                   },
                                                   {
                                                     id: "delete",
-                                                    label: "Eliminar",
+                                                    label: ts("delete"),
                                                     icon: Trash2,
                                                     onClick: () =>
                                                       setDeleteTarget({
@@ -1020,7 +1019,9 @@ export function ProjectBudget({
                                                 <TableCellMd className="text-right">
                                                   <ExpandableRowActionsMenu
                                                     actions={rowActions}
-                                                    menuAriaLabel="Acciones de la partida"
+                                                    menuAriaLabel={t(
+                                                      "budgetLineActionsAria"
+                                                    )}
                                                   />
                                                 </TableCellMd>
                                                 <TableRowExpandTrigger
@@ -1028,8 +1029,12 @@ export function ProjectBudget({
                                                   onToggle={() =>
                                                     toggleRow(line.id)
                                                   }
-                                                  expandLabel="Ver detalles de la partida"
-                                                  collapseLabel="Ocultar detalles de la partida"
+                                                  expandLabel={t(
+                                                    "expandLineDetails"
+                                                  )}
+                                                  collapseLabel={t(
+                                                    "collapseLineDetails"
+                                                  )}
                                                 />
                                               </TableRow>
                                               <TableRowMobileDetail
@@ -1040,7 +1045,7 @@ export function ProjectBudget({
                                               >
                                                 <div className="space-y-2">
                                                   <MobileDetailField
-                                                    label="Descripción"
+                                                    label={ts("colDescription")}
                                                     value={
                                                       line.description || "-"
                                                     }
@@ -1130,10 +1135,10 @@ export function ProjectBudget({
             onOpenChange={(open) => !open && setDeleteTarget(null)}
             title={
               deleteTarget?.kind === "item"
-                ? "¿Eliminar ítem?"
-                : "¿Eliminar partida?"
+                ? t("confirmDeleteItem")
+                : t("confirmDeleteLine")
             }
-            description="Esta acción no se puede deshacer."
+            description={ts("confirmDeleteDescription")}
             onConfirm={handleConfirmDelete}
             loading={deleteLoading}
           />

@@ -16,12 +16,8 @@ import {
   FileText,
   Receipt,
 } from "lucide-react";
-import {
-  getPhaseLabel,
-  isCostCategory,
-  reportError,
-  reportWarn,
-} from "@/lib/utils";
+import { isCostCategory, reportError, reportWarn } from "@/lib/utils";
+import { usePhaseLabel } from "@/lib/use-project-labels";
 import type {
   Project,
   Payment,
@@ -67,6 +63,7 @@ export function ProjectDashboard({
   disabled = false,
 }: ProjectDashboardProps) {
   const t = useTranslations("ProjectModuleDashboard");
+  const phaseLabel = usePhaseLabel();
   const categoryLabels: Record<BudgetCategory, string> = {
     construction: t("budgetCategory.construction"),
     own_fees: t("budgetCategory.own_fees"),
@@ -328,7 +325,7 @@ export function ProjectDashboard({
             title={t("kpiProgress")}
             value={`${kpis.progress.toFixed(0)}%`}
             subtitle={
-              project?.phase ? getPhaseLabel(project.phase) : t("unassigned")
+              project?.phase ? phaseLabel(project.phase) : t("unassigned")
             }
             icon={FolderKanban}
             color="primary"

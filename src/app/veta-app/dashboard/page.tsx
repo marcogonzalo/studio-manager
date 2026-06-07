@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/animated-section";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import {
-  Plus,
   ArrowRight,
   FolderKanban,
   Users,
@@ -29,6 +28,7 @@ import {
   TrendingUp,
   ShoppingBag,
   LayoutDashboard,
+  Truck,
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
@@ -36,7 +36,8 @@ import { useOnboardingStatus } from "@/lib/use-onboarding-status";
 import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
-import { reportError, getProjectStatusLabel } from "@/lib/utils";
+import { reportError } from "@/lib/utils";
+import { useProjectStatusLabel } from "@/lib/use-project-labels";
 import { toast } from "sonner";
 import type { Project, Profile } from "@/types";
 
@@ -103,6 +104,7 @@ function getFirstName(fullName: string | null | undefined): string {
 
 export default function DashboardPage() {
   const t = useTranslations("DashboardPage");
+  const projectStatusLabel = useProjectStatusLabel();
   const { formatDate } = useAppFormatting();
   const { user } = useAuth();
   const { steps: onboardingSteps, allComplete: onboardingComplete } =
@@ -301,11 +303,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <AnimatedSection
-        duration={0.4}
-        className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center"
-      >
+    <div className="min-w-0 space-y-8">
+      <AnimatedSection duration={0.4}>
         <div className="flex items-start gap-3">
           <LayoutDashboard className="text-primary mt-1 h-8 w-8" />
           <div>
@@ -319,14 +318,6 @@ export default function DashboardPage() {
             <p className="text-muted-foreground mt-1">{t("subtitle")}</p>
           </div>
         </div>
-        <Button
-          asChild
-          className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 animate-glow shadow-lg transition-all hover:scale-105"
-        >
-          <Link href={appPath("/projects")}>
-            <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
-          </Link>
-        </Button>
       </AnimatedSection>
 
       {!onboardingComplete && <OnboardingChecklist steps={onboardingSteps} />}
@@ -347,57 +338,6 @@ export default function DashboardPage() {
             <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-muted-foreground text-sm font-medium">
-                  {t("activeProjectsTitle")}
-                </CardTitle>
-                <FolderKanban
-                  className="text-primary h-4 w-4 transition-transform group-hover:scale-110"
-                  aria-hidden
-                />
-              </CardHeader>
-              <CardContent>
-                <div className="text-foreground text-2xl font-bold">
-                  <AnimatedCounter
-                    target={stats.activeProjects}
-                    duration={1.5}
-                  />
-                </div>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {t("activeProjectsFromLastMonth", {
-                    change: formatChange(stats.activeProjectsChange),
-                  })}
-                </p>
-              </CardContent>
-            </Card>
-          </StaggerItem>
-
-          <StaggerItem>
-            <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-muted-foreground text-sm font-medium">
-                  {t("totalClientsTitle")}
-                </CardTitle>
-                <Users
-                  className="text-chart-2 h-4 w-4 transition-transform group-hover:scale-110"
-                  aria-hidden
-                />
-              </CardHeader>
-              <CardContent>
-                <div className="text-foreground text-2xl font-bold">
-                  <AnimatedCounter target={stats.totalClients} duration={1.5} />
-                </div>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  {t("newClientsThisMonth", {
-                    count: stats.newClientsThisMonth,
-                  })}
-                </p>
-              </CardContent>
-            </Card>
-          </StaggerItem>
-
-          <StaggerItem>
-            <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-muted-foreground text-sm font-medium">
                   {t("totalExpensesTitle")}
                 </CardTitle>
                 <TrendingDown
@@ -405,7 +345,7 @@ export default function DashboardPage() {
                   aria-hidden
                 />
               </CardHeader>
-              <CardContent>
+              <CardContent className="min-w-0">
                 <div className="text-foreground text-2xl font-bold">
                   <AnimatedCounter
                     target={stats.totalExpensesThisMonth}
@@ -432,7 +372,7 @@ export default function DashboardPage() {
                   aria-hidden
                 />
               </CardHeader>
-              <CardContent>
+              <CardContent className="min-w-0">
                 <div className="text-foreground text-2xl font-bold">
                   <AnimatedCounter
                     target={stats.totalIncomeThisMonth}
@@ -447,12 +387,66 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </StaggerItem>
+
+          <StaggerItem>
+            <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-muted-foreground text-sm font-medium">
+                  {t("activeProjectsTitle")}
+                </CardTitle>
+                <FolderKanban
+                  className="text-primary h-4 w-4 transition-transform group-hover:scale-110"
+                  aria-hidden
+                />
+              </CardHeader>
+              <CardContent className="min-w-0">
+                <div className="text-foreground text-2xl font-bold">
+                  <AnimatedCounter
+                    target={stats.activeProjects}
+                    duration={1.5}
+                  />
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {t("activeProjectsFromLastMonth", {
+                    change: formatChange(stats.activeProjectsChange),
+                  })}
+                </p>
+              </CardContent>
+            </Card>
+          </StaggerItem>
+
+          <StaggerItem>
+            <Card className="to-secondary/20 dark:from-card dark:to-secondary/10 group border-none bg-gradient-to-br from-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-muted-foreground text-sm font-medium">
+                  {t("totalClientsTitle")}
+                </CardTitle>
+                <Users
+                  className="text-chart-2 h-4 w-4 transition-transform group-hover:scale-110"
+                  aria-hidden
+                />
+              </CardHeader>
+              <CardContent className="min-w-0">
+                <div className="text-foreground text-2xl font-bold">
+                  <AnimatedCounter target={stats.totalClients} duration={1.5} />
+                </div>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {t("newClientsThisMonth", {
+                    count: stats.newClientsThisMonth,
+                  })}
+                </p>
+              </CardContent>
+            </Card>
+          </StaggerItem>
         </StaggerContainer>
       )}
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        <AnimatedSection delay={0.2} className="col-span-4">
-          <Card className="border-none shadow-md">
+      <div className="grid min-w-0 gap-6 lg:grid-cols-7">
+        <AnimatedSection
+          delay={0.2}
+          className="col-span-full min-w-0 lg:col-span-4"
+        >
+          <Card className="min-w-0 overflow-hidden border-none shadow-md">
             <CardHeader>
               <CardTitle>{t("recentProjectsTitle")}</CardTitle>
               {loading ? (
@@ -469,7 +463,7 @@ export default function DashboardPage() {
                 </CardDescription>
               )}
             </CardHeader>
-            <CardContent>
+            <CardContent className="min-w-0">
               {loading ? (
                 <div className="space-y-4">
                   <ProjectRowSkeleton />
@@ -477,7 +471,10 @@ export default function DashboardPage() {
                   <ProjectRowSkeleton />
                 </div>
               ) : stats.recentProjects.length > 0 ? (
-                <StaggerContainer className="space-y-4" staggerDelay={0.08}>
+                <StaggerContainer
+                  className="min-w-0 space-y-4"
+                  staggerDelay={0.08}
+                >
                   {stats.recentProjects.map((project) => {
                     const isMuted =
                       project.status === "completed" ||
@@ -485,26 +482,27 @@ export default function DashboardPage() {
                     return (
                       <StaggerItem
                         key={project.id}
-                        direction="left"
+                        direction="up"
                         distance={15}
+                        className="min-w-0"
                       >
                         <Link
                           href={appPath(`/projects/${project.id}`)}
                           className={
                             isMuted
-                              ? "bg-muted/20 hover:bg-muted/30 group border-muted flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all"
-                              : "bg-background hover:bg-accent/10 group border-border/50 flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
+                              ? "bg-muted/20 hover:bg-muted/30 group border-muted flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border p-4 shadow-sm transition-all"
+                              : "bg-background hover:bg-accent/10 group border-border/50 flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
                           }
                         >
-                          <div className="flex flex-1 items-center space-x-4">
+                          <div className="flex min-w-0 flex-1 items-center gap-4">
                             <div
                               className={
                                 isMuted
-                                  ? "bg-muted text-muted-foreground rounded-full p-2"
-                                  : "bg-primary/10 text-primary rounded-full p-2"
+                                  ? "bg-muted text-muted-foreground shrink-0 rounded-full p-2"
+                                  : "bg-primary/10 text-primary shrink-0 rounded-full p-2"
                               }
                             >
-                              <FolderKanban className="h-5 w-5" />
+                              <FolderKanban className="h-5 w-5 shrink-0" />
                             </div>
                             <div className="min-w-0 flex-1">
                               <p
@@ -516,30 +514,30 @@ export default function DashboardPage() {
                               >
                                 {project.name}
                               </p>
-                              <div className="text-muted-foreground mt-2 flex items-center gap-4 text-xs">
+                              <div className="text-muted-foreground mt-2 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1 text-xs">
                                 {project.client?.full_name && (
-                                  <div className="flex items-center gap-1">
-                                    <UserIcon className="h-3 w-3" />
+                                  <div className="flex max-w-full min-w-0 items-center gap-1">
+                                    <UserIcon className="h-3 w-3 shrink-0" />
                                     <span className="truncate">
                                       {project.client.full_name}
                                     </span>
                                   </div>
                                 )}
                                 {project.start_date && (
-                                  <div className="flex items-center gap-1">
-                                    <Calendar className="h-3 w-3" />
-                                    <span>
+                                  <div className="flex shrink-0 items-center gap-1">
+                                    <Calendar className="h-3 w-3 shrink-0" />
+                                    <span className="whitespace-nowrap">
                                       {formatDate(project.start_date)}
                                     </span>
                                   </div>
                                 )}
-                                <span className="capitalize">
-                                  {getProjectStatusLabel(project.status)}
+                                <span className="shrink-0 capitalize">
+                                  {projectStatusLabel(project.status)}
                                 </span>
                               </div>
                             </div>
                           </div>
-                          <ArrowRight className="text-muted-foreground ml-4 h-4 w-4 flex-shrink-0 transition-transform group-hover:translate-x-1" />
+                          <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
                         </Link>
                       </StaggerItem>
                     );
@@ -569,64 +567,113 @@ export default function DashboardPage() {
           </Card>
         </AnimatedSection>
 
-        <AnimatedSection delay={0.3} className="col-span-3">
-          <Card className="bg-primary/5 border-none shadow-md">
+        <AnimatedSection
+          delay={0.3}
+          className="col-span-full min-w-0 lg:col-span-3"
+        >
+          <Card className="bg-primary/5 min-w-0 overflow-hidden border-none shadow-md">
             <CardHeader>
               <CardTitle>{t("quickAccessTitle")}</CardTitle>
               <CardDescription>{t("quickAccessDescription")}</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4">
+            <CardContent className="grid min-w-0 gap-4">
               {loading ? (
                 <>
+                  <QuickActionSkeleton />
+                  <QuickActionSkeleton />
                   <QuickActionSkeleton />
                   <QuickActionSkeleton />
                 </>
               ) : (
                 <StaggerContainer
-                  className="flex flex-col gap-5"
+                  className="flex min-w-0 flex-col gap-5"
                   staggerDelay={0.12}
                 >
-                  <StaggerItem direction="right" distance={15}>
+                  <StaggerItem direction="up" distance={15} className="min-w-0">
+                    <Link
+                      href={appPath("/projects")}
+                      className="bg-background hover:bg-accent/10 group border-border/50 flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
+                    >
+                      <div className="flex min-w-0 flex-1 items-center gap-4">
+                        <div className="bg-primary/10 text-primary shrink-0 rounded-full p-2 transition-transform group-hover:scale-110">
+                          <FolderKanban className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-foreground truncate text-sm leading-none font-medium">
+                            {t("createNewProject")}
+                          </p>
+                          <p className="text-muted-foreground mt-1 truncate text-xs">
+                            {t("createNewProjectDescription")}
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </StaggerItem>
+
+                  <StaggerItem direction="up" distance={15} className="min-w-0">
+                    <Link
+                      href={appPath("/suppliers")}
+                      className="bg-background hover:bg-accent/10 group border-border/50 flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
+                    >
+                      <div className="flex min-w-0 flex-1 items-center gap-4">
+                        <div className="bg-chart-3/10 text-chart-3 shrink-0 rounded-full p-2 transition-transform group-hover:scale-110">
+                          <Truck className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-foreground truncate text-sm leading-none font-medium">
+                            {t("registerSupplier")}
+                          </p>
+                          <p className="text-muted-foreground mt-1 truncate text-xs">
+                            {t("registerNewSupplierDescription")}
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  </StaggerItem>
+
+                  <StaggerItem direction="up" distance={15} className="min-w-0">
                     <Link
                       href={appPath("/clients")}
-                      className="bg-background hover:bg-accent/10 group border-border/50 flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
+                      className="bg-background hover:bg-accent/10 group border-border/50 flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className="bg-chart-2/10 text-chart-2 rounded-full p-2 transition-transform group-hover:scale-110">
+                      <div className="flex min-w-0 flex-1 items-center gap-4">
+                        <div className="bg-chart-2/10 text-chart-2 shrink-0 rounded-full p-2 transition-transform group-hover:scale-110">
                           <Users className="h-5 w-5" />
                         </div>
-                        <div>
-                          <p className="text-foreground text-sm leading-none font-medium">
+                        <div className="min-w-0">
+                          <p className="text-foreground truncate text-sm leading-none font-medium">
                             {t("registerClient")}
                           </p>
-                          <p className="text-muted-foreground mt-1 text-xs">
+                          <p className="text-muted-foreground mt-1 truncate text-xs">
                             {t("addNewContact")}
                           </p>
                         </div>
                       </div>
-                      <ArrowRight className="text-muted-foreground h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </StaggerItem>
 
-                  <StaggerItem direction="right" distance={15}>
+                  <StaggerItem direction="up" distance={15} className="min-w-0">
                     <Link
                       href={appPath("/catalog")}
-                      className="bg-background hover:bg-accent/10 group border-border/50 flex items-center justify-between rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
+                      className="bg-background hover:bg-accent/10 group border-border/50 flex w-full min-w-0 items-center justify-between gap-3 rounded-xl border p-4 shadow-sm transition-all hover:shadow-md"
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className="bg-chart-4/10 text-chart-4 rounded-full p-2 transition-transform group-hover:scale-110">
+                      <div className="flex min-w-0 flex-1 items-center gap-4">
+                        <div className="bg-chart-4/10 text-chart-4 shrink-0 rounded-full p-2 transition-transform group-hover:scale-110">
                           <ShoppingBag className="h-5 w-5" />
                         </div>
-                        <div>
-                          <p className="text-foreground text-sm leading-none font-medium">
+                        <div className="min-w-0">
+                          <p className="text-foreground truncate text-sm leading-none font-medium">
                             {t("addProduct")}
                           </p>
-                          <p className="text-muted-foreground mt-1 text-xs">
+                          <p className="text-muted-foreground mt-1 truncate text-xs">
                             {t("updateCatalog")}
                           </p>
                         </div>
                       </div>
-                      <ArrowRight className="text-muted-foreground h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      <ArrowRight className="text-muted-foreground h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </StaggerItem>
                 </StaggerContainer>

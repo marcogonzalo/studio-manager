@@ -23,6 +23,10 @@
     "quickAccessDescription": "Acciones frecuentes",
     "registerClient": "Registrar Cliente",
     "addNewContact": "Añadir nuevo contacto",
+    "createNewProject": "Crear nuevo proyecto",
+    "createNewProjectDescription": "Iniciar un nuevo proyecto de diseño",
+    "registerSupplier": "Registrar proveedor",
+    "registerNewSupplierDescription": "Añadir un nuevo proveedor",
     "addProduct": "Añadir Producto",
     "updateCatalog": "Actualizar catálogo"
   },

@@ -47,12 +47,12 @@ import { BudgetLineDialog } from "@/components/dialogs/budget-line-dialog";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
 import {
-  getPhaseLabel,
   getDemoAccountMessage,
   reportError,
   COST_CATEGORIES,
   formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
+import { usePhaseLabel } from "@/lib/use-project-labels";
 
 import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
@@ -70,6 +70,8 @@ export function ProjectCostControl({
   advancedCostOptionsEnabled?: boolean;
 }) {
   const t = useTranslations("ProjectModuleCostControl");
+  const ts = useTranslations("ProjectModuleShared");
+  const phaseLabel = usePhaseLabel();
   const supabase = getSupabaseClient();
   const categoryLabels: Record<BudgetCategory, string> = {
     construction: t("budgetCategory.construction"),
@@ -186,12 +188,12 @@ export function ProjectCostControl({
             duration: 5000,
           });
         } else {
-          toast.error("Error al eliminar la partida");
+          toast.error(t("toastDeleteLineError"));
           reportError(error, "Error deleting budget line:");
         }
         return;
       }
-      toast.success("Partida eliminada");
+      toast.success(t("toastLineDeleted"));
       setDeleteTargetId(null);
       refetchBudgetLines();
     } finally {
@@ -210,7 +212,7 @@ export function ProjectCostControl({
       setIsBudgetLineDialogOpen(true);
     } catch (error) {
       reportError(error, "Error opening budget line dialog:");
-      toast.error("Error al abrir el diálogo");
+      toast.error(t("toastDialogError"));
     }
   };
 
@@ -334,16 +336,13 @@ export function ProjectCostControl({
     <div className="space-y-6">
       <ProjectTabContent
         disabled={disabled}
-        disabledMessage="El control de costes no está incluido en tu plan actual."
+        disabledMessage={t("disabledMessage")}
       >
         <div className="space-y-6">
-          <TabSectionHeader
-            title="Control de Costes"
-            subtitle="Seguimiento interno de estimado vs real"
-          >
+          <TabSectionHeader title={t("title")} subtitle={t("subtitle")}>
             {!readOnly && (
               <Button onClick={handleAddBudgetLine} disabled={!canEdit}>
-                <Plus className="mr-2 h-4 w-4" /> Nueva Partida
+                <Plus className="mr-2 h-4 w-4" /> {t("newBudgetLine")}
               </Button>
             )}
           </TabSectionHeader>
@@ -356,14 +355,16 @@ export function ProjectCostControl({
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="bg-secondary/30 rounded-lg p-3">
                     <p className="text-muted-foreground text-xs">
-                      Total Estimado
+                      {t("totalEstimated")}
                     </p>
                     <p className="text-xl font-bold">
                       {formatCurrency(grandTotalEstimated)}
                     </p>
                   </div>
                   <div className="bg-secondary/30 rounded-lg p-3">
-                    <p className="text-muted-foreground text-xs">Total Real</p>
+                    <p className="text-muted-foreground text-xs">
+                      {t("totalActual")}
+                    </p>
                     <p className="text-xl font-bold">
                       {formatCurrency(grandTotalActual)}
                     </p>
@@ -429,10 +430,12 @@ export function ProjectCostControl({
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <p className="text-muted-foreground text-sm">
-                              Est: {formatCurrency(categoryEstimated)}
+                              {t("estimatedShort")}{" "}
+                              {formatCurrency(categoryEstimated)}
                             </p>
                             <p className="font-semibold">
-                              Real: {formatCurrency(categoryActual)}
+                              {t("actualShort")}{" "}
+                              {formatCurrency(categoryActual)}
                             </p>
                           </div>
                           <div
@@ -452,20 +455,22 @@ export function ProjectCostControl({
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Concepto</TableHead>
+                            <TableHead>{ts("colConcept")}</TableHead>
                             <TableHead className="text-right">
-                              Estimado
+                              {ts("colEstimated")}
                             </TableHead>
-                            <TableHeadMd>Descripción</TableHeadMd>
-                            <TableHeadMd>Fase</TableHeadMd>
+                            <TableHeadMd>{ts("colDescription")}</TableHeadMd>
+                            <TableHeadMd>{ts("colPhase")}</TableHeadMd>
                             <TableHeadMd className="text-right">
-                              Real
+                              {ts("colActual")}
                             </TableHeadMd>
                             <TableHeadMd className="text-right">
-                              Desviación
+                              {ts("colDeviation")}
                             </TableHeadMd>
                             <TableHeadMd className="w-[100px]" />
-                            <TableHeadExpandPlaceholder srLabel="Expandir fila" />
+                            <TableHeadExpandPlaceholder
+                              srLabel={ts("expandRow")}
+                            />
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -480,13 +485,13 @@ export function ProjectCostControl({
                                 ? [
                                     {
                                       id: "edit",
-                                      label: "Editar",
+                                      label: ts("edit"),
                                       icon: Pencil,
                                       onClick: () => handleEditBudgetLine(line),
                                     },
                                     {
                                       id: "delete",
-                                      label: "Eliminar",
+                                      label: ts("delete"),
                                       icon: Trash2,
                                       onClick: () => setDeleteTargetId(line.id),
                                       destructive: true,
@@ -494,8 +499,8 @@ export function ProjectCostControl({
                                   ]
                                 : [];
                             const visibilityLabel = line.is_internal_cost
-                              ? "Coste interno (no visible para cliente)"
-                              : "Visible para cliente";
+                              ? t("internalCost")
+                              : t("visibleToClient");
 
                             return (
                               <Fragment key={line.id}>
@@ -514,9 +519,7 @@ export function ProjectCostControl({
                                     {line.description || "-"}
                                   </TableCellMd>
                                   <TableCellMd className="text-muted-foreground text-xs">
-                                    {line.phase
-                                      ? getPhaseLabel(line.phase)
-                                      : "-"}
+                                    {line.phase ? phaseLabel(line.phase) : "-"}
                                   </TableCellMd>
                                   <TableCellMd className="text-right font-semibold tabular-nums">
                                     {formatCurrency(Number(line.actual_amount))}
@@ -544,15 +547,17 @@ export function ProjectCostControl({
                                       )}
                                       <ExpandableRowActionsMenu
                                         actions={rowActions}
-                                        menuAriaLabel="Acciones de la partida"
+                                        menuAriaLabel={t(
+                                          "budgetLineActionsAria"
+                                        )}
                                       />
                                     </div>
                                   </TableCellMd>
                                   <TableRowExpandTrigger
                                     expanded={expanded}
                                     onToggle={() => toggleRow(line.id)}
-                                    expandLabel="Ver detalles de la partida"
-                                    collapseLabel="Ocultar detalles de la partida"
+                                    expandLabel={t("expandLineDetails")}
+                                    collapseLabel={t("collapseLineDetails")}
                                   />
                                 </TableRow>
                                 <TableRowMobileDetail
@@ -561,25 +566,25 @@ export function ProjectCostControl({
                                 >
                                   <div className="space-y-2">
                                     <MobileDetailField
-                                      label="Descripción"
+                                      label={ts("colDescription")}
                                       value={line.description || "-"}
                                     />
                                     <MobileDetailField
-                                      label="Fase"
+                                      label={ts("colPhase")}
                                       value={
                                         line.phase
-                                          ? getPhaseLabel(line.phase)
+                                          ? phaseLabel(line.phase)
                                           : "-"
                                       }
                                     />
                                     <MobileDetailField
-                                      label="Real"
+                                      label={ts("colActual")}
                                       value={formatCurrency(
                                         Number(line.actual_amount)
                                       )}
                                     />
                                     <MobileDetailField
-                                      label="Desviación"
+                                      label={ts("colDeviation")}
                                       value={
                                         <span
                                           className={`inline-flex items-center gap-1 ${deviation.color}`}
@@ -590,7 +595,7 @@ export function ProjectCostControl({
                                       }
                                     />
                                     <MobileDetailField
-                                      label="Visibilidad"
+                                      label={ts("colVisibility")}
                                       value={
                                         <span className="inline-flex items-center gap-1">
                                           {line.is_internal_cost ? (
@@ -632,22 +637,23 @@ export function ProjectCostControl({
                       <ChevronDown
                         className={`h-4 w-4 transition-transform ${openSections.products ? "" : "-rotate-90"}`}
                       />
-                      Coste de Productos
+                      {t("productsCostTitle")}
                     </CardTitle>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="text-muted-foreground text-sm">
-                          Precio Venta: {formatCurrency(totalProductsPrice)}
+                          {t("salePriceShort")}{" "}
+                          {formatCurrency(totalProductsPrice)}
                         </p>
                         <p className="font-semibold">
-                          Coste: {formatCurrency(totalProductsCost)}
+                          {t("costShort")} {formatCurrency(totalProductsCost)}
                         </p>
                       </div>
                       {advancedCostOptionsEnabled && (
                         <div className="text-primary flex items-center gap-1">
                           <TrendingUp className="h-4 w-4" />
                           <span className="text-sm font-medium">
-                            Margen:{" "}
+                            {t("marginShort")}{" "}
                             {formatCurrency(
                               totalProductsPrice - totalProductsCost
                             )}
@@ -661,9 +667,7 @@ export function ProjectCostControl({
               <CollapsibleContent>
                 <CardContent className="pt-0">
                   <p className="text-muted-foreground mb-4 text-sm">
-                    Resumen de costes de adquisición de los productos del
-                    proyecto. El detalle de productos se gestiona en la pestaña
-                    "Presupuesto".
+                    {t("productsCostSummary")}
                   </p>
                   <div
                     className={
@@ -674,7 +678,7 @@ export function ProjectCostControl({
                   >
                     <div className="bg-secondary/30 rounded-lg p-4">
                       <p className="text-muted-foreground text-sm">
-                        Total Coste
+                        {t("totalCost")}
                       </p>
                       <p className="text-xl font-bold">
                         {formatCurrency(totalProductsCost)}
@@ -682,7 +686,7 @@ export function ProjectCostControl({
                     </div>
                     <div className="bg-secondary/30 rounded-lg p-4">
                       <p className="text-muted-foreground text-sm">
-                        Total Venta
+                        {t("totalSale")}
                       </p>
                       <p className="text-xl font-bold">
                         {formatCurrency(totalProductsPrice)}
@@ -691,7 +695,7 @@ export function ProjectCostControl({
                     {advancedCostOptionsEnabled && (
                       <div className="bg-primary/10 dark:bg-primary/20 rounded-lg p-4">
                         <p className="text-muted-foreground text-sm">
-                          Margen Productos
+                          {t("productsMargin")}
                         </p>
                         <p className="text-primary text-xl font-bold">
                           {formatCurrency(
@@ -716,11 +720,11 @@ export function ProjectCostControl({
             <Card>
               <CardContent className="py-12 text-center">
                 <p className="text-muted-foreground mb-4">
-                  No hay partidas de presupuesto registradas.
+                  {t("emptyBudgetLines")}
                 </p>
                 {!readOnly && (
                   <Button onClick={handleAddBudgetLine} disabled={!canEdit}>
-                    <Plus className="mr-2 h-4 w-4" /> Añadir Primera Partida
+                    <Plus className="mr-2 h-4 w-4" /> {t("addFirstBudgetLine")}
                   </Button>
                 )}
               </CardContent>
@@ -748,8 +752,8 @@ export function ProjectCostControl({
       <ConfirmDeleteDialog
         open={deleteTargetId !== null}
         onOpenChange={(open) => !open && setDeleteTargetId(null)}
-        title="¿Eliminar partida?"
-        description="Esta acción no se puede deshacer."
+        title={t("confirmDeleteLine")}
+        description={ts("confirmDeleteDescription")}
         onConfirm={handleConfirmDelete}
         loading={deleteLoading}
       />

@@ -51,6 +51,15 @@
     "construction": "Obra",
     "delivery": "Entrega"
   },
+  "ProjectTabContent": {
+    "disabledMessageDefault": "Esta sección no está incluida en tu plan actual."
+  },
+  "ProjectStatus": {
+    "active": "Activo",
+    "completed": "Completado",
+    "cancelled": "Cancelado",
+    "draft": "Borrador"
+  },
   "ProjectDetailModal": {
     "title": "Detalle del Proyecto",
     "description": "Información del proyecto. Usa Editar para modificar.",
