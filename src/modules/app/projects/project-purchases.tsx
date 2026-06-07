@@ -342,7 +342,9 @@ export function ProjectPurchases({
                           <TableHeader>
                             <TableRow>
                               <TableHead>Ítem</TableHead>
-                              <TableHead className="text-right">Total</TableHead>
+                              <TableHead className="text-right">
+                                Total
+                              </TableHead>
                               <TableHeadMd className="text-right">
                                 Cantidad
                               </TableHeadMd>

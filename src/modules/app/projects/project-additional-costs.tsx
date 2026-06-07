@@ -13,6 +13,7 @@ import {
 import {
   ExpandableRowActionsMenu,
   ExpandableRowActionsPanel,
+  TableCellMd,
   TableHeadExpandPlaceholder,
   TableHeadMd,
   TableRowExpandTrigger,
@@ -254,7 +255,9 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
                                 open={expanded}
                                 colSpan={mobileVisibleColumnCount}
                               >
-                                <ExpandableRowActionsPanel actions={rowActions} />
+                                <ExpandableRowActionsPanel
+                                  actions={rowActions}
+                                />
                               </TableRowMobileDetail>
                             </Fragment>
                           );
