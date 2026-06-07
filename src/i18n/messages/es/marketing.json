@@ -353,7 +353,7 @@
     "privacyShareContent": "No vendemos tus datos personales. Utilizamos proveedores de servicios (como Supabase) para el alojamiento y la autenticación, que actúan como encargados del tratamiento bajo contrato.",
     "privacyRetentionTitle": "Conservación",
     "privacyRetentionContent": "Conservamos tus datos mientras mantengas una cuenta activa. Puedes solicitar la eliminación de tu cuenta y datos en cualquier momento.",
-    "cookiesIntro": "Las cookies son pequeños archivos de texto que el sitio web guarda en tu dispositivo (ordenador, tablet o móvil) cuando lo visitas. Sirven para recordar preferencias, mantener tu sesión o medir el uso del sitio. Solo nosotros o nuestros proveedores autorizados pueden leerlas.",
+    "cookiesIntro": "Las cookies son pequeños archivos de texto que el sitio web guarda en tu dispositivo (computador, tablet o móvil) cuando lo visitas. Sirven para recordar preferencias, mantener tu sesión o medir el uso del sitio. Solo nosotros o nuestros proveedores autorizados pueden leerlas.",
     "cookiesNecessaryTitle": "Cookies necesarias",
     "cookiesNecessaryContent": "Son imprescindibles para el funcionamiento del sitio: sin ellas no podrías iniciar sesión ni usar las funciones protegidas.",
     "cookiesNecessaryItem1": "Supabase (autenticación): cookies de sesión para mantener tu acceso seguro (por ejemplo, sb-*-auth-token). Se usan solo cuando inicias sesión en la plataforma.",

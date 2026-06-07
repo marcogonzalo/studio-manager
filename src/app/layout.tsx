@@ -146,11 +146,19 @@ gtag('set', 'url_passthrough', false);
           `.trim(),
           }}
         />
+        <JsonLd
+          id="json-ld-organization"
+          data={organizationJsonLd}
+          strategy="beforeInteractive"
+        />
+        <JsonLd
+          id="json-ld-software-application"
+          data={softwareApplicationJsonLd}
+          strategy="beforeInteractive"
+        />
       </head>
       <body className="bg-background min-h-screen font-sans antialiased">
         <GtmScriptGate />
-        <JsonLd data={organizationJsonLd} />
-        <JsonLd data={softwareApplicationJsonLd} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

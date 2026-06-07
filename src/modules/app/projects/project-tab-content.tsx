@@ -1,32 +1,47 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { appPath } from "@/lib/app-paths";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /**
  * Encabezado estándar de sección (título + acciones opcionales).
  * Altura mínima fija para que no cambie al mostrar/ocultar botones.
+ * En detalle de proyecto, el título en móvil lo sustituye el Select de pestañas.
  */
 export function TabSectionHeader({
   title,
   subtitle,
   children,
+  hideTitleOnMobile = true,
 }: {
   title: string;
   subtitle?: string;
   children?: React.ReactNode;
+  hideTitleOnMobile?: boolean;
 }) {
   return (
-    <div className="flex min-h-[48px] flex-col justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
-      <div className="space-y-1">
+    <div
+      className={cn(
+        "flex min-h-[48px] flex-row flex-wrap items-center gap-3 sm:gap-4",
+        hideTitleOnMobile && children == null && "hidden md:flex"
+      )}
+    >
+      <div
+        className={cn(
+          "min-w-0 flex-1 space-y-1",
+          hideTitleOnMobile && "hidden md:block"
+        )}
+      >
         <h3 className="text-lg font-medium">{title}</h3>
         {subtitle && (
           <p className="text-muted-foreground text-sm">{subtitle}</p>
         )}
       </div>
       {children != null && (
-        <div className="flex w-full flex-wrap justify-end gap-2 sm:w-auto sm:shrink-0">
+        <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
           {children}
         </div>
       )}
@@ -44,13 +59,18 @@ export function TabSectionHeader({
  */
 export function ProjectTabContent({
   disabled = false,
-  disabledMessage = "Esta sección no está incluida en tu plan actual.",
+  disabledMessage,
   children,
 }: {
   disabled?: boolean;
   disabledMessage?: string;
   children: React.ReactNode;
 }) {
+  const tTab = useTranslations("ProjectTabContent");
+  const tNav = useTranslations("AppNav");
+  const resolvedDisabledMessage =
+    disabledMessage ?? tTab("disabledMessageDefault");
+
   if (!disabled) return <>{children}</>;
 
   return (
@@ -64,10 +84,12 @@ export function ProjectTabContent({
       >
         <div className="bg-card text-card-foreground border-border flex max-w-sm flex-col items-center gap-4 rounded-lg border px-5 py-4 shadow-md">
           <p className="text-muted-foreground text-center text-sm">
-            {disabledMessage}
+            {resolvedDisabledMessage}
           </p>
           <Button asChild size="sm" variant="secondary">
-            <Link href={appPath("/settings/plan/change")}>Mejora tu plan</Link>
+            <Link href={appPath("/settings/plan/change")}>
+              {tNav("upgradePlanCta")}
+            </Link>
           </Button>
         </div>
       </div>
