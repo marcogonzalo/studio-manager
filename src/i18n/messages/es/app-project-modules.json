@@ -241,9 +241,9 @@
   },
   "ProjectModulePurchases": {
     "title": "Pedidos de compra y fabricación",
-    "disabledMessage": "Los pedidos de compra no están incluidas en tu plan actual.",
+    "disabledMessage": "Los pedidos de compra y fabricación no están incluidos en tu plan actual.",
     "newOrder": "Nuevo Pedido",
-    "empty": "No hay pedidos de compra.",
+    "empty": "No hay pedidos de compra y fabricación.",
     "createFirstOrder": "Crear Primer Pedido",
     "unknownSupplier": "Proveedor Desconocido",
     "status": {
