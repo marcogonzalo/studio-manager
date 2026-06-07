@@ -1,3 +1,7 @@
+# Dev (default): docker compose up
+# Tests:        docker compose --profile test run --rm test
+# Prod-like:    docker compose --profile prod up --build app-prod
+
 services:
   app:
     build: .
@@ -6,14 +10,69 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - app-next-cache:/app/.next
     extra_hosts:
-      # Make localhost resolve to host machine for Supabase access
       - "localhost:host-gateway"
     environment:
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
-      # CRITICAL: Both client AND server must use the SAME URL for PKCE cookies to work
-      # The cookie prefix is generated from the URL, so they must match exactly
-      # Use localhost which resolves to 127.0.0.1 and works from both browser and Docker
-      - NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
-      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH}
+      # Cap V8 heap so Turbopack/dev cannot consume all host RAM (OOM → exit 137)
+      NODE_OPTIONS: --max-old-space-size=3072
+      # Polling is CPU-heavy on Mac bind mounts. Default off; set DOCKER_DEV_POLLING=true if HMR misses edits.
+      CHOKIDAR_USEPOLLING: ${DOCKER_DEV_POLLING:-false}
+      WATCHPACK_POLLING: ${DOCKER_DEV_POLLING:-false}
+      NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH}
+    mem_limit: 4096m
+    memswap_limit: 4096m
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  test:
+    profiles: [test]
+    build: .
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      NODE_OPTIONS: --max-old-space-size=2048
+      CI: "true"
+      NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH}
+    mem_limit: 4096m
+    memswap_limit: 4096m
+    command: ["pnpm", "test", "--", "--run"]
+
+  app-prod:
+    profiles: [prod]
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-http://localhost:54321}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH}
+    ports:
+      - "3000:3000"
+    env_file:
+      - path: .env.local
+        required: false
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=2048
+    mem_limit: 2048m
+    memswap_limit: 2048m
+    init: true
+    restart: unless-stopped
+
+volumes:
+  app-next-cache:

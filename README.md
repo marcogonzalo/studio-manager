@@ -131,7 +131,21 @@ This will:
 - Build the Docker image if it doesn't exist
 - Start the container with the application
 - Mount your code for hot-reload
-- Expose the app on `http://localhost:5173`
+- Expose the app on `http://localhost:3000`
+
+**Optional:** copy `.env.docker.example` to `.env` and set `DOCKER_DEV_POLLING=true` if hot reload misses file changes on Mac Docker bind mounts (default is off to save CPU/RAM).
+
+**Run tests in Docker:**
+
+```bash
+pnpm run docker:test
+```
+
+**Production-like run (build + start, no bind mount):**
+
+```bash
+pnpm run docker:prod
+```
 
 **Run in detached mode (background):**
 
@@ -174,7 +188,7 @@ If you prefer to run the application locally without Docker:
    ```
 
 3. **Open your browser**
-   Navigate to `http://localhost:5173`
+   Navigate to `http://localhost:3000`
 
 ## 📁 Project Structure
 
