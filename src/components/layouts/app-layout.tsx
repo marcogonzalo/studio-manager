@@ -192,7 +192,7 @@ function MobileBottomNav({
           type="button"
           onClick={onMenuOpen}
           className={tabClass(isMobileMoreActive(pathname, isMenuOpen))}
-          aria-label={tLayout("openMenu")}
+          aria-label={tNav("more")}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-nav-sheet"
         >
