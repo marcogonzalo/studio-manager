@@ -147,9 +147,9 @@ export default function CatalogPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <ShoppingBag className="text-primary h-8 w-8" />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <ShoppingBag className="text-primary h-8 w-8 shrink-0" />
             <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
           <Button
@@ -157,6 +157,7 @@ export default function CatalogPage() {
               setEditingProduct(null);
               setIsDialogOpen(true);
             }}
+            className="w-full sm:w-auto"
           >
             <Plus className="mr-2 h-4 w-4" /> {t("newProduct")}
           </Button>
@@ -164,8 +165,8 @@ export default function CatalogPage() {
         <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <div className="relative max-w-sm flex-1">
+      <div className="w-full min-w-0">
+        <div className="relative w-full min-w-0">
           <Search
             className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4"
             aria-hidden

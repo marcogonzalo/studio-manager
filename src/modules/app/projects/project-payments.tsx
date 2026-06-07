@@ -175,7 +175,7 @@ export function ProjectPayments({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-10 w-[200px]" />
+          <Skeleton className="h-10 w-full sm:w-[200px]" />
         </div>
         <div className="space-y-2">
           {[1, 2, 3, 4].map((i) => (
@@ -193,9 +193,9 @@ export function ProjectPayments({
     >
       <div className="space-y-6">
         <TabSectionHeader title="Pagos del Proyecto">
-          <div className="flex gap-2">
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row">
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-full min-w-0 sm:w-[200px]">
                 <SelectValue placeholder="Filtrar por tipo" />
               </SelectTrigger>
               <SelectContent>
@@ -209,7 +209,7 @@ export function ProjectPayments({
               </SelectContent>
             </Select>
             {!readOnly && (
-              <Button onClick={handleCreateNew}>
+              <Button onClick={handleCreateNew} className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" /> Nuevo Pago
               </Button>
             )}
@@ -219,7 +219,7 @@ export function ProjectPayments({
         {/* Totals summary (like cost control) */}
         <Card>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="bg-secondary/30 rounded-lg p-3">
                 <p className="text-muted-foreground text-xs">Total pendiente</p>
                 <p className="text-xl font-bold">
@@ -272,7 +272,7 @@ export function ProjectPayments({
           <>
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <CardTitle>Historial de Pagos</CardTitle>
                   <div className="text-muted-foreground text-sm">
                     Total:{" "}

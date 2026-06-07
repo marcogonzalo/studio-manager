@@ -791,15 +791,19 @@ export default function AppLayoutClient({
           </SheetContent>
         </Sheet>
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div
+          className={cn(
+            "flex w-full min-w-0 flex-1 flex-col transition-all duration-300 print:ml-0",
+            isCollapsed ? "md:ml-16" : "md:ml-64"
+          )}
+        >
           <main
             id="main-content"
             tabIndex={-1}
             className={cn(
-              "flex-1 overflow-x-hidden px-4 pt-4 transition-all duration-300 md:p-5 print:ml-0 print:p-0",
+              "w-full min-w-0 flex-1 overflow-x-hidden px-4 pt-4 transition-all duration-300 md:p-5 print:p-0",
               "pb-[calc(4rem+max(1rem,env(safe-area-inset-bottom,0px)))] md:pb-5",
-              isCollapsed ? "md:ml-16" : "md:ml-64",
-              "animate-in fade-in slide-in-from-bottom-4 mx-auto max-w-7xl duration-500"
+              "animate-in fade-in slide-in-from-bottom-4 duration-500"
             )}
           >
             {(pathname.includes("/settings") ||

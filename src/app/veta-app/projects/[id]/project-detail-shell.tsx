@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { FileText, Eye, EyeOff } from "lucide-react";
 import { ProjectShareDialog } from "@/components/dialogs/project-share-dialog";
 import { ProjectContext } from "./project-context";
+import { cn } from "@/lib/utils";
 
 function ProjectDetailShellContent({
   children,
@@ -108,9 +109,39 @@ function ProjectDetailShellContent({
     ]
   );
 
+  const projectTabs = useMemo(
+    () => [
+      { value: "overview", label: t("tabs.overview"), disabled: false },
+      { value: "spaces", label: t("tabs.spaces"), disabled: false },
+      { value: "quotation", label: t("tabs.quotation"), disabled: false },
+      { value: "expenses", label: t("tabs.expenses"), disabled: costsDisabled },
+      {
+        value: "purchases",
+        label: t("tabs.purchases"),
+        disabled: purchasesDisabled,
+      },
+      {
+        value: "payments",
+        label: t("tabs.payments"),
+        disabled: paymentsDisabled,
+      },
+      {
+        value: "documents",
+        label: t("tabs.documents"),
+        disabled: documentsDisabled,
+      },
+      { value: "notes", label: t("tabs.notes"), disabled: false },
+    ],
+    [t, costsDisabled, purchasesDisabled, paymentsDisabled, documentsDisabled]
+  );
+
   const pathSegments = pathname.split("/").filter(Boolean);
   const lastSegment = pathSegments[pathSegments.length - 1];
   const activeTab = lastSegment === id ? "overview" : lastSegment;
+
+  const activeTabLabel =
+    projectTabs.find((tab) => tab.value === activeTab)?.label ??
+    t("tabs.overview");
 
   const currentTabHasRestrictedContent = (() => {
     switch (activeTab) {
@@ -270,11 +301,16 @@ function ProjectDetailShellContent({
   return (
     <ProjectContext.Provider value={{ project, isReadOnly, capabilities }}>
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-            <div className="w-[fit-content] self-start">
+            <div className="w-full min-w-0 self-start md:w-auto md:max-w-full">
               <Select value={id} onValueChange={handleProjectSwitch}>
-                <SelectTrigger className="text-muted-foreground h-auto min-h-12 w-[fit-content] max-w-full border-0 bg-transparent py-2 pr-16 text-left text-2xl font-bold shadow-none focus:ring-0 sm:text-3xl [&>svg]:ml-0 [&>svg]:h-8 [&>svg]:w-8">
+                <SelectTrigger
+                  className={cn(
+                    "text-muted-foreground h-auto min-h-11 w-full max-w-full border-0 bg-transparent py-2 pr-10 text-left text-xl font-bold shadow-none focus:ring-0 md:min-h-12 md:w-auto md:pr-12 md:text-2xl lg:text-3xl",
+                    "[&>span]:line-clamp-2 [&>span]:text-left [&>svg]:ml-0 [&>svg]:h-6 [&>svg]:w-6 md:[&>svg]:h-8 md:[&>svg]:w-8"
+                  )}
+                >
                   <SelectValue>
                     <span
                       className={
@@ -325,50 +361,65 @@ function ProjectDetailShellContent({
               </span>
             )}
           </div>
-          <Button
-            variant="secondary"
-            onClick={() => setIsShareDialogOpen(true)}
-            className="shrink-0"
-          >
-            {shareViewEnabled ? (
-              <Eye className="mr-2 h-4 w-4" />
-            ) : (
-              <EyeOff className="mr-2 h-4 w-4" />
-            )}
-            {t("publicView")}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setIsDetailModalOpen(true)}
-            className="shrink-0"
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            {t("detail")}
-          </Button>
+          <div className="flex w-full shrink-0 gap-2 md:w-auto">
+            <Button
+              variant="secondary"
+              onClick={() => setIsShareDialogOpen(true)}
+              className="h-11 flex-1 md:h-9 md:flex-none"
+              aria-label={t("publicView")}
+            >
+              {shareViewEnabled ? (
+                <Eye className="h-4 w-4 shrink-0 md:mr-2" />
+              ) : (
+                <EyeOff className="h-4 w-4 shrink-0 md:mr-2" />
+              )}
+              <span className="hidden md:inline">{t("publicView")}</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setIsDetailModalOpen(true)}
+              className="h-11 flex-1 md:h-9 md:flex-none"
+              aria-label={t("detail")}
+            >
+              <FileText className="h-4 w-4 shrink-0 md:mr-2" />
+              <span className="hidden md:inline">{t("detail")}</span>
+            </Button>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTabAndUrl}>
-          <div className="scrollbar-hide -mx-4 overflow-x-auto px-4">
+          <div className="md:hidden">
+            <Select value={activeTab} onValueChange={setActiveTabAndUrl}>
+              <SelectTrigger aria-label={t("tabsSelectAria")}>
+                <SelectValue>{activeTabLabel}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {projectTabs.map((tab) => (
+                  <SelectItem
+                    key={tab.value}
+                    value={tab.value}
+                    disabled={tab.disabled}
+                  >
+                    {tab.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="scrollbar-hide -mx-4 hidden overflow-x-auto px-4 md:block">
             <TabsList
               ref={tabsListRef}
               className="inline-flex w-max min-w-full"
             >
-              <TabsTrigger value="overview">{t("tabs.overview")}</TabsTrigger>
-              <TabsTrigger value="spaces">{t("tabs.spaces")}</TabsTrigger>
-              <TabsTrigger value="quotation">{t("tabs.quotation")}</TabsTrigger>
-              <TabsTrigger value="expenses" disabled={costsDisabled}>
-                {t("tabs.expenses")}
-              </TabsTrigger>
-              <TabsTrigger value="purchases" disabled={purchasesDisabled}>
-                {t("tabs.purchases")}
-              </TabsTrigger>
-              <TabsTrigger value="payments" disabled={paymentsDisabled}>
-                {t("tabs.payments")}
-              </TabsTrigger>
-              <TabsTrigger value="documents" disabled={documentsDisabled}>
-                {t("tabs.documents")}
-              </TabsTrigger>
-              <TabsTrigger value="notes">{t("tabs.notes")}</TabsTrigger>
+              {projectTabs.map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  disabled={tab.disabled}
+                >
+                  {tab.label}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </div>
           {currentTabHasRestrictedContent && (

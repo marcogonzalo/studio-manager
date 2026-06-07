@@ -129,14 +129,17 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h3 className="text-lg font-medium">Costes Adicionales</h3>
           <div className="text-muted-foreground text-sm">
             Total: ${totalAmount.toFixed(2)}
           </div>
         </div>
-        <Button onClick={handleAddNew} className="print:hidden">
+        <Button
+          onClick={handleAddNew}
+          className="w-full sm:w-auto print:hidden"
+        >
           <Plus className="mr-2 h-4 w-4" /> Añadir Coste
         </Button>
       </div>

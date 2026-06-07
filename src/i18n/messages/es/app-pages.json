@@ -122,6 +122,7 @@
     "readOnlyDescription": "No se pueden editar datos ni añadir contenido.",
     "publicView": "Vista pública",
     "detail": "Detalle",
+    "tabsSelectAria": "Sección del proyecto",
     "tabs": {
       "overview": "Resumen",
       "spaces": "Espacios",

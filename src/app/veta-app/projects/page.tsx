@@ -164,13 +164,14 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <FolderKanban className="text-primary h-8 w-8" />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <FolderKanban className="text-primary h-8 w-8 shrink-0" />
             <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
           <Button
             onClick={() => setIsDialogOpen(true)}
+            className="w-full sm:w-auto"
             {...(projects.length > 0 && {
               "data-onboarding-target": "project",
             })}
@@ -181,8 +182,8 @@ export default function ProjectsPage() {
         <p className="text-muted-foreground text-sm">{t("description")}</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative max-w-sm min-w-[200px] flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative w-full min-w-0 flex-1 sm:max-w-sm">
           <Search
             className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4"
             aria-hidden
@@ -200,7 +201,7 @@ export default function ProjectsPage() {
           value={statusFilter}
           onValueChange={(v) => setStatusFilter(v as StatusFilter)}
         >
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full min-w-0 sm:w-[160px]">
             <SelectValue placeholder={t("statusPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
@@ -214,7 +215,7 @@ export default function ProjectsPage() {
           value={sortBy}
           onValueChange={(v) => setSortBy(v as SortOption)}
         >
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full min-w-0 sm:w-[200px]">
             <SelectValue placeholder={t("sortPlaceholder")} />
           </SelectTrigger>
           <SelectContent>

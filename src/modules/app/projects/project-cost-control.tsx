@@ -337,7 +337,7 @@ export function ProjectCostControl({
             <CardContent className="pt-6">
               <div className="space-y-3">
                 {/* Totals row */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="bg-secondary/30 rounded-lg p-3">
                     <p className="text-muted-foreground text-xs">
                       Total Estimado
@@ -592,8 +592,8 @@ export function ProjectCostControl({
                   <div
                     className={
                       advancedCostOptionsEnabled
-                        ? "grid grid-cols-3 gap-4 text-center"
-                        : "grid grid-cols-2 gap-4 text-center"
+                        ? "grid grid-cols-1 gap-4 text-center sm:grid-cols-2 lg:grid-cols-3"
+                        : "grid grid-cols-1 gap-4 text-center sm:grid-cols-2"
                     }
                   >
                     <div className="bg-secondary/30 rounded-lg p-4">
