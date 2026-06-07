@@ -89,30 +89,32 @@ export function CookieConsentBanner() {
       >
         <div className="container mx-auto max-w-4xl px-4 py-4 text-right">
           <p className="text-muted-foreground mb-4 text-sm">{t("intro")}</p>
-          <div className="flex flex-col flex-wrap items-stretch justify-end gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
             <Button
               onClick={() => setCustomOpen(true)}
               variant="ghost"
               size="sm"
-              className="h-10 w-full sm:h-8 sm:w-auto"
+              className="self-center sm:mr-auto"
             >
               {t("customize")}
             </Button>
-            <Button
-              onClick={handleRejectAll}
-              variant="outline"
-              size="sm"
-              className="h-10 w-full sm:h-8 sm:w-auto"
-            >
-              {t("rejectAll")}
-            </Button>
-            <Button
-              onClick={handleAcceptAll}
-              size="sm"
-              className="h-10 w-full sm:h-8 sm:w-auto"
-            >
-              {t("acceptAll")}
-            </Button>
+            <div className="flex flex-row gap-2">
+              <Button
+                onClick={handleRejectAll}
+                variant="outline"
+                size="sm"
+                className="min-h-10 flex-1 sm:flex-none"
+              >
+                {t("rejectAll")}
+              </Button>
+              <Button
+                onClick={handleAcceptAll}
+                size="sm"
+                className="min-h-10 flex-1 sm:flex-none"
+              >
+                {t("acceptAll")}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

@@ -438,7 +438,10 @@ export function PurchaseOrderDialog({
             <p className="text-muted-foreground mb-4">
               {t("cancelledOrderDescription")}
             </p>
-            <Button onClick={() => onOpenChange(false)} className="w-full">
+            <Button
+              onClick={() => onOpenChange(false)}
+              className="w-full sm:w-auto"
+            >
               {t("close")}
             </Button>
           </div>

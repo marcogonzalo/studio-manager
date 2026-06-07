@@ -301,7 +301,7 @@ function ProjectDetailShellContent({
   return (
     <ProjectContext.Provider value={{ project, isReadOnly, capabilities }}>
       <div className="space-y-6">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4">
+        <div className="flex flex-col gap-3">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
             <div className="w-full min-w-0 self-start md:w-auto md:max-w-full">
               <Select value={id} onValueChange={handleProjectSwitch}>
@@ -361,28 +361,28 @@ function ProjectDetailShellContent({
               </span>
             )}
           </div>
-          <div className="flex w-full shrink-0 gap-2 md:w-auto">
+          <div className="flex w-full justify-center gap-2">
             <Button
               variant="secondary"
               onClick={() => setIsShareDialogOpen(true)}
-              className="h-11 flex-1 md:h-9 md:flex-none"
+              className="h-11 sm:h-9 sm:w-auto"
               aria-label={t("publicView")}
             >
               {shareViewEnabled ? (
-                <Eye className="h-4 w-4 shrink-0 md:mr-2" />
+                <Eye className="mr-2 h-4 w-4 shrink-0" />
               ) : (
-                <EyeOff className="h-4 w-4 shrink-0 md:mr-2" />
+                <EyeOff className="mr-2 h-4 w-4 shrink-0" />
               )}
-              <span className="hidden md:inline">{t("publicView")}</span>
+              {t("publicView")}
             </Button>
             <Button
               variant="outline"
               onClick={() => setIsDetailModalOpen(true)}
-              className="h-11 flex-1 md:h-9 md:flex-none"
+              className="h-11 sm:h-9 sm:w-auto"
               aria-label={t("detail")}
             >
-              <FileText className="h-4 w-4 shrink-0 md:mr-2" />
-              <span className="hidden md:inline">{t("detail")}</span>
+              <FileText className="mr-2 h-4 w-4 shrink-0" />
+              {t("detail")}
             </Button>
           </div>
         </div>

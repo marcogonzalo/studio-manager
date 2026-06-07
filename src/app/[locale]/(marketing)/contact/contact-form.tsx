@@ -177,7 +177,12 @@ export function ContactForm() {
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full sm:w-auto"
+            disabled={isPending}
+          >
             {isPending ? t("submitting") : t("submit")}
           </Button>
         </form>
