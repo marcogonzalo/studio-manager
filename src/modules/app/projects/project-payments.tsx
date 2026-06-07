@@ -307,7 +307,9 @@ export function ProjectPayments({
                       <TableRow>
                         <TableHead>{ts("colDate")}</TableHead>
                         <TableHead>{ts("colType")}</TableHead>
-                        <TableHead>{ts("colAmount")}</TableHead>
+                        <TableHead className="text-right">
+                          {ts("colAmount")}
+                        </TableHead>
                         <TableHeadMd>{ts("colReference")}</TableHeadMd>
                         <TableHeadMd>{ts("colPhase")}</TableHeadMd>
                         <TableHeadMd>{ts("colDescription")}</TableHeadMd>
@@ -354,7 +356,7 @@ export function ProjectPayments({
                                 )}
                               </TableCell>
                               <TableCell>{typeBadge}</TableCell>
-                              <TableCell className="font-semibold tabular-nums">
+                              <TableCell className="text-right font-semibold tabular-nums">
                                 {formatCurrencyUtil(
                                   Number(payment.amount),
                                   projectCurrency
