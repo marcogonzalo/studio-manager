@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
+import { useState } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Pencil, Trash2 } from "lucide-react";
@@ -66,31 +67,40 @@ describe("expandable-table", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("TableRowExpandTrigger toggles aria-expanded", async () => {
+  it("TableRowExpandTrigger updates aria-expanded when expanded prop changes", async () => {
     const user = userEvent.setup();
-    let expanded = false;
-    render(
-      <Table>
-        <TableBody>
-          <TableRow>
-            <TableCell>Fecha</TableCell>
-            <TableRowExpandTrigger
-              expanded={expanded}
-              onToggle={() => {
-                expanded = !expanded;
-              }}
-              expandLabel="Ver detalles"
-              collapseLabel="Ocultar detalles"
-            />
-          </TableRow>
-        </TableBody>
-      </Table>
-    );
+
+    function ExpandRow() {
+      const [expanded, setExpanded] = useState(false);
+      return (
+        <Table>
+          <TableBody>
+            <TableRow>
+              <TableCell>Fecha</TableCell>
+              <TableRowExpandTrigger
+                expanded={expanded}
+                onToggle={() => setExpanded((open) => !open)}
+                expandLabel="Ver detalles"
+                collapseLabel="Ocultar detalles"
+              />
+            </TableRow>
+          </TableBody>
+        </Table>
+      );
+    }
+
+    render(<ExpandRow />);
 
     const button = screen.getByRole("button", { name: "Ver detalles" });
     expect(button).toHaveAttribute("aria-expanded", "false");
     await user.click(button);
-    expect(expanded).toBe(true);
+    expect(
+      screen.getByRole("button", { name: "Ocultar detalles" })
+    ).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByRole("button", { name: "Ocultar detalles" }));
+    expect(
+      screen.getByRole("button", { name: "Ver detalles" })
+    ).toHaveAttribute("aria-expanded", "false");
   });
 });
 

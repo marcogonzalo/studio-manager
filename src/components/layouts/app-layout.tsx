@@ -138,7 +138,7 @@ function isMobileMoreActive(pathname: string, isMenuOpen: boolean): boolean {
   return (
     isMenuOpen ||
     pathname.startsWith(appPath("/catalog")) ||
-    pathname.includes("/settings") ||
+    pathname.startsWith(appPath("/settings")) ||
     pathname.startsWith(appPath("/profile"))
   );
 }
@@ -192,7 +192,7 @@ function MobileBottomNav({
           type="button"
           onClick={onMenuOpen}
           className={tabClass(isMobileMoreActive(pathname, isMenuOpen))}
-          aria-label={tLayout("openMenu")}
+          aria-label={`${tNav("more")}, ${tLayout("openMenu")}`}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-nav-sheet"
         >
