@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
+import { buildLocaleAlternates } from "@/lib/locale-alternates";
 import { SignInForm } from "../sign-in-form";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -12,10 +13,20 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "SignIn" });
+  const { canonical, alternates } = buildLocaleAlternates(
+    "/sign-in",
+    "/en/sign-in",
+    locale
+  );
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/sign-in" },
+    alternates,
+    openGraph: {
+      title: t("metaTitle"),
+      description: t("metaDescription"),
+      url: canonical,
+    },
     robots: { index: true, follow: true },
   };
 }
