@@ -2,7 +2,7 @@
 
 ## Entorno y variables
 
-- **Supabase:** Local con `npx supabase start`. Producción: Supabase Cloud. Claves: `NEXT_PUBLIC_SUPABASE_*` (cliente), `SUPABASE_SECRET_KEY` o `SUPABASE_SERVICE_ROLE_KEY` en servidor (ver `src/lib/supabase/keys.ts`).
+- **Supabase:** Local con `pnpm run supabase:start:slim` (stack reducido; menos RAM). Opcional: `pnpm run supabase:studio` (dashboard), `pnpm run supabase:mail` (Inbucket). Stack completo: `pnpm run supabase:start`. Producción: Supabase Cloud. Claves: `NEXT_PUBLIC_SUPABASE_*` (cliente), `SUPABASE_SECRET_KEY` o `SUPABASE_SERVICE_ROLE_KEY` en servidor (ver `src/lib/supabase/keys.ts`).
 - **Backblaze B2:** Imágenes y documentos. Variables: `B2_APPLICATION_KEY_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET_ID`, `B2_BUCKET_NAME`. Rutas: `assets/{userId}/catalog/`, `assets/{userId}/projects/{projectId}/img/`, `.../doc/`.
 - **Docker:** `extra_hosts: localhost:host-gateway` para que el contenedor alcance Supabase en el host.
 - **CI/CD:** Pipeline en `.github/workflows/ci.yml`; documentación en `docs/ci-cd.md`.

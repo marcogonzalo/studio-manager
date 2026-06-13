@@ -8,7 +8,7 @@ description: Safe Supabase migration workflow for Veta — local-only push/reset
 ## Scope
 
 - **Migrations:** `supabase/migrations/*.sql` (ordered by timestamp prefix).
-- **Local dev:** `npx supabase start` on the host; Docker may use `localhost:host-gateway` to reach Supabase (see `memory-bank/constraints.md`).
+- **Local dev:** `pnpm run supabase:start:slim` on the host (lower RAM); optional `pnpm run supabase:studio` / `pnpm run supabase:mail`. Full stack: `pnpm run supabase:start`. Docker may use `localhost:host-gateway` to reach Supabase (see `memory-bank/constraints.md`).
 - **Production:** Schema changes reach Supabase Cloud via your normal release process (CI, dashboard, or approved `db push` to linked remote). **Never** assume the agent should run commands against production.
 
 ## Scripts (package.json)

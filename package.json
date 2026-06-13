@@ -29,7 +29,13 @@
     "docker:test": "docker compose --profile test run --rm test",
     "docker:prod": "docker compose --profile prod up --build app-prod",
     "docker:lint": "docker compose exec app pnpm run lint",
-    "docker:build-check": "docker compose exec app pnpm run build"
+    "docker:build-check": "docker compose exec app pnpm run build",
+    "supabase:start": "node scripts/supabase-local.mjs slim",
+    "supabase:start:full": "node scripts/supabase-local.mjs start",
+    "supabase:studio": "node scripts/supabase-local.mjs studio",
+    "supabase:mail": "node scripts/supabase-local.mjs mail",
+    "supabase:status": "supabase status",
+    "supabase:stop": "supabase stop"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
