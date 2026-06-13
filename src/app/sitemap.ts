@@ -25,8 +25,8 @@ const publicRoutes = [
   },
   { path: "/contacto", priority: 0.8, changeFrequency: "monthly" as const },
   { path: "/en/contact", priority: 0.8, changeFrequency: "monthly" as const },
-  { path: "/demo", priority: 0.8, changeFrequency: "monthly" as const },
-  { path: "/en/demo", priority: 0.8, changeFrequency: "monthly" as const },
+  { path: "/demo", priority: 0.9, changeFrequency: "monthly" as const },
+  { path: "/en/demo", priority: 0.9, changeFrequency: "monthly" as const },
   { path: "/legal", priority: 0.5, changeFrequency: "yearly" as const },
   { path: "/en/legal", priority: 0.5, changeFrequency: "yearly" as const },
   {
@@ -59,11 +59,31 @@ const publicRoutes = [
     priority: 0.7,
     changeFrequency: "monthly" as const,
   },
+  {
+    path: "/software-gestion-proyectos-interiorismo",
+    priority: 0.85,
+    changeFrequency: "monthly" as const,
+  },
+  {
+    path: "/en/interior-design-project-management-software",
+    priority: 0.85,
+    changeFrequency: "monthly" as const,
+  },
+  {
+    path: "/software-gestion-proyectos-arquitectura",
+    priority: 0.85,
+    changeFrequency: "monthly" as const,
+  },
+  {
+    path: "/en/architecture-project-management-software",
+    priority: 0.85,
+    changeFrequency: "monthly" as const,
+  },
 ];
 
 function blogSitemapPriority(path: string): number {
   if (path === "/blog" || path === "/en/blog") {
-    return 0.75;
+    return 0.8;
   }
   return 0.65;
 }

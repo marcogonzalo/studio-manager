@@ -1,18 +1,16 @@
-import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
-import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/routing";
+import type { LucideIcon } from "lucide-react";
 import {
+  ArrowRight,
   Check,
   Sparkles,
-  ArrowRight,
-  Layers,
-  Wallet,
-  FileText,
-  BarChart3,
+  FolderKanban,
+  Users,
   Receipt,
-  Globe,
+  BarChart3,
+  Building2,
+  ClipboardList,
 } from "lucide-react";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -20,84 +18,54 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/ui/animated-section";
-import {
-  getCommercialFeatures,
-  getPlanConfigForDisplay,
-  COMPACT_FEATURE_KEYS,
-  translatePlanCopyItem,
-} from "@/lib/plan-copy";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "PlanPro" });
-  const canonical =
-    locale === "es"
-      ? "/plan-pro-independientes-diseno-interior"
-      : "/en/pro-plan-for-independent-interior-designers";
-  return {
-    title: t("metaTitle"),
-    description: t("metaDescription"),
-    alternates: {
-      canonical,
-      languages: {
-        es: "/plan-pro-independientes-diseno-interior",
-        en: "/en/pro-plan-for-independent-interior-designers",
-        "x-default": "/plan-pro-independientes-diseno-interior",
-      },
-    },
-    openGraph: {
-      title: t("ogTitle"),
-      description: t("ogDescription"),
-      url: canonical,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: t("twitterTitle"),
-      description: t("twitterDescription"),
-    },
-  };
-}
-
-const highlightIcons = [
-  Layers,
-  BarChart3,
+const featureIcons = [
+  FolderKanban,
+  Users,
   Receipt,
-  Globe,
-  FileText,
-  Wallet,
+  BarChart3,
+  ClipboardList,
+  Building2,
 ] as const;
 
-export default async function PlanProPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-  const t = await getTranslations("PlanPro");
-  const tPlanCopy = await getTranslations("PlanCopy");
-  const features = getCommercialFeatures(getPlanConfigForDisplay("PRO"), {
-    include: COMPACT_FEATURE_KEYS,
-  }).map((item) => translatePlanCopyItem(item, tPlanCopy));
+type PlanCard = {
+  title: string;
+  description: string;
+  href: "/plan-base" | "/plan-pro" | "/plan-studio";
+  cta: string;
+};
 
-  const pains = [
-    { title: t("pain1Title"), description: t("pain1Desc") },
-    { title: t("pain2Title"), description: t("pain2Desc") },
-    { title: t("pain3Title"), description: t("pain3Desc") },
-  ];
+export type PmHubLandingContent = {
+  badge: string;
+  heroTitle: string;
+  heroTitleHighlight: string;
+  heroSubtitle: string;
+  primaryCta: string;
+  secondaryCta: string;
+  painsTitle: string;
+  painsSubtitle: string;
+  pains: Array<{ title: string; description: string }>;
+  featuresTitle: string;
+  featuresSubtitle: string;
+  features: Array<{ title: string; text: string }>;
+  plansTitle: string;
+  plansSubtitle: string;
+  plans: PlanCard[];
+  siblingHubTitle: string;
+  siblingHubDescription: string;
+  siblingHubCta: string;
+  siblingHubHref: "/software-interior-design" | "/software-architecture";
+  ctaBadge: string;
+  ctaTitle: string;
+  ctaSubtitle: string;
+  ctaButton: string;
+};
 
-  const highlights = [
-    { title: t("highlight1Title"), text: t("highlight1Text") },
-    { title: t("highlight2Title"), text: t("highlight2Text") },
-    { title: t("highlight3Title"), text: t("highlight3Text") },
-    { title: t("highlight4Title"), text: t("highlight4Text") },
-    { title: t("highlight5Title"), text: t("highlight5Text") },
-    { title: t("highlight6Title"), text: t("highlight6Text") },
-  ].map((item, i) => ({ ...item, icon: highlightIcons[i] }));
+export function PmHubLanding({ content }: { content: PmHubLandingContent }) {
+  const featuresWithIcons = content.features.map((item, i) => ({
+    ...item,
+    icon: featureIcons[i] as LucideIcon,
+  }));
 
   return (
     <>
@@ -110,24 +78,24 @@ export default async function PlanProPage({
           <AnimatedSection className="mx-auto max-w-3xl text-center">
             <div className="text-primary border-primary/30 bg-primary/10 mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
               <Sparkles className="h-4 w-4" />
-              {t("badge")}
+              {content.badge}
             </div>
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-              {t("heroTitle")}{" "}
-              <span className="text-primary">{t("heroTitleHighlight")}</span>
+              {content.heroTitle}{" "}
+              <span className="text-primary">{content.heroTitleHighlight}</span>
             </h1>
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-              {t("heroSubtitle")}
+              {content.heroSubtitle}
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">
-                  {t("tryProCta")}
+                  {content.primaryCta}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/pricing">{t("viewPricing")}</Link>
+                <Link href="/pricing">{content.secondaryCta}</Link>
               </Button>
             </div>
           </AnimatedSection>
@@ -143,10 +111,10 @@ export default async function PlanProPage({
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              {t("painsTitle")}
+              {content.painsTitle}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              {t("painsSubtitle")}
+              {content.painsSubtitle}
             </p>
           </AnimatedSection>
 
@@ -154,7 +122,7 @@ export default async function PlanProPage({
             className="mx-auto grid max-w-4xl gap-8 sm:grid-cols-1 md:grid-cols-3"
             staggerDelay={0.1}
           >
-            {pains.map((pain) => (
+            {content.pains.map((pain) => (
               <StaggerItem key={pain.title}>
                 <Card className="h-full border-none shadow-sm transition-all duration-300 hover:shadow-md">
                   <CardHeader>
@@ -174,15 +142,15 @@ export default async function PlanProPage({
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              {t("highlightsTitle")}
+              {content.featuresTitle}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              {t("highlightsSubtitle")}
+              {content.featuresSubtitle}
             </p>
           </AnimatedSection>
 
           <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {highlights.map((item) => (
+            {featuresWithIcons.map((item) => (
               <AnimatedSection key={item.title} className="flex gap-4">
                 <div className="bg-primary/10 text-primary flex h-12 w-12 shrink-0 items-center justify-center rounded-lg">
                   <item.icon className="h-6 w-6" />
@@ -196,27 +164,45 @@ export default async function PlanProPage({
               </AnimatedSection>
             ))}
           </div>
+        </div>
+      </section>
 
-          <AnimatedSection className="mx-auto mt-16 max-w-xl">
-            <Card className="border-primary/20 bg-primary/5">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Check className="text-primary h-5 w-5" />
-                  {t("includedTitle")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="text-muted-foreground space-y-2">
-                  {features.map((f) => (
-                    <li key={f} className="flex items-center gap-2">
-                      <Check className="text-primary h-4 w-4 shrink-0" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+      <section className="bg-muted/30 py-20">
+        <div className="container mx-auto max-w-7xl px-4">
+          <AnimatedSection className="mx-auto mb-16 max-w-2xl text-center">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              {content.plansTitle}
+            </h2>
+            <p className="text-muted-foreground mt-4 text-lg">
+              {content.plansSubtitle}
+            </p>
           </AnimatedSection>
+
+          <StaggerContainer
+            className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3"
+            staggerDelay={0.1}
+          >
+            {content.plans.map((plan) => (
+              <StaggerItem key={plan.title}>
+                <Card className="border-primary/10 flex h-full flex-col shadow-sm transition-all duration-300 hover:shadow-md">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{plan.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col">
+                    <p className="text-muted-foreground flex-1 text-sm">
+                      {plan.description}
+                    </p>
+                    <Button className="mt-6 w-full" variant="outline" asChild>
+                      <Link href={plan.href}>
+                        {plan.cta}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+            ))}
+          </StaggerContainer>
         </div>
       </section>
 
@@ -224,12 +210,14 @@ export default async function PlanProPage({
         <div className="container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto max-w-2xl text-center">
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {t("relatedHubTitle")}
+              {content.siblingHubTitle}
             </h2>
-            <p className="text-muted-foreground mt-4">{t("relatedHubDesc")}</p>
+            <p className="text-muted-foreground mt-4">
+              {content.siblingHubDescription}
+            </p>
             <Button className="mt-6" variant="link" asChild>
-              <Link href="/software-interior-design">
-                {t("relatedHubCta")}
+              <Link href={content.siblingHubHref}>
+                {content.siblingHubCta}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -244,19 +232,19 @@ export default async function PlanProPage({
         <div className="relative container mx-auto max-w-7xl px-4">
           <AnimatedSection className="mx-auto max-w-2xl text-center">
             <div className="text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
-              <Sparkles className="h-4 w-4" />
-              {t("ctaBadge")}
+              <Check className="h-4 w-4" />
+              {content.ctaBadge}
             </div>
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-              {t("ctaTitle")}
+              {content.ctaTitle}
             </h2>
             <p className="text-muted-foreground mt-4 text-lg">
-              {t("ctaSubtitle")}
+              {content.ctaSubtitle}
             </p>
             <div className="mt-8">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">
-                  {t("ctaButton")}
+                  {content.ctaButton}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>

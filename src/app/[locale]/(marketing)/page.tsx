@@ -7,6 +7,7 @@ import { JsonLd, faqPageJsonLd } from "@/components/json-ld";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { SmoothScrollLink } from "@/components/smooth-scroll-link";
 import { TrackedCtaLink } from "@/components/gtm";
+import { buildHomeMetadata } from "@/lib/marketing-home-metadata";
 import { getSiteUrl } from "@/lib/site-url";
 
 const ProductMockup = dynamic(
@@ -77,33 +78,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "HomePage" });
-  const canonical = locale === "es" ? "/" : "/en";
-
-  return {
-    title: {
-      absolute: t("metaTitle"),
-    },
-    description: t("metaDescription"),
-    alternates: {
-      canonical,
-      languages: {
-        es: "/",
-        en: "/en",
-        "x-default": "/",
-      },
-    },
-    openGraph: {
-      title: t("ogTitle"),
-      description: t("ogDescription"),
-      url: canonical,
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: t("twitterTitle"),
-      description: t("twitterDescription"),
-    },
-  };
+  return buildHomeMetadata(locale);
 }
 
 const baseUrl = getSiteUrl();

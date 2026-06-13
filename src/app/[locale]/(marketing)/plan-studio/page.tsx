@@ -220,6 +220,23 @@ export default async function PlanStudioPage({
         </div>
       </section>
 
+      <section className="py-16">
+        <div className="container mx-auto max-w-7xl px-4">
+          <AnimatedSection className="mx-auto max-w-2xl text-center">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              {t("relatedHubTitle")}
+            </h2>
+            <p className="text-muted-foreground mt-4">{t("relatedHubDesc")}</p>
+            <Button className="mt-6" variant="link" asChild>
+              <Link href="/software-architecture">
+                {t("relatedHubCta")}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </AnimatedSection>
+        </div>
+      </section>
+
       <section className="relative overflow-hidden py-20">
         <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent" />
         <div className="bg-primary/10 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
