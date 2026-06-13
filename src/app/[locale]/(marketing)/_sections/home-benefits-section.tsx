@@ -7,12 +7,27 @@ import { AnimatedSection } from "@/components/ui/animated-section";
 import { BenefitsList } from "@/app/[locale]/(marketing)/benefits-list";
 import { ProductMockup } from "@/components/product-mockup";
 import { TrackedCtaLink } from "@/components/gtm";
+import { Link } from "@/i18n/routing";
 
 export function HomeBenefitsSection() {
   const t = useTranslations("Benefits");
 
+  const benefitLinkClassName =
+    "text-primary font-medium underline-offset-4 hover:underline";
+
   const benefits = [
-    t("benefit1"),
+    t.rich("benefit1", {
+      architects: (chunks) => (
+        <Link href="/software-architecture" className={benefitLinkClassName}>
+          {chunks}
+        </Link>
+      ),
+      interiorDesigners: (chunks) => (
+        <Link href="/software-interior-design" className={benefitLinkClassName}>
+          {chunks}
+        </Link>
+      ),
+    }),
     t("benefit2"),
     t("benefit3"),
     t("benefit4"),

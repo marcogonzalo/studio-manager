@@ -107,6 +107,7 @@ export default async function SoftwareInteriorDesignPage({
     ctaTitle: t("ctaTitle"),
     ctaSubtitle: t("ctaSubtitle"),
     ctaButton: t("ctaButton"),
+    ctaDemoLink: t("ctaDemoLink"),
   };
 
   return <PmHubLanding content={content} />;

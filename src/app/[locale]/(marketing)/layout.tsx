@@ -92,22 +92,6 @@ async function Footer() {
               </li>
               <li>
                 <Link
-                  href="/software-interior-design"
-                  className="hover:text-foreground transition-colors"
-                >
-                  {t("softwareInteriorDesign")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/software-architecture"
-                  className="hover:text-foreground transition-colors"
-                >
-                  {t("softwareArchitecture")}
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/demo"
                   className="hover:text-foreground transition-colors"
                 >

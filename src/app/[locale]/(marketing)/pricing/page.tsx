@@ -9,6 +9,7 @@ import {
 } from "@/components/json-ld";
 import { PricingCardsMarketing } from "@/app/[locale]/(marketing)/pricing/pricing-cards-marketing";
 import { PricingSecondaryCtas } from "@/app/[locale]/(marketing)/pricing/pricing-secondary-ctas";
+import { DemoCtaSection } from "@/components/marketing/demo-cta-section";
 import {
   COMPACT_FEATURE_KEYS,
   getCommercialFeatures,
@@ -194,6 +195,8 @@ export default async function PricingPage({
           </StaggerContainer>
         </div>
       </section>
+
+      <DemoCtaSection ctaLocation="pricing_demo_cta" />
     </>
   );
 }
