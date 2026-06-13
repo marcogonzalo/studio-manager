@@ -59,6 +59,10 @@ function isPublicPath(pathname: string): boolean {
     pathname === "/auth/complete" ||
     pathnameWithoutLocale.startsWith("/plan-") ||
     pathname.startsWith("/plan-") ||
+    pathnameWithoutLocale.startsWith("/software-gestion-") ||
+    pathname.startsWith("/software-gestion-") ||
+    pathnameWithoutLocale === "/interior-design-project-management-software" ||
+    pathnameWithoutLocale === "/architecture-project-management-software" ||
     pathnameWithoutLocale.startsWith("/blog/") ||
     pathname.startsWith("/blog/") ||
     pathname.startsWith("/view-project/")

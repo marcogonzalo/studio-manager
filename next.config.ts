@@ -146,6 +146,14 @@ const nextConfig: NextConfig = {
         source: "/plan-studio-empresas-arquitectura-diseno-interior",
         destination: "/es/plan-studio",
       },
+      {
+        source: "/software-gestion-proyectos-interiorismo",
+        destination: "/es/software-interior-design",
+      },
+      {
+        source: "/software-gestion-proyectos-arquitectura",
+        destination: "/es/software-architecture",
+      },
       // EN: about-veta localized URL -> internal `/en/about` directory
       { source: "/en/about-veta", destination: "/en/about" },
       // EN: map plan landing slugs to internal plan directory names.
@@ -160,6 +168,14 @@ const nextConfig: NextConfig = {
       {
         source: "/en/studio-plan-for-architecture-and-interior-design-firms",
         destination: "/en/plan-studio",
+      },
+      {
+        source: "/en/interior-design-project-management-software",
+        destination: "/en/software-interior-design",
+      },
+      {
+        source: "/en/architecture-project-management-software",
+        destination: "/en/software-architecture",
       },
     ];
   },
@@ -202,6 +218,16 @@ const nextConfig: NextConfig = {
       {
         source: "/es/plan-studio-empresas-arquitectura-diseno-interior",
         destination: "/plan-studio-empresas-arquitectura-diseno-interior",
+        permanent: true,
+      },
+      {
+        source: "/es/software-gestion-proyectos-interiorismo",
+        destination: "/software-gestion-proyectos-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/software-gestion-proyectos-arquitectura",
+        destination: "/software-gestion-proyectos-arquitectura",
         permanent: true,
       },
 

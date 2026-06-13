@@ -38,6 +38,14 @@ export const routing = defineRouting({
       es: "/plan-studio-empresas-arquitectura-diseno-interior",
       en: "/studio-plan-for-architecture-and-interior-design-firms",
     },
+    "/software-interior-design": {
+      es: "/software-gestion-proyectos-interiorismo",
+      en: "/interior-design-project-management-software",
+    },
+    "/software-architecture": {
+      es: "/software-gestion-proyectos-arquitectura",
+      en: "/architecture-project-management-software",
+    },
   },
 });
 
