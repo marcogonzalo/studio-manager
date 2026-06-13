@@ -1,11 +1,12 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 
 const staggerDelay = 0.08;
 
-export function BenefitsList({ benefits }: { benefits: string[] }) {
+export function BenefitsList({ benefits }: { benefits: ReactNode[] }) {
   return (
     <motion.ul
       className="mt-8 space-y-4"
@@ -18,9 +19,9 @@ export function BenefitsList({ benefits }: { benefits: string[] }) {
         },
       }}
     >
-      {benefits.map((benefit) => (
+      {benefits.map((benefit, index) => (
         <motion.li
-          key={benefit}
+          key={index}
           className="flex list-none items-center gap-3"
           variants={{
             hidden: { opacity: 0, x: 15 },

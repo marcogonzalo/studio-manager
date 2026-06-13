@@ -35,8 +35,6 @@
     "basePlan": "Plan Base",
     "proPlan": "Plan Pro",
     "studioPlan": "Plan Studio",
-    "softwareInteriorDesign": "Gestión de interiorismo",
-    "softwareArchitecture": "Gestión de arquitectura",
     "tryDemo": "Probar demo",
     "company": "Empresa",
     "about": "Nosotros",
@@ -106,7 +104,7 @@
     "sectionTitle": "¿Por qué",
     "sectionTitleHighlight": "elegir Veta",
     "sectionSubtitle": "Simplificamos la gestión de tu estudio de arquitectura e interiorismo para que puedas enfocarte en lo que mejor sabes hacer: diseñar espacios increíbles.",
-    "benefit1": "Interfaz pensada para arquitectos y diseñadores de interior",
+    "benefit1": "Interfaz pensada para <architects>arquitectos</architects> y <interiorDesigners>diseñadores de interior</interiorDesigners>",
     "benefit2": "Acceso en todo momento desde cualquier dispositivo",
     "benefit3": "Gestión de datos responsable y segura (normativa RGPD)",
     "benefit4": "Mejoras y actualizaciones constantes",
@@ -142,10 +140,10 @@
     "question4": "¿Mis datos están seguros?",
     "answer4": "La seguridad de tu información es nuestra prioridad. En Veta implementamos protocolos de protección de datos de nivel bancario para que tu estudio de interiorismo opere con total tranquilidad: cumplimos estrictamente con el Reglamento General de Protección de Datos (RGPD), garantizando la privacidad de tu base de datos en todo momento; solo tú y las personas autorizadas de tu equipo tenéis acceso a la plataforma mediante credenciales protegidas; y como titular puedes ejercer tus derechos de acceso, rectificación o supresión de datos de forma sencilla y directa."
   },
-  "CtaFinal": {
-    "title": "Comienza hoy mismo",
-    "subtitle": "Únete a los profesionales del diseño interior que ya están transformando su forma de trabajar.",
-    "startFree": "Comenzar Gratis"
+  "DemoCta": {
+    "title": "¿Aún no lo tienes claro?",
+    "subtitle": "Prueba nuestra demo y recorre proyectos, presupuestos y catálogo con datos de ejemplo, sin registrarte ni elegir plan.",
+    "cta": "Probar nuestra demo"
   },
   "About": {
     "metaTitle": "Sobre nosotros y el equipo",
@@ -312,6 +310,13 @@
   "PricingSecondary": {
     "sectionTitle": "Conoce mejor los planes y encuentra el que mejor se adapta a ti",
     "sectionSubtitle": "Cada plan está pensado para un perfil distinto. Descubre ventajas, límites y para quién está recomendado.",
+    "basePlanTitle": "Plan Base",
+    "basePlanMessage": "Gratis para siempre. Ideal si empiezas en interiorismo: organiza tu primer proyecto con clientes, espacios, presupuestos en PDF y notas, sin tarjeta ni límite de tiempo.",
+    "proPlanTitle": "Plan Pro",
+    "proPlanMessage": "Para profesionales y autónomos del interiorismo con varios encargos: CRM, presupuestos con imágenes, control de costes, pedidos a proveedores y pagos en un solo sitio.",
+    "studioPlanTitle": "Plan Studio",
+    "studioPlanMessage": "Para estudios de arquitectura y diseño interior con equipo: hasta 50 proyectos activos, presupuestos con tu marca, más almacenamiento y soporte prioritario.",
+    "planLinkCta": "Ver detalles del plan",
     "customBadge": "¿Necesitas algo personalizado?",
     "customTitle": "¿Necesitas algo personalizado?",
     "customSubtitle": "Contáctanos para crear planes a medida para tu estudio.",
@@ -559,7 +564,8 @@
     "ctaBadge": "30 días gratis · Sin tarjeta",
     "ctaTitle": "Organiza tus proyectos de interiorismo hoy",
     "ctaSubtitle": "Prueba el software de gestión de proyectos de interiorismo 30 días sin coste. Si encaja con tu forma de trabajar, sigues. Si no, sin compromiso.",
-    "ctaButton": "Crear cuenta gratis"
+    "ctaButton": "Crear cuenta gratis",
+    "ctaDemoLink": "O prueba nuestra demo"
   },
   "SoftwareArquitectura": {
     "metaTitle": "Software de gestión de proyectos de arquitectura | Veta",
@@ -613,7 +619,8 @@
     "ctaBadge": "30 días gratis · Sin tarjeta",
     "ctaTitle": "Gestiona tus proyectos de arquitectura con claridad",
     "ctaSubtitle": "Prueba el software de gestión de proyectos de arquitectura 30 días sin coste. Presupuestos, costes y seguimiento en un solo programa.",
-    "ctaButton": "Crear cuenta gratis"
+    "ctaButton": "Crear cuenta gratis",
+    "ctaDemoLink": "O prueba nuestra demo"
   },
   "PlanCopy": {
     "projectsOne": "1 proyecto activo",

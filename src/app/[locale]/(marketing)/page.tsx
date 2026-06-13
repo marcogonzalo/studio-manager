@@ -64,10 +64,10 @@ const HomeFaqSection = dynamic(
   () => import("./_sections/home-faq-section").then((m) => m.HomeFaqSection),
   { ssr: true }
 );
-const HomeCtaFinalSection = dynamic(
+const HomeDemoCtaSection = dynamic(
   () =>
-    import("./_sections/home-cta-final-section").then(
-      (m) => m.HomeCtaFinalSection
+    import("@/components/marketing/demo-cta-section").then(
+      (m) => m.DemoCtaSection
     ),
   { ssr: true }
 );
@@ -231,7 +231,7 @@ export default async function HomePage({
         <HomeTestimonialsSection />
         <HomeCtaBeforeFaqSection />
         <HomeFaqSection />
-        <HomeCtaFinalSection />
+        <HomeDemoCtaSection ctaLocation="home_demo_cta" />
       </div>
     </>
   );

@@ -59,6 +59,7 @@ export type PmHubLandingContent = {
   ctaTitle: string;
   ctaSubtitle: string;
   ctaButton: string;
+  ctaDemoLink: string;
 };
 
 export function PmHubLanding({ content }: { content: PmHubLandingContent }) {
@@ -241,12 +242,15 @@ export function PmHubLanding({ content }: { content: PmHubLandingContent }) {
             <p className="text-muted-foreground mt-4 text-lg">
               {content.ctaSubtitle}
             </p>
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col items-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">
                   {content.ctaButton}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
+              </Button>
+              <Button variant="link" asChild>
+                <Link href="/demo">{content.ctaDemoLink}</Link>
               </Button>
             </div>
           </AnimatedSection>

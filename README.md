@@ -78,10 +78,17 @@ A modern, full-stack web application designed to streamline the workflow of inte
    **Option A: Local Development (Recommended)**
 
    ```bash
-   npx supabase start
+   pnpm run supabase:start:slim
    ```
 
-   This will start Supabase locally and provide connection details.
+   Slim stack: API, Auth, Postgres — lower RAM. Optional when needed:
+
+   ```bash
+   pnpm run supabase:studio   # dashboard → http://127.0.0.1:54323
+   pnpm run supabase:mail     # local emails → http://127.0.0.1:54324
+   ```
+
+   Full stack: `pnpm run supabase:start`. See `scripts/README.md`.
 
    **Option B: Remote Supabase**
    - Create a project at [supabase.com](https://supabase.com)
@@ -109,7 +116,7 @@ A modern, full-stack web application designed to streamline the workflow of inte
    If using local Supabase:
 
    ```bash
-   npx supabase db reset
+   pnpm run db:reset
    ```
 
    If using remote Supabase, run the SQL from `supabase/migrations/20251126035338_initial_schema.sql` in your Supabase SQL Editor.

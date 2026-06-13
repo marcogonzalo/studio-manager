@@ -2,29 +2,36 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
-import { Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AnimatedSection } from "@/components/ui/animated-section";
+import {
+  AnimatedSection,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/ui/animated-section";
 import { pushCtaClick } from "@/lib/gtm";
+import { cn } from "@/lib/utils";
 
 const PLAN_LINKS = [
   {
     href: "/plan-base" as const,
-    key: "basePlan" as const,
+    titleKey: "basePlanTitle" as const,
+    messageKey: "basePlanMessage" as const,
   },
   {
     href: "/plan-pro" as const,
-    key: "proPlan" as const,
+    titleKey: "proPlanTitle" as const,
+    messageKey: "proPlanMessage" as const,
   },
   {
     href: "/plan-studio" as const,
-    key: "studioPlan" as const,
+    titleKey: "studioPlanTitle" as const,
+    messageKey: "studioPlanMessage" as const,
   },
 ] as const;
 
 export function PricingSecondaryCtas() {
   const t = useTranslations("PricingSecondary");
-  const tFooter = useTranslations("Footer");
 
   return (
     <>
@@ -37,25 +44,46 @@ export function PricingSecondaryCtas() {
             <p className="text-muted-foreground mt-4 text-lg">
               {t("sectionSubtitle")}
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              {PLAN_LINKS.map(({ href, key }) => (
-                <Button key={href} variant="outline" size="lg" asChild>
+          </AnimatedSection>
+
+          <StaggerContainer
+            className="mx-auto mt-10 grid max-w-5xl gap-6 md:grid-cols-3"
+            staggerDelay={0.1}
+          >
+            {PLAN_LINKS.map(({ href, titleKey, messageKey }) => {
+              const title = t(titleKey);
+              const message = t(messageKey);
+
+              return (
+                <StaggerItem key={href}>
                   <Link
                     href={href}
                     onClick={() =>
                       pushCtaClick({
                         cta_location: "pricing_plan_links",
-                        cta_text: tFooter(key),
+                        cta_text: title,
                         destination_url: href,
                       })
                     }
+                    className={cn(
+                      "group border-input bg-background hover:bg-brand-tertiary hover:text-brand-tertiary-foreground",
+                      "flex h-full flex-col rounded-xl border p-6 text-left shadow-sm transition-colors",
+                      "focus-visible:ring-ring focus-visible:ring-1 focus-visible:outline-none"
+                    )}
                   >
-                    {tFooter(key)}
+                    <h3 className="text-lg font-semibold">{title}</h3>
+                    <p className="text-muted-foreground group-hover:text-brand-tertiary-foreground/90 mt-3 flex-1 text-sm leading-relaxed">
+                      {message}
+                    </p>
+                    <span className="text-primary group-hover:text-brand-tertiary-foreground mt-5 inline-flex items-center gap-2 text-sm font-medium">
+                      {t("planLinkCta")}
+                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    </span>
                   </Link>
-                </Button>
-              ))}
-            </div>
-          </AnimatedSection>
+                </StaggerItem>
+              );
+            })}
+          </StaggerContainer>
         </div>
       </section>
 

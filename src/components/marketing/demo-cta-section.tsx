@@ -6,31 +6,39 @@ import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { TrackedCtaLink } from "@/components/gtm";
 
-export function HomeCtaFinalSection() {
-  const t = useTranslations("CtaFinal");
+type DemoCtaSectionProps = {
+  ctaLocation?: string;
+};
+
+export function DemoCtaSection({
+  ctaLocation = "demo_cta",
+}: DemoCtaSectionProps) {
+  const t = useTranslations("DemoCta");
 
   return (
     <section className="relative overflow-hidden py-20">
-      <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-tl to-transparent" />
-      <div className="bg-primary/8 absolute right-0 bottom-0 h-80 w-80 translate-x-1/4 translate-y-1/4 rounded-full blur-3xl" />
+      <div className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent" />
+      <div className="bg-primary/10 absolute top-0 right-0 h-96 w-96 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
 
       <div className="relative container mx-auto max-w-7xl px-4">
-        <AnimatedSection
-          className="mx-auto max-w-2xl text-center"
-          triggerOnMount={false}
-        >
+        <AnimatedSection className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
             {t("title")}
           </h2>
           <p className="text-muted-foreground mt-4 text-lg">{t("subtitle")}</p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button size="lg" asChild className="animate-glow">
+          <div className="mt-8">
+            <Button
+              size="lg"
+              variant="outline"
+              asChild
+              className="animate-glow"
+            >
               <TrackedCtaLink
-                href="/sign-up"
-                ctaLocation="cta_final"
-                ctaText={t("startFree")}
+                href="/demo"
+                ctaLocation={ctaLocation}
+                ctaText={t("cta")}
               >
-                {t("startFree")}
+                {t("cta")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </TrackedCtaLink>
             </Button>

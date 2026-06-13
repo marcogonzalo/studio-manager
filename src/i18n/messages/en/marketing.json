@@ -35,8 +35,6 @@
     "basePlan": "Base Plan",
     "proPlan": "Pro Plan",
     "studioPlan": "Studio Plan",
-    "softwareInteriorDesign": "Interior design management",
-    "softwareArchitecture": "Architecture management",
     "tryDemo": "Try Demo",
     "company": "Company",
     "about": "About",
@@ -106,7 +104,7 @@
     "sectionTitle": "Why",
     "sectionTitleHighlight": "choose Veta",
     "sectionSubtitle": "We simplify the management of your architecture and interior design studio so you can focus on what you do best: designing incredible spaces.",
-    "benefit1": "Interface designed for architects and interior designers",
+    "benefit1": "Interface designed for <architects>architects</architects> and <interiorDesigners>interior designers</interiorDesigners>",
     "benefit2": "Access anytime from any device",
     "benefit3": "Responsible and secure data management (GDPR compliant)",
     "benefit4": "Constant improvements and updates",
@@ -142,10 +140,10 @@
     "question4": "Is my data secure?",
     "answer4": "The security of your information is our priority. At Veta we implement bank-level data protection protocols so your interior design studio can operate with complete peace of mind: we strictly comply with the General Data Protection Regulation (GDPR), guaranteeing the privacy of your database at all times; only you and authorized members of your team have access to the platform through protected credentials; and as the owner you can exercise your rights of access, rectification, or deletion of data in a simple and direct way."
   },
-  "CtaFinal": {
-    "title": "Start today",
-    "subtitle": "Join the interior design professionals who are already transforming the way they work.",
-    "startFree": "Start Free"
+  "DemoCta": {
+    "title": "Still not sure?",
+    "subtitle": "Try our demo and explore projects, budgets and catalog with sample data — no sign-up or plan choice required.",
+    "cta": "Try our demo"
   },
   "About": {
     "metaTitle": "About us and the team",
@@ -312,6 +310,13 @@
   "PricingSecondary": {
     "sectionTitle": "Learn more about the plans and find the one that best fits you",
     "sectionSubtitle": "Each plan is designed for a different profile. Discover benefits, limits, and who it's recommended for.",
+    "basePlanTitle": "Base Plan",
+    "basePlanMessage": "Free forever. Ideal when you're starting in interior design: organize your first project with clients, spaces, PDF budgets and notes — no card required.",
+    "proPlanTitle": "Pro Plan",
+    "proPlanMessage": "For independent interior design professionals with multiple commissions: CRM, image-rich budgets, cost control, supplier orders and payments in one place.",
+    "studioPlanTitle": "Studio Plan",
+    "studioPlanMessage": "For architecture and interior design studios with a team: up to 50 active projects, branded budgets, more storage and priority support.",
+    "planLinkCta": "View plan details",
     "customBadge": "Need something custom?",
     "customTitle": "Need something custom?",
     "customSubtitle": "Contact us to create tailored plans for your studio.",
@@ -559,7 +564,8 @@
     "ctaBadge": "30 days free · No card required",
     "ctaTitle": "Organize your interior design projects today",
     "ctaSubtitle": "Try interior design project management software free for 30 days. If it fits how you work, stay. If not, no commitment.",
-    "ctaButton": "Create free account"
+    "ctaButton": "Create free account",
+    "ctaDemoLink": "Or try our demo"
   },
   "SoftwareArquitectura": {
     "metaTitle": "Architecture project management software | Veta",
@@ -613,7 +619,8 @@
     "ctaBadge": "30 days free · No card required",
     "ctaTitle": "Manage your architecture projects with clarity",
     "ctaSubtitle": "Try architecture project management software free for 30 days. Budgets, costs and tracking in one program.",
-    "ctaButton": "Create free account"
+    "ctaButton": "Create free account",
+    "ctaDemoLink": "Or try our demo"
   },
   "PlanCopy": {
     "projectsOne": "1 active project",
