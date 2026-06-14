@@ -1,4 +1,5 @@
 import { markdownToHtml } from "@/lib/blog-markdown";
+import { resolveBlogAuthor, type BlogAuthor } from "@/lib/blog-author";
 import {
   type BlogLocale,
   type BlogPostSource,
@@ -13,9 +14,11 @@ import {
 } from "@/lib/blog-data";
 
 export type { BlogLocale, BlogPostSummary };
+export type { BlogAuthor };
 
-export type BlogPost = Omit<BlogPostSource, "bodyMarkdown"> & {
+export type BlogPost = Omit<BlogPostSource, "bodyMarkdown" | "author"> & {
   contentHtml: string;
+  author: BlogAuthor;
 };
 
 export {
@@ -44,6 +47,7 @@ export async function getBlogPostBySlug(
     coverImage: source.coverImage,
     entryId: source.entryId,
     translations: source.translations,
+    author: resolveBlogAuthor(source.author),
     contentHtml,
   };
 }

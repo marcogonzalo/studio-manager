@@ -26,6 +26,16 @@ import {
   COMPACT_FEATURE_KEYS,
   translatePlanCopyItem,
 } from "@/lib/plan-copy";
+import {
+  buildMarketingOpenGraph,
+  buildMarketingTwitter,
+} from "@/lib/marketing-open-graph";
+import { MarketingBreadcrumbJsonLd } from "@/components/marketing/marketing-breadcrumb-json-ld";
+import {
+  marketingHomePath,
+  marketingPlanStudioPath,
+  marketingPricingPath,
+} from "@/lib/marketing-canonical-paths";
 
 export async function generateMetadata({
   params,
@@ -49,16 +59,15 @@ export async function generateMetadata({
         "x-default": "/plan-studio-empresas-arquitectura-diseno-interior",
       },
     },
-    openGraph: {
+    openGraph: buildMarketingOpenGraph({
       title: t("ogTitle"),
       description: t("ogDescription"),
       url: canonical,
-    },
-    twitter: {
-      card: "summary_large_image",
+    }),
+    twitter: buildMarketingTwitter({
       title: t("twitterTitle"),
       description: t("twitterDescription"),
-    },
+    }),
   };
 }
 
@@ -79,6 +88,7 @@ export default async function PlanStudioPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("PlanStudio");
+  const tBreadcrumbs = await getTranslations("Breadcrumbs");
   const tPlanCopy = await getTranslations("PlanCopy");
   const features = getCommercialFeatures(getPlanConfigForDisplay("STUDIO"), {
     include: COMPACT_FEATURE_KEYS,
@@ -101,6 +111,17 @@ export default async function PlanStudioPage({
 
   return (
     <>
+      <MarketingBreadcrumbJsonLd
+        id="json-ld-breadcrumb-plan-studio"
+        items={[
+          { name: tBreadcrumbs("home"), path: marketingHomePath(locale) },
+          { name: tBreadcrumbs("pricing"), path: marketingPricingPath(locale) },
+          {
+            name: tBreadcrumbs("planStudio"),
+            path: marketingPlanStudioPath(locale),
+          },
+        ]}
+      />
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-32">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
         <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />

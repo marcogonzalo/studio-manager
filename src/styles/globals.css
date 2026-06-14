@@ -128,7 +128,8 @@
 
       /* Profundidad: muted (L 0.18) un escalón por encima del fondo */
       --muted: oklch(0.18 0.018 78);
-      --muted-foreground: oklch(0.98 0.008 95);
+      /* ≥4.5:1 sobre card/muted (L 0.18); 0.98 fallaba en card por ~4.48:1 */
+      --muted-foreground: oklch(1 0 0);
 
       /* Hints: más tenue que el texto del campo (no confundir con valor relleno) */
       --placeholder-foreground: color-mix(

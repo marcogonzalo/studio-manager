@@ -8,6 +8,10 @@ import {
 } from "@/components/ui/animated-section";
 import { DemoRequestForm } from "./demo-request-form";
 import { Link } from "@/i18n/routing";
+import {
+  buildMarketingOpenGraph,
+  buildMarketingTwitter,
+} from "@/lib/marketing-open-graph";
 
 export async function generateMetadata({
   params,
@@ -28,11 +32,15 @@ export async function generateMetadata({
         "x-default": "/demo",
       },
     },
-    openGraph: {
+    openGraph: buildMarketingOpenGraph({
       title: t("ogTitle"),
       description: t("ogDescription"),
       url: canonical,
-    },
+    }),
+    twitter: buildMarketingTwitter({
+      title: t("ogTitle"),
+      description: t("ogDescription"),
+    }),
   };
 }
 

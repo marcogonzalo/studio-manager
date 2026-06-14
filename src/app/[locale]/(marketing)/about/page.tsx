@@ -8,6 +8,10 @@ import {
   StaggerContainer,
   StaggerItem,
 } from "@/components/ui/animated-section";
+import {
+  buildMarketingOpenGraph,
+  buildMarketingTwitter,
+} from "@/lib/marketing-open-graph";
 
 export async function generateMetadata({
   params,
@@ -28,16 +32,15 @@ export async function generateMetadata({
         "x-default": "/sobre-veta",
       },
     },
-    openGraph: {
+    openGraph: buildMarketingOpenGraph({
       title: t("ogTitle"),
       description: t("ogDescription"),
       url: canonical,
-    },
-    twitter: {
-      card: "summary_large_image",
+    }),
+    twitter: buildMarketingTwitter({
       title: t("ogTitle"),
       description: t("twitterDescription"),
-    },
+    }),
   };
 }
 

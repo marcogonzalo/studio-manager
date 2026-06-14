@@ -60,6 +60,21 @@ export const softwareApplicationJsonLd = {
   url: BASE_URL,
 };
 
+export const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Veta",
+  url: BASE_URL,
+  description:
+    "Plataforma todo-en-uno para gestionar proyectos de diseño interior: clientes, proveedores, presupuestos y catálogos.",
+  inLanguage: ["es", "en"],
+  publisher: {
+    "@type": "Organization",
+    name: "Veta",
+    url: BASE_URL,
+  },
+};
+
 /**
  * SoftwareApplication con AggregateOffer para la página de precios.
  * Incluye: Base (gratis), Pro y Studio en suscripción mensual y anual.
@@ -166,5 +181,69 @@ export function faqPageJsonLd(
       },
     })),
     url: pageUrl,
+  };
+}
+
+export type BreadcrumbListItem = {
+  name: string;
+  /** Public path without origin, e.g. `/precios` or `/en/pricing`. */
+  path: string;
+};
+
+export function breadcrumbListJsonLd(items: BreadcrumbListItem[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: `${BASE_URL}${item.path}`,
+    })),
+  };
+}
+
+export type BlogPostingAuthor = {
+  name: string;
+  url?: string;
+};
+
+export function blogPostingJsonLd(options: {
+  title: string;
+  description: string;
+  path: string;
+  datePublished: string;
+  dateModified?: string;
+  image?: string;
+  author: BlogPostingAuthor;
+}) {
+  const pageUrl = `${BASE_URL}${options.path}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: options.title,
+    description: options.description,
+    url: pageUrl,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": pageUrl,
+    },
+    datePublished: options.datePublished,
+    dateModified: options.dateModified ?? options.datePublished,
+    image: options.image ? [options.image] : undefined,
+    author: {
+      "@type": "Person",
+      name: options.author.name,
+      ...(options.author.url ? { url: options.author.url } : {}),
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Veta",
+      url: BASE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${BASE_URL}/img/veta-light.webp`,
+      },
+    },
   };
 }

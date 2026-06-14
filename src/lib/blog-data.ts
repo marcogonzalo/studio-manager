@@ -14,6 +14,7 @@ const frontmatterSchema = z.object({
   slug: z.coerce.string().min(1).optional(),
   coverImage: z.coerce.string().optional(),
   entryId: z.coerce.string().min(1).optional(),
+  author: z.coerce.string().min(1).optional(),
 });
 
 function normalizeFrontmatterDate(value: string | Date): string {
@@ -30,6 +31,7 @@ export type BlogPostSummary = {
   excerpt: string;
   coverImage?: string;
   entryId?: string;
+  author?: string;
 };
 
 export type BlogPostSource = BlogPostSummary & {
@@ -120,6 +122,7 @@ type ParsedPost = {
   excerpt: string;
   coverImage?: string;
   entryId?: string;
+  author?: string;
   bodyMarkdown: string;
 };
 
@@ -149,6 +152,7 @@ async function parsePostFile(
     excerpt: parsed.data.excerpt,
     coverImage: parsed.data.coverImage,
     entryId: parsed.data.entryId,
+    author: parsed.data.author,
     bodyMarkdown: content.trim(),
   };
 }
@@ -206,6 +210,7 @@ export async function getBlogPostSummaries(
     excerpt: p.excerpt,
     coverImage: p.coverImage,
     entryId: p.entryId,
+    author: p.author,
   }));
 }
 
@@ -237,6 +242,7 @@ export async function getBlogPostSourceBySlug(
     excerpt: match.excerpt,
     coverImage: match.coverImage,
     entryId: match.entryId,
+    author: match.author,
     bodyMarkdown: match.bodyMarkdown,
     translations: translationsForPost,
   };

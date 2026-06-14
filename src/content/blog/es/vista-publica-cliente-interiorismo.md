@@ -2,6 +2,7 @@
 entryId: client-public-view
 title: Por qué tu cliente necesita una vista pública del proyecto de interiorismo
 date: 2026-04-02
+author: Marco Gonzalo Gómez Pérez
 excerpt: "Mantener al cliente informado sin reuniones constantes exige una vista pública del proyecto: un enlace único donde pueda consultar renders, productos aprobados, estado de los pedidos, costes de obra y pagos registrados, todo actualizado en tiempo real."
 slug: vista-publica-cliente-interiorismo
 coverImage: https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80

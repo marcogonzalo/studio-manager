@@ -15,6 +15,10 @@ import {
   StaggerItem,
 } from "@/components/ui/animated-section";
 import { ContactForm } from "./contact-form";
+import {
+  buildMarketingOpenGraph,
+  buildMarketingTwitter,
+} from "@/lib/marketing-open-graph";
 
 const CONTACT_EMAIL = "hey@veta.pro";
 
@@ -37,16 +41,15 @@ export async function generateMetadata({
         "x-default": "/contacto",
       },
     },
-    openGraph: {
+    openGraph: buildMarketingOpenGraph({
       title: t("ogTitle"),
       description: t("ogDescription"),
       url: canonical,
-    },
-    twitter: {
-      card: "summary_large_image",
+    }),
+    twitter: buildMarketingTwitter({
       title: t("twitterTitle"),
       description: t("twitterDescription"),
-    },
+    }),
   };
 }
 

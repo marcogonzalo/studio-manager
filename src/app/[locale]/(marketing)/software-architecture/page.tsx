@@ -5,6 +5,15 @@ import {
   PmHubLanding,
   type PmHubLandingContent,
 } from "@/components/marketing/pm-hub-landing";
+import {
+  buildMarketingOpenGraph,
+  buildMarketingTwitter,
+} from "@/lib/marketing-open-graph";
+import { MarketingBreadcrumbJsonLd } from "@/components/marketing/marketing-breadcrumb-json-ld";
+import {
+  marketingArchitectureSoftwarePath,
+  marketingHomePath,
+} from "@/lib/marketing-canonical-paths";
 
 export async function generateMetadata({
   params,
@@ -31,16 +40,15 @@ export async function generateMetadata({
         "x-default": "/software-gestion-proyectos-arquitectura",
       },
     },
-    openGraph: {
+    openGraph: buildMarketingOpenGraph({
       title: t("ogTitle"),
       description: t("ogDescription"),
       url: canonical,
-    },
-    twitter: {
-      card: "summary_large_image",
+    }),
+    twitter: buildMarketingTwitter({
       title: t("twitterTitle"),
       description: t("twitterDescription"),
-    },
+    }),
   };
 }
 
@@ -52,6 +60,7 @@ export default async function SoftwareArchitecturePage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("SoftwareArquitectura");
+  const tBreadcrumbs = await getTranslations("Breadcrumbs");
 
   const content: PmHubLandingContent = {
     badge: t("badge"),
@@ -110,5 +119,19 @@ export default async function SoftwareArchitecturePage({
     ctaDemoLink: t("ctaDemoLink"),
   };
 
-  return <PmHubLanding content={content} />;
+  return (
+    <>
+      <MarketingBreadcrumbJsonLd
+        id="json-ld-breadcrumb-software-architecture"
+        items={[
+          { name: tBreadcrumbs("home"), path: marketingHomePath(locale) },
+          {
+            name: tBreadcrumbs("architectureSoftware"),
+            path: marketingArchitectureSoftwarePath(locale),
+          },
+        ]}
+      />
+      <PmHubLanding content={content} />
+    </>
+  );
 }

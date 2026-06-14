@@ -1,22 +1,18 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/routing";
 import { AnimatedSection } from "@/components/ui/animated-section";
-import {
-  StaggerContainer,
-  StaggerItem,
-} from "@/components/ui/animated-section";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { BlogPostGrid } from "@/components/blog/blog-post-grid";
 import type { Locale } from "@/i18n/config";
-import { formatDateIntl } from "@/lib/formatting";
+import {
+  buildMarketingOpenGraph,
+  buildMarketingTwitter,
+} from "@/lib/marketing-open-graph";
+import { MarketingBreadcrumbJsonLd } from "@/components/marketing/marketing-breadcrumb-json-ld";
+import {
+  marketingBlogPath,
+  marketingHomePath,
+} from "@/lib/marketing-canonical-paths";
 import { getBlogPostSummaries, type BlogLocale } from "@/lib/blog";
 
 const HERO_IMAGE =
@@ -44,16 +40,15 @@ export async function generateMetadata({
         "x-default": "/blog",
       },
     },
-    openGraph: {
+    openGraph: buildMarketingOpenGraph({
       title: t("ogTitle"),
       description: t("ogDescription"),
       url: canonical,
-    },
-    twitter: {
-      card: "summary_large_image",
+    }),
+    twitter: buildMarketingTwitter({
       title: t("twitterTitle"),
       description: t("twitterDescription"),
-    },
+    }),
   };
 }
 
@@ -67,11 +62,19 @@ export default async function BlogIndexPage({
   setRequestLocale(localeParam);
 
   const t = await getTranslations("Blog");
+  const tBreadcrumbs = await getTranslations("Breadcrumbs");
   const posts = await getBlogPostSummaries(locale);
   const lang = locale as Locale;
 
   return (
     <>
+      <MarketingBreadcrumbJsonLd
+        id="json-ld-breadcrumb-blog"
+        items={[
+          { name: tBreadcrumbs("home"), path: marketingHomePath(localeParam) },
+          { name: tBreadcrumbs("blog"), path: marketingBlogPath(localeParam) },
+        ]}
+      />
       <section className="border-border/60 relative overflow-hidden border-b">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
         <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[640px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />
@@ -128,52 +131,12 @@ export default async function BlogIndexPage({
         {posts.length === 0 ? (
           <p className="text-muted-foreground">{t("empty")}</p>
         ) : (
-          <StaggerContainer className="grid gap-8 md:grid-cols-2">
-            {posts.map((post) => (
-              <StaggerItem key={post.slug}>
-                <Link
-                  href={{
-                    pathname: "/blog/[slug]",
-                    params: { slug: post.slug },
-                  }}
-                  className="group focus-visible:ring-ring block h-full rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-                >
-                  <Card className="hover:border-primary/30 flex h-full flex-col transition-all duration-300 ease-[cubic-bezier(0.25,0.4,0.25,1)] group-hover:-translate-y-1 group-hover:shadow-lg">
-                    {post.coverImage ? (
-                      <div className="border-border/60 relative aspect-[16/10] w-full overflow-hidden rounded-t-xl border-b">
-                        <Image
-                          src={post.coverImage}
-                          alt=""
-                          fill
-                          className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,0.4,0.25,1)] group-hover:scale-105"
-                          sizes="(min-width: 768px) 40vw, 100vw"
-                        />
-                      </div>
-                    ) : null}
-                    <CardHeader className="flex-1">
-                      <p className="text-muted-foreground mb-2 text-xs font-medium">
-                        {formatDateIntl(post.date, lang, {
-                          dateStyle: "medium",
-                        })}
-                      </p>
-                      <CardTitle className="group-hover:text-primary text-xl transition-colors">
-                        {post.title}
-                      </CardTitle>
-                      <CardDescription className="text-base">
-                        {post.excerpt}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="mt-auto pt-0">
-                      <p className="text-primary flex items-center gap-1 text-sm font-medium">
-                        {t("readMore")}
-                        <ArrowRight className="h-4 w-4" aria-hidden />
-                      </p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
+          <BlogPostGrid
+            posts={posts}
+            locale={lang}
+            readMoreLabel={t("readMore")}
+            triggerOnMount
+          />
         )}
       </section>
     </>

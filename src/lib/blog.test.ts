@@ -97,6 +97,7 @@ describe("blog content module", () => {
       "<p>Contenido en <strong>español</strong>.</p>"
     );
     expect(post?.translations.en).toBe("interior-trends-2026");
+    expect(post?.author.name).toBe("Marco Gonzalo Gómez Pérez");
   });
 
   it("generates static params across locales and slugs", async () => {

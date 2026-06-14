@@ -41,7 +41,11 @@ async function Footer() {
       <div className="footer-pattern-container relative container mx-auto max-w-7xl px-4 py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="mb-4 flex items-center gap-2">
+            <Link
+              href="/"
+              className="mb-4 flex items-center gap-2"
+              aria-label="Veta"
+            >
               <VetaLogo height={28} />
             </Link>
             <p className="text-muted-foreground text-sm">{t("description")}</p>
