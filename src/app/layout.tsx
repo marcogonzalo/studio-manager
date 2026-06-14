@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { Montserrat } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -15,13 +14,6 @@ import {
 } from "@/components/json-ld";
 import { getSiteUrl } from "@/lib/site-url";
 import "@/styles/globals.css";
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-montserrat",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
@@ -98,12 +90,7 @@ export default async function RootLayout({
   const defaultDeniedPayload = getDefaultGtmConsent(true);
 
   return (
-    <html
-      lang="es"
-      suppressHydrationWarning
-      className={montserrat.variable}
-      data-scroll-behavior="smooth"
-    >
+    <html lang="es" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         {/* Aplicar tema antes del primer pintado para evitar que la 404 (y el resto) pierda formato al hidratar (next-themes aplica la clase después). */}
         <script

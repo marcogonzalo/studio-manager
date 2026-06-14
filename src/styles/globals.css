@@ -236,6 +236,11 @@
   .skip-link {
     @apply bg-primary text-primary-foreground ring-ring fixed top-4 left-4 z-[100] -translate-y-[200%] rounded-md px-4 py-2 text-sm font-medium shadow-lg transition-transform focus:translate-y-0 focus:ring-2 focus:ring-offset-2;
   }
+
+  /* Logo wordmark only — not global font-sans */
+  .font-brand {
+    font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  }
 }
 
 @layer utilities {
@@ -288,18 +293,6 @@
       background-color: white !important;
       color: black !important;
     }
-  }
-
-  /* Base: calendar icon (light mode) */
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    cursor: pointer;
-    opacity: 1;
-    filter: brightness(0) saturate(100%);
-  }
-
-  /* Dark mode: inverted calendar icon */
-  .dark input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: brightness(0) saturate(100%) invert(1);
   }
 
   /* Base: hide scrollbar */
@@ -506,145 +499,5 @@
   }
   100% {
     background-position: -200% 0;
-  }
-}
-
-/* Collapsible: open/close animation using Radix content height (runs every toggle) */
-@keyframes collapsible-slide-down {
-  from {
-    height: 0;
-  }
-  to {
-    height: var(--radix-collapsible-content-height);
-  }
-}
-@keyframes collapsible-slide-up {
-  from {
-    height: var(--radix-collapsible-content-height);
-  }
-  to {
-    height: 0;
-  }
-}
-
-.animate-collapsible-content[data-state="open"] {
-  animation: collapsible-slide-down 300ms ease-out;
-}
-.animate-collapsible-content[data-state="closed"] {
-  animation: collapsible-slide-up 300ms ease-out;
-}
-
-/* react-phone-number-input: tema alineado con Input (border, radius, colores) */
-.PhoneInput {
-  --PhoneInput-color--focus: var(--ring);
-  --PhoneInputCountrySelect-marginRight: 0.5rem;
-  --PhoneInputCountrySelectArrow-width: 0.3rem;
-  --PhoneInputCountrySelectArrow-marginLeft: var(
-    --PhoneInputCountrySelect-marginRight
-  );
-  --PhoneInputCountrySelectArrow-borderWidth: 1px;
-  --PhoneInputCountrySelectArrow-opacity: 0.45;
-  --PhoneInputCountrySelectArrow-color: var(--muted-foreground);
-  --PhoneInputCountrySelectArrow-color--focus: var(--PhoneInput-color--focus);
-  --PhoneInputCountrySelectArrow-transform: rotate(45deg);
-  --PhoneInputCountryFlag-height: 1rem;
-  --PhoneInputCountryFlag-aspectRatio: 1.5;
-  display: flex;
-  align-items: center;
-  border-radius: var(--radius-md);
-  background: var(--background);
-}
-.PhoneInput:focus-within {
-  outline: none;
-}
-.PhoneInputInput {
-  flex: 1;
-  min-width: 0;
-
-  background: transparent;
-  padding: 0.5rem 0.75rem;
-  font-size: inherit;
-  color: var(--foreground);
-}
-.PhoneInputInput::placeholder {
-  color: var(--placeholder-foreground);
-}
-.PhoneInputInput:focus {
-  outline: none;
-}
-.PhoneInputCountry {
-  position: relative;
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-  margin-right: var(--PhoneInputCountrySelect-marginRight);
-}
-.PhoneInputCountryIcon {
-  height: var(--PhoneInputCountryFlag-height);
-  aspect-ratio: var(--PhoneInputCountryFlag-aspectRatio);
-  display: block;
-  overflow: hidden;
-}
-.PhoneInputCountryIcon img,
-.PhoneInputCountryIcon svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.PhoneInputCountrySelect {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 1;
-  border: 0;
-  margin: 0;
-  padding: 0;
-  opacity: 0;
-  cursor: pointer;
-  /* Asegura que el contenido del dropdown sea legible en dark mode.
-     Aunque el <select> esté con opacidad 0, los estilos suelen afectar al menú nativo. */
-  background: var(--background);
-  color: var(--foreground);
-  font: inherit;
-}
-
-.PhoneInputCountrySelect option {
-  background: var(--background);
-  color: var(--foreground);
-}
-.PhoneInputCountrySelect:focus + * + .PhoneInputCountrySelectArrow {
-  opacity: 1;
-  color: var(--PhoneInputCountrySelectArrow-color--focus);
-}
-.PhoneInputCountrySelectArrow {
-  display: block;
-  width: var(--PhoneInputCountrySelectArrow-width);
-  height: var(--PhoneInputCountrySelectArrow-width);
-  margin-left: var(--PhoneInputCountrySelectArrow-marginLeft);
-  border-style: solid;
-  border-color: var(--PhoneInputCountrySelectArrow-color);
-  border-top-width: 0;
-  border-bottom-width: var(--PhoneInputCountrySelectArrow-borderWidth);
-  border-left-width: 0;
-  border-right-width: var(--PhoneInputCountrySelectArrow-borderWidth);
-  transform: var(--PhoneInputCountrySelectArrow-transform);
-  opacity: var(--PhoneInputCountrySelectArrow-opacity);
-}
-
-/* Onboarding: highlight target section when navigated from onboarding modal */
-.onboarding-highlight {
-  animation: onboarding-pulse 2s ease-in-out 2;
-  border-radius: var(--radius-lg);
-}
-@keyframes onboarding-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 oklch(0.65 0.08 140 / 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 8px oklch(0.65 0.08 140 / 0);
   }
 }

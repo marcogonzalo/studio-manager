@@ -123,15 +123,7 @@ export function VetaLogo({
         />
       </span>
       {showText && (
-        <span
-          className="text-foreground text-left align-middle text-base font-light tracking-wide"
-          style={{
-            fontFamily: "var(--font-montserrat), sans-serif",
-            fontSize: "16px",
-            fontWeight: "300",
-            lineHeight: "20px",
-          }}
-        >
+        <span className="font-brand text-foreground text-left align-middle text-base leading-5 font-light tracking-wide">
           Veta
         </span>
       )}
