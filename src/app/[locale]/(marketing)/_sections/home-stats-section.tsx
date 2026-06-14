@@ -1,6 +1,6 @@
 "use client";
 
-import { FolderKanban, Clock, Shield } from "lucide-react";
+import { FolderKanban, Clock, Layers } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   StaggerContainer,
@@ -15,12 +15,14 @@ export function HomeStatsSection() {
     {
       value: Infinity,
       suffix: "",
+      prefix: "",
       label: t("projectsLabel"),
       icon: FolderKanban,
     },
     {
       value: 65,
       suffix: "%",
+      prefix: t("timeSavedPrefix"),
       label: t("timeSavedLabel"),
       icon: Clock,
     },
@@ -28,7 +30,8 @@ export function HomeStatsSection() {
       value: 100,
       suffix: "%",
       label: t("allInOneLabel"),
-      icon: Shield,
+      icon: Layers,
+      prefix: "",
     },
   ];
 
@@ -45,6 +48,11 @@ export function HomeStatsSection() {
                 <stat.icon className="h-6 w-6" />
               </div>
               <div className="text-3xl font-bold tracking-tight sm:text-4xl">
+                {stat.prefix ? (
+                  <span className="text-muted-foreground mr-1 text-lg font-medium sm:text-xl">
+                    {stat.prefix}
+                  </span>
+                ) : null}
                 <AnimatedCounter
                   target={stat.value}
                   suffix={stat.suffix}
@@ -57,6 +65,9 @@ export function HomeStatsSection() {
             </StaggerItem>
           ))}
         </StaggerContainer>
+        <p className="text-muted-foreground mx-auto mt-8 max-w-2xl text-center text-xs">
+          {t("footnote")}
+        </p>
       </div>
     </section>
   );

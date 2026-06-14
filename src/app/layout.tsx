@@ -11,6 +11,7 @@ import {
   JsonLd,
   organizationJsonLd,
   softwareApplicationJsonLd,
+  websiteJsonLd,
 } from "@/components/json-ld";
 import { getSiteUrl } from "@/lib/site-url";
 import "@/styles/globals.css";
@@ -154,6 +155,11 @@ gtag('set', 'url_passthrough', false);
         <JsonLd
           id="json-ld-software-application"
           data={softwareApplicationJsonLd}
+          strategy="beforeInteractive"
+        />
+        <JsonLd
+          id="json-ld-website"
+          data={websiteJsonLd}
           strategy="beforeInteractive"
         />
       </head>

@@ -2,6 +2,7 @@
 entryId: lighting-layers
 title: "Iluminación por capas en viviendas: ambiental, de tareas y de acento"
 date: 2026-01-05
+author: Marco Gonzalo Gómez Pérez
 excerpt: "Un sistema de tres capas (ambiental, de tareas y de acento) que permite diseñar la luz de una vivienda con criterio: qué hace cada capa, cómo combinar temperaturas de color y los errores más frecuentes en residencial."
 slug: iluminacion-por-capas
 coverImage: https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80

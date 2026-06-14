@@ -3,6 +3,10 @@ import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { ArrowLeft, Shield, FileText, Scale, Cookie } from "lucide-react";
+import {
+  buildMarketingOpenGraph,
+  buildMarketingTwitter,
+} from "@/lib/marketing-open-graph";
 
 export async function generateMetadata({
   params,
@@ -23,16 +27,15 @@ export async function generateMetadata({
         "x-default": "/legal",
       },
     },
-    openGraph: {
+    openGraph: buildMarketingOpenGraph({
       title: t("ogTitle"),
       description: t("ogDescription"),
       url: canonical,
-    },
-    twitter: {
-      card: "summary_large_image",
+    }),
+    twitter: buildMarketingTwitter({
       title: t("ogTitle"),
       description: t("twitterDescription"),
-    },
+    }),
   };
 }
 

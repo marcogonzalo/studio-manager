@@ -2,6 +2,7 @@
 entryId: veta-vs-excel-budgets
 title: Por qué Veta supera a las hojas de cálculo en la gestión de presupuestos de interiorismo
 date: 2026-05-09
+author: Marco Gonzalo Gómez Pérez
 excerpt: "Las hojas de cálculo son gratuitas y flexibles, pero no están hechas para presupuestos de diseño interior: no ordenan fases y productos como un proyecto real, no enlazan pagos con compras y no ofrecen un sitio público seguro por cliente. Veta sí: presupuesto, pedidos, PDF y vista del proyecto en un solo flujo."
 slug: veta-vs-excel-presupuestos-interiorismo
 coverImage: https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80

@@ -2,6 +2,7 @@
 entryId: studio-workflow
 title: Cómo ordenar el flujo de trabajo en un estudio de interiorismo
 date: 2026-02-10
+author: Marco Gonzalo Gómez Pérez
 excerpt: "Tres hábitos operativos que reducen la fricción entre diseño, compras y entrega: congelar el alcance por fases, mantener una sola fuente de verdad para los números y revisar el estado de cada proyecto cada semana."
 slug: flujo-trabajo-estudio
 coverImage: https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80

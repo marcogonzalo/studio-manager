@@ -2,6 +2,7 @@
 entryId: veta-vs-excel-budgets
 title: Why Veta Beats Spreadsheets for Interior Design Budget Management
 date: 2026-05-09
+author: Marco Gonzalo Gómez Pérez
 excerpt: "Spreadsheets are free and flexible, but they weren't built for interior design budgets: they don't mirror real project phases and procurement, don't tie payments to purchase work, and can't give each client a secure, unique public link. Veta does—budget, orders, PDF, and a client-facing project site in one workflow."
 slug: veta-vs-spreadsheets-interior-design-budgets
 coverImage: https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80

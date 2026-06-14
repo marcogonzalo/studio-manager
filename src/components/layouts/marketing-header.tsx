@@ -53,7 +53,7 @@ export function MarketingHeader() {
       )}
     >
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center">
+        <Link href="/" className="flex items-center" aria-label="Veta">
           <VetaLogo height={28} />
         </Link>
 

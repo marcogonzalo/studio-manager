@@ -22,6 +22,15 @@ import {
   StaggerItem,
 } from "@/components/ui/animated-section";
 import { getSiteUrl } from "@/lib/site-url";
+import {
+  buildMarketingOpenGraph,
+  buildMarketingTwitter,
+} from "@/lib/marketing-open-graph";
+import { MarketingBreadcrumbJsonLd } from "@/components/marketing/marketing-breadcrumb-json-ld";
+import {
+  marketingHomePath,
+  marketingPricingPath,
+} from "@/lib/marketing-canonical-paths";
 
 const baseUrl = getSiteUrl();
 
@@ -46,16 +55,15 @@ export async function generateMetadata({
         "x-default": "/precios",
       },
     },
-    openGraph: {
+    openGraph: buildMarketingOpenGraph({
       title: t("ogTitle"),
       description: t("ogDescription"),
       url: canonical,
-    },
-    twitter: {
-      card: "summary_large_image",
+    }),
+    twitter: buildMarketingTwitter({
       title: t("twitterTitle"),
       description: t("twitterDescription"),
-    },
+    }),
   };
 }
 
@@ -67,6 +75,7 @@ export default async function PricingPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("Pricing");
+  const tBreadcrumbs = await getTranslations("Breadcrumbs");
   const tPlanCopy = await getTranslations("PlanCopy");
 
   const plans = [
@@ -130,6 +139,13 @@ export default async function PricingPage({
   const pricingUrl = `${baseUrl}${locale === "es" ? "/precios" : "/en/pricing"}`;
   return (
     <>
+      <MarketingBreadcrumbJsonLd
+        id="json-ld-breadcrumb-pricing"
+        items={[
+          { name: tBreadcrumbs("home"), path: marketingHomePath(locale) },
+          { name: tBreadcrumbs("pricing"), path: marketingPricingPath(locale) },
+        ]}
+      />
       <JsonLd id="json-ld-faq-pricing" data={faqPageJsonLd(faqs, pricingUrl)} />
       <JsonLd
         id="json-ld-pricing-software"

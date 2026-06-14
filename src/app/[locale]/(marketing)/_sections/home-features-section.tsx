@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  FolderKanban,
-  Users,
-  ShoppingBag,
-  Truck,
-  BarChart3,
-  FileText,
-} from "lucide-react";
+import { BarChart3, ClipboardCheck, Smartphone } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   Card,
@@ -27,34 +20,22 @@ export function HomeFeaturesSection() {
 
   const features = [
     {
-      icon: FolderKanban,
-      title: t("projectManagement"),
-      description: t("projectManagementDesc"),
-    },
-    {
-      icon: Users,
-      title: t("clients"),
-      description: t("clientsDesc"),
-    },
-    {
-      icon: ShoppingBag,
-      title: t("productCatalog"),
-      description: t("productCatalogDesc"),
-    },
-    {
-      icon: Truck,
-      title: t("suppliers"),
-      description: t("suppliersDesc"),
-    },
-    {
       icon: BarChart3,
-      title: t("costControl"),
-      description: t("costControlDesc"),
+      badge: t("elenaBadge"),
+      title: t("elenaTitle"),
+      description: t("elenaDesc"),
     },
     {
-      icon: FileText,
-      title: t("export"),
-      description: t("exportDesc"),
+      icon: Smartphone,
+      badge: t("javiBadge"),
+      title: t("javiTitle"),
+      description: t("javiDesc"),
+    },
+    {
+      icon: ClipboardCheck,
+      badge: t("beatrizBadge"),
+      title: t("beatrizTitle"),
+      description: t("beatrizDesc"),
     },
   ];
 
@@ -77,7 +58,7 @@ export function HomeFeaturesSection() {
         </AnimatedSection>
 
         <StaggerContainer
-          className="grid gap-8 md:grid-cols-2 md:items-stretch lg:grid-cols-3"
+          className="mx-auto grid max-w-5xl gap-8 md:grid-cols-3 md:items-stretch"
           staggerDelay={0.1}
           triggerOnMount={false}
         >
@@ -85,6 +66,9 @@ export function HomeFeaturesSection() {
             <StaggerItem key={feature.title} className="h-full">
               <Card className="group/card flex h-full flex-col border-none shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
                 <CardHeader>
+                  <span className="bg-muted text-muted-foreground mb-4 inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium">
+                    {feature.badge}
+                  </span>
                   <div className="bg-primary/10 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover/card:scale-110">
                     <feature.icon className="text-muted-foreground group-hover/card:text-primary h-6 w-6 transition-colors duration-300" />
                   </div>

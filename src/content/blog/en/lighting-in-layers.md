@@ -2,6 +2,7 @@
 entryId: lighting-layers
 title: "Layered lighting for residential projects: ambient, task, and accent"
 date: 2026-01-05
+author: Marco Gonzalo Gómez Pérez
 excerpt: "A three-layer system (ambient, task, and accent) for designing residential lighting with intent: what each layer does, how to combine color temperatures, and the most common mistakes in home lighting design."
 slug: lighting-in-layers
 coverImage: https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80

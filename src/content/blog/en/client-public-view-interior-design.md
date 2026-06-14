@@ -2,6 +2,7 @@
 entryId: client-public-view
 title: Why Your Client Needs a Public View for Their Interior Design Project
 date: 2026-04-02
+author: Marco Gonzalo Gómez Pérez
 excerpt: "Keeping clients informed without endless meetings requires a project public view: a single link where they can check renders, approved products, order status, construction costs, and registered payments in real time."
 slug: client-public-view-interior-design
 coverImage: https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80

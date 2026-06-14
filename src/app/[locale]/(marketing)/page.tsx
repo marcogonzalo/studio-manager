@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { ArrowRight, Leaf } from "lucide-react";
+import { ArrowRight, PencilRuler } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { JsonLd, faqPageJsonLd } from "@/components/json-ld";
@@ -9,6 +9,8 @@ import { SmoothScrollLink } from "@/components/smooth-scroll-link";
 import { TrackedCtaLink } from "@/components/gtm";
 import { buildHomeMetadata } from "@/lib/marketing-home-metadata";
 import { getSiteUrl } from "@/lib/site-url";
+import { BlogLatestPostsSection } from "@/components/blog/blog-latest-posts-section";
+import type { BlogLocale } from "@/lib/blog";
 
 const ProductMockup = dynamic(
   () =>
@@ -36,6 +38,13 @@ const HomeFeaturesSection = dynamic(
   () =>
     import("./_sections/home-features-section").then(
       (m) => m.HomeFeaturesSection
+    ),
+  { ssr: true }
+);
+const HomeSolutionsSection = dynamic(
+  () =>
+    import("./_sections/home-solutions-section").then(
+      (m) => m.HomeSolutionsSection
     ),
   { ssr: true }
 );
@@ -130,13 +139,13 @@ export default async function HomePage({
             {/* Left: Copy */}
             <div className="text-center lg:text-left">
               <AnimatedSection
-                delay={0}
+                delay={0.05}
                 duration={0.5}
                 triggerOnMount
                 instantReveal
               >
-                <div className="bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
-                  <Leaf className="h-4 w-4" />
+                <div className="bg-primary/10 text-primary mt-6 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
+                  <PencilRuler className="h-4 w-4" />
                   <span>{t("badge")}</span>
                 </div>
               </AnimatedSection>
@@ -227,10 +236,12 @@ export default async function HomePage({
       <div className="below-the-fold">
         <HomeStatsSection />
         <HomeFeaturesSection />
+        <HomeSolutionsSection />
         <HomeBenefitsSection />
         <HomeTestimonialsSection />
         <HomeCtaBeforeFaqSection />
         <HomeFaqSection />
+        <BlogLatestPostsSection locale={locale as BlogLocale} />
         <HomeDemoCtaSection ctaLocation="home_demo_cta" />
       </div>
     </>
