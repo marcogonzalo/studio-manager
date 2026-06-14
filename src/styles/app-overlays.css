@@ -1,0 +1,147 @@
+/* App-only overlays: loaded in veta-app + view-project layouts (not marketing). */
+
+@keyframes collapsible-slide-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+}
+@keyframes collapsible-slide-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+.animate-collapsible-content[data-state="open"] {
+  animation: collapsible-slide-down 300ms ease-out;
+}
+.animate-collapsible-content[data-state="closed"] {
+  animation: collapsible-slide-up 300ms ease-out;
+}
+
+/* react-phone-number-input: tema alineado con Input (border, radius, colores) */
+.PhoneInput {
+  --PhoneInput-color--focus: var(--ring);
+  --PhoneInputCountrySelect-marginRight: 0.5rem;
+  --PhoneInputCountrySelectArrow-width: 0.3rem;
+  --PhoneInputCountrySelectArrow-marginLeft: var(
+    --PhoneInputCountrySelect-marginRight
+  );
+  --PhoneInputCountrySelectArrow-borderWidth: 1px;
+  --PhoneInputCountrySelectArrow-opacity: 0.45;
+  --PhoneInputCountrySelectArrow-color: var(--muted-foreground);
+  --PhoneInputCountrySelectArrow-color--focus: var(--PhoneInput-color--focus);
+  --PhoneInputCountrySelectArrow-transform: rotate(45deg);
+  --PhoneInputCountryFlag-height: 1rem;
+  --PhoneInputCountryFlag-aspectRatio: 1.5;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-md);
+  background: var(--background);
+}
+.PhoneInput:focus-within {
+  outline: none;
+}
+.PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+
+  background: transparent;
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  color: var(--foreground);
+}
+.PhoneInputInput::placeholder {
+  color: var(--placeholder-foreground);
+}
+.PhoneInputInput:focus {
+  outline: none;
+}
+.PhoneInputCountry {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  margin-right: var(--PhoneInputCountrySelect-marginRight);
+}
+.PhoneInputCountryIcon {
+  height: var(--PhoneInputCountryFlag-height);
+  aspect-ratio: var(--PhoneInputCountryFlag-aspectRatio);
+  display: block;
+  overflow: hidden;
+}
+.PhoneInputCountryIcon img,
+.PhoneInputCountryIcon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.PhoneInputCountrySelect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+}
+
+.PhoneInputCountrySelect option {
+  background: var(--background);
+  color: var(--foreground);
+}
+.PhoneInputCountrySelect:focus + * + .PhoneInputCountrySelectArrow {
+  opacity: 1;
+  color: var(--PhoneInputCountrySelectArrow-color--focus);
+}
+.PhoneInputCountrySelectArrow {
+  display: block;
+  width: var(--PhoneInputCountrySelectArrow-width);
+  height: var(--PhoneInputCountrySelectArrow-width);
+  margin-left: var(--PhoneInputCountrySelectArrow-marginLeft);
+  border-style: solid;
+  border-color: var(--PhoneInputCountrySelectArrow-color);
+  border-top-width: 0;
+  border-bottom-width: var(--PhoneInputCountrySelectArrow-borderWidth);
+  border-left-width: 0;
+  border-right-width: var(--PhoneInputCountrySelectArrow-borderWidth);
+  transform: var(--PhoneInputCountrySelectArrow-transform);
+  opacity: var(--PhoneInputCountrySelectArrow-opacity);
+}
+
+.onboarding-highlight {
+  animation: onboarding-pulse 2s ease-in-out 2;
+  border-radius: var(--radius-lg);
+}
+@keyframes onboarding-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.65 0.08 140 / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px oklch(0.65 0.08 140 / 0);
+  }
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  filter: brightness(0) saturate(100%);
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) saturate(100%) invert(1);
+}

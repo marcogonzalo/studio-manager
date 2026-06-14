@@ -7,7 +7,7 @@ import es from "react-phone-number-input/locale/es.json";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-/* Estilos del PhoneInput en globals.css (evita fallo de resolución en Docker/Next) */
+/* Estilos del PhoneInput en app-overlays.css (veta-app / view-project layouts) */
 
 export { isValidPhoneNumber };
 

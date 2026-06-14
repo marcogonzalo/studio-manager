@@ -96,6 +96,11 @@ export function AnimatedSection({
   const effectiveDistance = reducedMotion ? 0 : distance;
   const paintImmediate = instantReveal || reducedMotion;
 
+  if (paintImmediate) {
+    const Tag = as;
+    return <Tag className={cn(className)}>{children}</Tag>;
+  }
+
   const directionOffset = {
     up: { x: 0, y: effectiveDistance },
     down: { x: 0, y: -effectiveDistance },

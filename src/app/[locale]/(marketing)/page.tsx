@@ -136,82 +136,52 @@ export default async function HomePage({
 
         <div className="relative container mx-auto max-w-7xl px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
-            {/* Left: Copy */}
+            {/* Left: Copy — h1/subtitle are plain server HTML for LCP (no client animation shell). */}
             <div className="text-center lg:text-left">
-              <AnimatedSection
-                delay={0.05}
-                duration={0.5}
-                triggerOnMount
-                instantReveal
-              >
-                <div className="bg-primary/10 text-primary mt-6 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
-                  <PencilRuler className="h-4 w-4" />
-                  <span>{t("badge")}</span>
-                </div>
-              </AnimatedSection>
+              <div className="bg-primary/10 text-primary mt-6 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
+                <PencilRuler className="h-4 w-4" />
+                <span>{t("badge")}</span>
+              </div>
 
-              <AnimatedSection
-                delay={0.1}
-                duration={0.5}
-                triggerOnMount
-                instantReveal
-              >
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                  {t("title")}{" "}
-                  <strong className="text-primary">
-                    {t("titleHighlight")}
-                  </strong>
-                </h1>
-              </AnimatedSection>
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                {t("title")}{" "}
+                <strong className="text-primary">{t("titleHighlight")}</strong>
+              </h1>
 
-              <AnimatedSection
-                delay={0.2}
-                duration={0.5}
-                triggerOnMount
-                instantReveal
-              >
-                <p className="text-muted-foreground mt-6 text-lg md:text-xl">
-                  {t("subtitle")}
-                </p>
-              </AnimatedSection>
+              <p className="text-muted-foreground mt-6 text-lg md:text-xl">
+                {t("subtitle")}
+              </p>
 
-              <AnimatedSection
-                delay={0.3}
-                duration={0.5}
-                triggerOnMount
-                instantReveal
-              >
-                <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
-                  <Button
-                    size="lg"
-                    asChild
-                    className="animate-glow w-full sm:w-auto"
+              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
+                <Button
+                  size="lg"
+                  asChild
+                  className="animate-glow w-full sm:w-auto"
+                >
+                  <TrackedCtaLink
+                    href="/sign-up"
+                    ctaLocation="hero"
+                    ctaText={t("startFree")}
                   >
-                    <TrackedCtaLink
-                      href="/sign-up"
-                      ctaLocation="hero"
-                      ctaText={t("startFree")}
-                    >
-                      {t("startFree")}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </TrackedCtaLink>
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    asChild
-                    className="w-full sm:w-auto"
-                  >
-                    <SmoothScrollLink href="#features">
-                      {t("viewFeatures")}
-                    </SmoothScrollLink>
-                  </Button>
-                </div>
+                    {t("startFree")}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </TrackedCtaLink>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  asChild
+                  className="w-full sm:w-auto"
+                >
+                  <SmoothScrollLink href="#features">
+                    {t("viewFeatures")}
+                  </SmoothScrollLink>
+                </Button>
+              </div>
 
-                <p className="text-muted-foreground mt-4 text-sm">
-                  {t("trialInfo")}
-                </p>
-              </AnimatedSection>
+              <p className="text-muted-foreground mt-4 text-sm">
+                {t("trialInfo")}
+              </p>
             </div>
 
             {/* Product Mockup: below on small screens, right on lg+ */}

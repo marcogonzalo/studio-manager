@@ -13,6 +13,8 @@ import {
 } from "@/lib/formatting";
 import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
 import { createClient } from "@/lib/supabase/server";
+import { montserratBrand } from "@/lib/fonts/montserrat-brand";
+import "@/styles/app-overlays.css";
 
 export const metadata: Metadata = {
   title: { template: "%s", default: "App" },
@@ -66,12 +68,14 @@ export default async function AppLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
-      <AppFormattingProvider lang={locale} dateFormat={dateFormat}>
-        <AuthProvider>
-          <AppLayoutClient>{children}</AppLayoutClient>
-        </AuthProvider>
-      </AppFormattingProvider>
-    </NextIntlClientProvider>
+    <div className={montserratBrand.variable}>
+      <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
+        <AppFormattingProvider lang={locale} dateFormat={dateFormat}>
+          <AuthProvider>
+            <AppLayoutClient>{children}</AppLayoutClient>
+          </AuthProvider>
+        </AppFormattingProvider>
+      </NextIntlClientProvider>
+    </div>
   );
 }
