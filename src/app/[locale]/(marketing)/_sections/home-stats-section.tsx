@@ -41,6 +41,7 @@ export function HomeStatsSection() {
         <StaggerContainer
           className="grid gap-8 md:grid-cols-3"
           staggerDelay={0.15}
+          triggerOnMount={false}
         >
           {stats.map((stat) => (
             <StaggerItem key={stat.label} className="text-center">

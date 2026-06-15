@@ -95,6 +95,10 @@ export function AnimatedSection({
   const effectiveDuration = reducedMotion ? 0 : duration;
   const effectiveDistance = reducedMotion ? 0 : distance;
   const paintImmediate = instantReveal || reducedMotion;
+  /** Keep text visible on SSR + hydration when animating on mount (opacity:0 caused React #418). */
+  const holdVisibleUntilMounted = triggerOnMount && !mounted;
+  const playMountSlide =
+    triggerOnMount && mounted && !instantReveal && !reducedMotion;
 
   if (paintImmediate) {
     const Tag = as;
@@ -109,35 +113,37 @@ export function AnimatedSection({
     none: { x: 0, y: 0 },
   };
 
+  const visibleState = { opacity: 1, x: 0, y: 0 };
+  const hiddenState = {
+    opacity: 0,
+    x: directionOffset[direction].x,
+    y: directionOffset[direction].y,
+  };
+  const offsetVisibleState = {
+    opacity: 1,
+    x: directionOffset[direction].x,
+    y: directionOffset[direction].y,
+  };
+
+  const initial = holdVisibleUntilMounted
+    ? visibleState
+    : playMountSlide
+      ? offsetVisibleState
+      : hiddenState;
+  const animate =
+    holdVisibleUntilMounted || isInView ? visibleState : hiddenState;
+
   const MotionComponent = motionByTag[as];
 
   return (
     <MotionComponent
       ref={ref}
       className={cn(className)}
-      initial={
-        paintImmediate
-          ? { opacity: 1, x: 0, y: 0 }
-          : {
-              opacity: 0,
-              x: directionOffset[direction].x,
-              y: directionOffset[direction].y,
-            }
-      }
-      animate={
-        isInView
-          ? { opacity: 1, x: 0, y: 0 }
-          : paintImmediate
-            ? { opacity: 1, x: 0, y: 0 }
-            : {
-                opacity: 0,
-                x: directionOffset[direction].x,
-                y: directionOffset[direction].y,
-              }
-      }
+      initial={initial}
+      animate={animate}
       transition={{
-        duration: paintImmediate ? 0 : effectiveDuration,
-        delay: paintImmediate ? 0 : reducedMotion ? 0 : delay,
+        duration: holdVisibleUntilMounted ? 0 : effectiveDuration,
+        delay: holdVisibleUntilMounted ? 0 : reducedMotion ? 0 : delay,
         ease: [0.25, 0.4, 0.25, 1],
       }}
     >
@@ -180,6 +186,7 @@ export function StaggerContainer({
     setMounted(true);
   }, []);
   const isInView = triggerOnMount ? mounted : isInViewObserver || inViewOnLoad;
+  const holdVisibleUntilMounted = triggerOnMount && !mounted;
   const effectiveStaggerDelay = reducedMotion ? 0 : staggerDelay;
 
   return (
@@ -187,7 +194,7 @@ export function StaggerContainer({
       ref={ref}
       className={cn(className)}
       initial="hidden"
-      animate={isInView ? "visible" : "hidden"}
+      animate={holdVisibleUntilMounted || isInView ? "visible" : "hidden"}
       variants={{
         hidden: {},
         visible: {
