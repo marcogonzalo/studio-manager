@@ -50,6 +50,9 @@ export function AnimatedCounter({
     setMounted(true);
   }, []);
   const isInView = triggerOnMount ? mounted : isInViewObserver;
+  /** Match SSR/hydration: stay visible when triggerOnMount until mounted. */
+  const deferMountAnimation = triggerOnMount && !mounted;
+  const showVisible = deferMountAnimation || isInView;
   const motionValue = useMotionValue(0);
   const [displayValue, setDisplayValue] = useState("0");
   const effectiveDuration = reducedMotion ? 0 : duration;
@@ -93,9 +96,9 @@ export function AnimatedCounter({
       <motion.span
         ref={ref}
         className={cn("tabular-nums", className)}
-        initial={{ opacity: 0, y: reducedMotion ? 0 : 10 }}
+        initial={{ opacity: 1, y: 0 }}
         animate={
-          isInView
+          showVisible
             ? { opacity: 1, y: 0 }
             : { opacity: 0, y: reducedMotion ? 0 : 10 }
         }
@@ -110,9 +113,9 @@ export function AnimatedCounter({
     <motion.span
       ref={ref}
       className={cn("tabular-nums", className)}
-      initial={{ opacity: 0, y: reducedMotion ? 0 : 10 }}
+      initial={{ opacity: deferMountAnimation ? 1 : 0, y: 0 }}
       animate={
-        isInView
+        showVisible
           ? { opacity: 1, y: 0 }
           : { opacity: 0, y: reducedMotion ? 0 : 10 }
       }

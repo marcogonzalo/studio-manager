@@ -1,7 +1,5 @@
 "use client";
 
-import type { Locale } from "@/i18n/config";
-import { formatDateIntl } from "@/lib/formatting";
 import type { BlogPostSummary } from "@/lib/blog";
 import {
   StaggerContainer,
@@ -9,9 +7,13 @@ import {
 } from "@/components/ui/animated-section";
 import { BlogPostCard } from "./blog-post-card";
 
+export type BlogPostGridItem = BlogPostSummary & {
+  /** Pre-formatted on the server to avoid Intl hydration mismatches. */
+  formattedDate?: string;
+};
+
 type BlogPostGridProps = {
-  posts: BlogPostSummary[];
-  locale: Locale;
+  posts: BlogPostGridItem[];
   readMoreLabel: string;
   columns?: "two" | "three";
   triggerOnMount?: boolean;
@@ -19,7 +21,6 @@ type BlogPostGridProps = {
 
 export function BlogPostGrid({
   posts,
-  locale,
   readMoreLabel,
   columns = "two",
   triggerOnMount = false,
@@ -40,9 +41,7 @@ export function BlogPostGrid({
           <BlogPostCard
             post={post}
             labels={{
-              formattedDate: formatDateIntl(post.date, locale, {
-                dateStyle: "medium",
-              }),
+              formattedDate: post.formattedDate ?? post.date,
               readMore: readMoreLabel,
             }}
           />

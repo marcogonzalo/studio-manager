@@ -2,7 +2,7 @@ import { ArrowRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { AnimatedSection } from "@/components/ui/animated-section";
-import type { Locale } from "@/i18n/config";
+import { formatDateIntl } from "@/lib/formatting";
 import { getBlogPostSummaries, type BlogLocale } from "@/lib/blog";
 import { BlogPostGrid } from "./blog-post-grid";
 
@@ -41,8 +41,12 @@ export async function BlogLatestPostsSection({
         </AnimatedSection>
 
         <BlogPostGrid
-          posts={posts}
-          locale={locale as Locale}
+          posts={posts.map((post) => ({
+            ...post,
+            formattedDate: formatDateIntl(post.date, locale, {
+              dateStyle: "medium",
+            }),
+          }))}
           readMoreLabel={t("readMore")}
           columns="three"
         />

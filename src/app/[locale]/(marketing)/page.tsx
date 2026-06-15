@@ -189,7 +189,7 @@ export default async function HomePage({
               direction="right"
               delay={0.4}
               duration={0.6}
-              triggerOnMount
+              instantReveal
             >
               <ProductMockup />
             </AnimatedSection>

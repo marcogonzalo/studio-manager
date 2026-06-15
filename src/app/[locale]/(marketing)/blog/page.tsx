@@ -3,7 +3,7 @@ import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { BlogPostGrid } from "@/components/blog/blog-post-grid";
-import type { Locale } from "@/i18n/config";
+import { formatDateIntl } from "@/lib/formatting";
 import {
   buildMarketingOpenGraph,
   buildMarketingTwitter,
@@ -64,7 +64,6 @@ export default async function BlogIndexPage({
   const t = await getTranslations("Blog");
   const tBreadcrumbs = await getTranslations("Breadcrumbs");
   const posts = await getBlogPostSummaries(locale);
-  const lang = locale as Locale;
 
   return (
     <>
@@ -132,8 +131,12 @@ export default async function BlogIndexPage({
           <p className="text-muted-foreground">{t("empty")}</p>
         ) : (
           <BlogPostGrid
-            posts={posts}
-            locale={lang}
+            posts={posts.map((post) => ({
+              ...post,
+              formattedDate: formatDateIntl(post.date, locale, {
+                dateStyle: "medium",
+              }),
+            }))}
             readMoreLabel={t("readMore")}
             triggerOnMount
           />

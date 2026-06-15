@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import type { Locale } from "@/i18n/config";
+import { formatDateIntl } from "@/lib/formatting";
 import { getBlogPostSummaries, type BlogLocale } from "@/lib/blog";
 import { BlogPostGrid } from "./blog-post-grid";
 
@@ -33,8 +33,12 @@ export async function BlogRelatedPosts({
         {t("relatedSubtitle")}
       </p>
       <BlogPostGrid
-        posts={posts}
-        locale={locale as Locale}
+        posts={posts.map((post) => ({
+          ...post,
+          formattedDate: formatDateIntl(post.date, locale, {
+            dateStyle: "medium",
+          }),
+        }))}
         readMoreLabel={t("readMore")}
         columns="two"
       />
