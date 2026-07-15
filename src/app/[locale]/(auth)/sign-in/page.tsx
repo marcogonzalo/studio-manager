@@ -3,6 +3,10 @@ import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { getTranslations } from "next-intl/server";
 import { buildLocaleAlternates } from "@/lib/locale-alternates";
+import {
+  buildMarketingOpenGraph,
+  buildMarketingTwitter,
+} from "@/lib/marketing-open-graph";
 import { SignInForm } from "../sign-in-form";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -13,20 +17,23 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "SignIn" });
+  const title = t("metaTitle");
+  const description = t("metaDescription");
   const { canonical, alternates } = buildLocaleAlternates(
     "/sign-in",
     "/en/sign-in",
     locale
   );
   return {
-    title: t("metaTitle"),
-    description: t("metaDescription"),
+    title,
+    description,
     alternates,
-    openGraph: {
-      title: t("metaTitle"),
-      description: t("metaDescription"),
+    openGraph: buildMarketingOpenGraph({
+      title,
+      description,
       url: canonical,
-    },
+    }),
+    twitter: buildMarketingTwitter({ title, description }),
     robots: { index: true, follow: true },
   };
 }
