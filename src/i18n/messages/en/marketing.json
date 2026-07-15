@@ -42,7 +42,10 @@
     "contact": "Contact",
     "legal": "Legal",
     "termsAndPrivacy": "Terms & Privacy",
-    "copyright": "All rights reserved."
+    "copyright": "All rights reserved.",
+    "socialLinkedin": "Veta on LinkedIn",
+    "socialInstagram": "Veta on Instagram",
+    "socialFacebook": "Veta on Facebook"
   },
   "Blog": {
     "metaTitle": "Veta.blog — Ideas and guides for interior design studios",

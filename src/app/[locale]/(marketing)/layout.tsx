@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Facebook, Instagram, Linkedin } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { VetaLogo } from "@/components/veta-logo";
 import { MarketingHeader } from "@/components/layouts/marketing-header";
@@ -7,6 +8,24 @@ import { RedirectAuthenticatedToDashboard } from "@/components/redirect-authenti
 import { AnchorToHash } from "@/components/smooth-scroll-link";
 import { CookieConsentBanner } from "@/components/consent";
 import { GtmPageView } from "@/components/gtm";
+
+const FOOTER_SOCIAL_LINKS = [
+  {
+    href: "https://www.linkedin.com/company/veta-interior-design-project-management",
+    labelKey: "socialLinkedin" as const,
+    Icon: Linkedin,
+  },
+  {
+    href: "https://www.instagram.com/veta.interiordesign",
+    labelKey: "socialInstagram" as const,
+    Icon: Instagram,
+  },
+  {
+    href: "https://facebook.com/veta.interiordesign",
+    labelKey: "socialFacebook" as const,
+    Icon: Facebook,
+  },
+];
 
 export const metadata: Metadata = {
   robots: {
@@ -49,6 +68,21 @@ async function Footer() {
               <VetaLogo height={28} />
             </Link>
             <p className="text-muted-foreground text-sm">{t("description")}</p>
+            <ul className="mt-4 flex items-center gap-3">
+              {FOOTER_SOCIAL_LINKS.map(({ href, labelKey, Icon }) => (
+                <li key={href}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t(labelKey)}
+                    className="text-primary hover:text-primary/80 inline-flex transition-colors"
+                  >
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div>

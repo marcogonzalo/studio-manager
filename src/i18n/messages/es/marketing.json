@@ -42,7 +42,10 @@
     "contact": "Contacto",
     "legal": "Legal",
     "termsAndPrivacy": "Términos y Privacidad",
-    "copyright": "Todos los derechos reservados."
+    "copyright": "Todos los derechos reservados.",
+    "socialLinkedin": "Veta en LinkedIn",
+    "socialInstagram": "Veta en Instagram",
+    "socialFacebook": "Veta en Facebook"
   },
   "Blog": {
     "metaTitle": "Veta.blog — Ideas y guías para estudios de diseño interior",
