@@ -393,6 +393,7 @@
     "deleteImageAria": "Delete image",
     "empty": "No images.",
     "toastDeleted": "Image deleted",
+    "toastDeleteError": "Could not delete image",
     "toastAdded": "Image added"
   },
   "DialogSpaceProducts": {
