@@ -137,30 +137,26 @@ export function OnboardingStepModal({
             {config.description}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          <DialogFooter>
-            {config.secondaryHref && config.secondaryLabel && (
-              <Button asChild variant="outline">
-                <Link
-                  href={buildOnboardingUrl(config.secondaryHref, stepId)}
-                  onClick={() => onOpenChange(false)}
-                >
-                  {config.secondaryLabel}
-                </Link>
-              </Button>
-            )}
-            <Button asChild>
-              <Link href={primaryUrl} onClick={() => onOpenChange(false)}>
-                {config.primaryLabel}
+        <DialogFooter>
+          <Button variant="ghost" onClick={handleOmitir}>
+            {t("later")}
+          </Button>
+          {config.secondaryHref && config.secondaryLabel && (
+            <Button asChild variant="outline">
+              <Link
+                href={buildOnboardingUrl(config.secondaryHref, stepId)}
+                onClick={() => onOpenChange(false)}
+              >
+                {config.secondaryLabel}
               </Link>
             </Button>
-          </DialogFooter>
-          <div className="flex justify-center sm:justify-end">
-            <Button variant="link" size="sm" onClick={handleOmitir}>
-              {t("later")}
-            </Button>
-          </div>
-        </div>
+          )}
+          <Button asChild>
+            <Link href={primaryUrl} onClick={() => onOpenChange(false)}>
+              {config.primaryLabel}
+            </Link>
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

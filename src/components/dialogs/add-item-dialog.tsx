@@ -17,6 +17,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormDescription,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
@@ -39,38 +40,18 @@ import { ProductImageUpload } from "@/components/product-image-upload";
 import type { Product, ProjectItem, Space, Supplier } from "@/types";
 import Link from "next/link";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
+import { appendCurrencyToLabel } from "@/lib/formatting";
 import { useAuth } from "@/components/auth-provider";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { SupplierDialog } from "./supplier-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  buildAddItemFormSchema,
+  shouldBlockNumericKey,
+} from "@/lib/add-item-form-schema";
 
 const MAX_PRODUCT_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-
-function buildFormSchema(t: ReturnType<typeof useTranslations>) {
-  return z.object({
-    product_id: z.string().optional(),
-    space_id: z.string().optional(),
-    supplier_id: z.string().optional(),
-    name: z.string().min(2, t("validationNameRequired")),
-    description: z.string().optional(),
-    reference_code: z.string().optional(),
-    reference_url: z.string().optional(),
-    category: z.string().optional(),
-    internal_reference: z.string().optional(),
-    quantity: z
-      .string()
-      .transform((v) => parseFloat(v) || 1)
-      .refine((val) => val > 0, t("validationQuantityPositive")),
-    unit_cost: z
-      .string()
-      .transform((v) => parseFloat(v) || 0)
-      .refine((val) => val >= 0, t("validationUnitCostNonNegative")),
-    markup: z.string().transform((v) => parseFloat(v) || 0),
-    unit_price: z.string().transform((v) => parseFloat(v) || 0),
-    image_url: z.string().optional(),
-    is_excluded: z.boolean().optional(),
-  });
-}
 
 interface AddItemDialogProps {
   open: boolean;
@@ -91,11 +72,13 @@ export function AddItemDialog({
 }: AddItemDialogProps) {
   const t = useTranslations("DialogAddItem");
   const { user } = useAuth();
+  const { getCurrencySymbol } = useAppFormatting();
   const excludeFromBudgetOptionEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "plus",
   });
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
+  const [projectCurrency, setProjectCurrency] = useState<string | undefined>();
   const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [, setSelectedProduct] = useState<Product | null>(null);
@@ -116,7 +99,7 @@ export function AddItemDialog({
   const isEditing = !!item;
 
   const productIdForUpload = item?.product_id ?? "";
-  const formSchema = buildFormSchema(t);
+  const formSchema = buildAddItemFormSchema(t);
 
   type FormValues = z.input<typeof formSchema>;
   const form = useForm<FormValues>({
@@ -131,10 +114,11 @@ export function AddItemDialog({
       reference_url: "",
       category: "",
       internal_reference: "",
+      internal_notes: "",
       quantity: "1",
-      unit_cost: "0",
+      unit_cost: "",
       markup: "20",
-      unit_price: "0",
+      unit_price: "",
       image_url: "",
       is_excluded: false,
     },
@@ -167,11 +151,16 @@ export function AddItemDialog({
 
   useEffect(() => {
     async function loadData() {
-      const { data: rData } = await supabase
-        .from("spaces")
-        .select("*")
-        .eq("project_id", projectId);
+      const [{ data: rData }, { data: projectData }] = await Promise.all([
+        supabase.from("spaces").select("*").eq("project_id", projectId),
+        supabase
+          .from("projects")
+          .select("currency")
+          .eq("id", projectId)
+          .single(),
+      ]);
       setSpaces(rData || []);
+      setProjectCurrency(projectData?.currency);
       const { data: pData } = await supabase
         .from("products")
         .select("*, supplier:suppliers(name)")
@@ -215,6 +204,7 @@ export function AddItemDialog({
           reference_url: productData.reference_url,
           category: productData.category,
           internal_reference: item.internal_reference || "",
+          internal_notes: item.internal_notes || "",
           quantity: item.quantity?.toString() || "1",
           unit_cost: item.unit_cost?.toString() || "0",
           markup: item.markup?.toString() || "20",
@@ -245,10 +235,11 @@ export function AddItemDialog({
           reference_url: "",
           category: "",
           internal_reference: "",
+          internal_notes: "",
           quantity: "1",
-          unit_cost: "0",
+          unit_cost: "",
           markup: "20",
-          unit_price: "0",
+          unit_price: "",
           image_url: "",
         });
         setSelectedProduct(null);
@@ -445,6 +436,7 @@ export function AddItemDialog({
         unit_price: values.unit_price,
         image_url: values.image_url,
         internal_reference: values.internal_reference || null,
+        internal_notes: values.internal_notes?.trim() || null,
         is_excluded: excludeFromBudgetOptionEnabled
           ? values.is_excluded || false
           : false,
@@ -911,9 +903,17 @@ export function AddItemDialog({
                       <FormControl>
                         <Input
                           type="number"
-                          min="0.01"
-                          step="0.01"
+                          inputMode="numeric"
+                          min={1}
+                          step={1}
                           {...field}
+                          onKeyDown={(e) => {
+                            if (
+                              shouldBlockNumericKey(e.key, "positive-integer")
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
                           className="bg-background"
                         />
                       </FormControl>
@@ -926,13 +926,26 @@ export function AddItemDialog({
                   name="unit_cost"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("unitCostLabel")}</FormLabel>
+                      <FormLabel>
+                        {appendCurrencyToLabel(
+                          t("unitCostLabel"),
+                          getCurrencySymbol(projectCurrency)
+                        )}
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          min="0"
+                          inputMode="decimal"
+                          min="0.01"
                           step="0.01"
                           {...field}
+                          onKeyDown={(e) => {
+                            if (
+                              shouldBlockNumericKey(e.key, "positive-float")
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
                           className="bg-background"
                         />
                       </FormControl>
@@ -962,15 +975,30 @@ export function AddItemDialog({
                   name="unit_price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("unitPriceLabel")}</FormLabel>
+                      <FormLabel>
+                        {appendCurrencyToLabel(
+                          t("unitPriceLabel"),
+                          getCurrencySymbol(projectCurrency)
+                        )}
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
+                          inputMode="decimal"
+                          min="0.01"
                           step="0.01"
                           {...field}
+                          onKeyDown={(e) => {
+                            if (
+                              shouldBlockNumericKey(e.key, "positive-float")
+                            ) {
+                              e.preventDefault();
+                            }
+                          }}
                           className="bg-background"
                         />
                       </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -989,6 +1017,27 @@ export function AddItemDialog({
                         className="bg-background"
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="internal_notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("internalNotesLabel")}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t("internalNotesPlaceholder")}
+                        {...field}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {t("internalNotesDescription")}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

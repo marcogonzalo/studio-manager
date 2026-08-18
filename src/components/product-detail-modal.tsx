@@ -107,6 +107,17 @@ export function ProductDetailModal({
               </div>
             )}
 
+            {projectItem?.internal_notes && (
+              <div>
+                <h3 className="text-muted-foreground mb-1 text-sm font-medium">
+                  {t("internalNotes")}
+                </h3>
+                <p className="text-sm whitespace-pre-wrap">
+                  {projectItem.internal_notes}
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <h3 className="text-muted-foreground mb-1 text-sm font-medium">

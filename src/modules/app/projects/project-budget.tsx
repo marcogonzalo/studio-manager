@@ -68,12 +68,12 @@ import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import {
   getDemoAccountMessage,
   getErrorMessage,
   reportError,
-  formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 
@@ -98,6 +98,8 @@ export function ProjectBudget({
   const t = useTranslations("ProjectModuleBudget");
   const ts = useTranslations("ProjectModuleShared");
   const phaseLabel = usePhaseLabel();
+  const { formatCurrency: formatCurrencyWithSettings, lang } =
+    useAppFormatting();
   const { user, effectivePlan } = useAuth();
   const printFilterOptionsEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "full",
@@ -324,7 +326,8 @@ export function ProjectBudget({
         architectName,
         architectEmail,
         showVetaBranding,
-        vetaLogoDataUrl
+        vetaLogoDataUrl,
+        lang
       );
       const blob = await asPdf.toBlob();
       const url = URL.createObjectURL(blob);
@@ -382,7 +385,7 @@ export function ProjectBudget({
   const grandTotal = totalItemsPrice + totalBudgetLinesEstimated;
 
   const formatCurrency = (amount: number) =>
-    formatCurrencyUtil(amount, project?.currency);
+    formatCurrencyWithSettings(amount, project?.currency);
   const categoryLabels: Record<BudgetCategory, string> = {
     construction: t("budgetCategory.construction"),
     own_fees: t("budgetCategory.own_fees"),

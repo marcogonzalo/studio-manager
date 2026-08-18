@@ -247,6 +247,7 @@ export interface ProjectItem {
   status: string;
   image_url: string;
   internal_reference?: string;
+  internal_notes?: string | null;
   supplier_id?: string;
   purchase_order_id?: string | null;
   is_excluded?: boolean;

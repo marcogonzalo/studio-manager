@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ImageIcon, Loader2, X } from "lucide-react";
+import { ImageIcon, Loader2, Pencil, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateImageFile } from "@/lib/image-validation";
@@ -149,6 +149,7 @@ export function ProductImageUpload({
 
   const previewUrl = currentImageUrl || pendingPreviewUrl;
   const showDeferPlaceholder = deferUpload && pendingFile;
+  const hasExistingImage = Boolean(currentImageUrl?.trim());
 
   return (
     <div className={cn("space-y-2", className)}>
@@ -159,6 +160,7 @@ export function ProductImageUpload({
         className={cn(
           "relative flex min-h-[120px] flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors",
           "bg-muted/30 border-muted-foreground/25",
+          hasExistingImage && "group",
           isDragging && "border-primary bg-primary/5",
           (disabled || isUploading) && "pointer-events-none opacity-60",
           !disabled && !isUploading && "hover:border-primary/50 cursor-pointer"
@@ -170,8 +172,12 @@ export function ProductImageUpload({
           onChange={handleFileInput}
           disabled={disabled || isUploading}
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
-          aria-label={t("selectImageAria")}
-          title={t("selectImageTitle")}
+          aria-label={
+            hasExistingImage ? t("replaceImageAria") : t("selectImageAria")
+          }
+          title={
+            hasExistingImage ? t("replaceImageTitle") : t("selectImageTitle")
+          }
         />
         {isUploading ? (
           <Loader2 className="text-muted-foreground h-10 w-10 animate-spin" />
@@ -195,6 +201,20 @@ export function ProductImageUpload({
               alt={t("previewAlt")}
               className="max-h-[180px] max-w-full object-contain"
             />
+            {hasExistingImage && (
+              <>
+                <div
+                  className="pointer-events-none absolute inset-0 rounded-md bg-black/0 transition-colors group-hover:bg-black/35"
+                  aria-hidden
+                />
+                <div
+                  className="bg-background/95 text-foreground ring-border pointer-events-none absolute right-2 bottom-2 flex h-9 w-9 items-center justify-center rounded-full shadow-md ring-1"
+                  aria-hidden
+                >
+                  <Pencil className="h-4 w-4" />
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 px-4 py-6 text-center">

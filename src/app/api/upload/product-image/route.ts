@@ -5,7 +5,12 @@ import { cookies } from "next/headers";
 import type { CookieOptions } from "@supabase/ssr";
 import sharp from "sharp";
 import { uploadProductImage } from "@/lib/backblaze";
-import { createAsset, deleteAssetById, getAssetIdByOwner } from "@/lib/assets";
+import {
+  createAsset,
+  deleteAssetById,
+  getAssetIdByOwner,
+  getAssetIdByUrl,
+} from "@/lib/assets";
 import { validateImageFile } from "@/lib/image-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
 import {
@@ -135,7 +140,7 @@ export async function DELETE(request: Request) {
 
     if (product && !productError) {
       if (admin) {
-        const assetId = await getAssetIdByOwner(admin, "products", product.id);
+        const assetId = await getAssetIdByUrl(admin, imageUrl.trim());
         if (assetId) await deleteAssetById(admin, assetId);
       }
       await supabase
@@ -144,11 +149,7 @@ export async function DELETE(request: Request) {
         .eq("id", product.id);
     } else if (spaceImageId) {
       if (admin) {
-        const assetId = await getAssetIdByOwner(
-          admin,
-          "space_images",
-          spaceImageId
-        );
+        const assetId = await getAssetIdByUrl(admin, imageUrl.trim());
         if (assetId) await deleteAssetById(admin, assetId);
       }
       await supabase.from("space_images").delete().eq("id", spaceImageId);

@@ -32,12 +32,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import type { Payment, PurchaseOrder, AdditionalCost } from "@/types";
-import {
-  getDemoAccountMessage,
-  getCurrencySymbol,
-  formatCurrency,
-} from "@/lib/utils";
+import { getDemoAccountMessage } from "@/lib/utils";
 
 function buildFormSchema(t: ReturnType<typeof useTranslations>) {
   return z
@@ -99,6 +96,7 @@ export function PaymentDialog({
 }: PaymentDialogProps) {
   const t = useTranslations("DialogPayment");
   const formSchema = buildFormSchema(t);
+  const { formatCurrency, getCurrencySymbol } = useAppFormatting();
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);

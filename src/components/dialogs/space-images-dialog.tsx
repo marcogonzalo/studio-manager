@@ -15,6 +15,8 @@ import Link from "next/link";
 import { toast } from "sonner";
 import type { Space } from "@/types";
 import { Plus, Trash2 } from "lucide-react";
+import { deleteSpaceImage } from "@/lib/delete-space-image";
+import { getDemoAccountMessage, reportError } from "@/lib/utils";
 
 interface Image {
   id: string;
@@ -55,12 +57,26 @@ export function SpaceImagesDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when open or space.id changes only
   }, [open, space.id]);
 
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("space_images").delete().eq("id", id);
-    if (!error) {
-      toast.success(t("toastDeleted"));
-      fetchImages();
+  const handleDelete = async (image: Image) => {
+    const result = await deleteSpaceImage({
+      id: image.id,
+      url: image.url,
+      supabase,
+    });
+    if (!result.ok) {
+      const demoMsg = getDemoAccountMessage(result.error);
+      if (demoMsg) {
+        toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+          duration: 5000,
+        });
+        return;
+      }
+      reportError(result.error, "Error deleting space image:");
+      toast.error(t("toastDeleteError"));
+      return;
     }
+    toast.success(t("toastDeleted"));
+    fetchImages();
   };
 
   const createRowForUpload = useCallback(async () => {
@@ -80,71 +96,68 @@ export function SpaceImagesDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[800px]">
-        <DialogHeader>
-          <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0 flex-1 space-y-1.5">
-              <DialogTitle>{t("title", { name: space.name })}</DialogTitle>
-              <DialogDescription>{t("description")}</DialogDescription>
-            </div>
-            <div className="flex shrink-0 justify-end">
-              {canAddRenders ? (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setAddModalOpen(true)}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t("addImages")}
-                </Button>
-              ) : (
-                <p className="text-muted-foreground text-right text-xs">
-                  {t("notAvailable")}{" "}
-                  <Link href="/pricing" className="underline">
-                    {t("upgradePlan")}
-                  </Link>{" "}
-                  {t("upgradeSuffix")}
-                </p>
-              )}
-            </div>
+        <DialogHeader className="gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="min-w-0 flex-1 space-y-1.5 text-left">
+            <DialogTitle>{t("title", { name: space.name })}</DialogTitle>
+            <DialogDescription>{t("description")}</DialogDescription>
           </div>
+          {canAddRenders ? (
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="shrink-0 self-center sm:self-start"
+              onClick={() => setAddModalOpen(true)}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {t("addImages")}
+            </Button>
+          ) : (
+            <p className="text-muted-foreground self-center text-right text-xs sm:max-w-xs sm:self-start">
+              {t("notAvailable")}{" "}
+              <Link href="/pricing" className="underline">
+                {t("upgradePlan")}
+              </Link>{" "}
+              {t("upgradeSuffix")}
+            </p>
+          )}
         </DialogHeader>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           {images.map((img) => (
-            <button
+            <div
               key={img.id}
-              type="button"
-              className="group focus-visible:ring-ring relative aspect-video overflow-hidden rounded-md border bg-transparent p-0 text-left transition-opacity hover:opacity-95 focus:outline-none focus-visible:ring-2"
-              onClick={() => setExpandedImage(img)}
-              aria-label={t("expandAria", { description: img.description })}
+              className="relative aspect-video overflow-hidden rounded-md border"
             >
-              <Image
-                src={img.url}
-                alt={img.description}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 50vw, 33vw"
-              />
-              <div
-                className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100"
-                aria-hidden
+              <button
+                type="button"
+                className="focus-visible:ring-ring absolute inset-0 bg-transparent p-0 text-left transition-opacity hover:opacity-95 focus:outline-none focus-visible:ring-2"
+                onClick={() => setExpandedImage(img)}
+                aria-label={t("expandAria", { description: img.description })}
               >
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleDelete(img.id);
-                  }}
-                  aria-label={t("deleteImageAria")}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </button>
+                {img.url ? (
+                  <Image
+                    src={img.url}
+                    alt={img.description}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                  />
+                ) : (
+                  <span className="bg-muted absolute inset-0" />
+                )}
+              </button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 shadow-md"
+                onClick={() => handleDelete(img)}
+                aria-label={t("deleteImageAria")}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           ))}
           {images.length === 0 && (
             <div className="text-muted-foreground col-span-full py-10 text-center">

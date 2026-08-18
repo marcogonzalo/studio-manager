@@ -8,6 +8,8 @@ import {
 } from "@react-pdf/renderer";
 // Sin Font.register externo: las URLs a Google Fonts provocan "Failed to fetch" en toBlob()
 // al renderizar. Usamos Helvetica (integrada) para que el PDF se genere sin peticiones externas.
+import { defaultLocale, type Locale } from "@/i18n/config";
+import { formatCurrencyWithLang } from "@/lib/formatting";
 import type {
   Project,
   ProjectBudgetLine,
@@ -19,7 +21,6 @@ import {
   BUDGET_CATEGORIES,
   BUDGET_SUBCATEGORIES,
   getPhaseLabel,
-  formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 
 // Color palette matching the application (from index.css)
@@ -354,6 +355,7 @@ interface ProjectPDFProps {
   showVetaBranding?: boolean;
   /** Absolute URL for the Veta logo (react-pdf does not resolve relative paths). E.g. `${origin}/img/veta-logo.png` */
   vetaLogoUrl?: string;
+  lang?: Locale;
 }
 
 // Helper function to get category label
@@ -378,6 +380,7 @@ export function ProjectPDF({
   architectEmail,
   showVetaBranding = false,
   vetaLogoUrl,
+  lang = defaultLocale,
 }: ProjectPDFProps) {
   const logoSrc = vetaLogoUrl ?? VETA_LOGO_PATH;
   const logoIsEmbedded =
@@ -429,7 +432,7 @@ export function ProjectPDF({
   const grandTotal = subtotal + tax;
 
   const formatCurrency = (amount: number) =>
-    formatCurrencyUtil(amount, project?.currency);
+    formatCurrencyWithLang(amount, project?.currency, lang);
 
   // Order of phases to display in PDF
   const phaseOrder: (ProjectPhase | "no_phase")[] = [

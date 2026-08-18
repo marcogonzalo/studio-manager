@@ -123,3 +123,11 @@ export function getCurrencySymbolWithLang(
       .find((p) => p.type === "currency")?.value ?? "??"
   );
 }
+
+export function appendCurrencyToLabel(
+  label: string,
+  currencySymbol: string
+): string {
+  if (!currencySymbol || currencySymbol === "??") return label;
+  return `${label} (${currencySymbol})`;
+}
