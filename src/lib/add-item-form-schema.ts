@@ -53,6 +53,7 @@ export function buildAddItemFormSchema(t: AddItemFormTranslate) {
     reference_url: z.string().optional(),
     category: z.string().optional(),
     internal_reference: z.string().optional(),
+    internal_notes: z.string().optional(),
     quantity: positiveInteger(t),
     unit_cost: positiveFloat(t("validationUnitCostPositive")),
     markup: z.string().transform((v) => parseFloat(v) || 0),

@@ -66,6 +66,21 @@ describe("buildAddItemFormSchema unit_cost and unit_price", () => {
   });
 });
 
+describe("buildAddItemFormSchema internal_notes", () => {
+  it("accepts optional internal notes", () => {
+    const result = parse({ internal_notes: "Ask supplier for fabric sample" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.internal_notes).toBe("Ask supplier for fabric sample");
+    }
+  });
+
+  it("accepts missing or empty internal notes", () => {
+    expect(parse().success).toBe(true);
+    expect(parse({ internal_notes: "" }).success).toBe(true);
+  });
+});
+
 describe("shouldBlockNumericKey", () => {
   it("blocks scientific notation and signs for both modes", () => {
     expect(shouldBlockNumericKey("e", "positive-integer")).toBe(true);

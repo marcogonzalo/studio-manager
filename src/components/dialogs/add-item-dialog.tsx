@@ -17,6 +17,7 @@ import {
   FormControl,
   FormField,
   FormItem,
+  FormDescription,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
@@ -109,6 +110,7 @@ export function AddItemDialog({
       reference_url: "",
       category: "",
       internal_reference: "",
+      internal_notes: "",
       quantity: "1",
       unit_cost: "",
       markup: "20",
@@ -193,6 +195,7 @@ export function AddItemDialog({
           reference_url: productData.reference_url,
           category: productData.category,
           internal_reference: item.internal_reference || "",
+          internal_notes: item.internal_notes || "",
           quantity: item.quantity?.toString() || "1",
           unit_cost: item.unit_cost?.toString() || "0",
           markup: item.markup?.toString() || "20",
@@ -223,6 +226,7 @@ export function AddItemDialog({
           reference_url: "",
           category: "",
           internal_reference: "",
+          internal_notes: "",
           quantity: "1",
           unit_cost: "",
           markup: "20",
@@ -423,6 +427,7 @@ export function AddItemDialog({
         unit_price: values.unit_price,
         image_url: values.image_url,
         internal_reference: values.internal_reference || null,
+        internal_notes: values.internal_notes?.trim() || null,
         is_excluded: excludeFromBudgetOptionEnabled
           ? values.is_excluded || false
           : false,
@@ -993,6 +998,27 @@ export function AddItemDialog({
                         className="bg-background"
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="internal_notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("internalNotesLabel")}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t("internalNotesPlaceholder")}
+                        {...field}
+                        className="bg-background"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      {t("internalNotesDescription")}
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
