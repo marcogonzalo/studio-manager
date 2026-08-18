@@ -78,3 +78,21 @@ export async function getAssetIdByOwner(
   if (error) throw error;
   return data?.id ?? null;
 }
+
+/**
+ * Finds asset id by stored URL. Use when replacing a file: owner may already
+ * point at the new asset, so owner lookup would delete the wrong row.
+ */
+export async function getAssetIdByUrl(
+  supabase: SupabaseClient,
+  url: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from("assets")
+    .select("id")
+    .eq("url", url)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.id ?? null;
+}

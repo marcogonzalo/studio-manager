@@ -151,7 +151,7 @@ export function SpaceImagesDialog({
                 type="button"
                 variant="destructive"
                 size="icon"
-                className="absolute top-2 right-2 z-10 h-11 min-h-11 w-11 min-w-11 shadow-md"
+                className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 shadow-md"
                 onClick={() => handleDelete(img)}
                 aria-label={t("deleteImageAria")}
               >

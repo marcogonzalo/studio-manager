@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { createAsset, deleteAssetById, getAssetIdByOwner } from "./assets";
+import {
+  createAsset,
+  deleteAssetById,
+  getAssetIdByOwner,
+  getAssetIdByUrl,
+} from "./assets";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 function makeInsertChain(
@@ -161,6 +166,66 @@ describe("deleteAssetById", () => {
     await expect(deleteAssetById(supabase, "missing")).rejects.toMatchObject({
       message: "Not found",
     });
+  });
+});
+
+describe("getAssetIdByUrl", () => {
+  it("returns id when asset exists for url", async () => {
+    const maybeSingleRes = Promise.resolve({
+      data: { id: "url-asset-id" },
+      error: null,
+    });
+    const eqFn = vi.fn().mockReturnValue({
+      maybeSingle: vi.fn().mockReturnValue(maybeSingleRes),
+    });
+    const chain = {
+      select: vi.fn().mockReturnValue({ eq: eqFn }),
+    };
+    const supabase = { from: vi.fn(() => chain) } as unknown as SupabaseClient;
+
+    const result = await getAssetIdByUrl(
+      supabase,
+      "https://b2.example.com/old.webp"
+    );
+
+    expect(result).toBe("url-asset-id");
+    expect(supabase.from).toHaveBeenCalledWith("assets");
+    expect(eqFn).toHaveBeenCalledWith("url", "https://b2.example.com/old.webp");
+  });
+
+  it("returns null when no asset for url", async () => {
+    const maybeSingleRes = Promise.resolve({ data: null, error: null });
+    const chain = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockReturnValue(maybeSingleRes),
+        }),
+      }),
+    };
+    const supabase = { from: vi.fn(() => chain) } as unknown as SupabaseClient;
+
+    const result = await getAssetIdByUrl(supabase, "https://missing.example");
+
+    expect(result).toBeNull();
+  });
+
+  it("throws when query returns error", async () => {
+    const maybeSingleRes = Promise.resolve({
+      data: null,
+      error: { message: "DB error" },
+    });
+    const chain = {
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockReturnValue(maybeSingleRes),
+        }),
+      }),
+    };
+    const supabase = { from: vi.fn(() => chain) } as unknown as SupabaseClient;
+
+    await expect(
+      getAssetIdByUrl(supabase, "https://x.com/f")
+    ).rejects.toMatchObject({ message: "DB error" });
   });
 });
 

@@ -44,6 +44,7 @@ vi.mock("@/lib/assets", () => ({
   createAsset: vi.fn(() => Promise.resolve("asset-123")),
   deleteAssetById: vi.fn(() => Promise.resolve()),
   getAssetIdByOwner: vi.fn(() => Promise.resolve(null)),
+  getAssetIdByUrl: vi.fn(() => Promise.resolve(null)),
 }));
 
 vi.mock("sharp", () => ({
@@ -56,11 +57,16 @@ vi.mock("sharp", () => ({
 
 const mockGetSupabaseUrl = vi.fn(() => "https://test.supabase.co");
 const mockGetServerKey = vi.fn(() => "server-key");
+const mockGetServiceRoleKey = vi.fn(() => undefined as string | undefined);
 
 vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseUrl: () => mockGetSupabaseUrl(),
   getSupabaseServerKey: () => mockGetServerKey(),
-  getSupabaseServiceRoleKey: () => undefined,
+  getSupabaseServiceRoleKey: () => mockGetServiceRoleKey(),
+}));
+
+vi.mock("@supabase/supabase-js", () => ({
+  createClient: vi.fn(() => ({})),
 }));
 
 function createMockChain(data: unknown, error: unknown = null) {
@@ -84,6 +90,7 @@ describe("DELETE /api/upload/product-image", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDeleteProductImage.mockResolvedValue(undefined);
+    mockGetServiceRoleKey.mockReturnValue(undefined);
   });
 
   it("returns 401 when no user", async () => {
@@ -231,11 +238,49 @@ describe("DELETE /api/upload/product-image", () => {
     const json = await res.json();
     expect(json.ok).toBe(true);
   });
+
+  it("deletes the asset for the old URL, not the product's current owner asset", async () => {
+    const { deleteAssetById, getAssetIdByOwner, getAssetIdByUrl } =
+      await import("@/lib/assets");
+    const { DELETE } = await import("./route");
+
+    mockGetServiceRoleKey.mockReturnValue("service-role-key");
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-1", email: "user@test.com" } },
+      error: null,
+    });
+    vi.mocked(getAssetIdByUrl).mockResolvedValue("old-asset-id");
+    vi.mocked(getAssetIdByOwner).mockResolvedValue("new-asset-id");
+
+    mockFrom.mockReturnValueOnce(
+      createMockChainWithData({
+        id: "product-1",
+        user_id: "user-1",
+      })
+    );
+    mockFrom.mockReturnValueOnce({
+      update: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    });
+
+    const oldUrl = "https://b2.example.com/old.webp";
+    const res = await DELETE(
+      new Request(
+        `http://localhost/api/upload/product-image?url=${encodeURIComponent(oldUrl)}`
+      )
+    );
+
+    expect(res.status).toBe(200);
+    expect(getAssetIdByUrl).toHaveBeenCalledWith({}, oldUrl);
+    expect(deleteAssetById).toHaveBeenCalledWith({}, "old-asset-id");
+    expect(getAssetIdByOwner).not.toHaveBeenCalled();
+  });
 });
 
 describe("POST /api/upload/product-image", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetServiceRoleKey.mockReturnValue(undefined);
     mockUploadProductImage.mockResolvedValue({
       url: "https://b2.example.com/image.webp",
       storagePath: "assets/user1/catalog/product1.webp",
