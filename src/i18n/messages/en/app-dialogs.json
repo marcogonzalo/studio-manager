@@ -420,6 +420,8 @@
     "uploadError": "Error uploading image",
     "selectImageAria": "Select image",
     "selectImageTitle": "Select image",
+    "replaceImageAria": "Replace image",
+    "replaceImageTitle": "Click to replace image",
     "previewPendingAlt": "Preview (will upload on save)",
     "pendingUpload": "Image is ready and will be uploaded when the product is saved.",
     "previewAlt": "Preview",

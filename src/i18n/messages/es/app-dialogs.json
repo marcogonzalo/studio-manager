@@ -420,6 +420,8 @@
     "uploadError": "Error al subir la imagen",
     "selectImageAria": "Seleccionar imagen",
     "selectImageTitle": "Seleccionar imagen",
+    "replaceImageAria": "Reemplazar imagen",
+    "replaceImageTitle": "Haz clic para reemplazar la imagen",
     "previewPendingAlt": "Vista previa (se subirá al guardar)",
     "pendingUpload": "Imagen lista para subir cuando se guarde el producto.",
     "previewAlt": "Vista previa",
