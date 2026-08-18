@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  appendCurrencyToLabel,
   formatCurrencyWithLang,
   formatNumberWithLang,
   getCurrencySymbolWithLang,
@@ -58,5 +59,22 @@ describe("getCurrencySymbolWithLang", () => {
 
   it("returns US$ for USD in Spanish", () => {
     expect(getCurrencySymbolWithLang("USD", "es")).toBe("US$");
+  });
+
+  it("returns € for EUR in English and Spanish", () => {
+    expect(getCurrencySymbolWithLang("EUR", "en")).toBe("€");
+    expect(getCurrencySymbolWithLang("EUR", "es")).toBe("€");
+  });
+});
+
+describe("appendCurrencyToLabel", () => {
+  it("appends a known symbol in parentheses", () => {
+    expect(appendCurrencyToLabel("Unit Cost", "€")).toBe("Unit Cost (€)");
+    expect(appendCurrencyToLabel("Sale Price", "US$")).toBe("Sale Price (US$)");
+  });
+
+  it("keeps the label when symbol is missing or unknown", () => {
+    expect(appendCurrencyToLabel("Unit Cost", "")).toBe("Unit Cost");
+    expect(appendCurrencyToLabel("Unit Cost", "??")).toBe("Unit Cost");
   });
 });

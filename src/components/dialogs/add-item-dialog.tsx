@@ -40,7 +40,9 @@ import { ProductImageUpload } from "@/components/product-image-upload";
 import type { Product, ProjectItem, Space, Supplier } from "@/types";
 import Link from "next/link";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
+import { appendCurrencyToLabel } from "@/lib/formatting";
 import { useAuth } from "@/components/auth-provider";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { SupplierDialog } from "./supplier-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -70,11 +72,13 @@ export function AddItemDialog({
 }: AddItemDialogProps) {
   const t = useTranslations("DialogAddItem");
   const { user } = useAuth();
+  const { getCurrencySymbol } = useAppFormatting();
   const excludeFromBudgetOptionEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "plus",
   });
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
+  const [projectCurrency, setProjectCurrency] = useState<string | undefined>();
   const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [, setSelectedProduct] = useState<Product | null>(null);
@@ -147,11 +151,16 @@ export function AddItemDialog({
 
   useEffect(() => {
     async function loadData() {
-      const { data: rData } = await supabase
-        .from("spaces")
-        .select("*")
-        .eq("project_id", projectId);
+      const [{ data: rData }, { data: projectData }] = await Promise.all([
+        supabase.from("spaces").select("*").eq("project_id", projectId),
+        supabase
+          .from("projects")
+          .select("currency")
+          .eq("id", projectId)
+          .single(),
+      ]);
       setSpaces(rData || []);
+      setProjectCurrency(projectData?.currency);
       const { data: pData } = await supabase
         .from("products")
         .select("*, supplier:suppliers(name)")
@@ -917,7 +926,12 @@ export function AddItemDialog({
                   name="unit_cost"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("unitCostLabel")}</FormLabel>
+                      <FormLabel>
+                        {appendCurrencyToLabel(
+                          t("unitCostLabel"),
+                          getCurrencySymbol(projectCurrency)
+                        )}
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -961,7 +975,12 @@ export function AddItemDialog({
                   name="unit_price"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("unitPriceLabel")}</FormLabel>
+                      <FormLabel>
+                        {appendCurrencyToLabel(
+                          t("unitPriceLabel"),
+                          getCurrencySymbol(projectCurrency)
+                        )}
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"

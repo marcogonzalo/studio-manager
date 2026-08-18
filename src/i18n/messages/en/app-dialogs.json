@@ -153,7 +153,7 @@
     "supplierPlaceholder": "Select supplier",
     "addSupplierAria": "Add new supplier",
     "referenceLabel": "Reference",
-    "referencePlaceholder": "Code or reference",
+    "referencePlaceholder": "SKU, product id or reference",
     "referenceUrlLabel": "Reference URL",
     "referenceUrlPlaceholder": "https://...",
     "categoryLabel": "Category",
