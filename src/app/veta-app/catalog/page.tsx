@@ -3,11 +3,8 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
-import {
-  getDemoAccountMessage,
-  reportError,
-  formatCurrency,
-} from "@/lib/utils";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
+import { getDemoAccountMessage, reportError } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -38,6 +35,7 @@ import type { Product } from "@/types";
 
 export default function CatalogPage() {
   const t = useTranslations("CatalogPage");
+  const { formatCurrency } = useAppFormatting();
   const profileDefaults = useProfileDefaults();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);

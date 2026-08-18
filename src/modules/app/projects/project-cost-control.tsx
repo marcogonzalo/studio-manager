@@ -46,11 +46,11 @@ import {
 import { BudgetLineDialog } from "@/components/dialogs/budget-line-dialog";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import {
   getDemoAccountMessage,
   reportError,
   COST_CATEGORIES,
-  formatCurrency as formatCurrencyUtil,
 } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 
@@ -72,6 +72,7 @@ export function ProjectCostControl({
   const t = useTranslations("ProjectModuleCostControl");
   const ts = useTranslations("ProjectModuleShared");
   const phaseLabel = usePhaseLabel();
+  const { formatCurrency: formatCurrencyWithSettings } = useAppFormatting();
   const supabase = getSupabaseClient();
   const categoryLabels: Record<BudgetCategory, string> = {
     construction: t("budgetCategory.construction"),
@@ -276,7 +277,7 @@ export function ProjectCostControl({
   };
 
   const formatCurrency = (amount: number) =>
-    formatCurrencyUtil(amount, project?.currency);
+    formatCurrencyWithSettings(amount, project?.currency);
 
   const getDeviationIndicator = (estimated: number, actual: number) => {
     if (estimated === 0 && actual === 0)

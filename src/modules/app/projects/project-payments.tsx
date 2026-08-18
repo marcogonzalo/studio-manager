@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { PaymentDialog } from "@/components/dialogs/payment-dialog";
+import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import {
   ExpandableRowActionsMenu,
   ExpandableRowActionsPanel,
@@ -39,10 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Payment, PaymentType } from "@/types";
-import {
-  getDemoAccountMessage,
-  formatCurrency as formatCurrencyUtil,
-} from "@/lib/utils";
+import { getDemoAccountMessage } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
@@ -58,6 +56,7 @@ export function ProjectPayments({
   const t = useTranslations("ProjectModulePayments");
   const ts = useTranslations("ProjectModuleShared");
   const phaseLabel = usePhaseLabel();
+  const { formatCurrency } = useAppFormatting();
   const supabase = getSupabaseClient();
 
   const paymentTypeLabel = (type: PaymentType) => t(`paymentType.${type}`);
@@ -241,7 +240,7 @@ export function ProjectPayments({
                   {t("totalPending")}
                 </p>
                 <p className="text-xl font-bold">
-                  {formatCurrencyUtil(totalPending, projectCurrency)}
+                  {formatCurrency(totalPending, projectCurrency)}
                 </p>
               </div>
               <div className="bg-secondary/30 rounded-lg p-3">
@@ -249,7 +248,7 @@ export function ProjectPayments({
                   {t("totalReceived")}
                 </p>
                 <p className="text-xl font-bold">
-                  {formatCurrencyUtil(totalReceived, projectCurrency)}
+                  {formatCurrency(totalReceived, projectCurrency)}
                 </p>
               </div>
             </div>
@@ -295,7 +294,7 @@ export function ProjectPayments({
                   <div className="text-muted-foreground text-sm">
                     {ts("totalLabel")}{" "}
                     <span className="font-semibold">
-                      {formatCurrencyUtil(totalAmount, projectCurrency)}
+                      {formatCurrency(totalAmount, projectCurrency)}
                     </span>
                   </div>
                 </div>
@@ -357,7 +356,7 @@ export function ProjectPayments({
                               </TableCell>
                               <TableCell>{typeBadge}</TableCell>
                               <TableCell className="text-right font-semibold tabular-nums">
-                                {formatCurrencyUtil(
+                                {formatCurrency(
                                   Number(payment.amount),
                                   projectCurrency
                                 )}

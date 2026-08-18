@@ -1,6 +1,7 @@
 // Dynamic PDF generator utility
 // This file helps Vite handle @react-pdf/renderer by loading it dynamically
 
+import type { Locale } from "@/i18n/config";
 import type { Project, ProjectItem, ProjectBudgetLine } from "@/types";
 
 export async function generateProjectPDF(
@@ -20,7 +21,8 @@ export async function generateProjectPDF(
   /** When true (pdf_export_mode basic/plus), show Veta header and footer in the PDF. */
   showVetaBranding: boolean = false,
   /** Data URL (base64) o URL absoluta del logo Veta. Preferir data URL para que la imagen se incruste y no falle por CORS. */
-  vetaLogoUrl?: string
+  vetaLogoUrl?: string,
+  lang?: Locale
 ) {
   // Dynamic import: tras cambiar project-pdf.tsx, haz refresh completo (F5) para cargar el chunk nuevo
   const { pdf } = await import("@react-pdf/renderer");
@@ -36,6 +38,7 @@ export async function generateProjectPDF(
     architectEmail,
     showVetaBranding,
     vetaLogoUrl,
+    lang,
   });
 
   // Type assertion to satisfy react-pdf's type requirements
