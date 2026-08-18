@@ -22,12 +22,16 @@ export function shouldBlockNumericKey(
 function parseRequiredNumber(value: string): number {
   const trimmed = value.trim();
   if (trimmed === "") return Number.NaN;
-  return Number(trimmed);
+  // Reject scientific notation (can still arrive via paste).
+  if (/[eE]/.test(trimmed)) return Number.NaN;
+  // Allow comma decimals.
+  return Number(trimmed.replace(",", "."));
 }
 
 function positiveInteger(t: AddItemFormTranslate) {
   return z
     .string()
+    .refine((v) => /^\d+$/.test(v.trim()), t("validationQuantityInteger"))
     .transform(parseRequiredNumber)
     .refine(
       (val) => Number.isInteger(val) && val >= 1,
@@ -38,6 +42,7 @@ function positiveInteger(t: AddItemFormTranslate) {
 function positiveFloat(message: string) {
   return z
     .string()
+    .refine((v) => /^\d+(?:[.,]\d+)?$/.test(v.trim()), message)
     .transform(parseRequiredNumber)
     .refine((val) => Number.isFinite(val) && val > 0, message);
 }
