@@ -40,6 +40,13 @@ export function hasPricedItemsWithTbd(items: PricedItem[]): boolean {
   return items.some((item) => isItemIncluded(item) && isItemPriceTbd(item));
 }
 
+export function appendTbdAsterisk(
+  formattedAmount: string,
+  hasTbd: boolean
+): string {
+  return hasTbd ? `${formattedAmount} *` : formattedAmount;
+}
+
 export type BudgetLineAmounts = {
   estimated_amount?: number | null;
   actual_amount?: number | null;

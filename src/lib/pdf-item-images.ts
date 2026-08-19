@@ -10,7 +10,7 @@ export function nextImageOptimizerUrl(
 ): string {
   const params = new URLSearchParams({
     url: imageUrl,
-    w: "64",
+    w: "96",
     q: "75",
   });
   return `${origin}/_next/image?${params.toString()}`;

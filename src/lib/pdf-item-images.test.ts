@@ -38,7 +38,7 @@ describe("nextImageOptimizerUrl", () => {
         "http://localhost:3000"
       )
     ).toBe(
-      "http://localhost:3000/_next/image?url=https%3A%2F%2Ff003.backblazeb2.com%2Ffile%2Fbucket%2Fx.webp&w=64&q=75"
+      "http://localhost:3000/_next/image?url=https%3A%2F%2Ff003.backblazeb2.com%2Ffile%2Fbucket%2Fx.webp&w=96&q=75"
     );
   });
 });

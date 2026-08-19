@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  appendTbdAsterisk,
   budgetLineActualAmount,
   budgetLineEstimatedAmount,
   formatItemSalePrice,
@@ -88,6 +89,16 @@ describe("sum helpers", () => {
         { is_price_tbd: false },
       ])
     ).toBe(false);
+  });
+});
+
+describe("appendTbdAsterisk", () => {
+  it("appends a space and asterisk when the total includes TBD", () => {
+    expect(appendTbdAsterisk("€20.00", true)).toBe("€20.00 *");
+  });
+
+  it("leaves a complete total unchanged", () => {
+    expect(appendTbdAsterisk("€20.00", false)).toBe("€20.00");
   });
 });
 
