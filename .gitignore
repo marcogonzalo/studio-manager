@@ -57,6 +57,9 @@ coverage/
 # Gimp
 *.xcf
 
+# Linked git worktrees (nested checkouts; not part of this working tree)
+.worktrees/
+
 # Others
 squirrel.toml
 skills-lock.json
