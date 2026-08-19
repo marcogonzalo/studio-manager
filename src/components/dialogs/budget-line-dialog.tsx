@@ -46,26 +46,13 @@ import {
   usePhaseLabel,
   useSubcategoryOptions,
 } from "@/lib/use-project-labels";
+import { buildBudgetLineFormSchema } from "@/lib/budget-line-form-schema";
 import type {
   ProjectBudgetLine,
   BudgetCategory,
   ProjectPhase,
   Supplier,
 } from "@/types";
-
-function buildFormSchema(t: ReturnType<typeof useTranslations>) {
-  return z.object({
-    category: z.string().min(1, t("validationCategoryRequired")),
-    subcategory: z.string().min(1, t("validationSubcategoryRequired")),
-    description: z.string().optional(),
-    estimated_amount: z.string().transform((v) => parseFloat(v) || 0),
-    actual_amount: z.string().transform((v) => parseFloat(v) || 0),
-    is_internal_cost: z.boolean().default(false),
-    phase: z.string().optional(),
-    supplier_id: z.string().optional(),
-    notes: z.string().optional(),
-  });
-}
 
 type FormValues = {
   category: string;
@@ -74,6 +61,7 @@ type FormValues = {
   estimated_amount: string;
   actual_amount: string;
   is_internal_cost: boolean;
+  is_price_tbd?: boolean;
   phase?: string | undefined;
   supplier_id?: string | undefined;
   notes?: string;
@@ -108,7 +96,7 @@ export function BudgetLineDialog({
   const phaseLabel = usePhaseLabel();
   const categoryOptions = useCategoryOptions();
   const { user } = useAuth();
-  const formSchema = buildFormSchema(t);
+  const formSchema = buildBudgetLineFormSchema(t);
   const advancedCostLineOptionsEnabled = usePlanCapability("costs_management", {
     minModality: "plus",
   });
@@ -129,11 +117,14 @@ export function BudgetLineDialog({
       estimated_amount: "0",
       actual_amount: "0",
       is_internal_cost: false,
+      is_price_tbd: false,
       phase: undefined,
       supplier_id: undefined,
       notes: "",
     },
   });
+
+  const isPriceTbd = form.watch("is_price_tbd") === true;
 
   // Fetch suppliers
   useEffect(() => {
@@ -157,9 +148,16 @@ export function BudgetLineDialog({
           category: budgetLine.category,
           subcategory: budgetLine.subcategory,
           description: budgetLine.description || "",
-          estimated_amount: budgetLine.estimated_amount.toString(),
-          actual_amount: budgetLine.actual_amount.toString(),
+          estimated_amount:
+            budgetLine.is_price_tbd && !budgetLine.estimated_amount
+              ? ""
+              : budgetLine.estimated_amount.toString(),
+          actual_amount:
+            budgetLine.is_price_tbd && !budgetLine.actual_amount
+              ? ""
+              : budgetLine.actual_amount.toString(),
           is_internal_cost: budgetLine.is_internal_cost,
+          is_price_tbd: budgetLine.is_price_tbd || false,
           phase: budgetLine.phase || undefined,
           supplier_id: budgetLine.supplier_id || undefined,
           notes: budgetLine.notes || "",
@@ -173,6 +171,7 @@ export function BudgetLineDialog({
           estimated_amount: "0",
           actual_amount: "0",
           is_internal_cost: false,
+          is_price_tbd: false,
           phase: undefined,
           supplier_id: undefined,
           notes: "",
@@ -211,12 +210,14 @@ export function BudgetLineDialog({
         category: values.category,
         subcategory: values.subcategory,
         description: values.description || null,
-        estimated_amount:
-          typeof values.estimated_amount === "string"
+        estimated_amount: values.is_price_tbd
+          ? 0
+          : typeof values.estimated_amount === "string"
             ? parseFloat(values.estimated_amount) || 0
             : values.estimated_amount,
-        actual_amount:
-          values.category === "own_fees"
+        actual_amount: values.is_price_tbd
+          ? 0
+          : values.category === "own_fees"
             ? typeof values.estimated_amount === "string"
               ? parseFloat(values.estimated_amount) || 0
               : values.estimated_amount
@@ -228,6 +229,7 @@ export function BudgetLineDialog({
         is_internal_cost: advancedCostLineOptionsEnabled
           ? values.is_internal_cost
           : false,
+        is_price_tbd: values.is_price_tbd === true,
         phase: values.phase || null,
         supplier_id: values.supplier_id || null,
         notes: values.notes || null,
@@ -407,12 +409,17 @@ export function BudgetLineDialog({
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder={t("amountPlaceholder")}
+                        placeholder={
+                          isPriceTbd
+                            ? t("priceTbdLabel")
+                            : t("amountPlaceholder")
+                        }
+                        disabled={isPriceTbd}
                         {...field}
                         onChange={(e) => {
                           const v = e.target.value;
                           field.onChange(v);
-                          if (selectedCategory === "own_fees") {
+                          if (selectedCategory === "own_fees" && !isPriceTbd) {
                             form.setValue("actual_amount", v);
                           }
                         }}
@@ -438,9 +445,14 @@ export function BudgetLineDialog({
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder={t("amountPlaceholder")}
+                        placeholder={
+                          isPriceTbd
+                            ? t("priceTbdLabel")
+                            : t("amountPlaceholder")
+                        }
                         {...field}
                         disabled={
+                          isPriceTbd ||
                           !selectedCategory ||
                           !advancedCostLineOptionsEnabled ||
                           selectedCategory === "own_fees"
@@ -463,38 +475,24 @@ export function BudgetLineDialog({
 
             <FormField
               control={form.control}
-              name="is_internal_cost"
+              name="is_price_tbd"
               render={({ field }) => (
-                <FormItem
-                  className={`flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
-                    !advancedCostLineOptionsEnabled ? "opacity-60" : ""
-                  }`}
-                >
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
                   <FormControl>
                     <Checkbox
-                      checked={
-                        advancedCostLineOptionsEnabled ? field.value : false
-                      }
-                      onCheckedChange={(checked) =>
-                        advancedCostLineOptionsEnabled &&
-                        field.onChange(checked === true)
-                      }
-                      disabled={!advancedCostLineOptionsEnabled}
+                      checked={field.value === true}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked === true);
+                      }}
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>{t("internalCostLabel")}</FormLabel>
-                    <p className="text-muted-foreground text-sm">
-                      {t("internalCostDescription")}
+                    <FormLabel className="cursor-pointer">
+                      {t("priceTbdLabel")}
+                    </FormLabel>
+                    <p className="text-muted-foreground text-xs">
+                      {t("priceTbdDescription")}
                     </p>
-                    {!advancedCostLineOptionsEnabled && (
-                      <p className="text-muted-foreground mt-1 text-xs">
-                        <Link href="/pricing" className="underline">
-                          {t("upgradePlan")}
-                        </Link>{" "}
-                        {t("upgradeInternalCostsSuffix")}
-                      </p>
-                    )}
                   </div>
                 </FormItem>
               )}
@@ -572,6 +570,45 @@ export function BudgetLineDialog({
                     <Textarea placeholder={t("notesPlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="is_internal_cost"
+              render={({ field }) => (
+                <FormItem
+                  className={`flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
+                    !advancedCostLineOptionsEnabled ? "opacity-60" : ""
+                  }`}
+                >
+                  <FormControl>
+                    <Checkbox
+                      checked={
+                        advancedCostLineOptionsEnabled ? field.value : false
+                      }
+                      onCheckedChange={(checked) =>
+                        advancedCostLineOptionsEnabled &&
+                        field.onChange(checked === true)
+                      }
+                      disabled={!advancedCostLineOptionsEnabled}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>{t("internalCostLabel")}</FormLabel>
+                    <p className="text-muted-foreground text-sm">
+                      {t("internalCostDescription")}
+                    </p>
+                    {!advancedCostLineOptionsEnabled && (
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        <Link href="/pricing" className="underline">
+                          {t("upgradePlan")}
+                        </Link>{" "}
+                        {t("upgradeInternalCostsSuffix")}
+                      </p>
+                    )}
+                  </div>
                 </FormItem>
               )}
             />

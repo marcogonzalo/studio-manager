@@ -45,7 +45,7 @@
     "productQuantityLabel": "Qty:",
     "productPriceLabel": "Price:",
     "priceTbd": "To be defined",
-    "priceTbdNote": "Partial total: some products have a price to be defined.",
+    "priceTbdNote": "Partial total: some products or line items have a price to be defined.",
     "productRefLabel": "Ref:",
     "productStatusPending": "Pending",
     "productStatusOrdered": "Ordered",

@@ -40,6 +40,36 @@ export function hasPricedItemsWithTbd(items: PricedItem[]): boolean {
   return items.some((item) => isItemIncluded(item) && isItemPriceTbd(item));
 }
 
+export type BudgetLineAmounts = {
+  estimated_amount?: number | null;
+  actual_amount?: number | null;
+  is_price_tbd?: boolean | null;
+};
+
+export function budgetLineEstimatedAmount(line: BudgetLineAmounts): number {
+  if (isItemPriceTbd(line)) return 0;
+  return Number(line.estimated_amount ?? 0);
+}
+
+export function budgetLineActualAmount(line: BudgetLineAmounts): number {
+  if (isItemPriceTbd(line)) return 0;
+  return Number(line.actual_amount ?? 0);
+}
+
+export function sumBudgetLineEstimatedAmounts(
+  lines: BudgetLineAmounts[]
+): number {
+  return lines.reduce((sum, line) => sum + budgetLineEstimatedAmount(line), 0);
+}
+
+export function sumBudgetLineActualAmounts(lines: BudgetLineAmounts[]): number {
+  return lines.reduce((sum, line) => sum + budgetLineActualAmount(line), 0);
+}
+
+export function hasBudgetLinesWithTbd(lines: BudgetLineAmounts[]): boolean {
+  return lines.some((line) => isItemPriceTbd(line));
+}
+
 export function formatItemSalePrice(
   item: PricedItem,
   formatCurrency: (amount: number) => string,

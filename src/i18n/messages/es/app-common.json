@@ -143,7 +143,7 @@
     "tax": "IVA ({rate}%):",
     "grandTotal": "TOTAL:",
     "priceTbd": "Por definir",
-    "priceTbdNote": "Total parcial: hay productos con precio por definir.",
+    "priceTbdNote": "Total parcial: hay productos o partidas con precio por definir.",
     "generatedWith": "Documento generado con Veta - veta.pro",
     "spaceGeneral": "General"
   },

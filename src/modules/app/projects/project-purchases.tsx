@@ -36,11 +36,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { getDemoAccountMessage } from "@/lib/utils";
-import {
-  formatItemUnitCost,
-  isItemPriceTbd,
-  itemCostAmount,
-} from "@/lib/project-item-price";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
+import { itemCostAmount } from "@/lib/project-item-price";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface PurchaseOrder {
@@ -364,9 +361,6 @@ export function ProjectPurchases({
                               const tbdLabel = ts("priceTbd");
                               const formatUsd = (amount: number) =>
                                 `$${amount.toFixed(2)}`;
-                              const lineTotal = isItemPriceTbd(item)
-                                ? tbdLabel
-                                : formatUsd(itemCostAmount(item));
 
                               return (
                                 <Fragment key={item.id}>
@@ -375,17 +369,23 @@ export function ProjectPurchases({
                                       {item.name}
                                     </TableCell>
                                     <TableCell className="text-right font-medium tabular-nums">
-                                      {lineTotal}
+                                      <ItemPriceOrTbd
+                                        item={item}
+                                        tbdLabel={tbdLabel}
+                                      >
+                                        {formatUsd(itemCostAmount(item))}
+                                      </ItemPriceOrTbd>
                                     </TableCell>
                                     <TableCellMd className="text-right tabular-nums">
                                       {item.quantity}
                                     </TableCellMd>
                                     <TableCellMd className="text-right tabular-nums">
-                                      {formatItemUnitCost(
-                                        item,
-                                        formatUsd,
-                                        tbdLabel
-                                      )}
+                                      <ItemPriceOrTbd
+                                        item={item}
+                                        tbdLabel={tbdLabel}
+                                      >
+                                        {formatUsd(item.unit_cost)}
+                                      </ItemPriceOrTbd>
                                     </TableCellMd>
                                     <TableRowExpandTrigger
                                       expanded={expanded}
@@ -405,11 +405,14 @@ export function ProjectPurchases({
                                       />
                                       <MobileDetailField
                                         label={ts("colUnitCost")}
-                                        value={formatItemUnitCost(
-                                          item,
-                                          (amount) => `$${amount.toFixed(2)}`,
-                                          ts("priceTbd")
-                                        )}
+                                        value={
+                                          <ItemPriceOrTbd
+                                            item={item}
+                                            tbdLabel={tbdLabel}
+                                          >
+                                            {formatUsd(item.unit_cost)}
+                                          </ItemPriceOrTbd>
+                                        }
                                       />
                                     </div>
                                   </TableRowMobileDetail>

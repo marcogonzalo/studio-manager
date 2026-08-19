@@ -211,6 +211,8 @@
     "actualAmountLabel": "Importe Real",
     "amountPlaceholder": "0.00",
     "feesHint": "Para honorarios el importe real se rellena con este valor.",
+    "priceTbdLabel": "Precio por definir",
+    "priceTbdDescription": "La partida se incluye en el presupuesto sin importe. El total queda parcial hasta que lo indiques.",
     "internalCostLabel": "Coste interno",
     "internalCostDescription": "Si está marcado, esta partida NO aparecerá en el presupuesto del cliente ni en el PDF.",
     "phaseLabel": "Fase",

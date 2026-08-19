@@ -43,7 +43,10 @@ import {
 import type { Payment, PaymentType } from "@/types";
 import { getDemoAccountMessage } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
-import { sumItemSaleAmounts } from "@/lib/project-item-price";
+import {
+  sumBudgetLineEstimatedAmounts,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 export function ProjectPayments({
@@ -91,7 +94,7 @@ export function ProjectPayments({
         .order("payment_date", { ascending: false }),
       supabase
         .from("project_budget_lines")
-        .select("estimated_amount")
+        .select("estimated_amount, is_price_tbd")
         .eq("project_id", projectId),
       supabase
         .from("project_items")
@@ -104,11 +107,7 @@ export function ProjectPayments({
     } else {
       setPayments(data || []);
     }
-    const linesTotal = (budgetLines || []).reduce(
-      (sum: number, line: { estimated_amount?: unknown }) =>
-        sum + Number(line.estimated_amount),
-      0
-    );
+    const linesTotal = sumBudgetLineEstimatedAmounts(budgetLines || []);
     const itemsTotal = sumItemSaleAmounts(items || []);
     setBudgetGrandTotal(linesTotal + itemsTotal);
     setLoading(false);

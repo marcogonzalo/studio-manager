@@ -20,7 +20,10 @@ import {
 import {
   formatItemSalePrice,
   formatItemSaleTotal,
+  hasBudgetLinesWithTbd,
   hasPricedItemsWithTbd,
+  isItemPriceTbd,
+  sumBudgetLineEstimatedAmounts,
   sumItemSaleAmounts,
 } from "@/lib/project-item-price";
 import type {
@@ -390,7 +393,8 @@ export function ProjectPDF({
 
   // Filter out excluded items
   const includedItems = items.filter((item) => !item.is_excluded);
-  const hasPriceTbd = hasPricedItemsWithTbd(includedItems);
+  const hasPriceTbd =
+    hasPricedItemsWithTbd(includedItems) || hasBudgetLinesWithTbd(budgetLines);
 
   // Group items by space (location)
   const itemsBySpace = includedItems.reduce(
@@ -423,10 +427,7 @@ export function ProjectPDF({
 
   // Calculate totals (only included items)
   const totalItemsPrice = sumItemSaleAmounts(includedItems);
-  const totalBudgetLines = budgetLines.reduce(
-    (sum, line) => sum + Number(line.estimated_amount),
-    0
-  );
+  const totalBudgetLines = sumBudgetLineEstimatedAmounts(budgetLines);
   const subtotal = totalItemsPrice + totalBudgetLines;
   const tax = subtotal * (taxRate / 100);
   const grandTotal = subtotal + tax;
@@ -542,113 +543,7 @@ export function ProjectPDF({
           </View>
         </View>
 
-        {/* Budget Lines by Phase and Category */}
-        {budgetLines.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{copy.servicesAndLines}</Text>
-
-            {phaseOrder.map((phase) => {
-              const phaseData = budgetLinesByPhaseAndCategory[phase];
-              if (!phaseData) return null;
-
-              // Check if this phase has any lines
-              const hasLines = Object.values(phaseData).some(
-                (lines) => lines.length > 0
-              );
-              if (!hasLines) return null;
-
-              const phaseTotal = Object.values(phaseData).reduce(
-                (sum, lines) =>
-                  sum +
-                  lines.reduce(
-                    (lineSum, line) => lineSum + Number(line.estimated_amount),
-                    0
-                  ),
-                0
-              );
-
-              return (
-                <View
-                  key={phase}
-                  style={[styles.budgetLineGroup, { marginBottom: 20 }]}
-                >
-                  <View
-                    style={[
-                      styles.budgetLineHeader,
-                      { backgroundColor: colors.primary, marginBottom: 10 },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.budgetLineName,
-                        { color: "#FFFFFF", fontSize: 13 },
-                      ]}
-                    >
-                      {getPdfPhaseLabel(phase, lang)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.budgetLineSubtotal,
-                        { color: "#FFFFFF", fontSize: 12 },
-                      ]}
-                    >
-                      {copy.subtotal} {formatCurrency(phaseTotal)}
-                    </Text>
-                  </View>
-
-                  {categoryOrder.map((category) => {
-                    const lines = phaseData[category];
-                    if (!lines || lines.length === 0) return null;
-
-                    const categoryTotal = lines.reduce(
-                      (sum, line) => sum + Number(line.estimated_amount),
-                      0
-                    );
-
-                    return (
-                      <View
-                        key={category}
-                        style={[
-                          styles.budgetLineGroup,
-                          { marginLeft: 10, marginRight: 10, marginBottom: 12 },
-                        ]}
-                      >
-                        <View style={styles.budgetLineHeader}>
-                          <Text style={styles.budgetLineName}>
-                            {getPdfCategoryLabel(category, lang)}
-                          </Text>
-                          <Text style={styles.budgetLineSubtotal}>
-                            {copy.subtotal} {formatCurrency(categoryTotal)}
-                          </Text>
-                        </View>
-
-                        {lines.map((line) => (
-                          <View key={line.id} style={styles.budgetLineItem}>
-                            <Text style={styles.budgetLineItemName}>
-                              {getPdfSubcategoryLabel(
-                                category,
-                                line.subcategory,
-                                lang
-                              )}
-                            </Text>
-                            <Text style={styles.budgetLineItemDescription}>
-                              {line.description || ""}
-                            </Text>
-                            <Text style={styles.budgetLineItemAmount}>
-                              {formatCurrency(Number(line.estimated_amount))}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
-                    );
-                  })}
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {/* Items by Location - solo si hay productos */}
+        {/* Products by space first, then services */}
         {Object.keys(itemsBySpace).length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{copy.furnitureAndProducts}</Text>
@@ -806,22 +701,121 @@ export function ProjectPDF({
           </View>
         )}
 
+        {/* Budget Lines by Phase and Category */}
+        {budgetLines.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{copy.servicesAndLines}</Text>
+
+            {phaseOrder.map((phase) => {
+              const phaseData = budgetLinesByPhaseAndCategory[phase];
+              if (!phaseData) return null;
+
+              const hasLines = Object.values(phaseData).some(
+                (lines) => lines.length > 0
+              );
+              if (!hasLines) return null;
+
+              const phaseTotal = Object.values(phaseData).reduce(
+                (sum, lines) => sum + sumBudgetLineEstimatedAmounts(lines),
+                0
+              );
+
+              return (
+                <View
+                  key={phase}
+                  style={[styles.budgetLineGroup, { marginBottom: 20 }]}
+                >
+                  <View
+                    style={[
+                      styles.budgetLineHeader,
+                      { backgroundColor: colors.primary, marginBottom: 10 },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.budgetLineName,
+                        { color: "#FFFFFF", fontSize: 13 },
+                      ]}
+                    >
+                      {getPdfPhaseLabel(phase, lang)}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.budgetLineSubtotal,
+                        { color: "#FFFFFF", fontSize: 12 },
+                      ]}
+                    >
+                      {copy.subtotal} {formatCurrency(phaseTotal)}
+                    </Text>
+                  </View>
+
+                  {categoryOrder.map((category) => {
+                    const lines = phaseData[category];
+                    if (!lines || lines.length === 0) return null;
+
+                    const categoryTotal = sumBudgetLineEstimatedAmounts(lines);
+
+                    return (
+                      <View
+                        key={category}
+                        style={[
+                          styles.budgetLineGroup,
+                          { marginLeft: 10, marginRight: 10, marginBottom: 12 },
+                        ]}
+                      >
+                        <View style={styles.budgetLineHeader}>
+                          <Text style={styles.budgetLineName}>
+                            {getPdfCategoryLabel(category, lang)}
+                          </Text>
+                          <Text style={styles.budgetLineSubtotal}>
+                            {copy.subtotal} {formatCurrency(categoryTotal)}
+                          </Text>
+                        </View>
+
+                        {lines.map((line) => (
+                          <View key={line.id} style={styles.budgetLineItem}>
+                            <Text style={styles.budgetLineItemName}>
+                              {getPdfSubcategoryLabel(
+                                category,
+                                line.subcategory,
+                                lang
+                              )}
+                            </Text>
+                            <Text style={styles.budgetLineItemDescription}>
+                              {line.description || ""}
+                            </Text>
+                            <Text style={styles.budgetLineItemAmount}>
+                              {isItemPriceTbd(line)
+                                ? copy.priceTbd
+                                : formatCurrency(Number(line.estimated_amount))}
+                            </Text>
+                          </View>
+                        ))}
+                      </View>
+                    );
+                  })}
+                </View>
+              );
+            })}
+          </View>
+        )}
+
         {/* Summary */}
         <View style={styles.section}>
           <View style={styles.summary}>
-            {budgetLines.length > 0 && (
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>{copy.subtotalServices}</Text>
-                <Text style={styles.summaryValue}>
-                  {formatCurrency(totalBudgetLines)}
-                </Text>
-              </View>
-            )}
             {items.length > 0 && (
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>{copy.subtotalProducts}</Text>
                 <Text style={styles.summaryValue}>
                   {formatCurrency(totalItemsPrice)}
+                </Text>
+              </View>
+            )}
+            {budgetLines.length > 0 && (
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>{copy.subtotalServices}</Text>
+                <Text style={styles.summaryValue}>
+                  {formatCurrency(totalBudgetLines)}
                 </Text>
               </View>
             )}

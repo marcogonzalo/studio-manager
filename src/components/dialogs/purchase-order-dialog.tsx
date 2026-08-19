@@ -35,7 +35,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
-import { formatItemUnitCost } from "@/lib/project-item-price";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import { Card } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import type { Supplier } from "@/types";
@@ -915,14 +915,15 @@ export function PurchaseOrderDialog({
                               </div>
                               <div className="flex-1">
                                 <div className="font-medium">{item.name}</div>
-                                <div className="text-muted-foreground text-sm">
+                                <div className="text-muted-foreground flex flex-wrap items-center gap-1 text-sm">
                                   {t("quantityPrefix")} {item.quantity} |{" "}
                                   {t("costPrefix")}{" "}
-                                  {formatItemUnitCost(
-                                    item,
-                                    (amount) => `$${amount.toFixed(2)}`,
-                                    ts("priceTbd")
-                                  )}{" "}
+                                  <ItemPriceOrTbd
+                                    item={item}
+                                    tbdLabel={ts("priceTbd")}
+                                  >
+                                    {`$${item.unit_cost.toFixed(2)}`}
+                                  </ItemPriceOrTbd>{" "}
                                   | {t("statusPrefix")} {item.status}
                                 </div>
                               </div>

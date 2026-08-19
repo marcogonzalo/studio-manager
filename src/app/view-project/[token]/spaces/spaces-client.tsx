@@ -11,7 +11,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { formatCurrencyWithLang } from "@/lib/formatting";
-import { formatItemSalePrice } from "@/lib/project-item-price";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 
@@ -214,18 +214,20 @@ export function ViewProjectSpacesClient({
                                     <p className="text-foreground mt-4 text-sm font-semibold tabular-nums">
                                       {t("productQuantityLabel")} {p.quantity}
                                     </p>
-                                    <p className="text-foreground mt-2 text-sm font-semibold tabular-nums">
+                                    <p className="text-foreground mt-2 flex flex-wrap items-center gap-1.5 text-sm font-semibold">
                                       {t("productPriceLabel")}{" "}
-                                      {formatItemSalePrice(
-                                        p,
-                                        (amount) =>
-                                          formatCurrencyWithLang(
-                                            amount,
+                                      <ItemPriceOrTbd
+                                        item={p}
+                                        tbdLabel={t("priceTbd")}
+                                      >
+                                        <span className="tabular-nums">
+                                          {formatCurrencyWithLang(
+                                            p.unit_price,
                                             currency,
                                             locale
-                                          ),
-                                        t("priceTbd")
-                                      )}
+                                          )}
+                                        </span>
+                                      </ItemPriceOrTbd>
                                     </p>
                                   </div>
                                   <button

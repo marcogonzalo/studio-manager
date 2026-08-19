@@ -30,11 +30,9 @@ import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import type { Space } from "@/types";
 import type { ProjectItem } from "@/types";
+import { ItemPriceOrTbd, PriceTbdPill } from "@/components/price-tbd-pill";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
-import {
-  formatItemSalePrice,
-  formatItemSaleTotal,
-} from "@/lib/project-item-price";
+import { isItemPriceTbd } from "@/lib/project-item-price";
 
 interface SpaceProductsDialogProps {
   open: boolean;
@@ -193,25 +191,30 @@ export function SpaceProductsDialog({
                             {t("codePrefix")} {item.internal_reference}
                           </p>
                         )}
-                        <div className="mb-2 flex items-center justify-between">
+                        <div className="mb-2 flex flex-wrap items-center justify-between gap-1">
                           <span className="text-muted-foreground text-xs">
                             {t("quantityShort")} {item.quantity}
                           </span>
-                          <span className="text-sm font-medium">
-                            {formatItemSalePrice(
-                              item,
-                              (amount) =>
-                                formatCurrency(amount, projectCurrency),
-                              t("priceTbd")
-                            )}
-                          </span>
+                          <ItemPriceOrTbd item={item} tbdLabel={t("priceTbd")}>
+                            <span className="text-sm font-medium">
+                              {formatCurrency(item.unit_price, projectCurrency)}
+                            </span>
+                          </ItemPriceOrTbd>
                         </div>
                         <div className="border-t pt-2 text-right text-xs font-bold">
-                          {t("total")}:{" "}
-                          {formatItemSaleTotal(
-                            item,
-                            (amount) => formatCurrency(amount, projectCurrency),
-                            t("priceTbd")
+                          {isItemPriceTbd(item) ? (
+                            <span className="inline-flex flex-wrap items-center justify-end gap-1.5">
+                              {t("total")}:
+                              <PriceTbdPill label={t("priceTbd")} />
+                            </span>
+                          ) : (
+                            <>
+                              {t("total")}:{" "}
+                              {formatCurrency(
+                                item.quantity * item.unit_price,
+                                projectCurrency
+                              )}
+                            </>
                           )}
                         </div>
                         {!readOnly && (

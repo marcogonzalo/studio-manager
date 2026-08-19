@@ -45,7 +45,7 @@
     "productQuantityLabel": "Cantidad:",
     "productPriceLabel": "Precio:",
     "priceTbd": "Por definir",
-    "priceTbdNote": "Total parcial: hay productos con precio por definir.",
+    "priceTbdNote": "Total parcial: hay productos o partidas con precio por definir.",
     "productRefLabel": "Cód.:",
     "productStatusPending": "Pendiente",
     "productStatusOrdered": "Pedido",

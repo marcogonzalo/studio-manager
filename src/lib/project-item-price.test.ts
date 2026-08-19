@@ -1,12 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  budgetLineActualAmount,
+  budgetLineEstimatedAmount,
   formatItemSalePrice,
   formatItemSaleTotal,
   formatItemUnitCost,
+  hasBudgetLinesWithTbd,
   hasPricedItemsWithTbd,
   isItemPriceTbd,
   itemCostAmount,
   itemSaleAmount,
+  sumBudgetLineActualAmounts,
+  sumBudgetLineEstimatedAmounts,
   sumItemCostAmounts,
   sumItemSaleAmounts,
 } from "./project-item-price";
@@ -125,5 +130,38 @@ describe("formatItemUnitCost", () => {
         tbdLabel
       )
     ).toBe("€8.50");
+  });
+});
+
+describe("budget line TBD amounts", () => {
+  it("returns 0 for TBD estimated and actual amounts", () => {
+    expect(
+      budgetLineEstimatedAmount({ estimated_amount: 200, is_price_tbd: true })
+    ).toBe(0);
+    expect(
+      budgetLineActualAmount({ actual_amount: 150, is_price_tbd: true })
+    ).toBe(0);
+  });
+
+  it("keeps known amounts", () => {
+    expect(
+      budgetLineEstimatedAmount({ estimated_amount: 200, is_price_tbd: false })
+    ).toBe(200);
+    expect(
+      budgetLineActualAmount({ actual_amount: 150, is_price_tbd: false })
+    ).toBe(150);
+    expect(budgetLineEstimatedAmount({})).toBe(0);
+    expect(budgetLineActualAmount({})).toBe(0);
+  });
+
+  it("sums excluding TBD lines", () => {
+    const lines = [
+      { estimated_amount: 100, actual_amount: 80, is_price_tbd: false },
+      { estimated_amount: 50, actual_amount: 40, is_price_tbd: true },
+    ];
+    expect(sumBudgetLineEstimatedAmounts(lines)).toBe(100);
+    expect(sumBudgetLineActualAmounts(lines)).toBe(80);
+    expect(hasBudgetLinesWithTbd(lines)).toBe(true);
+    expect(hasBudgetLinesWithTbd([{ is_price_tbd: false }])).toBe(false);
   });
 });

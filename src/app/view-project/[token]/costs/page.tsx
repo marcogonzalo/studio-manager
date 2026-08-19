@@ -14,10 +14,12 @@ import {
 } from "@/components/ui/table";
 import { formatCurrencyWithLang } from "@/lib/formatting";
 import {
-  formatItemSaleTotal,
+  hasBudgetLinesWithTbd,
   hasPricedItemsWithTbd,
+  sumBudgetLineEstimatedAmounts,
   sumItemSaleAmounts,
 } from "@/lib/project-item-price";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import { getViewProjectLocale } from "@/lib/view-project-locale";
 import type { BudgetCategory } from "@/types";
 import type { ProjectPhase } from "@/types";
@@ -123,6 +125,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
     description: string | null;
     estimated_amount: number;
     phase: string | null;
+    is_price_tbd?: boolean;
   }[];
   const products = (productsRes.data ?? []) as {
     id: string;
@@ -156,12 +159,10 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
     "operations",
   ];
 
-  let budgetSubtotal = 0;
-  for (const line of budgetLines) {
-    budgetSubtotal += Number(line.estimated_amount);
-  }
+  const budgetSubtotal = sumBudgetLineEstimatedAmounts(budgetLines);
   const productsSubtotal = sumItemSaleAmounts(products);
-  const hasPriceTbd = hasPricedItemsWithTbd(products);
+  const hasPriceTbd =
+    hasPricedItemsWithTbd(products) || hasBudgetLinesWithTbd(budgetLines);
   const tbdLabel = t("priceTbd");
   const subtotal = budgetSubtotal + productsSubtotal;
   const tax = subtotal * (taxRate / 100);
@@ -180,10 +181,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
           {categoryOrder.map((category) => {
             const lines = byCategory[category];
             if (!lines?.length) return null;
-            const categoryTotal = lines.reduce(
-              (sum, l) => sum + Number(l.estimated_amount),
-              0
-            );
+            const categoryTotal = sumBudgetLineEstimatedAmounts(lines);
             const sortedLines = [...lines].sort((a, b) => {
               const phaseA = PHASE_ORDER.indexOf(a.phase || "no_phase");
               const phaseB = PHASE_ORDER.indexOf(b.phase || "no_phase");
@@ -222,7 +220,9 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                               line.subcategory}
                           </TableCell>
                           <TableCell className="text-right font-medium tabular-nums">
-                            {formatCurrency(Number(line.estimated_amount))}
+                            <ItemPriceOrTbd item={line} tbdLabel={tbdLabel}>
+                              {formatCurrency(Number(line.estimated_amount))}
+                            </ItemPriceOrTbd>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -279,7 +279,12 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                           {p.quantity}
                         </TableCell>
                         <TableCell className="text-right font-medium tabular-nums">
-                          {formatItemSaleTotal(p, formatCurrency, tbdLabel)}
+                          <ItemPriceOrTbd item={p} tbdLabel={tbdLabel}>
+                            {formatCurrency(
+                              Number(p.unit_price ?? 0) *
+                                Number(p.quantity ?? 0)
+                            )}
+                          </ItemPriceOrTbd>
                         </TableCell>
                       </TableRow>
                     ))}

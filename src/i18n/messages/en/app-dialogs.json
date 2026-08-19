@@ -211,6 +211,8 @@
     "actualAmountLabel": "Actual Amount",
     "amountPlaceholder": "0.00",
     "feesHint": "For fees, actual amount is auto-filled from this value.",
+    "priceTbdLabel": "Price to be defined",
+    "priceTbdDescription": "The line stays in the budget without an amount. The total is partial until you set it.",
     "internalCostLabel": "Internal cost",
     "internalCostDescription": "If checked, this line will NOT appear in the client budget or PDF.",
     "phaseLabel": "Phase",

@@ -225,6 +225,7 @@ export interface ProjectBudgetLine {
   estimated_amount: number;
   actual_amount: number;
   is_internal_cost: boolean;
+  is_price_tbd?: boolean;
   phase?: ProjectPhase;
   supplier_id?: string;
   supplier?: { name: string };
