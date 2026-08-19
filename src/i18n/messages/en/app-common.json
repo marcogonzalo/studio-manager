@@ -142,6 +142,8 @@
     "subtotalProducts": "Subtotal Furniture, Fixtures & Equipment:",
     "tax": "Tax ({rate}%):",
     "grandTotal": "TOTAL:",
+    "priceTbd": "To be defined",
+    "priceTbdNote": "Partial total: some products have a price to be defined.",
     "generatedWith": "Document generated with Veta - veta.pro",
     "spaceGeneral": "General"
   },

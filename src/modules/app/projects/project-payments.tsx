@@ -43,6 +43,7 @@ import {
 import type { Payment, PaymentType } from "@/types";
 import { getDemoAccountMessage } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
+import { sumItemSaleAmounts } from "@/lib/project-item-price";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 export function ProjectPayments({
@@ -94,7 +95,7 @@ export function ProjectPayments({
         .eq("project_id", projectId),
       supabase
         .from("project_items")
-        .select("unit_price, quantity")
+        .select("unit_price, quantity, is_excluded, is_price_tbd")
         .eq("project_id", projectId),
     ]);
     if (projectData?.currency) setProjectCurrency(projectData.currency);
@@ -108,11 +109,7 @@ export function ProjectPayments({
         sum + Number(line.estimated_amount),
       0
     );
-    const itemsTotal = (items || []).reduce(
-      (sum: number, item: { unit_price?: unknown; quantity?: unknown }) =>
-        sum + Number(item.unit_price) * Number(item.quantity),
-      0
-    );
+    const itemsTotal = sumItemSaleAmounts(items || []);
     setBudgetGrandTotal(linesTotal + itemsTotal);
     setLoading(false);
   };

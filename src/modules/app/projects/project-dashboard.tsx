@@ -17,6 +17,10 @@ import {
   Receipt,
 } from "lucide-react";
 import { isCostCategory, reportError, reportWarn } from "@/lib/utils";
+import {
+  sumItemCostAmounts,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 import type {
   Project,
@@ -49,6 +53,8 @@ interface ProjectItem {
   quantity: number;
   unit_cost: number;
   unit_price: number;
+  is_excluded?: boolean;
+  is_price_tbd?: boolean;
 }
 
 interface ProjectDashboardProps {
@@ -176,7 +182,7 @@ export function ProjectDashboard({
     // Fetch items
     const { data: itemsData } = await supabase
       .from("project_items")
-      .select("id, quantity, unit_cost, unit_price")
+      .select("id, quantity, unit_cost, unit_price, is_excluded, is_price_tbd")
       .eq("project_id", projectId);
     if (itemsData) setItems(itemsData || []);
 
@@ -192,14 +198,8 @@ export function ProjectDashboard({
   const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
   // Products
-  const totalProductsCost = items.reduce(
-    (sum, item) => sum + item.unit_cost * item.quantity,
-    0
-  );
-  const totalProductsPrice = items.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
+  const totalProductsCost = sumItemCostAmounts(items);
+  const totalProductsPrice = sumItemSaleAmounts(items);
 
   // Budget lines
   const clientBudgetLines = budgetLines.filter(

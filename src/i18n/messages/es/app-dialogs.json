@@ -174,6 +174,8 @@
     "internalNotesLabel": "Notas internas",
     "internalNotesPlaceholder": "Notas privadas de este producto en este proyecto",
     "internalNotesDescription": "No se muestran en el presupuesto del cliente, el PDF ni la vista pública.",
+    "priceTbdLabel": "Precio por definir",
+    "priceTbdDescription": "El producto se incluye en el presupuesto sin coste unitario ni precio de venta. El total queda parcial hasta que indiques los importes.",
     "excludeLabel": "Excluir del proyecto",
     "excludeDescription": "Si está marcado, el producto no se incluirá en el presupuesto ni en los cálculos de costos.",
     "upgradePlan": "Mejora tu plan",
@@ -414,6 +416,7 @@
     "addProduct": "Añadir Producto",
     "noSupplier": "Sin proveedor",
     "excludedFromProject": "Excluido del proyecto",
+    "priceTbd": "Por definir",
     "noImage": "Sin imagen"
   },
   "ProductImageUpload": {
@@ -464,6 +467,7 @@
     "unitCost": "Costo Unitario",
     "quantity": "Cantidad",
     "salePrice": "Precio de Venta",
+    "priceTbd": "Por definir",
     "total": "Total",
     "purchaseOrder": "Pedido de compra",
     "poRef": "Ref",

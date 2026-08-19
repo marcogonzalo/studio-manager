@@ -66,6 +66,43 @@ describe("buildAddItemFormSchema unit_cost and unit_price", () => {
   });
 });
 
+describe("buildAddItemFormSchema is_price_tbd", () => {
+  it("allows empty or zero sale price and unit cost when price is TBD", () => {
+    const empty = parse({
+      is_price_tbd: true,
+      unit_price: "",
+      unit_cost: "",
+    });
+    expect(empty.success).toBe(true);
+    if (empty.success) {
+      expect(empty.data.is_price_tbd).toBe(true);
+      expect(empty.data.unit_price).toBe(0);
+      expect(empty.data.unit_cost).toBe(0);
+    }
+
+    const zero = parse({
+      is_price_tbd: true,
+      unit_price: "0",
+      unit_cost: "0",
+    });
+    expect(zero.success).toBe(true);
+    if (zero.success) {
+      expect(zero.data.unit_price).toBe(0);
+      expect(zero.data.unit_cost).toBe(0);
+    }
+  });
+
+  it("still requires a positive sale price when TBD is off", () => {
+    expect(parse({ is_price_tbd: false, unit_price: "" }).success).toBe(false);
+    expect(parse({ is_price_tbd: false, unit_price: "0" }).success).toBe(false);
+  });
+
+  it("still requires a positive unit cost when TBD is off", () => {
+    expect(parse({ is_price_tbd: false, unit_cost: "" }).success).toBe(false);
+    expect(parse({ is_price_tbd: false, unit_cost: "0" }).success).toBe(false);
+  });
+});
+
 describe("buildAddItemFormSchema internal_notes", () => {
   it("accepts optional internal notes", () => {
     const result = parse({ internal_notes: "Ask supplier for fabric sample" });

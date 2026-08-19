@@ -54,6 +54,10 @@ import {
   COST_CATEGORIES,
 } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
+import {
+  sumItemCostAmounts,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
 
 import type { ProjectBudgetLine, ProjectItem, BudgetCategory } from "@/types";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
@@ -163,7 +167,9 @@ export function ProjectCostControl({
           .single(),
         supabase
           .from("project_items")
-          .select("id, name, quantity, unit_cost, unit_price")
+          .select(
+            "id, name, quantity, unit_cost, unit_price, is_excluded, is_price_tbd"
+          )
           .eq("project_id", projectId),
       ]);
     if (projectData) setProject(projectData);
@@ -236,14 +242,8 @@ export function ProjectCostControl({
   );
 
   // Calculate totals
-  const totalProductsCost = items.reduce(
-    (sum, item) => sum + item.unit_cost * item.quantity,
-    0
-  );
-  const totalProductsPrice = items.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
+  const totalProductsCost = sumItemCostAmounts(items);
+  const totalProductsPrice = sumItemSaleAmounts(items);
 
   // Total budget lines (estimated and actual)
   const totalBudgetLinesEstimated = budgetLines.reduce(

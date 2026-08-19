@@ -13,6 +13,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrencyWithLang } from "@/lib/formatting";
+import {
+  formatItemSaleTotal,
+  hasPricedItemsWithTbd,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
 import { getViewProjectLocale } from "@/lib/view-project-locale";
 import type { BudgetCategory } from "@/types";
 import type { ProjectPhase } from "@/types";
@@ -127,6 +132,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
     total_price: number;
     status: string;
     space_name: string;
+    is_price_tbd?: boolean;
   }[];
 
   const formatCurrency = (amount: number) =>
@@ -154,10 +160,9 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
   for (const line of budgetLines) {
     budgetSubtotal += Number(line.estimated_amount);
   }
-  const productsSubtotal = products.reduce(
-    (sum, p) => sum + Number(p.total_price),
-    0
-  );
+  const productsSubtotal = sumItemSaleAmounts(products);
+  const hasPriceTbd = hasPricedItemsWithTbd(products);
+  const tbdLabel = t("priceTbd");
   const subtotal = budgetSubtotal + productsSubtotal;
   const tax = subtotal * (taxRate / 100);
   const total = subtotal + tax;
@@ -274,7 +279,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                           {p.quantity}
                         </TableCell>
                         <TableCell className="text-right font-medium tabular-nums">
-                          {formatCurrency(Number(p.total_price))}
+                          {formatItemSaleTotal(p, formatCurrency, tbdLabel)}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -288,12 +293,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                         {t("costsSubtotalProducts")}
                       </TableCell>
                       <TableCell className="text-right font-medium tabular-nums">
-                        {formatCurrency(
-                          products.reduce(
-                            (sum, p) => sum + Number(p.total_price),
-                            0
-                          )
-                        )}
+                        {formatCurrency(productsSubtotal)}
                       </TableCell>
                     </TableRow>
                   </TableFooter>
@@ -344,6 +344,11 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                 <span>{t("costsTotal")}</span>
                 <span className="tabular-nums">{formatCurrency(total)}</span>
               </div>
+              {hasPriceTbd && (
+                <p className="text-muted-foreground pt-2 text-xs">
+                  {t("priceTbdNote")}
+                </p>
+              )}
             </CardContent>
           </Card>
         </>

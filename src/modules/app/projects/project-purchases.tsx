@@ -36,6 +36,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { getDemoAccountMessage } from "@/lib/utils";
+import {
+  formatItemUnitCost,
+  isItemPriceTbd,
+  itemCostAmount,
+} from "@/lib/project-item-price";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface PurchaseOrder {
@@ -54,6 +59,7 @@ interface PurchaseOrder {
     name: string;
     quantity: number;
     unit_cost: number;
+    is_price_tbd?: boolean;
   }[];
 }
 
@@ -102,7 +108,7 @@ export function ProjectPurchases({
     const { data, error } = await supabase
       .from("purchase_orders")
       .select(
-        "*, supplier:suppliers(name), project_items(id, name, quantity, unit_cost)"
+        "*, supplier:suppliers(name), project_items(id, name, quantity, unit_cost, is_price_tbd)"
       )
       .eq("project_id", projectId)
       .order("created_at", { ascending: false });
@@ -208,12 +214,9 @@ export function ProjectPurchases({
   };
 
   const calculateOrderTotal = (
-    items: { quantity: number; unit_cost: number }[]
+    items: { quantity: number; unit_cost: number; is_price_tbd?: boolean }[]
   ) => {
-    return items.reduce(
-      (sum, item) => sum + item.quantity * (item.unit_cost || 0),
-      0
-    );
+    return items.reduce((sum, item) => sum + itemCostAmount(item), 0);
   };
 
   return (
@@ -358,8 +361,12 @@ export function ProjectPurchases({
                           <TableBody>
                             {po.project_items.map((item) => {
                               const expanded = isExpanded(item.id);
-                              const lineTotal =
-                                (item.unit_cost || 0) * item.quantity;
+                              const tbdLabel = ts("priceTbd");
+                              const formatUsd = (amount: number) =>
+                                `$${amount.toFixed(2)}`;
+                              const lineTotal = isItemPriceTbd(item)
+                                ? tbdLabel
+                                : formatUsd(itemCostAmount(item));
 
                               return (
                                 <Fragment key={item.id}>
@@ -368,13 +375,17 @@ export function ProjectPurchases({
                                       {item.name}
                                     </TableCell>
                                     <TableCell className="text-right font-medium tabular-nums">
-                                      ${lineTotal.toFixed(2)}
+                                      {lineTotal}
                                     </TableCell>
                                     <TableCellMd className="text-right tabular-nums">
                                       {item.quantity}
                                     </TableCellMd>
                                     <TableCellMd className="text-right tabular-nums">
-                                      ${(item.unit_cost || 0).toFixed(2)}
+                                      {formatItemUnitCost(
+                                        item,
+                                        formatUsd,
+                                        tbdLabel
+                                      )}
                                     </TableCellMd>
                                     <TableRowExpandTrigger
                                       expanded={expanded}
@@ -394,7 +405,11 @@ export function ProjectPurchases({
                                       />
                                       <MobileDetailField
                                         label={ts("colUnitCost")}
-                                        value={`$${(item.unit_cost || 0).toFixed(2)}`}
+                                        value={formatItemUnitCost(
+                                          item,
+                                          (amount) => `$${amount.toFixed(2)}`,
+                                          ts("priceTbd")
+                                        )}
                                       />
                                     </div>
                                   </TableRowMobileDetail>

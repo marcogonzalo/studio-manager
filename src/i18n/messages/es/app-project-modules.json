@@ -26,7 +26,8 @@
     "colDeviation": "Desviación",
     "colVisibility": "Visibilidad",
     "colImage": "Img",
-    "totalLabel": "Total:"
+    "totalLabel": "Total:",
+    "priceTbd": "Por definir"
   },
   "ProjectModuleNotes": {
     "title": "Notas",
@@ -123,6 +124,8 @@
     "totalBudget": "Total Presupuesto",
     "budgetLinesTotal": "Partidas: {amount}",
     "productsTotal": "Productos: {amount}",
+    "priceTbd": "Por definir",
+    "priceTbdNote": "Total parcial: hay productos con precio por definir.",
     "taxLabel": "Impuesto ({rate}%): {amount}",
     "withTax": "Con impuestos: {amount}",
     "furnitureAndProducts": "Mobiliario, Accesorios y Equipamiento",

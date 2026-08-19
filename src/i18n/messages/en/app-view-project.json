@@ -44,6 +44,8 @@
     "toggleSpaceAria": "Show or hide space {name}",
     "productQuantityLabel": "Qty:",
     "productPriceLabel": "Price:",
+    "priceTbd": "To be defined",
+    "priceTbdNote": "Partial total: some products have a price to be defined.",
     "productRefLabel": "Ref:",
     "productStatusPending": "Pending",
     "productStatusOrdered": "Ordered",

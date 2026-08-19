@@ -11,6 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import type { Product, ProjectItem } from "@/types";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
+import {
+  formatItemSalePrice,
+  formatItemSaleTotal,
+  formatItemUnitCost,
+} from "@/lib/project-item-price";
 
 interface ProductDetailModalProps {
   open: boolean;
@@ -64,7 +69,6 @@ export function ProductDetailModal({
   const costPrice = projectItem
     ? projectItem.unit_cost
     : product?.cost_price || 0;
-  const unitPrice = projectItem?.unit_price || undefined;
   const quantity = projectItem?.quantity || undefined;
   const currencyCode =
     currency ?? projectItem?.product?.currency ?? product?.currency;
@@ -167,7 +171,13 @@ export function ProductDetailModal({
                   {t("unitCost")}
                 </span>
                 <span className="font-mono text-sm">
-                  {formatCurrency(costPrice, currencyCode)}
+                  {projectItem
+                    ? formatItemUnitCost(
+                        projectItem,
+                        (amount) => formatCurrency(amount, currencyCode),
+                        t("priceTbd")
+                      )
+                    : formatCurrency(costPrice, currencyCode)}
                 </span>
               </div>
 
@@ -180,22 +190,30 @@ export function ProductDetailModal({
                 </div>
               )}
 
-              {unitPrice && (
+              {projectItem && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground text-sm font-medium">
                     {t("salePrice")}
                   </span>
                   <span className="font-mono text-sm">
-                    {formatCurrency(unitPrice, currencyCode)}
+                    {formatItemSalePrice(
+                      projectItem,
+                      (amount) => formatCurrency(amount, currencyCode),
+                      t("priceTbd")
+                    )}
                   </span>
                 </div>
               )}
 
-              {quantity && unitPrice && (
+              {projectItem && quantity && (
                 <div className="flex justify-between border-t pt-3">
                   <span className="font-medium">{t("total")}</span>
                   <span className="text-lg font-bold">
-                    {formatCurrency(unitPrice * quantity, currencyCode)}
+                    {formatItemSaleTotal(
+                      projectItem,
+                      (amount) => formatCurrency(amount, currencyCode),
+                      t("priceTbd")
+                    )}
                   </span>
                 </div>
               )}

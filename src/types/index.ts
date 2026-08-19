@@ -251,6 +251,7 @@ export interface ProjectItem {
   supplier_id?: string;
   purchase_order_id?: string | null;
   is_excluded?: boolean;
+  is_price_tbd?: boolean;
   purchase_order?: {
     order_number: string;
     status: string;

@@ -31,6 +31,10 @@ import { ProductDetailModal } from "@/components/product-detail-modal";
 import type { Space } from "@/types";
 import type { ProjectItem } from "@/types";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
+import {
+  formatItemSalePrice,
+  formatItemSaleTotal,
+} from "@/lib/project-item-price";
 
 interface SpaceProductsDialogProps {
   open: boolean;
@@ -194,14 +198,20 @@ export function SpaceProductsDialog({
                             {t("quantityShort")} {item.quantity}
                           </span>
                           <span className="text-sm font-medium">
-                            {formatCurrency(item.unit_price, projectCurrency)}
+                            {formatItemSalePrice(
+                              item,
+                              (amount) =>
+                                formatCurrency(amount, projectCurrency),
+                              t("priceTbd")
+                            )}
                           </span>
                         </div>
                         <div className="border-t pt-2 text-right text-xs font-bold">
                           {t("total")}:{" "}
-                          {formatCurrency(
-                            item.unit_price * item.quantity,
-                            projectCurrency
+                          {formatItemSaleTotal(
+                            item,
+                            (amount) => formatCurrency(amount, projectCurrency),
+                            t("priceTbd")
                           )}
                         </div>
                         {!readOnly && (

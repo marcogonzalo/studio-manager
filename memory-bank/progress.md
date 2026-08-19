@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama feat/price-tbd-project-items (issue #192):** Productos de presupuesto pueden marcarse como «precio por definir». Columna `project_items.is_price_tbd`, checkbox en `AddItemDialog` (coste unitario, precio venta y margen deshabilitados). UI/PDF/vista pública/compras muestran «Por definir» / «To be defined» en vez de 0 o un estimado; totales de venta y coste omiten esos ítems y avisan que el total es parcial. RPC `get_project_public_products` expone el flag. Helper `project-item-price.ts`. Lint OK; tests 434; coverage helper 100% / schema 100% lines (80% branch); build OK (Docker test profile).
+
 ## Completado (resumen por áreas)
 
 - **Rama fix/translate-budget-line-selects:** i18n de leftovers en `/veta-app` y auth para cuentas EN (`account_settings.lang`). Selects de partida (categoría/subcategoría/fase) vía `BudgetCategory`/`BudgetSubcategory` + `budget-labels.ts`. PDF de presupuesto en idioma de cuenta (`project-pdf-copy.ts`; react-pdf fuera de next-intl). FF&E: EN Furniture, Fixtures & Equipment / ES Mobiliario, Accesorios y Equipamiento. Toasts demo/plan, validación email/teléfono/imagen/documento, 429, errores auth (callback + auth/complete), crash pages, títulos Catálogo/Configuración y description del layout. Copy compartida en `AppErrors`/`AppValidation` (`app-ui-copy.ts`). Lint OK; tests 417; coverage helpers nuevos ≥86%; build OK (Docker, volumen `.next` aislado). Pendiente menor: 401/404 de upload y cupo de almacenamiento aún en ES.

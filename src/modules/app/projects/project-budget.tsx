@@ -77,6 +77,13 @@ import {
   reportError,
 } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
+import {
+  formatItemSalePrice,
+  formatItemSaleTotal,
+  formatItemUnitCost,
+  hasPricedItemsWithTbd,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
 
 import type {
   Project,
@@ -374,12 +381,11 @@ export function ProjectBudget({
 
   // Exclude products marked as excluded from display and totals
   const includedItems = items.filter((item) => !item.is_excluded);
+  const hasPriceTbd = hasPricedItemsWithTbd(includedItems);
+  const tbdLabel = t("priceTbd");
 
   // Calculate totals
-  const totalItemsPrice = includedItems.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
+  const totalItemsPrice = sumItemSaleAmounts(includedItems);
   const totalBudgetLinesEstimated = budgetLines.reduce(
     (sum, line) => sum + Number(line.estimated_amount),
     0
@@ -629,6 +635,11 @@ export function ProjectBudget({
                   <p className="text-primary text-3xl font-bold">
                     {formatCurrency(grandTotal)}
                   </p>
+                  {hasPriceTbd && (
+                    <p className="text-muted-foreground max-w-[16rem] text-right text-xs">
+                      {t("priceTbdNote")}
+                    </p>
+                  )}
                 </div>
               </div>
               {(() => {
@@ -671,6 +682,7 @@ export function ProjectBudget({
                     </CardTitle>
                     <span className="text-foreground font-semibold">
                       {formatCurrency(totalItemsPrice)}
+                      {hasPriceTbd ? "*" : ""}
                     </span>
                   </div>
                 </CardHeader>
@@ -803,14 +815,24 @@ export function ProjectBudget({
                                 {item.quantity}
                               </TableCellMd>
                               <TableCellMd className="text-muted-foreground text-right tabular-nums">
-                                {formatCurrency(item.unit_cost)}
+                                {formatItemUnitCost(
+                                  item,
+                                  formatCurrency,
+                                  tbdLabel
+                                )}
                               </TableCellMd>
                               <TableCellMd className="text-right font-medium tabular-nums">
-                                {formatCurrency(item.unit_price)}
+                                {formatItemSalePrice(
+                                  item,
+                                  formatCurrency,
+                                  tbdLabel
+                                )}
                               </TableCellMd>
                               <TableCell className="text-right font-bold tabular-nums">
-                                {formatCurrency(
-                                  item.unit_price * item.quantity
+                                {formatItemSaleTotal(
+                                  item,
+                                  formatCurrency,
+                                  tbdLabel
                                 )}
                               </TableCell>
                               <TableCellMd className="text-right">
@@ -841,11 +863,19 @@ export function ProjectBudget({
                                 />
                                 <MobileDetailField
                                   label={ts("colUnitCost")}
-                                  value={formatCurrency(item.unit_cost)}
+                                  value={formatItemUnitCost(
+                                    item,
+                                    formatCurrency,
+                                    tbdLabel
+                                  )}
                                 />
                                 <MobileDetailField
                                   label={ts("colSalePrice")}
-                                  value={formatCurrency(item.unit_price)}
+                                  value={formatItemSalePrice(
+                                    item,
+                                    formatCurrency,
+                                    tbdLabel
+                                  )}
                                 />
                                 <ExpandableRowActionsPanel
                                   actions={rowActions}

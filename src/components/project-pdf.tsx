@@ -17,6 +17,12 @@ import {
   getProjectPdfCopy,
   interpolatePdfCopy,
 } from "@/lib/project-pdf-copy";
+import {
+  formatItemSalePrice,
+  formatItemSaleTotal,
+  hasPricedItemsWithTbd,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
 import type {
   Project,
   ProjectBudgetLine,
@@ -280,6 +286,12 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 16,
   },
+  priceTbdNote: {
+    marginTop: 8,
+    fontSize: 8,
+    color: colors.textLight,
+    fontStyle: "italic",
+  },
   itemImage: {
     width: 20,
     height: 20,
@@ -378,6 +390,7 @@ export function ProjectPDF({
 
   // Filter out excluded items
   const includedItems = items.filter((item) => !item.is_excluded);
+  const hasPriceTbd = hasPricedItemsWithTbd(includedItems);
 
   // Group items by space (location)
   const itemsBySpace = includedItems.reduce(
@@ -409,10 +422,7 @@ export function ProjectPDF({
   );
 
   // Calculate totals (only included items)
-  const totalItemsPrice = includedItems.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
+  const totalItemsPrice = sumItemSaleAmounts(includedItems);
   const totalBudgetLines = budgetLines.reduce(
     (sum, line) => sum + Number(line.estimated_amount),
     0
@@ -644,10 +654,8 @@ export function ProjectPDF({
             <Text style={styles.sectionTitle}>{copy.furnitureAndProducts}</Text>
 
             {Object.entries(itemsBySpace).map(([spaceName, spaceItems]) => {
-              const spaceSubtotal = spaceItems.reduce(
-                (sum, item) => sum + item.unit_price * item.quantity,
-                0
-              );
+              const spaceSubtotal = sumItemSaleAmounts(spaceItems);
+              const spaceHasTbd = hasPricedItemsWithTbd(spaceItems);
 
               return (
                 <View key={spaceName} style={styles.budgetLineGroup}>
@@ -672,6 +680,7 @@ export function ProjectPDF({
                       ]}
                     >
                       {copy.subtotal} {formatCurrency(spaceSubtotal)}
+                      {spaceHasTbd ? " *" : ""}
                     </Text>
                   </View>
 
@@ -759,7 +768,11 @@ export function ProjectPDF({
                           <Text
                             style={[styles.tableCell, { textAlign: "right" }]}
                           >
-                            {formatCurrency(item.unit_price)}
+                            {formatItemSalePrice(
+                              item,
+                              formatCurrency,
+                              copy.priceTbd
+                            )}
                           </Text>
                         </View>
                         <View style={styles.colQuantity}>
@@ -776,7 +789,11 @@ export function ProjectPDF({
                               { textAlign: "right" },
                             ]}
                           >
-                            {formatCurrency(item.unit_price * item.quantity)}
+                            {formatItemSaleTotal(
+                              item,
+                              formatCurrency,
+                              copy.priceTbd
+                            )}
                           </Text>
                         </View>
                         <View style={styles.colEmpty} />
@@ -826,6 +843,9 @@ export function ProjectPDF({
                 {formatCurrency(grandTotal)}
               </Text>
             </View>
+            {hasPriceTbd && (
+              <Text style={styles.priceTbdNote}>{copy.priceTbdNote}</Text>
+            )}
           </View>
         </View>
         {showVetaBranding && (

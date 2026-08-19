@@ -142,6 +142,8 @@
     "subtotalProducts": "Subtotal Mobiliario, Accesorios y Equipamiento:",
     "tax": "IVA ({rate}%):",
     "grandTotal": "TOTAL:",
+    "priceTbd": "Por definir",
+    "priceTbdNote": "Total parcial: hay productos con precio por definir.",
     "generatedWith": "Documento generado con Veta - veta.pro",
     "spaceGeneral": "General"
   },

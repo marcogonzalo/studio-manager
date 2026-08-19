@@ -39,31 +39,56 @@ function positiveInteger(t: AddItemFormTranslate) {
     );
 }
 
-function positiveFloat(message: string) {
-  return z
-    .string()
-    .refine((v) => /^\d+(?:[.,]\d+)?$/.test(v.trim()), message)
-    .transform(parseRequiredNumber)
-    .refine((val) => Number.isFinite(val) && val > 0, message);
+function isPositiveMoney(raw: string): boolean {
+  return /^\d+(?:[.,]\d+)?$/.test(raw.trim()) && parseRequiredNumber(raw) > 0;
 }
 
 export function buildAddItemFormSchema(t: AddItemFormTranslate) {
-  return z.object({
-    product_id: z.string().optional(),
-    space_id: z.string().optional(),
-    supplier_id: z.string().optional(),
-    name: z.string().min(2, t("validationNameRequired")),
-    description: z.string().optional(),
-    reference_code: z.string().optional(),
-    reference_url: z.string().optional(),
-    category: z.string().optional(),
-    internal_reference: z.string().optional(),
-    internal_notes: z.string().optional(),
-    quantity: positiveInteger(t),
-    unit_cost: positiveFloat(t("validationUnitCostPositive")),
-    markup: z.string().transform((v) => parseFloat(v) || 0),
-    unit_price: positiveFloat(t("validationUnitPricePositive")),
-    image_url: z.string().optional(),
-    is_excluded: z.boolean().optional(),
-  });
+  return z
+    .object({
+      product_id: z.string().optional(),
+      space_id: z.string().optional(),
+      supplier_id: z.string().optional(),
+      name: z.string().min(2, t("validationNameRequired")),
+      description: z.string().optional(),
+      reference_code: z.string().optional(),
+      reference_url: z.string().optional(),
+      category: z.string().optional(),
+      internal_reference: z.string().optional(),
+      internal_notes: z.string().optional(),
+      quantity: positiveInteger(t),
+      unit_cost: z.string().optional(),
+      markup: z.string().transform((v) => parseFloat(v) || 0),
+      unit_price: z.string().optional(),
+      image_url: z.string().optional(),
+      is_excluded: z.boolean().optional(),
+      is_price_tbd: z.boolean().optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.is_price_tbd) return;
+      if (!isPositiveMoney(data.unit_cost ?? "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["unit_cost"],
+          message: t("validationUnitCostPositive"),
+        });
+      }
+      if (!isPositiveMoney(data.unit_price ?? "")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["unit_price"],
+          message: t("validationUnitPricePositive"),
+        });
+      }
+    })
+    .transform((data) => ({
+      ...data,
+      is_price_tbd: data.is_price_tbd === true,
+      unit_cost: data.is_price_tbd
+        ? 0
+        : parseRequiredNumber(data.unit_cost ?? ""),
+      unit_price: data.is_price_tbd
+        ? 0
+        : parseRequiredNumber(data.unit_price ?? ""),
+    }));
 }

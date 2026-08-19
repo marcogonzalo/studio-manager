@@ -11,6 +11,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { formatCurrencyWithLang } from "@/lib/formatting";
+import { formatItemSalePrice } from "@/lib/project-item-price";
 import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ interface ProductRow {
   status: string;
   image_url: string | null;
   space_name: string;
+  is_price_tbd?: boolean;
 }
 
 interface RenderRow {
@@ -214,10 +216,15 @@ export function ViewProjectSpacesClient({
                                     </p>
                                     <p className="text-foreground mt-2 text-sm font-semibold tabular-nums">
                                       {t("productPriceLabel")}{" "}
-                                      {formatCurrencyWithLang(
-                                        Number(p.unit_price),
-                                        currency,
-                                        locale
+                                      {formatItemSalePrice(
+                                        p,
+                                        (amount) =>
+                                          formatCurrencyWithLang(
+                                            amount,
+                                            currency,
+                                            locale
+                                          ),
+                                        t("priceTbd")
                                       )}
                                     </p>
                                   </div>

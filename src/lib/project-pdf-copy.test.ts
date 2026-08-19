@@ -31,6 +31,8 @@ describe("getProjectPdfCopy", () => {
     expect(copy.client).toBe("Client");
     expect(copy.architect).toBe("Architect");
     expect(copy.tax).toBe("Tax ({rate}%):");
+    expect(copy.priceTbd).toBe("To be defined");
+    expect(copy.priceTbdNote).toContain("Partial total");
   });
 
   it("returns Spanish strings for es", () => {

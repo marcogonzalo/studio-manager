@@ -48,6 +48,7 @@ export default async function ViewProjectSpacesPage({ params }: PageProps) {
     status: string;
     image_url: string | null;
     space_name: string;
+    is_price_tbd?: boolean;
   }[];
   const renders = (rendersRes.data ?? []) as {
     id: string;
