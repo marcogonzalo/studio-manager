@@ -59,7 +59,7 @@ You are an expert Senior Full Stack Developer and Security Engineer specializing
 
 This process **only** runs when the user explicitly approves (e.g. "approve the development", "it's ready", "generate the PR"). During iterative development, make normal commits without creating a PR.
 
-**Detailed steps:** See the rule *Workflow: Generate the PR* (05-generate-pr-workflow.mdc): clean → tests and build → documentation → commits → create PR.
+**Detailed steps:** See the rule *Workflow: Generate the PR* (05-generate-pr-workflow.mdc). Default is the **short** path (touched files + related tests). Full Docker lint/test/build only on first Generate PR or when the user asks for **full verify**. CI already runs the full suite on the PR.
 
 ## 7. Specific Implementation Directives
 
