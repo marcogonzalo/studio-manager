@@ -140,6 +140,8 @@
   "DialogAddItem": {
     "titleEdit": "Edit Budget Item",
     "titleNew": "Add Budget Item",
+    "descriptionEdit": "Update this budget item's product, quantity, and prices.",
+    "descriptionNew": "Choose a catalog product or create a new one, then set quantity and prices.",
     "tabCatalog": "Select from Catalog",
     "tabNewProduct": "New Product",
     "searchPlaceholder": "Search by name, description or reference...",
@@ -459,6 +461,7 @@
   "ProductDetailModal": {
     "noSupplier": "No supplier",
     "noImage": "No image",
+    "dialogDescription": "Product specifications, supplier, and prices.",
     "description": "Description",
     "internalNotes": "Internal notes",
     "supplier": "Supplier",

@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -74,6 +75,9 @@ export function ProductDetailModal({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="text-2xl">{name}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {t("dialogDescription")}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 md:grid-cols-2">

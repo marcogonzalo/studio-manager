@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -34,8 +35,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Image as ImageIcon, Plus, Search } from "lucide-react";
-import Image from "next/image";
+import { Plus, Search } from "lucide-react";
+import { CatalogProductSelectCard } from "@/components/catalog-product-select-card";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ProductImageUpload } from "@/components/product-image-upload";
 import type { Product, ProjectItem, Space, Supplier } from "@/types";
@@ -564,6 +565,9 @@ export function AddItemDialog({
           <DialogTitle>
             {isEditing ? t("titleEdit") : t("titleNew")}
           </DialogTitle>
+          <DialogDescription>
+            {isEditing ? t("descriptionEdit") : t("descriptionNew")}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -605,64 +609,22 @@ export function AddItemDialog({
                           {filteredProducts.length > 0 ? (
                             <div className="bg-background grid max-h-[300px] grid-cols-1 gap-3 overflow-y-auto rounded-md border p-2 sm:grid-cols-2 lg:grid-cols-3">
                               {filteredProducts.map((product) => (
-                                <button
+                                <CatalogProductSelectCard
                                   key={product.id}
-                                  type="button"
-                                  onClick={() => {
+                                  product={product}
+                                  selected={field.value === product.id}
+                                  onSelect={() => {
                                     field.onChange(product.id);
                                     handleProductSelect(product.id);
                                   }}
-                                  className={`flex w-full flex-row items-center gap-3 overflow-hidden rounded-xl border p-3 shadow-sm transition-shadow hover:shadow-md sm:min-h-32 sm:gap-4 sm:p-4 ${
-                                    field.value === product.id
-                                      ? "border-primary bg-primary/10"
-                                      : "border-border bg-card"
-                                  }`}
-                                >
-                                  <div className="bg-secondary/30 dark:bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
-                                    {product.image_url ? (
-                                      <div className="group relative h-full w-full">
-                                        <Image
-                                          src={product.image_url}
-                                          alt={product.name}
-                                          fill
-                                          className="object-cover"
-                                          sizes="120px"
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setPreviewProduct(product);
-                                            setIsProductModalOpen(true);
-                                          }}
-                                          className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-colors group-hover:bg-black/10 group-hover:opacity-100"
-                                          title={t("viewDetails")}
-                                        >
-                                          <Search className="h-6 w-6 text-white drop-shadow-lg" />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <div className="text-muted-foreground flex h-full w-full items-center justify-center">
-                                        <ImageIcon
-                                          className="h-6 w-6"
-                                          aria-hidden
-                                        />
-                                        <span className="sr-only">
-                                          {t("noImage")}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="min-w-0 flex-1 text-left">
-                                    <div className="mb-1 line-clamp-2 text-left text-sm font-medium">
-                                      {product.name}
-                                    </div>
-                                    <div className="text-muted-foreground line-clamp-1 text-left text-xs">
-                                      {product.supplier?.name ||
-                                        t("noSupplier")}
-                                    </div>
-                                  </div>
-                                </button>
+                                  onPreview={() => {
+                                    setPreviewProduct(product);
+                                    setIsProductModalOpen(true);
+                                  }}
+                                  viewDetailsLabel={t("viewDetails")}
+                                  noImageLabel={t("noImage")}
+                                  noSupplierLabel={t("noSupplier")}
+                                />
                               ))}
                             </div>
                           ) : (

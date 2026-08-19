@@ -140,6 +140,8 @@
   "DialogAddItem": {
     "titleEdit": "Editar Ítem del Presupuesto",
     "titleNew": "Añadir Ítem al Presupuesto",
+    "descriptionEdit": "Actualiza el producto, la cantidad y los precios de este ítem del presupuesto.",
+    "descriptionNew": "Elige un producto del catálogo o crea uno nuevo, y define cantidad y precios.",
     "tabCatalog": "Seleccionar del Catálogo",
     "tabNewProduct": "Nuevo Producto",
     "searchPlaceholder": "Buscar por nombre, descripción o referencia...",
@@ -459,6 +461,7 @@
   "ProductDetailModal": {
     "noSupplier": "Sin proveedor",
     "noImage": "Sin imagen",
+    "dialogDescription": "Especificaciones del producto, proveedor y precios.",
     "description": "Descripción",
     "internalNotes": "Notas internas",
     "supplier": "Proveedor",
