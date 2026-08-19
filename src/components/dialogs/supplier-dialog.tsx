@@ -1,7 +1,8 @@
+import type { Locale } from "@/i18n/config";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,17 +27,17 @@ import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { getDemoAccountMessage } from "@/lib/utils";
 import {
-  optionalEmailSchema,
-  optionalPhoneSchema,
+  createOptionalEmailSchema,
+  createOptionalPhoneSchema,
 } from "@/lib/contact-validation";
 import { PhoneInput } from "@/components/ui/phone-input";
 
-function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+function buildFormSchema(t: ReturnType<typeof useTranslations>, lang: Locale) {
   return z.object({
     name: z.string().min(2, t("validationNameRequired")),
     contact_name: z.string().optional(),
-    email: optionalEmailSchema,
-    phone: optionalPhoneSchema,
+    email: createOptionalEmailSchema(lang),
+    phone: createOptionalPhoneSchema(lang),
     website: z.string().optional(),
   });
 }
@@ -55,9 +56,10 @@ export function SupplierDialog({
   onSuccess,
 }: SupplierDialogProps) {
   const t = useTranslations("DialogSupplier");
+  const locale = useLocale() as Locale;
   const { user } = useAuth();
   const supabase = getSupabaseClient();
-  const formSchema = buildFormSchema(t);
+  const formSchema = buildFormSchema(t, locale);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -100,7 +102,7 @@ export function SupplierDialog({
         onSuccess(newSupplier.id);
       }
     } catch (error: unknown) {
-      const demoMsg = getDemoAccountMessage(error);
+      const demoMsg = getDemoAccountMessage(error, locale);
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,

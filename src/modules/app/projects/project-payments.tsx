@@ -1,7 +1,8 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { Fragment, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +55,7 @@ export function ProjectPayments({
   disabled?: boolean;
 }) {
   const t = useTranslations("ProjectModulePayments");
+  const locale = useLocale() as Locale;
   const ts = useTranslations("ProjectModuleShared");
   const phaseLabel = usePhaseLabel();
   const { formatCurrency } = useAppFormatting();
@@ -140,7 +142,7 @@ export function ProjectPayments({
         .eq("id", deleteTargetId);
 
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

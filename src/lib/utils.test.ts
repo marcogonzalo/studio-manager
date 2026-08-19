@@ -125,6 +125,11 @@ describe("getErrorMessage", () => {
       "Error desconocido"
     );
   });
+
+  it("should return English fallback for unknown error", () => {
+    expect(getErrorMessage(null, "en")).toBe("Unknown error");
+    expect(getErrorMessage({}, "en")).toBe("Unknown error");
+  });
 });
 
 describe("isPlanLimitExceeded", () => {
@@ -199,6 +204,18 @@ describe("getPlanErrorMessage", () => {
   it("should return null for non-plan errors", () => {
     expect(getPlanErrorMessage(new Error("Other"))).toBe(null);
   });
+
+  it("should return English copy when lang is en", () => {
+    const result = getPlanErrorMessage(
+      new Error("PLAN_LIMIT_EXCEEDED: active projects"),
+      "en"
+    );
+    expect(result).toEqual({
+      title: "Limit exceeded",
+      description:
+        "You have reached your plan limit. Upgrade your plan to increase quotas and continue.",
+    });
+  });
 });
 
 describe("demo account helpers", () => {
@@ -226,8 +243,16 @@ describe("demo account helpers", () => {
     expect(result).toEqual(DEMO_ACCOUNT_MESSAGE);
   });
 
-  it("getDemoAccountMessage returns null for non-demo error", () => {
-    expect(getDemoAccountMessage(new Error("Other"))).toBe(null);
+  it("getDemoAccountMessage returns English copy when lang is en", () => {
+    const result = getDemoAccountMessage(
+      new Error("DEMO_ACCOUNT_READ_ONLY: limitadas."),
+      "en"
+    );
+    expect(result).toEqual({
+      title: "Demo account",
+      description:
+        "Create, edit, and delete actions are disabled on this account.",
+    });
   });
 });
 

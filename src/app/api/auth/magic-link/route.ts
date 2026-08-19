@@ -4,10 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import {
   checkRateLimit,
   getClientIp,
-  RATE_LIMIT_MESSAGE,
+  getRateLimitMessage,
 } from "@/lib/rate-limit";
 import type { Locale } from "@/i18n/config";
 import { resolveEmailLocale } from "@/lib/email/auth-email-lang";
+import { getAppUiCopy, localeFromRequest } from "@/lib/app-ui-copy";
 import {
   evaluateEmailRisk,
   resolveMagicLinkAntiSpam,
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest) {
     if (!allowed) {
       const retryAfter = Math.ceil((resetAt - Date.now()) / 1000);
       return NextResponse.json(
-        { error: RATE_LIMIT_MESSAGE },
+        { error: getRateLimitMessage(localeFromRequest(request)) },
         {
           status: 429,
           headers: {
@@ -92,14 +93,18 @@ export async function POST(request: NextRequest) {
         : { lang: resolvedLang };
 
     if (!email || typeof email !== "string") {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: getAppUiCopy(resolvedLang).validation.emailRequired },
+        { status: 400 }
+      );
     }
 
     const parsedEmail = magicLinkEmailSchema.safeParse(email);
     if (!parsedEmail.success) {
       const code = parsedEmail.error.issues[0]?.code;
+      const copy = getAppUiCopy(resolvedLang).validation;
       const message =
-        code === "too_small" ? "Email is required" : "Invalid email format";
+        code === "too_small" ? copy.emailRequired : copy.emailInvalid;
       return NextResponse.json({ error: message }, { status: 400 });
     }
 

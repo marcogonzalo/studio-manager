@@ -52,7 +52,7 @@
     "copyHint": "Click the field or button to copy the link.",
     "regenerate": "Regenerate link",
     "restrictAccess": "Restrict access",
-    "publishView": "Publish view",
+    "publishView": "Make public",
     "toastCopied": "Link copied to clipboard",
     "toastRegenerated": "Link regenerated. Previous link no longer works."
   },

@@ -1,7 +1,8 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -70,6 +71,7 @@ export function DocumentDialog({
   onSuccess,
 }: DocumentDialogProps) {
   const t = useTranslations("DialogDocument");
+  const locale = useLocale() as Locale;
   const formSchema = buildFormSchema(t);
   const [loading, setLoading] = useState(false);
   const uploadedFileUrlRef = useRef<string | null>(null);
@@ -197,7 +199,7 @@ export function DocumentDialog({
       onOpenChange(false);
       onSuccess();
     } catch (err: unknown) {
-      const demoMsg = getDemoAccountMessage(err);
+      const demoMsg = getDemoAccountMessage(err, locale);
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,

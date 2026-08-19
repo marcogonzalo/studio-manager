@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages, setRequestLocale } from "next-intl/server";
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server";
 import { redirect } from "next/navigation";
 import { AuthProvider } from "@/components/auth-provider";
 import AppLayoutClient from "@/components/layouts/app-layout";
 import { AppFormattingProvider } from "@/components/providers/app-formatting-provider";
 import { defaultLocale, type Locale } from "@/i18n/config";
 import { appPath } from "@/lib/app-paths";
+import { getAccountLocale } from "@/lib/account-locale";
 import {
   isAppDateFormatPattern,
   type AppDateFormatPattern,
@@ -16,26 +21,29 @@ import { createClient } from "@/lib/supabase/server";
 import { montserratBrand } from "@/lib/fonts/montserrat-brand";
 import "@/styles/app-overlays.css";
 
-export const metadata: Metadata = {
-  title: { template: "%s", default: "App" },
-  description:
-    "Gestiona proyectos de diseño de interiores, clientes, presupuestos y catálogo.",
-  robots: {
-    index: false,
-    follow: false,
-  },
-  icons: {
-    icon: [
-      { url: "/img/veta-favicon-light.png", type: "image/png" },
-      {
-        url: "/img/veta-favicon-dark.png",
-        type: "image/png",
-        media: "(prefers-color-scheme: dark)",
-      },
-    ],
-    apple: "/img/veta-favicon-light.png",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getAccountLocale();
+  const t = await getTranslations({ locale, namespace: "AppLayout" });
+  return {
+    title: { template: "%s", default: "App" },
+    description: t("metaDescription"),
+    robots: {
+      index: false,
+      follow: false,
+    },
+    icons: {
+      icon: [
+        { url: "/img/veta-favicon-light.png", type: "image/png" },
+        {
+          url: "/img/veta-favicon-dark.png",
+          type: "image/png",
+          media: "(prefers-color-scheme: dark)",
+        },
+      ],
+      apple: "/img/veta-favicon-light.png",
+    },
+  };
+}
 
 export default async function AppLayout({
   children,

@@ -11,6 +11,7 @@ import {
   getExtensionFromFileName,
 } from "@/lib/document-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
+import { localeFromRequest } from "@/lib/app-ui-copy";
 import {
   getSupabaseUrl,
   getSupabaseServerKey,
@@ -252,7 +253,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const validation = validateDocumentFile(file);
+    const validation = validateDocumentFile(file, localeFromRequest(request));
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }

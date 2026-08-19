@@ -1,7 +1,9 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { ProjectPhase, BudgetCategory } from "@/types";
+import type { Locale } from "@/i18n/config";
 import { defaultLocale } from "@/i18n/config";
+import { getAppUiCopy } from "@/lib/app-ui-copy";
+import type { ProjectPhase, BudgetCategory } from "@/types";
 import {
   formatCurrencyWithLang,
   formatDateByPattern,
@@ -74,7 +76,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getErrorMessage(error: unknown): string {
+export function getErrorMessage(
+  error: unknown,
+  lang: Locale = defaultLocale
+): string {
   if (error instanceof Error) return error.message;
   if (typeof error === "string") return error;
   const obj = error as { message?: string; details?: string } | null;
@@ -82,7 +87,7 @@ export function getErrorMessage(error: unknown): string {
     return obj.message.trim();
   if (obj && typeof obj.details === "string" && obj.details.trim())
     return obj.details.trim();
-  return "Error desconocido";
+  return getAppUiCopy(lang).errors.unknown;
 }
 
 /** Códigos que el backend puede incluir en el mensaje de error para identificar tipo de restricción por plan. */
@@ -93,19 +98,23 @@ export const PLAN_ERROR_CODES = {
   FEATURE_UNAVAILABLE: "PLAN_FEATURE_UNAVAILABLE",
 } as const;
 
-/** Mensajes de error por plan para mostrar al usuario. Mejora la comunicación al diferenciar límite excedido vs acción no disponible. */
-export const PLAN_ERROR_MESSAGES = {
-  limitExceeded: {
-    title: "Límite excedido",
-    description:
-      "Has alcanzado el límite de tu plan. Mejora tu plan para ampliar cupos y continuar.",
-  },
-  featureUnavailable: {
-    title: "Acción no disponible en tu plan",
-    description:
-      "Esta funcionalidad no está incluida en tu plan actual. Mejora tu plan para acceder.",
-  },
-} as const;
+/** Mensajes de error por plan para mostrar al usuario. */
+export function getPlanErrorMessages(lang: Locale = defaultLocale) {
+  const copy = getAppUiCopy(lang).errors;
+  return {
+    limitExceeded: {
+      title: copy.planLimitTitle,
+      description: copy.planLimitDescription,
+    },
+    featureUnavailable: {
+      title: copy.planUnavailableTitle,
+      description: copy.planUnavailableDescription,
+    },
+  } as const;
+}
+
+/** @deprecated Use getPlanErrorMessages(lang). Kept for tests expecting Spanish. */
+export const PLAN_ERROR_MESSAGES = getPlanErrorMessages("es");
 
 function getErrorMessageString(error: unknown): string {
   return error instanceof Error
@@ -140,14 +149,17 @@ export function getPlanErrorType(error: unknown): PlanErrorType | null {
 }
 
 /** Devuelve el mensaje de error por plan para mostrar al usuario (title + description), o null si no es error de plan. */
-export function getPlanErrorMessage(error: unknown): {
+export function getPlanErrorMessage(
+  error: unknown,
+  lang: Locale = defaultLocale
+): {
   title: string;
   description: string;
 } | null {
   const type = getPlanErrorType(error);
-  if (type === "limit_exceeded") return PLAN_ERROR_MESSAGES.limitExceeded;
-  if (type === "feature_unavailable")
-    return PLAN_ERROR_MESSAGES.featureUnavailable;
+  const messages = getPlanErrorMessages(lang);
+  if (type === "limit_exceeded") return messages.limitExceeded;
+  if (type === "feature_unavailable") return messages.featureUnavailable;
   return null;
 }
 
@@ -155,11 +167,16 @@ export function getPlanErrorMessage(error: unknown): {
 export const DEMO_ACCOUNT_READ_ONLY = "DEMO_ACCOUNT_READ_ONLY" as const;
 
 /** Mensaje amable para cuenta demo (solo lectura en escrituras). */
-export const DEMO_ACCOUNT_MESSAGE = {
-  title: "Cuenta de demostración",
-  description:
-    "Las acciones de creación, edición y eliminación están desactivadas en esta cuenta.",
-} as const;
+export function getDemoAccountCopy(lang: Locale = defaultLocale) {
+  const copy = getAppUiCopy(lang).errors;
+  return {
+    title: copy.demoTitle,
+    description: copy.demoDescription,
+  } as const;
+}
+
+/** @deprecated Use getDemoAccountCopy(lang). Kept for tests expecting Spanish. */
+export const DEMO_ACCOUNT_MESSAGE = getDemoAccountCopy("es");
 
 /** True when the error is from demo account write restriction. */
 export function isDemoAccountError(error: unknown): boolean {
@@ -170,12 +187,15 @@ export function isDemoAccountError(error: unknown): boolean {
 }
 
 /** Devuelve el mensaje para mostrar cuando el error es por cuenta demo (solo lectura), o null. */
-export function getDemoAccountMessage(error: unknown): {
+export function getDemoAccountMessage(
+  error: unknown,
+  lang: Locale = defaultLocale
+): {
   title: string;
   description: string;
 } | null {
   if (!isDemoAccountError(error)) return null;
-  return DEMO_ACCOUNT_MESSAGE;
+  return getDemoAccountCopy(lang);
 }
 
 /**

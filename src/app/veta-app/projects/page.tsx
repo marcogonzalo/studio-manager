@@ -1,8 +1,9 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getDemoAccountMessage } from "@/lib/utils";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
@@ -71,6 +72,7 @@ type SortOption = "status" | "created_at" | "end_date";
 
 export default function ProjectsPage() {
   const t = useTranslations("ProjectsPage");
+  const locale = useLocale() as Locale;
   const projectStatusLabel = useProjectStatusLabel();
   const { formatDate } = useAppFormatting();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -95,7 +97,7 @@ export default function ProjectsPage() {
     try {
       const { error } = await supabase.from("projects").delete().eq("id", id);
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

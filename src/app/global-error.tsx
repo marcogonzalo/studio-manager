@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { getAppUiCopy, localeFromDocument } from "@/lib/app-ui-copy";
 
 /**
  * Captura errores en el root layout. Incluye <html> y <body> propios
@@ -13,13 +14,15 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const lang = localeFromDocument();
+  const copy = getAppUiCopy(lang).errors;
   const primary = "oklch(0.65 0.08 140)";
   const primaryForeground = "oklch(0.98 0.01 100)";
   const muted = "oklch(0.55 0.02 140)";
   const border = "oklch(0.88 0.02 140)";
 
   return (
-    <html lang="es">
+    <html lang={lang}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -83,10 +86,9 @@ export default function GlobalError({
       <body>
         <div className="g-error-root">
           <div className="g-error-card">
-            <h1>Algo ha fallado</h1>
+            <h1>{copy.crashKicker}</h1>
             <p>
-              Ha ocurrido un error en la aplicación. Puedes reintentar o volver
-              al inicio.
+              {copy.crashDescription} {copy.crashFallback}
             </p>
             {error.digest && (
               <p
@@ -95,9 +97,9 @@ export default function GlobalError({
                   fontSize: "0.75rem",
                   fontFamily: "monospace",
                 }}
-                title="Código de error"
+                title={copy.crashCode}
               >
-                (código {error.digest})
+                ({error.digest})
               </p>
             )}
             {error?.message && (
@@ -111,10 +113,10 @@ export default function GlobalError({
                 className="g-error-btn g-error-btn-primary"
                 onClick={() => reset()}
               >
-                Reintentar
+                {copy.crashRetry}
               </button>
               <Link href="/" className="g-error-btn g-error-link">
-                Ir al inicio
+                {copy.crashHome}
               </Link>
             </div>
           </div>

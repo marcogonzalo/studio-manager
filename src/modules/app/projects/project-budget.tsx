@@ -1,8 +1,9 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { Fragment, useEffect, useState } from "react";
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,7 @@ export function ProjectBudget({
   disabled?: boolean;
 }) {
   const t = useTranslations("ProjectModuleBudget");
+  const locale = useLocale() as Locale;
   const ts = useTranslations("ProjectModuleShared");
   const phaseLabel = usePhaseLabel();
   const { formatCurrency: formatCurrencyWithSettings, lang } =
@@ -185,7 +187,9 @@ export function ProjectBudget({
     } catch (error: unknown) {
       reportError(error, "Unexpected error in fetchData:");
       setError(
-        t("toastUnexpectedLoadError", { message: getErrorMessage(error) })
+        t("toastUnexpectedLoadError", {
+          message: getErrorMessage(error, locale),
+        })
       );
       setItems([]);
       await refetchBudgetLines();
@@ -216,7 +220,7 @@ export function ProjectBudget({
         .delete()
         .eq("id", deleteTarget.id);
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

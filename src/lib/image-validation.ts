@@ -3,6 +3,10 @@
  * Cliente y servidor - sin dependencias de Node.
  */
 
+import type { Locale } from "@/i18n/config";
+import { defaultLocale } from "@/i18n/config";
+import { getAppUiCopy } from "@/lib/app-ui-copy";
+
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
 
 export function isAllowedImageType(mimeType: string): boolean {
@@ -19,12 +23,13 @@ export function getExtensionFromMime(mimeType: string): string {
 }
 
 export function validateImageFile(
-  file: File
+  file: File,
+  lang: Locale = defaultLocale
 ): { valid: true } | { valid: false; error: string } {
   if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
     return {
       valid: false,
-      error: "Solo se permiten imágenes JPG, PNG o WebP",
+      error: getAppUiCopy(lang).validation.imageType,
     };
   }
   return { valid: true };

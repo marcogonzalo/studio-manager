@@ -1,7 +1,8 @@
+import type { Locale } from "@/i18n/config";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,16 +32,16 @@ import {
   reportError,
 } from "@/lib/utils";
 import {
-  optionalEmailSchema,
-  optionalPhoneSchema,
+  createOptionalEmailSchema,
+  createOptionalPhoneSchema,
 } from "@/lib/contact-validation";
 import { PhoneInput } from "@/components/ui/phone-input";
 
-function buildFormSchema(t: ReturnType<typeof useTranslations>) {
+function buildFormSchema(t: ReturnType<typeof useTranslations>, lang: Locale) {
   return z.object({
     full_name: z.string().min(2, t("validationNameRequired")),
-    email: optionalEmailSchema,
-    phone: optionalPhoneSchema,
+    email: createOptionalEmailSchema(lang),
+    phone: createOptionalPhoneSchema(lang),
     address: z.string().optional(),
   });
 }
@@ -59,9 +60,10 @@ export function ClientDialog({
   onSuccess,
 }: ClientDialogProps) {
   const t = useTranslations("DialogClient");
+  const locale = useLocale() as Locale;
   const { user } = useAuth();
   const supabase = getSupabaseClient();
-  const formSchema = buildFormSchema(t);
+  const formSchema = buildFormSchema(t, locale);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -137,7 +139,7 @@ export function ClientDialog({
         onSuccess(newClient.id);
       }
     } catch (error: unknown) {
-      const demoMsg = getDemoAccountMessage(error);
+      const demoMsg = getDemoAccountMessage(error, locale);
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,
@@ -145,7 +147,7 @@ export function ClientDialog({
         return;
       }
       reportError(error, "Error saving client:");
-      toast.error(getErrorMessage(error) || t("toastSaveError"));
+      toast.error(getErrorMessage(error, locale) || t("toastSaveError"));
     }
   }
 

@@ -1,7 +1,8 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
@@ -35,6 +36,7 @@ import type { Product } from "@/types";
 
 export default function CatalogPage() {
   const t = useTranslations("CatalogPage");
+  const locale = useLocale() as Locale;
   const { formatCurrency } = useAppFormatting();
   const profileDefaults = useProfileDefaults();
   const [products, setProducts] = useState<Product[]>([]);
@@ -105,7 +107,7 @@ export default function CatalogPage() {
         .eq("id", product.id)
         .select();
       if (deleteError) {
-        const demoMsg = getDemoAccountMessage(deleteError);
+        const demoMsg = getDemoAccountMessage(deleteError, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,18 +52,20 @@ import {
 } from "@/lib/utils";
 import type { Profile } from "@/types";
 import {
-  publicProfileFormSchema,
-  defaultsFormSchema,
+  createPublicProfileFormSchema,
+  createDefaultsFormSchema,
   languageFormSchema,
   type PublicProfileFormValues,
   type DefaultsFormValues,
   type LanguageFormValues,
 } from "./schema";
+import type { Locale } from "@/i18n/config";
 
 export default function CustomizationPage() {
   const router = useRouter();
   const tLang = useTranslations("SettingsLanguage");
   const t = useTranslations("SettingsCustomization");
+  const locale = useLocale() as Locale;
   const { user, effectivePlan } = useAuth();
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const supabase = getSupabaseClient();
@@ -75,12 +77,12 @@ export default function CustomizationPage() {
   useOnboardingHighlight("public-profile", !loading);
 
   const formPresupuesto = useForm<PublicProfileFormValues>({
-    resolver: zodResolver(publicProfileFormSchema),
+    resolver: zodResolver(createPublicProfileFormSchema(locale)),
     defaultValues: { public_name: "", email: "" },
   });
 
   const formDefaults = useForm<DefaultsFormValues>({
-    resolver: zodResolver(defaultsFormSchema),
+    resolver: zodResolver(createDefaultsFormSchema(locale)),
     defaultValues: { default_tax_rate: "", default_currency: "EUR" },
   });
 
@@ -210,7 +212,7 @@ export default function CustomizationPage() {
       fetchProfile();
     } catch (e) {
       reportError(e, "Error saving public profile:");
-      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e)}`);
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e, locale)}`);
     }
   }
 
@@ -235,7 +237,7 @@ export default function CustomizationPage() {
       fetchProfile();
     } catch (e) {
       reportError(e, "Error saving language settings:");
-      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e)}`);
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e, locale)}`);
     }
   }
 
@@ -260,7 +262,7 @@ export default function CustomizationPage() {
       fetchProfile();
     } catch (e) {
       reportError(e, "Error saving defaults:");
-      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e)}`);
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(e, locale)}`);
     }
   }
 

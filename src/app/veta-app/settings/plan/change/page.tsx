@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Check, X, ArrowRight, ChevronDown } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,7 @@ import { formatCurrency } from "@/lib/utils";
 import { getErrorMessage, reportError } from "@/lib/utils";
 import { appPath } from "@/lib/app-paths";
 import { toast } from "sonner";
+import type { Locale } from "@/i18n/config";
 
 const PRICING_CURRENCY = "EUR";
 
@@ -57,6 +58,7 @@ const tPlanCopy = createPlanCopyT(
 
 export default function ChangePlanPage() {
   const t = useTranslations("SettingsPlanChange");
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const { effectivePlan, refetchEffectivePlan } = useAuth();
   const supabase = getSupabaseClient();
@@ -104,7 +106,9 @@ export default function ChangePlanPage() {
       router.push(appPath("/settings/plan"));
     } catch (err) {
       reportError(err, "assign_plan:");
-      toast.error(`${t("toastActivateError")}: ${getErrorMessage(err)}`);
+      toast.error(
+        `${t("toastActivateError")}: ${getErrorMessage(err, locale)}`
+      );
     } finally {
       setSubmittingPlan(null);
     }

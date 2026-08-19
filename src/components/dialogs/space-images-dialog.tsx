@@ -1,5 +1,6 @@
+import type { Locale } from "@/i18n/config";
 import { useCallback, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +40,7 @@ export function SpaceImagesDialog({
   canAddRenders?: boolean;
 }) {
   const t = useTranslations("DialogSpaceImages");
+  const locale = useLocale() as Locale;
   const supabase = getSupabaseClient();
   const [images, setImages] = useState<Image[]>([]);
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -64,7 +66,7 @@ export function SpaceImagesDialog({
       supabase,
     });
     if (!result.ok) {
-      const demoMsg = getDemoAccountMessage(result.error);
+      const demoMsg = getDemoAccountMessage(result.error, locale);
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,

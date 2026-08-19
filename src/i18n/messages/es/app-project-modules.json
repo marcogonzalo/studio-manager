@@ -125,7 +125,7 @@
     "productsTotal": "Productos: {amount}",
     "taxLabel": "Impuesto ({rate}%): {amount}",
     "withTax": "Con impuestos: {amount}",
-    "furnitureAndProducts": "Mobiliario y Productos",
+    "furnitureAndProducts": "Mobiliario, Accesorios y Equipamiento",
     "noProducts": "No hay productos añadidos.",
     "noPhase": "Sin Fase",
     "codePrefix": "Cód.:",

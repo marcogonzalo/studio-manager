@@ -30,6 +30,7 @@
     "closeMenu": "Cerrar menú",
     "navMenuTitle": "Menú de Navegación",
     "navMenuDescription": "Navegación principal de la aplicación",
+    "metaDescription": "Gestiona proyectos de diseño de interiores, clientes, presupuestos y catálogo.",
     "breadcrumbAria": "Breadcrumb",
     "mobileNavAria": "Navegación móvil",
     "projectDetail": "Proyecto",
@@ -50,6 +51,54 @@
     "budget": "Presupuestos",
     "construction": "Obra",
     "delivery": "Entrega"
+  },
+  "BudgetCategory": {
+    "construction": "Obra",
+    "own_fees": "Honorarios Propios",
+    "external_services": "Servicios Externos",
+    "operations": "Gastos Operativos"
+  },
+  "BudgetSubcategory": {
+    "construction": {
+      "demolition": "Demolición",
+      "masonry": "Albañilería",
+      "electricity": "Electricidad",
+      "plumbing": "Fontanería",
+      "interior_painting": "Pintura Interior",
+      "exterior_painting": "Pintura Exterior",
+      "domotics": "Domótica",
+      "carpentry": "Carpintería",
+      "locksmithing": "Cerrajería",
+      "hvac": "Climatización",
+      "flooring": "Suelos y Pavimentos",
+      "tiling": "Alicatados",
+      "other": "Otros"
+    },
+    "own_fees": {
+      "design": "Diseño",
+      "executive_project": "Proyecto Ejecutivo",
+      "site_supervision": "Supervisión de Obra",
+      "management": "Gestión y Coordinación",
+      "other": "Otros"
+    },
+    "external_services": {
+      "technical_architect": "Arquitecto Técnico",
+      "engineering": "Ingenierías",
+      "logistics": "Logística",
+      "permits": "Gestión de Permisos",
+      "consulting": "Consultoría",
+      "other": "Otros"
+    },
+    "operations": {
+      "shipping": "Envío",
+      "packaging": "Embalaje",
+      "transport": "Transporte",
+      "storage": "Almacenamiento",
+      "insurance": "Seguros",
+      "customs": "Aduanas",
+      "handling": "Manipulación",
+      "other": "Otros"
+    }
   },
   "ProjectTabContent": {
     "disabledMessageDefault": "Esta sección no está incluida en tu plan actual."
@@ -75,5 +124,59 @@
     "tax": "Impuesto (%)",
     "edit": "Editar",
     "close": "Cerrar"
+  },
+  "ProjectPDF": {
+    "title": "Presupuesto de {name}",
+    "dateLabel": "Fecha:",
+    "client": "Cliente",
+    "architect": "Arquitecto/a",
+    "servicesAndLines": "Servicios y Partidas",
+    "noPhase": "Sin Fase",
+    "subtotal": "Subtotal:",
+    "furnitureAndProducts": "Mobiliario, Accesorios y Equipamiento",
+    "itemColumn": "Elemento",
+    "unitPriceColumn": "Precio Unit.",
+    "qtyColumn": "Cant.",
+    "totalColumn": "Total",
+    "subtotalServices": "Subtotal Servicios y Partidas:",
+    "subtotalProducts": "Subtotal Mobiliario, Accesorios y Equipamiento:",
+    "tax": "IVA ({rate}%):",
+    "grandTotal": "TOTAL:",
+    "generatedWith": "Documento generado con Veta - veta.pro",
+    "spaceGeneral": "General"
+  },
+  "AppErrors": {
+    "unknown": "Error desconocido",
+    "demoTitle": "Cuenta de demostración",
+    "demoDescription": "Las acciones de creación, edición y eliminación están desactivadas en esta cuenta.",
+    "planLimitTitle": "Límite excedido",
+    "planLimitDescription": "Has alcanzado el límite de tu plan. Mejora tu plan para ampliar cupos y continuar.",
+    "planUnavailableTitle": "Acción no disponible en tu plan",
+    "planUnavailableDescription": "Esta funcionalidad no está incluida en tu plan actual. Mejora tu plan para acceder.",
+    "rateLimit": "Has excedido el límite de solicitudes. Por favor, espera 30 segundos e intenta de nuevo.",
+    "authPkce": "Intenta iniciar sesión con el mismo navegador en el que solicitaste tu enlace de ingreso.",
+    "authExpired": "El enlace ha caducado o no es válido. Por favor, solicita un nuevo enlace de acceso.",
+    "authGeneric": "No se pudo completar el acceso. Por favor, intenta iniciar sesión de nuevo.",
+    "authMissingCode": "No se recibió el código de acceso. Por favor, intenta acceder nuevamente.",
+    "authMissingLink": "No se recibió el enlace de acceso.",
+    "crashKicker": "Algo ha fallado",
+    "crashTitle": "Error inesperado",
+    "crashDescription": "Ha ocurrido un problema al cargar esta vista.",
+    "crashFallback": "Vuelve a intentar o regresa al inicio.",
+    "crashSupport": "Si el problema continúa, contacta con soporte.",
+    "crashRetry": "Reintentar",
+    "crashHome": "Ir al inicio",
+    "crashCode": "Código de error"
+  },
+  "AppValidation": {
+    "emailRequired": "El correo es obligatorio",
+    "emailInvalid": "Introduce un correo electrónico válido",
+    "phoneInvalid": "Introduce un teléfono válido",
+    "phoneInvalidWithExample": "Introduce un teléfono válido (ej. {example})",
+    "taxMin": "Debe ser mayor o igual a 0",
+    "imageType": "Solo se permiten imágenes JPG, PNG o WebP",
+    "fileTooLarge5mb": "El archivo no puede superar 5MB",
+    "documentType": "Tipo no permitido. Use PDFs, docs, hojas de cálculo, presentaciones, texto u otros documentos relacionados.",
+    "documentSize": "No se pueden subir archivos de más de 10Mb. Si lo tienes en Drive, OneDrive o iCloud, añádelo como URL."
   }
 }

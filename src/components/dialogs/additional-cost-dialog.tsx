@@ -1,5 +1,6 @@
+import type { Locale } from "@/i18n/config";
 import { useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -71,6 +72,7 @@ export function AdditionalCostDialog({
   cost,
 }: AdditionalCostDialogProps) {
   const t = useTranslations("DialogAdditionalCost");
+  const locale = useLocale() as Locale;
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const isEditing = !!cost;
@@ -127,7 +129,7 @@ export function AdditionalCostDialog({
         .eq("id", cost.id);
 
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,
@@ -153,7 +155,7 @@ export function AdditionalCostDialog({
       ]);
 
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

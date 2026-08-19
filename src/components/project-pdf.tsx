@@ -9,7 +9,14 @@ import {
 // Sin Font.register externo: las URLs a Google Fonts provocan "Failed to fetch" en toBlob()
 // al renderizar. Usamos Helvetica (integrada) para que el PDF se genere sin peticiones externas.
 import { defaultLocale, type Locale } from "@/i18n/config";
-import { formatCurrencyWithLang } from "@/lib/formatting";
+import { formatCurrencyWithLang, formatDateIntl } from "@/lib/formatting";
+import {
+  getPdfCategoryLabel,
+  getPdfPhaseLabel,
+  getPdfSubcategoryLabel,
+  getProjectPdfCopy,
+  interpolatePdfCopy,
+} from "@/lib/project-pdf-copy";
 import type {
   Project,
   ProjectBudgetLine,
@@ -17,11 +24,6 @@ import type {
   BudgetCategory,
   ProjectPhase,
 } from "@/types";
-import {
-  BUDGET_CATEGORIES,
-  BUDGET_SUBCATEGORIES,
-  getPhaseLabel,
-} from "@/lib/utils";
 
 // Color palette matching the application (from index.css)
 const colors = {
@@ -358,19 +360,6 @@ interface ProjectPDFProps {
   lang?: Locale;
 }
 
-// Helper function to get category label
-function getCategoryLabel(category: BudgetCategory): string {
-  return BUDGET_CATEGORIES[category] || category;
-}
-
-// Helper function to get subcategory label
-function getSubcategoryLabel(
-  category: BudgetCategory,
-  subcategory: string
-): string {
-  return BUDGET_SUBCATEGORIES[category]?.[subcategory] || subcategory;
-}
-
 export function ProjectPDF({
   project,
   items,
@@ -382,6 +371,7 @@ export function ProjectPDF({
   vetaLogoUrl,
   lang = defaultLocale,
 }: ProjectPDFProps) {
+  const copy = getProjectPdfCopy(lang);
   const logoSrc = vetaLogoUrl ?? VETA_LOGO_PATH;
   const logoIsEmbedded =
     typeof logoSrc === "string" && logoSrc.startsWith("data:");
@@ -392,7 +382,7 @@ export function ProjectPDF({
   // Group items by space (location)
   const itemsBySpace = includedItems.reduce(
     (acc, item) => {
-      const spaceName = item.space?.name || "General";
+      const spaceName = item.space?.name || copy.spaceGeneral;
       if (!acc[spaceName]) {
         acc[spaceName] = [];
       }
@@ -471,11 +461,13 @@ export function ProjectPDF({
         )}
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Presupuesto de {project.name}</Text>
+          <Text style={styles.title}>
+            {interpolatePdfCopy(copy.title, { name: project.name })}
+          </Text>
 
           <Text style={[styles.subtitle, { marginTop: 12 }]}>
-            Fecha:{" "}
-            {new Date().toLocaleDateString("es-ES", {
+            {copy.dateLabel}{" "}
+            {formatDateIntl(new Date(), lang, {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -492,7 +484,7 @@ export function ProjectPDF({
 
           <View style={styles.clientArchitectRow}>
             <View style={styles.clientArchitectCol}>
-              <Text style={styles.clientArchitectTitle}>Cliente</Text>
+              <Text style={styles.clientArchitectTitle}>{copy.client}</Text>
               {project.client ? (
                 <>
                   <Text style={styles.clientArchitectText}>
@@ -519,7 +511,7 @@ export function ProjectPDF({
               )}
             </View>
             <View style={styles.clientArchitectCol}>
-              <Text style={styles.clientArchitectTitle}>Arquitecto/a</Text>
+              <Text style={styles.clientArchitectTitle}>{copy.architect}</Text>
               {architectName || architectEmail ? (
                 <>
                   {architectName && (
@@ -543,7 +535,7 @@ export function ProjectPDF({
         {/* Budget Lines by Phase and Category */}
         {budgetLines.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Servicios y Partidas</Text>
+            <Text style={styles.sectionTitle}>{copy.servicesAndLines}</Text>
 
             {phaseOrder.map((phase) => {
               const phaseData = budgetLinesByPhaseAndCategory[phase];
@@ -582,9 +574,7 @@ export function ProjectPDF({
                         { color: "#FFFFFF", fontSize: 13 },
                       ]}
                     >
-                      {phase === "no_phase"
-                        ? "Sin Fase"
-                        : getPhaseLabel(phase as ProjectPhase)}
+                      {getPdfPhaseLabel(phase, lang)}
                     </Text>
                     <Text
                       style={[
@@ -592,7 +582,7 @@ export function ProjectPDF({
                         { color: "#FFFFFF", fontSize: 12 },
                       ]}
                     >
-                      Subtotal: {formatCurrency(phaseTotal)}
+                      {copy.subtotal} {formatCurrency(phaseTotal)}
                     </Text>
                   </View>
 
@@ -615,17 +605,21 @@ export function ProjectPDF({
                       >
                         <View style={styles.budgetLineHeader}>
                           <Text style={styles.budgetLineName}>
-                            {getCategoryLabel(category)}
+                            {getPdfCategoryLabel(category, lang)}
                           </Text>
                           <Text style={styles.budgetLineSubtotal}>
-                            Subtotal: {formatCurrency(categoryTotal)}
+                            {copy.subtotal} {formatCurrency(categoryTotal)}
                           </Text>
                         </View>
 
                         {lines.map((line) => (
                           <View key={line.id} style={styles.budgetLineItem}>
                             <Text style={styles.budgetLineItemName}>
-                              {getSubcategoryLabel(category, line.subcategory)}
+                              {getPdfSubcategoryLabel(
+                                category,
+                                line.subcategory,
+                                lang
+                              )}
                             </Text>
                             <Text style={styles.budgetLineItemDescription}>
                               {line.description || ""}
@@ -647,7 +641,7 @@ export function ProjectPDF({
         {/* Items by Location - solo si hay productos */}
         {Object.keys(itemsBySpace).length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Mobiliario y Productos</Text>
+            <Text style={styles.sectionTitle}>{copy.furnitureAndProducts}</Text>
 
             {Object.entries(itemsBySpace).map(([spaceName, spaceItems]) => {
               const spaceSubtotal = spaceItems.reduce(
@@ -677,7 +671,7 @@ export function ProjectPDF({
                         { color: "#FFFFFF", fontSize: 12 },
                       ]}
                     >
-                      Subtotal: {formatCurrency(spaceSubtotal)}
+                      {copy.subtotal} {formatCurrency(spaceSubtotal)}
                     </Text>
                   </View>
 
@@ -688,7 +682,9 @@ export function ProjectPDF({
                         <Text style={styles.tableHeaderText}></Text>
                       </View>
                       <View style={styles.colName}>
-                        <Text style={styles.tableHeaderText}>Elemento</Text>
+                        <Text style={styles.tableHeaderText}>
+                          {copy.itemColumn}
+                        </Text>
                       </View>
                       <View style={styles.colPrice}>
                         <Text
@@ -697,7 +693,7 @@ export function ProjectPDF({
                             { textAlign: "right" },
                           ]}
                         >
-                          Precio Unit.
+                          {copy.unitPriceColumn}
                         </Text>
                       </View>
                       <View style={styles.colQuantity}>
@@ -707,7 +703,7 @@ export function ProjectPDF({
                             { textAlign: "right" },
                           ]}
                         >
-                          Cant.
+                          {copy.qtyColumn}
                         </Text>
                       </View>
                       <View style={styles.colTotal}>
@@ -717,7 +713,7 @@ export function ProjectPDF({
                             { textAlign: "right" },
                           ]}
                         >
-                          Total
+                          {copy.totalColumn}
                         </Text>
                       </View>
                       <View style={styles.colEmpty}>
@@ -798,9 +794,7 @@ export function ProjectPDF({
           <View style={styles.summary}>
             {budgetLines.length > 0 && (
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>
-                  Subtotal Servicios y Partidas:
-                </Text>
+                <Text style={styles.summaryLabel}>{copy.subtotalServices}</Text>
                 <Text style={styles.summaryValue}>
                   {formatCurrency(totalBudgetLines)}
                 </Text>
@@ -808,26 +802,26 @@ export function ProjectPDF({
             )}
             {items.length > 0 && (
               <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>
-                  Subtotal Mobiliario y Productos:
-                </Text>
+                <Text style={styles.summaryLabel}>{copy.subtotalProducts}</Text>
                 <Text style={styles.summaryValue}>
                   {formatCurrency(totalItemsPrice)}
                 </Text>
               </View>
             )}
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal:</Text>
+              <Text style={styles.summaryLabel}>{copy.subtotal}</Text>
               <Text style={styles.summaryValue}>
                 {formatCurrency(subtotal)}
               </Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>IVA ({taxRate}%):</Text>
+              <Text style={styles.summaryLabel}>
+                {interpolatePdfCopy(copy.tax, { rate: taxRate })}
+              </Text>
               <Text style={styles.summaryValue}>{formatCurrency(tax)}</Text>
             </View>
             <View style={styles.summaryTotal}>
-              <Text style={styles.summaryTotalLabel}>TOTAL:</Text>
+              <Text style={styles.summaryTotalLabel}>{copy.grandTotal}</Text>
               <Text style={styles.summaryTotalValue}>
                 {formatCurrency(grandTotal)}
               </Text>
@@ -844,9 +838,7 @@ export function ProjectPDF({
                 cache={false}
               />
             )}
-            <Text style={styles.vetaFooterText}>
-              Document generated with Veta - veta.pro
-            </Text>
+            <Text style={styles.vetaFooterText}>{copy.generatedWith}</Text>
           </View>
         )}
       </Page>

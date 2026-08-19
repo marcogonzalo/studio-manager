@@ -1,7 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { ProjectPhase } from "@/types";
+import type { BudgetCategory, ProjectPhase } from "@/types";
+import {
+  getLocalizedCategoryOptions,
+  getLocalizedSubcategoryOptions,
+} from "@/lib/budget-labels";
 
 const PROJECT_STATUS_KEYS = [
   "active",
@@ -29,4 +33,14 @@ export function useProjectStatusLabel() {
     }
     return status;
   };
+}
+
+export function useCategoryOptions() {
+  const t = useTranslations("BudgetCategory");
+  return getLocalizedCategoryOptions((key) => t(key));
+}
+
+export function useSubcategoryOptions(category: BudgetCategory | "") {
+  const t = useTranslations("BudgetSubcategory");
+  return getLocalizedSubcategoryOptions(category, (key) => t(key));
 }

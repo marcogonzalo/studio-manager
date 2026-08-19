@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
 import { pushDemoAccess } from "@/lib/gtm";
+import { getAppUiCopy } from "@/lib/app-ui-copy";
+import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
 
 function AuthCompleteContent() {
   const t = useTranslations("Common");
@@ -19,13 +21,14 @@ function AuthCompleteContent() {
     const isDemoAccess = searchParams.get("demo") === "1";
     const pathname =
       typeof window !== "undefined" ? window.location.pathname : "";
-    const localeMatch = pathname.match(/^\/(en|es)\//);
-    const locale = localeMatch ? localeMatch[1] : "es";
+    const localeMatch = pathname.match(/^\/(en|es)(?:\/|$)/);
+    const locale = isAppLocale(localeMatch?.[1]) ? localeMatch[1] : "es";
+    const errors = getAppUiCopy(locale).errors;
 
     const hash =
       typeof window !== "undefined" ? window.location.hash.slice(1) : "";
     if (!hash) {
-      window.location.href = `/${locale}/sign-in?error=${encodeURIComponent("No se recibió el enlace de acceso.")}&redirect=${encodeURIComponent(redirectPath)}`;
+      window.location.href = `/${locale}/sign-in?error=${encodeURIComponent(errors.authMissingLink)}&redirect=${encodeURIComponent(redirectPath)}`;
       return;
     }
 
@@ -35,7 +38,7 @@ function AuthCompleteContent() {
 
     if (!accessToken || !refreshToken) {
       setStatus("error");
-      window.location.href = `/${locale}/sign-in?error=${encodeURIComponent("Enlace inválido o expirado.")}&redirect=${encodeURIComponent(redirectPath)}`;
+      window.location.href = `/${locale}/sign-in?error=${encodeURIComponent(errors.authExpired)}&redirect=${encodeURIComponent(redirectPath)}`;
       return;
     }
 
@@ -49,7 +52,7 @@ function AuthCompleteContent() {
       })
       .catch(() => {
         setStatus("error");
-        window.location.href = `/${locale}/sign-in?error=${encodeURIComponent("No se pudo iniciar sesión.")}&redirect=${encodeURIComponent(redirectPath)}`;
+        window.location.href = `/${locale}/sign-in?error=${encodeURIComponent(errors.authGeneric)}&redirect=${encodeURIComponent(redirectPath)}`;
       });
   }, [searchParams]);
 

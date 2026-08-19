@@ -1,5 +1,6 @@
+import type { Locale } from "@/i18n/config";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -35,14 +36,16 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import {
-  getCategoryOptions,
-  getSubcategoryOptions,
-  getPhaseLabel,
   getDemoAccountMessage,
   getErrorMessage,
   reportError,
   isCostCategory,
 } from "@/lib/utils";
+import {
+  useCategoryOptions,
+  usePhaseLabel,
+  useSubcategoryOptions,
+} from "@/lib/use-project-labels";
 import type {
   ProjectBudgetLine,
   BudgetCategory,
@@ -101,6 +104,9 @@ export function BudgetLineDialog({
   budgetLine,
 }: BudgetLineDialogProps) {
   const t = useTranslations("DialogBudgetLine");
+  const locale = useLocale() as Locale;
+  const phaseLabel = usePhaseLabel();
+  const categoryOptions = useCategoryOptions();
   const { user } = useAuth();
   const formSchema = buildFormSchema(t);
   const advancedCostLineOptionsEnabled = usePlanCapability("costs_management", {
@@ -112,6 +118,7 @@ export function BudgetLineDialog({
   const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | "">(
     ""
   );
+  const subcategoryOptions = useSubcategoryOptions(selectedCategory);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as unknown as Resolver<FormValues>,
@@ -278,7 +285,7 @@ export function BudgetLineDialog({
         onOpenChange(false);
       }
     } catch (error: unknown) {
-      const demoMsg = getDemoAccountMessage(error);
+      const demoMsg = getDemoAccountMessage(error, locale);
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,
@@ -287,23 +294,10 @@ export function BudgetLineDialog({
       }
       reportError(error, "Unexpected error in onSubmit:");
       toast.error(
-        `${t("toastUnexpectedErrorPrefix")}${getErrorMessage(error)}`
+        `${t("toastUnexpectedErrorPrefix")}${getErrorMessage(error, locale)}`
       );
     }
   };
-
-  let categoryOptions: { value: BudgetCategory; label: string }[] = [];
-  let subcategoryOptions: { value: string; label: string }[] = [];
-
-  try {
-    categoryOptions = getCategoryOptions();
-    if (selectedCategory) {
-      subcategoryOptions = getSubcategoryOptions(selectedCategory);
-    }
-  } catch (error) {
-    reportError(error, "Error getting category options:");
-    // Fallback to empty arrays
-  }
 
   if (!open) {
     return null;
@@ -527,7 +521,7 @@ export function BudgetLineDialog({
                       <SelectContent>
                         {PROJECT_PHASES.map((phase) => (
                           <SelectItem key={phase} value={phase}>
-                            {getPhaseLabel(phase)}
+                            {phaseLabel(phase)}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -1,7 +1,8 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,6 +40,7 @@ export function ProjectNotes({
   disabled?: boolean;
 }) {
   const t = useTranslations("ProjectModuleNotes");
+  const locale = useLocale() as Locale;
   const { formatDate } = useAppFormatting();
   const { user } = useAuth();
   const supabase = getSupabaseClient();
@@ -86,7 +88,7 @@ export function ProjectNotes({
     ]);
 
     if (error) {
-      const demoMsg = getDemoAccountMessage(error);
+      const demoMsg = getDemoAccountMessage(error, locale);
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,
@@ -112,7 +114,7 @@ export function ProjectNotes({
         .eq("id", deleteTargetId);
 
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,
@@ -137,7 +139,7 @@ export function ProjectNotes({
       .eq("id", id);
 
     if (error) {
-      const demoMsg = getDemoAccountMessage(error);
+      const demoMsg = getDemoAccountMessage(error, locale);
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,
