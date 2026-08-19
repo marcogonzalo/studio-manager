@@ -1,9 +1,9 @@
--- Allow a project product to stay in the budget before the sale price is known.
+-- Allow a project product to stay in the budget before unit cost and sale price are known.
 alter table project_items
   add column if not exists is_price_tbd boolean not null default false;
 
 comment on column project_items.is_price_tbd is
-  'If true, the sale price is unknown. The item stays in the budget without showing zero or an estimate.';
+  'If true, unit cost and sale price are unknown. The item stays in the budget without showing zero or an estimate.';
 
 -- Expose the flag on the public shared products view.
 drop function if exists get_project_public_products(text);

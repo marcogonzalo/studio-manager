@@ -264,6 +264,7 @@
     "expandItemDetails": "Ver detalles del ítem",
     "collapseItemDetails": "Ocultar detalles del ítem",
     "orderTotal": "Total del Pedido:",
+    "orderTotalPartialNote": "Total parcial: algunos ítems tienen precio por definir.",
     "noItemsInOrder": "No hay ítems en este pedido",
     "confirmDelete": "¿Eliminar este pedido de compra?",
     "confirmDeleteDescription": "Los ítems asociados volverán a estado pendiente, a menos que estén en otro pedido activo. Esta acción no se puede deshacer.",

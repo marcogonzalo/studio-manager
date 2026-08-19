@@ -264,6 +264,7 @@
     "expandItemDetails": "View item details",
     "collapseItemDetails": "Hide item details",
     "orderTotal": "Order Total:",
+    "orderTotalPartialNote": "Partial total: some items have a price to be defined.",
     "noItemsInOrder": "No items in this order",
     "confirmDelete": "Delete this purchase order?",
     "confirmDeleteDescription": "Associated items will return to pending status unless they are in another active order. This action cannot be undone.",

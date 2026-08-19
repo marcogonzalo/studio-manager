@@ -3,7 +3,7 @@ alter table project_budget_lines
   add column if not exists is_price_tbd boolean not null default false;
 
 comment on column project_budget_lines.is_price_tbd is
-  'If true, the amount is unknown. The line stays in the budget without showing zero or an estimate.';
+  'If true, estimated and actual amounts are unknown. The line stays in the budget without showing zero or an estimate.';
 
 -- Expose the flag on the public shared budget view.
 drop function if exists get_project_public_budget(text);

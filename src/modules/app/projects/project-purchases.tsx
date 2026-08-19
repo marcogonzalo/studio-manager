@@ -37,7 +37,10 @@ import {
 import { MoreVertical } from "lucide-react";
 import { getDemoAccountMessage } from "@/lib/utils";
 import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
-import { itemCostAmount } from "@/lib/project-item-price";
+import {
+  hasPricedItemsWithTbd,
+  itemCostAmount,
+} from "@/lib/project-item-price";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface PurchaseOrder {
@@ -246,6 +249,7 @@ export function ProjectPurchases({
           <div className="space-y-4">
             {orders.map((po) => {
               const total = calculateOrderTotal(po.project_items);
+              const hasTbd = hasPricedItemsWithTbd(po.project_items);
               return (
                 <Card key={po.id}>
                   <CardHeader className="pb-3">
@@ -428,6 +432,16 @@ export function ProjectPurchases({
                               </TableCell>
                               <TableCell />
                             </TableRow>
+                            {hasTbd && (
+                              <TableRow className="bg-secondary/30 md:hidden">
+                                <TableCell
+                                  colSpan={3}
+                                  className="text-muted-foreground text-right text-xs font-normal"
+                                >
+                                  {t("orderTotalPartialNote")}
+                                </TableCell>
+                              </TableRow>
+                            )}
                             <TableRow className="bg-secondary/30 hidden font-bold md:table-row">
                               <TableCell className="text-right">
                                 {t("orderTotal")}
@@ -438,6 +452,16 @@ export function ProjectPurchases({
                               <TableCellMd />
                               <TableCellMd />
                             </TableRow>
+                            {hasTbd && (
+                              <TableRow className="bg-secondary/30 hidden md:table-row">
+                                <TableCell
+                                  colSpan={4}
+                                  className="text-muted-foreground text-right text-xs font-normal"
+                                >
+                                  {t("orderTotalPartialNote")}
+                                </TableCell>
+                              </TableRow>
+                            )}
                           </TableBody>
                         </Table>
                       </div>

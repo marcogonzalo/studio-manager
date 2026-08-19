@@ -2,7 +2,7 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
-- **Rama feat/price-tbd-project-items (issue #192):** Productos de presupuesto pueden marcarse como «precio por definir». Columna `project_items.is_price_tbd`, checkbox en `AddItemDialog` (coste unitario, precio venta y margen deshabilitados). UI/PDF/vista pública/compras muestran «Por definir» / «To be defined» en vez de 0 o un estimado; totales de venta y coste omiten esos ítems y avisan que el total es parcial. RPC `get_project_public_products` expone el flag. Helper `project-item-price.ts`. Lint OK; tests 434; coverage helper 100% / schema 100% lines (80% branch); build OK (Docker test profile).
+- **Rama feat/price-tbd-project-items (issue #192, PR #194):** Productos y partidas de presupuesto pueden marcarse como «precio por definir». Columnas `project_items.is_price_tbd` y `project_budget_lines.is_price_tbd`; checkbox en `AddItemDialog` y `BudgetLineDialog` (importes deshabilitados). UI (`PriceTbdPill`), PDF, vista pública y compras muestran «Por definir» / «To be defined» en vez de 0; totales omiten TBD y avisan que el total es parcial (también en pedidos). Control de costes muestra todas las partidas (incl. honorarios); % desviación solo si estimado y real > 0. RPCs públicas exponen el flag. Helpers `project-item-price.ts` / `budget-line-deviation.ts`. Lint OK; tests 463; build OK (Docker test profile).
 
 ## Completado (resumen por áreas)
 
