@@ -1,7 +1,8 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { Fragment, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,6 +77,7 @@ export function ProjectPurchases({
   disabled?: boolean;
 }) {
   const t = useTranslations("ProjectModulePurchases");
+  const locale = useLocale() as Locale;
   const ts = useTranslations("ProjectModuleShared");
   const supabase = getSupabaseClient();
 
@@ -180,7 +182,7 @@ export function ProjectPurchases({
         .eq("id", orderId);
 
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

@@ -30,6 +30,7 @@
     "closeMenu": "Close menu",
     "navMenuTitle": "Navigation menu",
     "navMenuDescription": "Main application navigation",
+    "metaDescription": "Manage interior design projects, clients, budgets, and catalog.",
     "breadcrumbAria": "Breadcrumb",
     "mobileNavAria": "Mobile navigation",
     "projectDetail": "Project",
@@ -50,6 +51,54 @@
     "budget": "Budget",
     "construction": "Construction",
     "delivery": "Delivery"
+  },
+  "BudgetCategory": {
+    "construction": "Construction",
+    "own_fees": "Own Fees",
+    "external_services": "External Services",
+    "operations": "Operating Expenses"
+  },
+  "BudgetSubcategory": {
+    "construction": {
+      "demolition": "Demolition",
+      "masonry": "Masonry",
+      "electricity": "Electricity",
+      "plumbing": "Plumbing",
+      "interior_painting": "Interior Painting",
+      "exterior_painting": "Exterior Painting",
+      "domotics": "Home Automation",
+      "carpentry": "Carpentry",
+      "locksmithing": "Locksmithing",
+      "hvac": "HVAC",
+      "flooring": "Flooring",
+      "tiling": "Tiling",
+      "other": "Other"
+    },
+    "own_fees": {
+      "design": "Design",
+      "executive_project": "Executive Project",
+      "site_supervision": "Site Supervision",
+      "management": "Management and Coordination",
+      "other": "Other"
+    },
+    "external_services": {
+      "technical_architect": "Technical Architect",
+      "engineering": "Engineering",
+      "logistics": "Logistics",
+      "permits": "Permits Management",
+      "consulting": "Consulting",
+      "other": "Other"
+    },
+    "operations": {
+      "shipping": "Shipping",
+      "packaging": "Packaging",
+      "transport": "Transport",
+      "storage": "Storage",
+      "insurance": "Insurance",
+      "customs": "Customs",
+      "handling": "Handling",
+      "other": "Other"
+    }
   },
   "ProjectTabContent": {
     "disabledMessageDefault": "This section is not included in your current plan."
@@ -75,5 +124,59 @@
     "tax": "Tax (%)",
     "edit": "Edit",
     "close": "Close"
+  },
+  "ProjectPDF": {
+    "title": "Budget for {name}",
+    "dateLabel": "Date:",
+    "client": "Client",
+    "architect": "Architect",
+    "servicesAndLines": "Services and Line Items",
+    "noPhase": "No phase",
+    "subtotal": "Subtotal:",
+    "furnitureAndProducts": "Furniture, Fixtures & Equipment",
+    "itemColumn": "Item",
+    "unitPriceColumn": "Unit Price",
+    "qtyColumn": "Qty",
+    "totalColumn": "Total",
+    "subtotalServices": "Subtotal Services and Line Items:",
+    "subtotalProducts": "Subtotal Furniture, Fixtures & Equipment:",
+    "tax": "Tax ({rate}%):",
+    "grandTotal": "TOTAL:",
+    "generatedWith": "Document generated with Veta - veta.pro",
+    "spaceGeneral": "General"
+  },
+  "AppErrors": {
+    "unknown": "Unknown error",
+    "demoTitle": "Demo account",
+    "demoDescription": "Create, edit, and delete actions are disabled on this account.",
+    "planLimitTitle": "Limit exceeded",
+    "planLimitDescription": "You have reached your plan limit. Upgrade your plan to increase quotas and continue.",
+    "planUnavailableTitle": "Action not available on your plan",
+    "planUnavailableDescription": "This feature is not included in your current plan. Upgrade your plan to access it.",
+    "rateLimit": "You have exceeded the request limit. Please wait 30 seconds and try again.",
+    "authPkce": "Try signing in with the same browser where you requested your access link.",
+    "authExpired": "The link has expired or is invalid. Please request a new access link.",
+    "authGeneric": "Could not complete sign-in. Please try signing in again.",
+    "authMissingCode": "No access code was received. Please try signing in again.",
+    "authMissingLink": "No access link was received.",
+    "crashKicker": "Something went wrong",
+    "crashTitle": "Unexpected error",
+    "crashDescription": "There was a problem loading this view.",
+    "crashFallback": "Try again or go back to the home page.",
+    "crashSupport": "If the problem continues, contact support.",
+    "crashRetry": "Try again",
+    "crashHome": "Go to home",
+    "crashCode": "Error code"
+  },
+  "AppValidation": {
+    "emailRequired": "Email is required",
+    "emailInvalid": "Enter a valid email address",
+    "phoneInvalid": "Enter a valid phone number",
+    "phoneInvalidWithExample": "Enter a valid phone number (e.g. {example})",
+    "taxMin": "Must be greater than or equal to 0",
+    "imageType": "Only JPG, PNG or WebP images are allowed",
+    "fileTooLarge5mb": "File cannot exceed 5MB",
+    "documentType": "Type not allowed. Use PDFs, docs, spreadsheets, presentations, text, or other related documents.",
+    "documentSize": "Files larger than 10MB cannot be uploaded. If it is in Drive, OneDrive or iCloud, add it as a URL."
   }
 }

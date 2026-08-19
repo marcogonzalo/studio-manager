@@ -2,9 +2,10 @@
 
 import { useCallback, useState } from "react";
 import { FileIcon, Loader2, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateDocumentFile } from "@/lib/document-validation";
+import type { Locale } from "@/i18n/config";
 
 interface DocumentFileUploadProps {
   documentId: string;
@@ -34,6 +35,7 @@ export function DocumentFileUpload({
   className,
 }: DocumentFileUploadProps) {
   const t = useTranslations("DocumentFileUpload");
+  const locale = useLocale() as Locale;
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,7 +43,7 @@ export function DocumentFileUpload({
   const uploadFile = useCallback(
     async (file: File) => {
       setError(null);
-      const validation = validateDocumentFile(file);
+      const validation = validateDocumentFile(file, locale);
       if (!validation.valid) {
         setError(validation.error);
         onUploadError?.(validation.error);
@@ -101,7 +103,15 @@ export function DocumentFileUpload({
         setIsUploading(false);
       }
     },
-    [documentId, projectId, onBeforeUpload, onUploadSuccess, onUploadError, t]
+    [
+      documentId,
+      projectId,
+      onBeforeUpload,
+      onUploadSuccess,
+      onUploadError,
+      t,
+      locale,
+    ]
   );
 
   const handleDrop = useCallback(

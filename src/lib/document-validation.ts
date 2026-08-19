@@ -1,8 +1,6 @@
-/**
- * Validación de tipos de documento permitidos para project_documents.
- * Restringido a: PDF, hojas de cálculo, presentaciones, TXT y
- * documentos de texto/presupuestos/documentos a cliente en arquitectura.
- */
+import type { Locale } from "@/i18n/config";
+import { defaultLocale } from "@/i18n/config";
+import { getAppUiCopy } from "@/lib/app-ui-copy";
 
 const ALLOWED_MIMES = [
   "application/pdf",
@@ -68,20 +66,19 @@ export function getExtensionFromFileName(fileName: string): string {
 }
 
 export function validateDocumentFile(
-  file: File
+  file: File,
+  lang: Locale = defaultLocale
 ): { valid: true } | { valid: false; error: string } {
   if (!isAllowedDocumentType(file.type)) {
     return {
       valid: false,
-      error:
-        "Tipo no permitido. Use PDFs, docs, hojas de cálculo, presentaciones, texto u otros documentos relacionados.",
+      error: getAppUiCopy(lang).validation.documentType,
     };
   }
   if (file.size > MAX_SIZE) {
     return {
       valid: false,
-      error:
-        "No se pueden subir archivos de más de 10Mb. Si lo tienes en Drive, OneDrive o iCloud, añádelo como URL.",
+      error: getAppUiCopy(lang).validation.documentSize,
     };
   }
   return { valid: true };

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { POST } from "./route";
 import { NextRequest } from "next/server";
 import { checkRateLimit, RATE_LIMIT_MESSAGE } from "@/lib/rate-limit";
+import { getAppUiCopy } from "@/lib/app-ui-copy";
 import { getMagicLinkAntiSpamConfig } from "@/lib/auth/magic-link-anti-spam-config";
 import {
   issueMagicLinkCaptchaBypassValue,
@@ -64,7 +65,7 @@ describe("POST /api/auth/magic-link", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Email is required");
+    expect(data.error).toBe(getAppUiCopy("es").validation.emailRequired);
     expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 
@@ -78,7 +79,7 @@ describe("POST /api/auth/magic-link", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Email is required");
+    expect(data.error).toBe(getAppUiCopy("es").validation.emailRequired);
   });
 
   it("returns 400 if email format is invalid", async () => {
@@ -91,7 +92,7 @@ describe("POST /api/auth/magic-link", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toBe("Invalid email format");
+    expect(data.error).toBe(getAppUiCopy("es").validation.emailInvalid);
     expect(mockSignInWithOtp).not.toHaveBeenCalled();
   });
 

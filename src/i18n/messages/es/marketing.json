@@ -245,6 +245,9 @@
     "subjectMax": "El asunto es demasiado largo",
     "messageMin": "El mensaje debe tener al menos 10 caracteres",
     "messageMax": "El mensaje es demasiado largo",
+    "subjectNoNewlines": "El asunto no puede contener saltos de línea",
+    "invalidData": "Datos inválidos",
+    "sendFailed": "No se pudo enviar el mensaje. Inténtalo de nuevo.",
     "successToast": "Mensaje enviado correctamente. Te responderemos pronto."
   },
   "Demo": {

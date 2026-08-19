@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import {
   checkRateLimit,
   getClientIp,
-  RATE_LIMIT_MESSAGE,
+  getRateLimitMessage,
 } from "@/lib/rate-limit";
 import { getSupabaseUrl, getSupabaseServiceRoleKey } from "@/lib/supabase/keys";
 import {
@@ -16,6 +16,7 @@ import {
   getDemoAccessEmailText,
 } from "@/lib/email/templates/demo-access";
 import { resolveEmailLocale } from "@/lib/email/auth-email-lang";
+import { getAppUiCopy, localeFromRequest } from "@/lib/app-ui-copy";
 import { escapeHtml } from "@/lib/escape-html";
 import { appPath } from "@/lib/app-paths";
 import { resolveMagicLinkAntiSpam } from "@/lib/anti-spam";
@@ -30,7 +31,7 @@ export async function POST(request: NextRequest) {
     if (!allowed) {
       const retryAfter = Math.ceil((resetAt - Date.now()) / 1000);
       return NextResponse.json(
-        { error: RATE_LIMIT_MESSAGE },
+        { error: getRateLimitMessage(localeFromRequest(request)) },
         {
           status: 429,
           headers: {
@@ -50,14 +51,14 @@ export async function POST(request: NextRequest) {
     const email = typeof body.email === "string" ? body.email.trim() : "";
     if (!email) {
       return NextResponse.json(
-        { error: "El correo es obligatorio" },
+        { error: getAppUiCopy(lang).validation.emailRequired },
         { status: 400 }
       );
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: "Formato de correo no válido" },
+        { error: getAppUiCopy(lang).validation.emailInvalid },
         { status: 400 }
       );
     }

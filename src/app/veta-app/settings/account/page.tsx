@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -72,6 +72,7 @@ type ChangeEmailValues = z.infer<typeof changeEmailSchema>;
 
 export default function SettingsAccountPage() {
   const t = useTranslations("SettingsAccount");
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const { user, signOut } = useAuth();
   useOnboardingHighlight("config");
@@ -123,7 +124,9 @@ export default function SettingsAccountPage() {
       toast.success(t("toastCheckEmail"));
     } catch (err) {
       reportError(err, "Change email:");
-      toast.error(`${t("toastChangeEmailError")}: ${getErrorMessage(err)}`);
+      toast.error(
+        `${t("toastChangeEmailError")}: ${getErrorMessage(err, locale)}`
+      );
     }
   }
 
@@ -175,7 +178,7 @@ export default function SettingsAccountPage() {
       fetchProfile();
     } catch (err) {
       reportError(err, "Error updating profile:");
-      toast.error(`${t("toastSaveError")}: ${getErrorMessage(err)}`);
+      toast.error(`${t("toastSaveError")}: ${getErrorMessage(err, locale)}`);
     }
   }
 
@@ -191,7 +194,7 @@ export default function SettingsAccountPage() {
         code?: string;
       };
       if (!res.ok) {
-        const demoMsg = getDemoAccountMessage(data);
+        const demoMsg = getDemoAccountMessage(data, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

@@ -1,7 +1,8 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { Fragment, useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ export function ProjectCostControl({
   advancedCostOptionsEnabled?: boolean;
 }) {
   const t = useTranslations("ProjectModuleCostControl");
+  const locale = useLocale() as Locale;
   const ts = useTranslations("ProjectModuleShared");
   const phaseLabel = usePhaseLabel();
   const { formatCurrency: formatCurrencyWithSettings } = useAppFormatting();
@@ -183,7 +185,7 @@ export function ProjectCostControl({
         .delete()
         .eq("id", deleteTargetId);
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

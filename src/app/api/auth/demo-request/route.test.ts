@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "./route";
 import { NextRequest } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getAppUiCopy } from "@/lib/app-ui-copy";
 import { sendTransactionalEmail } from "@/lib/email/mailersend";
 import { getMagicLinkAntiSpamConfig } from "@/lib/auth/magic-link-anti-spam-config";
 
@@ -60,7 +61,7 @@ describe("POST /api/auth/demo-request", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("correo");
+    expect(data.error).toBe(getAppUiCopy("es").validation.emailRequired);
   });
 
   it("returns 400 if email format is invalid", async () => {
@@ -73,7 +74,7 @@ describe("POST /api/auth/demo-request", () => {
     const data = await response.json();
 
     expect(response.status).toBe(400);
-    expect(data.error).toContain("Formato");
+    expect(data.error).toBe(getAppUiCopy("es").validation.emailInvalid);
   });
 
   it("returns 503 when service role key is not set", async () => {

@@ -4,6 +4,9 @@ import type { CookieOptions } from "@supabase/ssr";
 import { getFriendlyAuthErrorMessage } from "@/lib/auth-error-messages";
 import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
 import { appPath } from "@/lib/app-paths";
+import { getAppUiCopy } from "@/lib/app-ui-copy";
+import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
+import type { Locale } from "@/i18n/config";
 
 interface CookieToSet {
   name: string;
@@ -13,6 +16,11 @@ interface CookieToSet {
 
 const AUTH_CONFIRMED_TYPES = ["signup", "login"] as const;
 const VALID_PLAN_CODES = ["BASE", "PRO", "STUDIO"] as const;
+
+function localeFromAuthPath(pathname: string): Locale {
+  const localeMatch = pathname.match(/^\/(en|es)(?:\/|$)/);
+  return isAppLocale(localeMatch?.[1]) ? localeMatch[1] : "es";
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -94,13 +102,12 @@ export async function GET(request: NextRequest) {
     }
 
     if (error) {
+      const locale = localeFromAuthPath(request.nextUrl.pathname);
       const friendlyMessage = getFriendlyAuthErrorMessage(
         error.message,
-        error.code
+        error.code,
+        locale
       );
-      const pathname = request.nextUrl.pathname;
-      const localeMatch = pathname.match(/^\/(en|es)\//);
-      const locale = localeMatch ? localeMatch[1] : "es";
       const authUrl = new URL(`/${locale}/sign-in`, origin);
       authUrl.searchParams.set("error", friendlyMessage);
       authUrl.searchParams.set("redirect", redirectPath);
@@ -108,13 +115,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const pathname = request.nextUrl.pathname;
-  const localeMatch = pathname.match(/^\/(en|es)\//);
-  const locale = localeMatch ? localeMatch[1] : "es";
+  const locale = localeFromAuthPath(request.nextUrl.pathname);
   const authUrl = new URL(`/${locale}/sign-in`, origin);
   authUrl.searchParams.set(
     "error",
-    "No se recibió el código de acceso. Por favor, intenta acceder nuevamente."
+    getAppUiCopy(locale).errors.authMissingCode
   );
   authUrl.searchParams.set("redirect", appPath("/dashboard"));
   return NextResponse.redirect(authUrl.toString());

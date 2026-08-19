@@ -1,12 +1,13 @@
-/**
- * In-memory rate limiter for API routes (auth, upload, account/delete).
- * Uses fixed 60s window per IP and route group. Suitable for single-instance
- * or Edge; for multi-instance production consider Redis (e.g. @upstash/ratelimit).
- */
+import type { Locale } from "@/i18n/config";
+import { defaultLocale } from "@/i18n/config";
+import { getAppUiCopy } from "@/lib/app-ui-copy";
 
-/** Mensaje único para el usuario cuando se excede el rate limit (auth, upload, account/delete). */
-export const RATE_LIMIT_MESSAGE =
-  "Has excedido el límite de solicitudes. Por favor, espera 30 segundos e intenta de nuevo.";
+export function getRateLimitMessage(lang: Locale = defaultLocale): string {
+  return getAppUiCopy(lang).errors.rateLimit;
+}
+
+/** Spanish default for tests and callers that have not passed locale yet. */
+export const RATE_LIMIT_MESSAGE = getRateLimitMessage("es");
 
 const WINDOW_MS = 60_000;
 

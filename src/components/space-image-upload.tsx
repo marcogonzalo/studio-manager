@@ -2,9 +2,10 @@
 
 import { useCallback, useState } from "react";
 import { ImageIcon, Loader2, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateImageFile } from "@/lib/image-validation";
+import type { Locale } from "@/i18n/config";
 
 interface SpaceImageUploadProps {
   projectId: string;
@@ -42,6 +43,7 @@ export function SpaceImageUpload({
   className,
 }: SpaceImageUploadProps) {
   const t = useTranslations("SpaceImageUpload");
+  const locale = useLocale() as Locale;
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export function SpaceImageUpload({
   const uploadFile = useCallback(
     async (file: File, imageIdOverride?: string) => {
       setError(null);
-      const validation = validateImageFile(file);
+      const validation = validateImageFile(file, locale);
       if (!validation.valid) {
         setError(validation.error);
         onUploadError?.(validation.error);
@@ -115,6 +117,7 @@ export function SpaceImageUpload({
       onUploadSuccess,
       onUploadError,
       t,
+      locale,
     ]
   );
 

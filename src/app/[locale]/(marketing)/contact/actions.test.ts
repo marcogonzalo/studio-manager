@@ -19,6 +19,7 @@ vi.mock("@/lib/rate-limit", () => ({
   getClientIpFromHeaders: (...args: unknown[]) =>
     mockGetClientIpFromHeaders(...args),
   RATE_LIMIT_MESSAGE: "Has excedido el límite de solicitudes.",
+  getRateLimitMessage: () => "Has excedido el límite de solicitudes.",
 }));
 
 vi.mock("next/headers", () => ({

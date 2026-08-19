@@ -1,5 +1,6 @@
+import type { Locale } from "@/i18n/config";
 import React, { useEffect, useState, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -106,6 +107,7 @@ export function PurchaseOrderDialog({
   order,
 }: PurchaseOrderDialogProps) {
   const t = useTranslations("DialogPurchaseOrder");
+  const locale = useLocale() as Locale;
   const statusOptions = [
     { value: "draft", label: t("statusDraft") },
     { value: "sent", label: t("statusSent") },
@@ -657,7 +659,7 @@ export function PurchaseOrderDialog({
       onSuccess();
       onOpenChange(false);
     } catch (error: unknown) {
-      const demoMsg = getDemoAccountMessage(error);
+      const demoMsg = getDemoAccountMessage(error, locale);
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,

@@ -52,7 +52,7 @@
     "copyHint": "Haz clic en el campo o en el botón para copiar el enlace.",
     "regenerate": "Renovar enlace",
     "restrictAccess": "Restringir acceso",
-    "publishView": "Publicar vista",
+    "publishView": "Hacer pública",
     "toastCopied": "Enlace copiado al portapapeles",
     "toastRegenerated": "Enlace renovado. El anterior deja de funcionar."
   },

@@ -1,7 +1,8 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ import type { Client } from "@/types";
 
 export default function ClientsPage() {
   const t = useTranslations("ClientsPage");
+  const locale = useLocale() as Locale;
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   useOnboardingHighlight("client", !loading);
@@ -88,7 +90,7 @@ export default function ClientsPage() {
       }
       const { error } = await supabase.from("clients").delete().eq("id", id);
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

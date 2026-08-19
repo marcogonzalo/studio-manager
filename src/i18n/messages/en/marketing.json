@@ -245,6 +245,9 @@
     "subjectMax": "Subject is too long",
     "messageMin": "Message must be at least 10 characters",
     "messageMax": "Message is too long",
+    "subjectNoNewlines": "Subject cannot contain line breaks",
+    "invalidData": "Invalid data",
+    "sendFailed": "Could not send the message. Please try again.",
     "successToast": "Message sent successfully. We'll get back to you soon."
   },
   "Demo": {

@@ -1,7 +1,8 @@
 "use client";
 
+import type { Locale } from "@/i18n/config";
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -44,6 +45,7 @@ function getWebsiteHostname(website: string): string {
 
 export default function SuppliersPage() {
   const t = useTranslations("SuppliersPage");
+  const locale = useLocale() as Locale;
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchInput, searchDebounced, setSearchInput] = useDebouncedState(
@@ -90,7 +92,7 @@ export default function SuppliersPage() {
       }
       const { error } = await supabase.from("suppliers").delete().eq("id", id);
       if (error) {
-        const demoMsg = getDemoAccountMessage(error);
+        const demoMsg = getDemoAccountMessage(error, locale);
         if (demoMsg) {
           toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
             duration: 5000,

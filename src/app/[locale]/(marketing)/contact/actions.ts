@@ -10,12 +10,14 @@ import {
 import {
   checkRateLimit,
   getClientIpFromHeaders,
-  RATE_LIMIT_MESSAGE,
+  getRateLimitMessage,
 } from "@/lib/rate-limit";
 import type { Locale } from "@/i18n/config";
 import { defaultLocale } from "@/i18n/config";
 import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
 import { escapeHtml } from "@/lib/escape-html";
+import enMarketing from "@/i18n/messages/en/marketing.json";
+import esMarketing from "@/i18n/messages/es/marketing.json";
 
 /** Strips CR/LF from a fragment used in email Subject to mitigate header injection. */
 function sanitizeEmailSubjectFragment(value: string): string {
@@ -30,28 +32,24 @@ const MIN_SUBMIT_SECONDS = 10;
 /** Max age of form timestamp in ms (1 hour). */
 const MAX_FORM_AGE_MS = 60 * 60 * 1000;
 
-const contactSchema = z.object({
-  name: z
-    .string()
-    .min(2, "El nombre debe tener al menos 2 caracteres")
-    .max(50, "El nombre es demasiado largo"),
-  email: z
-    .string()
-    .email("Email inválido")
-    .max(254, "El email es demasiado largo"),
-  subject: z
-    .string()
-    .min(5, "El asunto debe tener al menos 5 caracteres")
-    .max(100, "El asunto es demasiado largo")
-    .refine(
-      (s) => !/[\r\n]/.test(s),
-      "El asunto no puede contener saltos de línea"
-    ),
-  message: z
-    .string()
-    .min(10, "El mensaje debe tener al menos 10 caracteres")
-    .max(5000, "El mensaje es demasiado largo"),
-});
+const CONTACT_COPY = {
+  en: enMarketing.ContactForm,
+  es: esMarketing.ContactForm,
+} as const;
+
+function contactSchemaFor(lang: Locale) {
+  const t = CONTACT_COPY[lang] ?? CONTACT_COPY.es;
+  return z.object({
+    name: z.string().min(2, t.nameMin).max(50, t.nameMax),
+    email: z.string().email(t.emailInvalid).max(254, t.emailMax),
+    subject: z
+      .string()
+      .min(5, t.subjectMin)
+      .max(100, t.subjectMax)
+      .refine((s) => !/[\r\n]/.test(s), t.subjectNoNewlines),
+    message: z.string().min(10, t.messageMin).max(5000, t.messageMax),
+  });
+}
 
 export type ContactFormState = {
   success?: boolean;
@@ -79,13 +77,19 @@ export async function submitContactForm(
     }
   }
 
+  const rawFormLocale = String(formData.get("form_locale") ?? "").trim();
+  const formLocale: Locale = isAppLocale(rawFormLocale)
+    ? rawFormLocale
+    : defaultLocale;
+  const copy = CONTACT_COPY[formLocale] ?? CONTACT_COPY.es;
+
   const ip = getClientIpFromHeaders(await headers());
   const { allowed } = checkRateLimit(ip, "contact");
   if (!allowed) {
-    return { error: RATE_LIMIT_MESSAGE };
+    return { error: getRateLimitMessage(formLocale) };
   }
 
-  const parsed = contactSchema.safeParse({
+  const parsed = contactSchemaFor(formLocale).safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
     subject: formData.get("subject"),
@@ -95,15 +99,11 @@ export async function submitContactForm(
   if (!parsed.success) {
     const firstError = parsed.error.flatten().fieldErrors;
     const message =
-      Object.values(firstError).flat().join(", ") || "Datos inválidos";
+      Object.values(firstError).flat().join(", ") || copy.invalidData;
     return { error: message };
   }
 
   const { name, email, subject, message } = parsed.data;
-  const rawFormLocale = String(formData.get("form_locale") ?? "").trim();
-  const formLocale: Locale = isAppLocale(rawFormLocale)
-    ? rawFormLocale
-    : defaultLocale;
   const from = getDefaultFrom();
   const toEmail = getContactFormToEmail();
 
@@ -133,8 +133,7 @@ export async function submitContactForm(
 
   if (!result.success) {
     return {
-      error:
-        result.error || "No se pudo enviar el mensaje. Inténtalo de nuevo.",
+      error: result.error || copy.sendFailed,
     };
   }
 

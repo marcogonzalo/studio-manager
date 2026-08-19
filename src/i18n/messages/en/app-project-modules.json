@@ -125,7 +125,7 @@
     "productsTotal": "Products: {amount}",
     "taxLabel": "Tax ({rate}%): {amount}",
     "withTax": "With tax: {amount}",
-    "furnitureAndProducts": "Furniture & Products",
+    "furnitureAndProducts": "Furniture, Fixtures & Equipment",
     "noProducts": "No products added yet.",
     "noPhase": "No phase",
     "codePrefix": "Code:",

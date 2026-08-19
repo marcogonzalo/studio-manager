@@ -8,6 +8,7 @@ import { uploadSpaceImage } from "@/lib/backblaze";
 import { createAsset, getAssetIdByOwner } from "@/lib/assets";
 import { validateImageFile } from "@/lib/image-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
+import { getAppUiCopy, localeFromRequest } from "@/lib/app-ui-copy";
 import {
   getSupabaseUrl,
   getSupabaseServerKey,
@@ -127,14 +128,15 @@ export async function POST(request: Request) {
       );
     }
 
+    const lang = localeFromRequest(request);
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { error: "El archivo no puede superar 5MB" },
+        { error: getAppUiCopy(lang).validation.fileTooLarge5mb },
         { status: 400 }
       );
     }
 
-    const validation = validateImageFile(file);
+    const validation = validateImageFile(file, lang);
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }

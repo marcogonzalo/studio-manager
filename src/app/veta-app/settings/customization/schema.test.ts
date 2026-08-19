@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { customizationFormSchema, languageFormSchema } from "./schema";
+import {
+  createCustomizationFormSchema,
+  customizationFormSchema,
+  languageFormSchema,
+} from "./schema";
 
 describe("customizationFormSchema", () => {
   it("accepts valid optional fields", () => {
@@ -22,7 +26,20 @@ describe("customizationFormSchema", () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0].message).toBe("Correo no válido");
+      expect(result.error.issues[0].message).toBe(
+        "Introduce un correo electrónico válido"
+      );
+    }
+  });
+
+  it("rejects invalid email in English", () => {
+    const schema = createCustomizationFormSchema("en");
+    const result = schema.safeParse({ email: "not-an-email" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe(
+        "Enter a valid email address"
+      );
     }
   });
 

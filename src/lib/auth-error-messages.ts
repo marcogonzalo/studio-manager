@@ -1,8 +1,6 @@
-const PKCE_FRIENDLY_MESSAGE =
-  "Intenta iniciar sesión con el mismo navegador en el que solicitaste tu enlace de ingreso.";
-
-const EXPIRED_LINK_MESSAGE =
-  "El enlace ha caducado o no es válido. Por favor, solicita un nuevo enlace de acceso.";
+import type { Locale } from "@/i18n/config";
+import { defaultLocale } from "@/i18n/config";
+import { getAppUiCopy } from "@/lib/app-ui-copy";
 
 /**
  * Maps technical auth errors to user-friendly messages with a clear next action.
@@ -10,14 +8,14 @@ const EXPIRED_LINK_MESSAGE =
  */
 export function getFriendlyAuthErrorMessage(
   technicalMessage: string | undefined,
-  errorCode?: string
+  errorCode?: string,
+  lang: Locale = defaultLocale
 ): string {
+  const copy = getAppUiCopy(lang).errors;
   const message = technicalMessage ?? "";
   const lower = message.toLowerCase();
   const code = (errorCode ?? "").toLowerCase();
 
-  // PKCE: code verifier/challenge mismatch — usually when opening magic link in another browser
-  // Match server messages: "both auth code and code verifier should be non-empty", "code challenge does not match", etc.
   if (
     code === "invalid_grant" ||
     lower.includes("pkce") ||
@@ -28,17 +26,16 @@ export function getFriendlyAuthErrorMessage(
       (lower.includes("non-empty") || lower.includes("match"))) ||
     lower.includes("both auth code")
   ) {
-    return PKCE_FRIENDLY_MESSAGE;
+    return copy.authPkce;
   }
-  // Expired or invalid code
   if (
     lower.includes("expired") ||
     (lower.includes("invalid") && lower.includes("code"))
   ) {
-    return EXPIRED_LINK_MESSAGE;
+    return copy.authExpired;
   }
   if (!message) {
-    return "No se pudo completar el acceso. Por favor, intenta iniciar sesión de nuevo.";
+    return copy.authGeneric;
   }
   return technicalMessage as string;
 }

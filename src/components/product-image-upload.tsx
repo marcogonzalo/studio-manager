@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ImageIcon, Loader2, Pencil, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateImageFile } from "@/lib/image-validation";
+import type { Locale } from "@/i18n/config";
 
 interface ProductImageUploadProps {
   productId: string;
@@ -38,6 +39,7 @@ export function ProductImageUpload({
   className,
 }: ProductImageUploadProps) {
   const t = useTranslations("ProductImageUpload");
+  const locale = useLocale() as Locale;
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,7 +102,7 @@ export function ProductImageUpload({
   const handleFile = useCallback(
     (file: File) => {
       setError(null);
-      const validation = validateImageFile(file);
+      const validation = validateImageFile(file, locale);
       if (!validation.valid) {
         setError(validation.error);
         onUploadError?.(validation.error);
@@ -112,7 +114,7 @@ export function ProductImageUpload({
       }
       uploadFile(file);
     },
-    [deferUpload, onFileSelect, onUploadError, uploadFile]
+    [deferUpload, onFileSelect, onUploadError, uploadFile, locale]
   );
 
   const handleDrop = useCallback(

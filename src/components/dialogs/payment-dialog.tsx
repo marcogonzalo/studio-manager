@@ -1,7 +1,8 @@
+import type { Locale } from "@/i18n/config";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,6 +96,7 @@ export function PaymentDialog({
   currency = "EUR",
 }: PaymentDialogProps) {
   const t = useTranslations("DialogPayment");
+  const locale = useLocale() as Locale;
   const formSchema = buildFormSchema(t);
   const { formatCurrency, getCurrencySymbol } = useAppFormatting();
   const { user } = useAuth();
@@ -225,7 +227,7 @@ export function PaymentDialog({
       onSuccess();
       onOpenChange(false);
     } catch (error: unknown) {
-      const demoMsg = getDemoAccountMessage(error);
+      const demoMsg = getDemoAccountMessage(error, locale);
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,
