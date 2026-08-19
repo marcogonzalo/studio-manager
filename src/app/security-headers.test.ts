@@ -130,6 +130,7 @@ describe("Security Headers Configuration", () => {
     expect(cspValue).toContain("style-src");
     expect(cspValue).toContain("img-src");
     expect(cspValue).toContain("connect-src");
+    expect(cspValue).toContain("worker-src");
     expect(cspValue).toContain("frame-ancestors");
     expect(cspValue).toContain("https://challenges.cloudflare.com");
   });
@@ -145,5 +146,35 @@ describe("Security Headers Configuration", () => {
     const cspValue = csp?.value as string;
 
     expect(cspValue).toContain("frame-ancestors 'none'");
+  });
+
+  it("allows blob: and data: on connect-src and blob: workers for react-pdf, not on script-src", async () => {
+    const headerConfig = await getSecurityHeaderConfig();
+    const headerArray = headerConfig?.headers as Array<{
+      key: string;
+      value: string;
+    }>;
+
+    const csp = headerArray?.find((h) => h.key === "Content-Security-Policy");
+    const cspValue = csp?.value as string;
+    const connectSrc = cspValue
+      .split(";")
+      .map((d) => d.trim())
+      .find((d) => d.startsWith("connect-src"));
+    const scriptSrc = cspValue
+      .split(";")
+      .map((d) => d.trim())
+      .find((d) => d.startsWith("script-src"));
+
+    const workerSrc = cspValue
+      .split(";")
+      .map((d) => d.trim())
+      .find((d) => d.startsWith("worker-src"));
+
+    expect(connectSrc).toMatch(/\bblob:/);
+    expect(connectSrc).toMatch(/\bdata:/);
+    expect(workerSrc).toMatch(/\bblob:/);
+    expect(scriptSrc).not.toMatch(/\bdata:/);
+    expect(scriptSrc).not.toMatch(/\bblob:/);
   });
 });
