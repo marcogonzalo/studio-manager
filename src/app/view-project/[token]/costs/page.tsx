@@ -1,3 +1,5 @@
+import Image from "next/image";
+import { ImageIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
@@ -13,6 +15,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrencyWithLang } from "@/lib/formatting";
+import {
+  hasBudgetLinesWithTbd,
+  hasPricedItemsWithTbd,
+  sumBudgetLineEstimatedAmounts,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import { getViewProjectLocale } from "@/lib/view-project-locale";
 import type { BudgetCategory } from "@/types";
 import type { ProjectPhase } from "@/types";
@@ -118,15 +127,19 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
     description: string | null;
     estimated_amount: number;
     phase: string | null;
+    is_price_tbd?: boolean;
   }[];
   const products = (productsRes.data ?? []) as {
     id: string;
     name: string;
+    description: string | null;
     quantity: number;
     unit_price: number;
     total_price: number;
     status: string;
+    image_url: string | null;
     space_name: string;
+    is_price_tbd?: boolean;
   }[];
 
   const formatCurrency = (amount: number) =>
@@ -150,21 +163,19 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
     "operations",
   ];
 
-  let budgetSubtotal = 0;
-  for (const line of budgetLines) {
-    budgetSubtotal += Number(line.estimated_amount);
-  }
-  const productsSubtotal = products.reduce(
-    (sum, p) => sum + Number(p.total_price),
-    0
-  );
+  const budgetSubtotal = sumBudgetLineEstimatedAmounts(budgetLines);
+  const productsSubtotal = sumItemSaleAmounts(products);
+  const hasPriceTbd =
+    hasPricedItemsWithTbd(products) || hasBudgetLinesWithTbd(budgetLines);
+  const tbdLabel = t("priceTbd");
   const subtotal = budgetSubtotal + productsSubtotal;
   const tax = subtotal * (taxRate / 100);
   const total = subtotal + tax;
+  const hasContent = budgetLines.length > 0 || products.length > 0;
 
   return (
     <ViewProjectShell token={token} showBack title={t("costsTitle")}>
-      {budgetLines.length === 0 ? (
+      {!hasContent ? (
         <Card>
           <CardContent className="text-muted-foreground py-12 text-center">
             {t("costsNoLines")}
@@ -172,13 +183,100 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
         </Card>
       ) : (
         <>
+          {products.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {t("costsProductsSection")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("costsColProduct")}</TableHead>
+                      <TableHead className="text-muted-foreground">
+                        {t("costsColSpace")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("costsColQuantity")}
+                      </TableHead>
+                      <TableHead className="text-right">
+                        {t("costsColPrice")}
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell className="align-middle">
+                          <div className="flex items-center gap-3">
+                            {p.image_url ? (
+                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
+                                <Image
+                                  src={p.image_url}
+                                  alt={p.name}
+                                  fill
+                                  className="object-cover"
+                                  sizes="40px"
+                                />
+                              </div>
+                            ) : (
+                              <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded">
+                                <ImageIcon
+                                  className="text-muted-foreground h-5 w-5"
+                                  aria-hidden
+                                />
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <div className="font-medium">{p.name}</div>
+                              {p.description ? (
+                                <div className="text-muted-foreground line-clamp-2 text-xs">
+                                  {p.description}
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground align-middle">
+                          {p.space_name || "—"}
+                        </TableCell>
+                        <TableCell className="text-right align-middle tabular-nums">
+                          {p.quantity}
+                        </TableCell>
+                        <TableCell className="text-right align-middle font-medium tabular-nums">
+                          <ItemPriceOrTbd item={p} tbdLabel={tbdLabel}>
+                            {formatCurrency(
+                              Number(p.unit_price ?? 0) *
+                                Number(p.quantity ?? 0)
+                            )}
+                          </ItemPriceOrTbd>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                  <TableFooter>
+                    <TableRow>
+                      <TableCell
+                        colSpan={3}
+                        className="text-muted-foreground text-left"
+                      >
+                        {t("costsSubtotalProducts")}
+                      </TableCell>
+                      <TableCell className="text-right font-medium tabular-nums">
+                        {formatCurrency(productsSubtotal)}
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
           {categoryOrder.map((category) => {
             const lines = byCategory[category];
             if (!lines?.length) return null;
-            const categoryTotal = lines.reduce(
-              (sum, l) => sum + Number(l.estimated_amount),
-              0
-            );
+            const categoryTotal = sumBudgetLineEstimatedAmounts(lines);
             const sortedLines = [...lines].sort((a, b) => {
               const phaseA = PHASE_ORDER.indexOf(a.phase || "no_phase");
               const phaseB = PHASE_ORDER.indexOf(b.phase || "no_phase");
@@ -217,7 +315,9 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                               line.subcategory}
                           </TableCell>
                           <TableCell className="text-right font-medium tabular-nums">
-                            {formatCurrency(Number(line.estimated_amount))}
+                            <ItemPriceOrTbd item={line} tbdLabel={tbdLabel}>
+                              {formatCurrency(Number(line.estimated_amount))}
+                            </ItemPriceOrTbd>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -240,67 +340,6 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
               </Card>
             );
           })}
-          {products.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  {t("costsProductsSection")}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("costsColProduct")}</TableHead>
-                      <TableHead className="text-muted-foreground">
-                        {t("costsColSpace")}
-                      </TableHead>
-                      <TableHead className="text-right">
-                        {t("costsColQuantity")}
-                      </TableHead>
-                      <TableHead className="text-right">
-                        {t("costsColPrice")}
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products.map((p) => (
-                      <TableRow key={p.id}>
-                        <TableCell>{p.name}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {p.space_name || "—"}
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {p.quantity}
-                        </TableCell>
-                        <TableCell className="text-right font-medium tabular-nums">
-                          {formatCurrency(Number(p.total_price))}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                  <TableFooter>
-                    <TableRow>
-                      <TableCell
-                        colSpan={3}
-                        className="text-muted-foreground text-left"
-                      >
-                        {t("costsSubtotalProducts")}
-                      </TableCell>
-                      <TableCell className="text-right font-medium tabular-nums">
-                        {formatCurrency(
-                          products.reduce(
-                            (sum, p) => sum + Number(p.total_price),
-                            0
-                          )
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  </TableFooter>
-                </Table>
-              </CardContent>
-            </Card>
-          )}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{t("costsSummary")}</CardTitle>
@@ -344,6 +383,11 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
                 <span>{t("costsTotal")}</span>
                 <span className="tabular-nums">{formatCurrency(total)}</span>
               </div>
+              {hasPriceTbd && (
+                <p className="text-muted-foreground pt-2 text-xs">
+                  {t("priceTbdNote")}
+                </p>
+              )}
             </CardContent>
           </Card>
         </>

@@ -26,7 +26,8 @@
     "colDeviation": "Desviación",
     "colVisibility": "Visibilidad",
     "colImage": "Img",
-    "totalLabel": "Total:"
+    "totalLabel": "Total:",
+    "priceTbd": "Por definir"
   },
   "ProjectModuleNotes": {
     "title": "Notas",
@@ -123,6 +124,8 @@
     "totalBudget": "Total Presupuesto",
     "budgetLinesTotal": "Partidas: {amount}",
     "productsTotal": "Productos: {amount}",
+    "priceTbd": "Por definir",
+    "priceTbdNote": "Total parcial: hay productos o partidas con precio por definir.",
     "taxLabel": "Impuesto ({rate}%): {amount}",
     "withTax": "Con impuestos: {amount}",
     "furnitureAndProducts": "Mobiliario, Accesorios y Equipamiento",
@@ -261,6 +264,7 @@
     "expandItemDetails": "Ver detalles del ítem",
     "collapseItemDetails": "Ocultar detalles del ítem",
     "orderTotal": "Total del Pedido:",
+    "orderTotalPartialNote": "Total parcial: algunos ítems tienen precio por definir.",
     "noItemsInOrder": "No hay ítems en este pedido",
     "confirmDelete": "¿Eliminar este pedido de compra?",
     "confirmDeleteDescription": "Los ítems asociados volverán a estado pendiente, a menos que estén en otro pedido activo. Esta acción no se puede deshacer.",

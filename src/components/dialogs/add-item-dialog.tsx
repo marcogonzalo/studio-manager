@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -34,8 +35,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Image as ImageIcon, Plus, Search } from "lucide-react";
-import Image from "next/image";
+import { Plus, Search } from "lucide-react";
+import { CatalogProductSelectCard } from "@/components/catalog-product-select-card";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ProductImageUpload } from "@/components/product-image-upload";
 import type { Product, ProjectItem, Space, Supplier } from "@/types";
@@ -123,6 +124,7 @@ export function AddItemDialog({
       unit_price: "",
       image_url: "",
       is_excluded: false,
+      is_price_tbd: false,
     },
   });
 
@@ -141,15 +143,17 @@ export function AddItemDialog({
   // Auto-calculate price when cost or markup changes
   const unitCost = form.watch("unit_cost");
   const markup = form.watch("markup");
+  const isPriceTbd = form.watch("is_price_tbd");
 
   useEffect(() => {
+    if (isPriceTbd) return;
     if (unitCost && markup !== undefined) {
       const cost = parseFloat(String(unitCost)) || 0;
       const mark = parseFloat(String(markup)) || 0;
       const price = cost * (1 + mark / 100);
       form.setValue("unit_price", price.toFixed(2));
     }
-  }, [unitCost, markup, form]);
+  }, [unitCost, markup, form, isPriceTbd]);
 
   useEffect(() => {
     async function loadData() {
@@ -208,11 +212,18 @@ export function AddItemDialog({
           internal_reference: item.internal_reference || "",
           internal_notes: item.internal_notes || "",
           quantity: item.quantity?.toString() || "1",
-          unit_cost: item.unit_cost?.toString() || "0",
+          unit_cost:
+            item.is_price_tbd && !item.unit_cost
+              ? ""
+              : item.unit_cost?.toString() || "0",
           markup: item.markup?.toString() || "20",
-          unit_price: item.unit_price?.toString() || "0",
+          unit_price:
+            item.is_price_tbd && !item.unit_price
+              ? ""
+              : item.unit_price?.toString() || "0",
           image_url: item.image_url || "",
           is_excluded: item.is_excluded || false,
+          is_price_tbd: item.is_price_tbd || false,
         });
         if (item.product_id && pData) {
           const prod = pData.find((p: Product) => p.id === item.product_id);
@@ -243,6 +254,8 @@ export function AddItemDialog({
           markup: "20",
           unit_price: "",
           image_url: "",
+          is_excluded: false,
+          is_price_tbd: false,
         });
         setSelectedProduct(null);
         setActiveTab("catalog");
@@ -433,12 +446,13 @@ export function AddItemDialog({
         name: values.name,
         description: values.description || "",
         quantity: values.quantity,
-        unit_cost: values.unit_cost,
+        unit_cost: values.is_price_tbd ? 0 : values.unit_cost,
         markup: values.markup,
-        unit_price: values.unit_price,
+        unit_price: values.is_price_tbd ? 0 : values.unit_price,
         image_url: values.image_url,
         internal_reference: values.internal_reference || null,
         internal_notes: values.internal_notes?.trim() || null,
+        is_price_tbd: values.is_price_tbd === true,
         is_excluded: excludeFromBudgetOptionEnabled
           ? values.is_excluded || false
           : false,
@@ -551,6 +565,9 @@ export function AddItemDialog({
           <DialogTitle>
             {isEditing ? t("titleEdit") : t("titleNew")}
           </DialogTitle>
+          <DialogDescription>
+            {isEditing ? t("descriptionEdit") : t("descriptionNew")}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -592,64 +609,22 @@ export function AddItemDialog({
                           {filteredProducts.length > 0 ? (
                             <div className="bg-background grid max-h-[300px] grid-cols-1 gap-3 overflow-y-auto rounded-md border p-2 sm:grid-cols-2 lg:grid-cols-3">
                               {filteredProducts.map((product) => (
-                                <button
+                                <CatalogProductSelectCard
                                   key={product.id}
-                                  type="button"
-                                  onClick={() => {
+                                  product={product}
+                                  selected={field.value === product.id}
+                                  onSelect={() => {
                                     field.onChange(product.id);
                                     handleProductSelect(product.id);
                                   }}
-                                  className={`flex w-full flex-row items-center gap-3 overflow-hidden rounded-xl border p-3 shadow-sm transition-shadow hover:shadow-md sm:min-h-32 sm:gap-4 sm:p-4 ${
-                                    field.value === product.id
-                                      ? "border-primary bg-primary/10"
-                                      : "border-border bg-card"
-                                  }`}
-                                >
-                                  <div className="bg-secondary/30 dark:bg-muted relative h-16 w-16 shrink-0 overflow-hidden rounded-lg">
-                                    {product.image_url ? (
-                                      <div className="group relative h-full w-full">
-                                        <Image
-                                          src={product.image_url}
-                                          alt={product.name}
-                                          fill
-                                          className="object-cover"
-                                          sizes="120px"
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setPreviewProduct(product);
-                                            setIsProductModalOpen(true);
-                                          }}
-                                          className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-colors group-hover:bg-black/10 group-hover:opacity-100"
-                                          title={t("viewDetails")}
-                                        >
-                                          <Search className="h-6 w-6 text-white drop-shadow-lg" />
-                                        </button>
-                                      </div>
-                                    ) : (
-                                      <div className="text-muted-foreground flex h-full w-full items-center justify-center">
-                                        <ImageIcon
-                                          className="h-6 w-6"
-                                          aria-hidden
-                                        />
-                                        <span className="sr-only">
-                                          {t("noImage")}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="min-w-0 flex-1 text-left">
-                                    <div className="mb-1 line-clamp-2 text-left text-sm font-medium">
-                                      {product.name}
-                                    </div>
-                                    <div className="text-muted-foreground line-clamp-1 text-left text-xs">
-                                      {product.supplier?.name ||
-                                        t("noSupplier")}
-                                    </div>
-                                  </div>
-                                </button>
+                                  onPreview={() => {
+                                    setPreviewProduct(product);
+                                    setIsProductModalOpen(true);
+                                  }}
+                                  viewDetailsLabel={t("viewDetails")}
+                                  noImageLabel={t("noImage")}
+                                  noSupplierLabel={t("noSupplier")}
+                                />
                               ))}
                             </div>
                           ) : (
@@ -940,6 +915,10 @@ export function AddItemDialog({
                           inputMode="decimal"
                           min="0.01"
                           step="0.01"
+                          disabled={isPriceTbd}
+                          placeholder={
+                            isPriceTbd ? t("priceTbdLabel") : undefined
+                          }
                           {...field}
                           onKeyDown={(e) => {
                             if (
@@ -965,6 +944,7 @@ export function AddItemDialog({
                         <Input
                           type="number"
                           step="0.1"
+                          disabled={isPriceTbd}
                           {...field}
                           className="bg-background"
                         />
@@ -989,6 +969,10 @@ export function AddItemDialog({
                           inputMode="decimal"
                           min="0.01"
                           step="0.01"
+                          disabled={isPriceTbd}
+                          placeholder={
+                            isPriceTbd ? t("priceTbdLabel") : undefined
+                          }
                           {...field}
                           onKeyDown={(e) => {
                             if (
@@ -1005,6 +989,32 @@ export function AddItemDialog({
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="is_price_tbd"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value === true}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked === true);
+                          void form.clearErrors(["unit_cost", "unit_price"]);
+                        }}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">
+                        {t("priceTbdLabel")}
+                      </FormLabel>
+                      <p className="text-muted-foreground text-xs">
+                        {t("priceTbdDescription")}
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}

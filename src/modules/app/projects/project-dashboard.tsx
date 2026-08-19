@@ -17,6 +17,14 @@ import {
   Receipt,
 } from "lucide-react";
 import { isCostCategory, reportError, reportWarn } from "@/lib/utils";
+import {
+  budgetLineActualAmount,
+  budgetLineEstimatedAmount,
+  sumBudgetLineActualAmounts,
+  sumBudgetLineEstimatedAmounts,
+  sumItemCostAmounts,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 import type {
   Project,
@@ -49,6 +57,8 @@ interface ProjectItem {
   quantity: number;
   unit_cost: number;
   unit_price: number;
+  is_excluded?: boolean;
+  is_price_tbd?: boolean;
 }
 
 interface ProjectDashboardProps {
@@ -176,7 +186,7 @@ export function ProjectDashboard({
     // Fetch items
     const { data: itemsData } = await supabase
       .from("project_items")
-      .select("id, quantity, unit_cost, unit_price")
+      .select("id, quantity, unit_cost, unit_price, is_excluded, is_price_tbd")
       .eq("project_id", projectId);
     if (itemsData) setItems(itemsData || []);
 
@@ -192,31 +202,20 @@ export function ProjectDashboard({
   const totalPaid = payments.reduce((sum, p) => sum + Number(p.amount), 0);
 
   // Products
-  const totalProductsCost = items.reduce(
-    (sum, item) => sum + item.unit_cost * item.quantity,
-    0
-  );
-  const totalProductsPrice = items.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
+  const totalProductsCost = sumItemCostAmounts(items);
+  const totalProductsPrice = sumItemSaleAmounts(items);
 
   // Budget lines
   const clientBudgetLines = budgetLines.filter(
     (line) => !line.is_internal_cost
   );
-  const totalBudgetLinesEstimated = clientBudgetLines.reduce(
-    (sum, line) => sum + Number(line.estimated_amount),
-    0
-  );
+  const totalBudgetLinesEstimated =
+    sumBudgetLineEstimatedAmounts(clientBudgetLines);
   // Solo contar como coste real las categorías de coste (excluir own_fees que son ingresos)
   const costBudgetLines = budgetLines.filter((line) =>
     isCostCategory(line.category)
   );
-  const totalBudgetLinesActual = costBudgetLines.reduce(
-    (sum, line) => sum + Number(line.actual_amount),
-    0
-  );
+  const totalBudgetLinesActual = sumBudgetLineActualAmounts(costBudgetLines);
 
   // Totals
   const clientBudget = totalProductsPrice + totalBudgetLinesEstimated;
@@ -232,14 +231,8 @@ export function ProjectDashboard({
     const phaseProgress = getPhaseProgress(project?.phase);
 
     // Deviation: Compare estimated vs actual for cost budget lines only (excluir own_fees)
-    const totalEstimated = costBudgetLines.reduce(
-      (sum, line) => sum + Number(line.estimated_amount),
-      0
-    );
-    const totalActual = costBudgetLines.reduce(
-      (sum, line) => sum + Number(line.actual_amount),
-      0
-    );
+    const totalEstimated = sumBudgetLineEstimatedAmounts(costBudgetLines);
+    const totalActual = sumBudgetLineActualAmounts(costBudgetLines);
     const deviation =
       totalEstimated > 0
         ? ((totalActual - totalEstimated) / totalEstimated) * 100
@@ -276,8 +269,8 @@ export function ProjectDashboard({
       if (!acc[line.category]) {
         acc[line.category] = { estimated: 0, actual: 0, count: 0 };
       }
-      acc[line.category].estimated += Number(line.estimated_amount);
-      acc[line.category].actual += Number(line.actual_amount);
+      acc[line.category].estimated += budgetLineEstimatedAmount(line);
+      acc[line.category].actual += budgetLineActualAmount(line);
       acc[line.category].count += 1;
       return acc;
     },

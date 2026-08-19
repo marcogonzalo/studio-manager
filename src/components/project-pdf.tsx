@@ -17,6 +17,16 @@ import {
   getProjectPdfCopy,
   interpolatePdfCopy,
 } from "@/lib/project-pdf-copy";
+import {
+  appendTbdAsterisk,
+  formatItemSalePrice,
+  formatItemSaleTotal,
+  hasBudgetLinesWithTbd,
+  hasPricedItemsWithTbd,
+  isItemPriceTbd,
+  sumBudgetLineEstimatedAmounts,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
 import type {
   Project,
   ProjectBudgetLine,
@@ -28,36 +38,91 @@ import type {
 // Color palette matching the application (from index.css)
 const colors = {
   primary: "#8B9A7A",
-  primaryLight: "#B8C5A8",
   background: "#FAF9F6",
   text: "#3F3F3F",
   textLight: "#6B6B6B",
   border: "#E5E5E0",
-  accent: "#E8E8E0",
   card: "#FFFFFF",
   sectionBg: "#F5F5F0",
+  white: "#FFFFFF",
+};
+
+const VETA_FOOTER_RESERVE = 72;
+/** Minimum vertical space (pt) to keep the totals block on one page. */
+const SUMMARY_MIN_PRESENCE = 200;
+/** Fallback path for logo (relative; react-pdf often needs absolute URL, so caller should pass vetaLogoUrl). */
+const VETA_LOGO_PATH = "/img/veta-logo.png";
+const PAGE_PADDING = 40;
+const BAR_PAD = 5;
+
+const row = {
+  flexDirection: "row" as const,
+  alignItems: "center" as const,
+};
+const rowBetween = {
+  ...row,
+  justifyContent: "space-between" as const,
+};
+const fullWidth = { width: "100%" as const };
+const bold = { fontWeight: "bold" as const };
+const boldPrimary = { ...bold, color: colors.primary };
+const boldText = { ...bold, color: colors.text };
+const text9 = { fontSize: 9 };
+const headingSm = { ...boldPrimary, fontSize: 12 };
+const headerCaps = {
+  ...text9,
+  ...boldPrimary,
+  textTransform: "uppercase" as const,
+};
+const cell = { ...text9, color: colors.text };
+const bar = {
+  ...rowBetween,
+  padding: BAR_PAD,
+  marginBottom: 0,
+  borderRadius: 3,
+};
+const solidBorder = (side: "Top" | "Bottom", color: string, width = 1) =>
+  side === "Top"
+    ? {
+        borderTopWidth: width,
+        borderTopColor: color,
+        borderTopStyle: "solid" as const,
+      }
+    : {
+        borderBottomWidth: width,
+        borderBottomColor: color,
+        borderBottomStyle: "solid" as const,
+      };
+const colRight = (width: `${number}%`) => ({
+  width,
+  textAlign: "right" as const,
+});
+const cardBlock = {
+  backgroundColor: colors.card,
+  padding: 0,
+  ...fullWidth,
 };
 
 const styles = StyleSheet.create({
   page: {
     flexDirection: "column",
     backgroundColor: colors.background,
-    padding: 40,
+    padding: PAGE_PADDING,
     fontFamily: "Helvetica",
     fontSize: 10,
     color: colors.text,
   },
+  pageWithBrandingFooter: {
+    paddingBottom: PAGE_PADDING + VETA_FOOTER_RESERVE,
+  },
   header: {
-    marginBottom: 30,
-    paddingBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-    borderBottomStyle: "solid",
+    marginBottom: 10,
+    paddingBottom: 5,
+    ...solidBorder("Bottom", colors.primary, 1),
   },
   title: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: colors.primary,
+    ...headingSm,
+    fontSize: 14,
     marginBottom: 8,
   },
   subtitle: {
@@ -66,20 +131,24 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   section: {
-    marginBottom: 25,
+    marginBottom: 10,
   },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: colors.primary,
-    marginBottom: 12,
-    paddingBottom: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    borderBottomStyle: "solid",
+  lineGroupTitleRow: {
+    ...bar,
+    backgroundColor: colors.sectionBg,
+  },
+  lineGroupTitleText: headingSm,
+  sectionTitleBar: {
+    ...bar,
+    backgroundColor: colors.primary,
+  },
+  sectionTitleBarText: {
+    ...headingSm,
+    color: colors.white,
   },
   clientArchitectRow: {
-    flexDirection: "row",
+    ...row,
+    alignItems: "flex-start",
     marginTop: 12,
     gap: 24,
   },
@@ -87,132 +156,94 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   clientArchitectTitle: {
+    ...boldPrimary,
     fontSize: 11,
-    fontWeight: "bold",
-    color: colors.primary,
     marginBottom: 4,
   },
   clientArchitectText: {
-    fontSize: 9,
+    ...text9,
     color: colors.text,
     marginBottom: 2,
   },
-  locationGroup: {
-    marginBottom: 20,
-    backgroundColor: colors.card,
-    padding: 12,
-    paddingHorizontal: 8,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderStyle: "solid",
-    width: "100%",
-  },
-  locationHeader: {
-    backgroundColor: colors.sectionBg,
-    padding: 8,
-    marginBottom: 10,
-    borderRadius: 3,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  locationName: {
-    fontSize: 13,
-    fontWeight: "bold",
-    color: colors.primary,
-  },
-  locationSubtotal: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: colors.text,
-  },
-  table: {
-    width: "100%",
-  },
+  table: fullWidth,
   tableRow: {
-    flexDirection: "row",
-    borderBottomWidth: 0.5,
-    borderBottomColor: colors.border,
-    borderBottomStyle: "solid",
-    paddingVertical: 6,
+    ...row,
+    ...solidBorder("Bottom", colors.border, 0.5),
+    paddingVertical: 3,
     paddingHorizontal: 0,
-    width: "100%",
+    ...fullWidth,
   },
   tableHeader: {
-    backgroundColor: colors.sectionBg,
-    paddingVertical: 8,
+    ...row,
+    paddingVertical: 3,
     paddingHorizontal: 0,
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.primary,
-    borderBottomStyle: "solid",
-    width: "100%",
+    ...solidBorder("Bottom", colors.primary),
+    ...fullWidth,
   },
-  tableHeaderText: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.primary,
-    textTransform: "uppercase",
+  tableHeaderText: headerCaps,
+  tableHeaderTextRight: {
+    ...headerCaps,
+    textAlign: "right",
   },
-  tableCell: {
-    fontSize: 9,
-    color: colors.text,
+  tableCell: cell,
+  tableCellRight: {
+    ...cell,
+    textAlign: "right",
+  },
+  tableCellMuted: {
+    fontSize: 7,
+    marginTop: 2,
+    color: colors.textLight,
   },
   tableCellBold: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.text,
+    ...text9,
+    ...boldText,
+  },
+  tableCellBoldRight: {
+    ...text9,
+    ...boldText,
+    textAlign: "right",
   },
   colImage: {
     width: "8%",
+    justifyContent: "center",
+    alignItems: "center",
   },
   colName: {
     width: "40%",
   },
-  colPrice: {
-    width: "16%",
-    textAlign: "right",
-  },
-  colQuantity: {
-    width: "12%",
-    textAlign: "right",
-  },
-  colTotal: {
-    width: "20%",
-    textAlign: "right",
-  },
+  colPrice: colRight("16%"),
+  colQuantity: colRight("12%"),
+  colTotal: colRight("20%"),
   colEmpty: {
     width: "4%",
   },
   budgetLineGroup: {
-    marginBottom: 15,
-    backgroundColor: colors.card,
-    padding: 0,
-    width: "100%",
+    ...cardBlock,
+    marginBottom: 10,
+  },
+  locationGroup: {
+    ...cardBlock,
+    marginBottom: 5,
+  },
+  budgetLineGroupIndent: {
+    paddingHorizontal: 10,
+    ...fullWidth,
   },
   budgetLineHeader: {
-    backgroundColor: colors.sectionBg,
-    padding: 8,
-    marginBottom: 8,
-    borderRadius: 3,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    ...rowBetween,
+    marginBottom: BAR_PAD,
+    paddingVertical: BAR_PAD,
+    paddingHorizontal: BAR_PAD,
+    ...solidBorder("Bottom", colors.border),
   },
-  budgetLineName: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: colors.primary,
-  },
+  budgetLineName: { ...headingSm, fontSize: 10 },
   budgetLineSubtotal: {
-    fontSize: 11,
-    fontWeight: "bold",
-    color: colors.text,
+    ...boldText,
+    fontSize: 9,
   },
   budgetLineItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    ...rowBetween,
     paddingVertical: 4,
     paddingHorizontal: 4,
     borderBottomWidth: 0.5,
@@ -220,88 +251,81 @@ const styles = StyleSheet.create({
     borderBottomStyle: "dashed",
   },
   budgetLineItemName: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.text,
+    ...text9,
+    ...boldText,
     width: "30%",
   },
   budgetLineItemDescription: {
-    fontSize: 9,
+    ...text9,
     color: colors.textLight,
     flex: 1,
     paddingHorizontal: 8,
   },
   budgetLineItemAmount: {
-    fontSize: 9,
-    fontWeight: "bold",
-    color: colors.text,
+    ...text9,
+    ...boldText,
     textAlign: "right",
     width: "20%",
   },
   summary: {
-    marginTop: 15,
+    flexDirection: "column",
+    marginTop: 10,
     backgroundColor: colors.card,
-    padding: 15,
+    padding: 5,
     borderRadius: 4,
     borderWidth: 2,
     borderColor: colors.primary,
     borderStyle: "solid",
   },
   summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 6,
-    fontSize: 10,
+    ...rowBetween,
+    paddingVertical: 3,
+    minHeight: 15,
   },
   summaryLabel: {
+    flex: 1,
+    paddingRight: 12,
     color: colors.textLight,
+    fontSize: 10,
   },
   summaryValue: {
-    fontWeight: "bold",
-    color: colors.text,
+    flexShrink: 0,
+    ...boldText,
+    fontSize: 10,
   },
   summaryTotal: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingTop: 10,
+    ...rowBetween,
+    paddingTop: 5,
     marginTop: 10,
-    borderTopWidth: 2,
-    borderTopColor: colors.primary,
-    borderTopStyle: "solid",
-    fontSize: 14,
+    ...solidBorder("Top", colors.primary),
+    minHeight: 20,
   },
   summaryTotalLabel: {
-    fontWeight: "bold",
-    color: colors.primary,
-    fontSize: 14,
+    ...boldPrimary,
+    fontSize: 12,
   },
   summaryTotalValue: {
-    fontWeight: "bold",
-    color: colors.primary,
-    fontSize: 16,
+    ...boldPrimary,
+    fontSize: 12,
+  },
+  priceTbdNote: {
+    marginTop: 10,
+    fontSize: 8,
+    color: colors.textLight,
+    fontStyle: "italic",
   },
   itemImage: {
-    width: 20,
-    height: 20,
+    width: 30,
+    height: 30,
     objectFit: "cover",
     borderRadius: 2,
   },
-  emptyState: {
-    padding: 20,
-    textAlign: "center",
-    color: colors.textLight,
-    fontSize: 9,
-    fontStyle: "italic",
-  },
   vetaHeader: {
-    flexDirection: "row",
-    alignItems: "center",
+    ...row,
     gap: 8,
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    borderBottomStyle: "solid",
+    marginBottom: 10,
+    paddingBottom: 5,
+    ...solidBorder("Bottom", colors.border),
   },
   vetaHeaderLogo: {
     width: 32,
@@ -309,19 +333,15 @@ const styles = StyleSheet.create({
     objectFit: "contain",
   },
   vetaHeaderName: {
+    ...boldPrimary,
     fontSize: 16,
-    fontWeight: "bold",
-    color: colors.primary,
     letterSpacing: 0.5,
   },
   vetaFooter: {
+    ...row,
     marginTop: 24,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    borderTopStyle: "solid",
-    flexDirection: "row",
-    alignItems: "center",
+    paddingTop: 5,
+    ...solidBorder("Top", colors.border),
     justifyContent: "center",
     gap: 6,
   },
@@ -335,9 +355,6 @@ const styles = StyleSheet.create({
     color: colors.textLight,
   },
 });
-
-/** Fallback path for logo (relative; react-pdf often needs absolute URL, so caller should pass vetaLogoUrl). */
-const VETA_LOGO_PATH = "/img/veta-logo.png";
 
 interface ProjectPDFProps {
   project: Project & {
@@ -378,6 +395,8 @@ export function ProjectPDF({
 
   // Filter out excluded items
   const includedItems = items.filter((item) => !item.is_excluded);
+  const hasPriceTbd =
+    hasPricedItemsWithTbd(includedItems) || hasBudgetLinesWithTbd(budgetLines);
 
   // Group items by space (location)
   const itemsBySpace = includedItems.reduce(
@@ -409,14 +428,8 @@ export function ProjectPDF({
   );
 
   // Calculate totals (only included items)
-  const totalItemsPrice = includedItems.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
-  const totalBudgetLines = budgetLines.reduce(
-    (sum, line) => sum + Number(line.estimated_amount),
-    0
-  );
+  const totalItemsPrice = sumItemSaleAmounts(includedItems);
+  const totalBudgetLines = sumBudgetLineEstimatedAmounts(budgetLines);
   const subtotal = totalItemsPrice + totalBudgetLines;
   const tax = subtotal * (taxRate / 100);
   const grandTotal = subtotal + tax;
@@ -443,9 +456,90 @@ export function ProjectPDF({
     "operations",
   ];
 
+  const visiblePhases = phaseOrder.filter((phase) => {
+    const phaseData = budgetLinesByPhaseAndCategory[phase];
+    return (
+      !!phaseData && Object.values(phaseData).some((lines) => lines.length > 0)
+    );
+  });
+  const [firstPhase, ...restPhases] = visiblePhases;
+
+  const renderPhaseGroup = (phase: ProjectPhase | "no_phase") => {
+    const phaseData = budgetLinesByPhaseAndCategory[phase];
+    if (!phaseData) return null;
+
+    const phaseLines = Object.values(phaseData).flat();
+    const phaseTotal = sumBudgetLineEstimatedAmounts(phaseLines);
+    const phaseHasTbd = hasBudgetLinesWithTbd(phaseLines);
+
+    return (
+      <View key={phase} style={styles.budgetLineGroup}>
+        <View style={styles.lineGroupTitleRow}>
+          <Text style={styles.lineGroupTitleText}>
+            {getPdfPhaseLabel(phase, lang)}
+          </Text>
+          <Text style={styles.budgetLineSubtotal}>
+            {copy.subtotal}{" "}
+            {appendTbdAsterisk(formatCurrency(phaseTotal), phaseHasTbd)}
+          </Text>
+        </View>
+
+        <View style={styles.budgetLineGroupIndent}>
+          {categoryOrder.map((category) => {
+            const lines = phaseData[category];
+            if (!lines || lines.length === 0) return null;
+
+            const categoryTotal = sumBudgetLineEstimatedAmounts(lines);
+            const categoryHasTbd = hasBudgetLinesWithTbd(lines);
+
+            return (
+              <View key={category} style={styles.budgetLineGroup}>
+                <View style={styles.budgetLineHeader}>
+                  <Text style={styles.budgetLineName}>
+                    {getPdfCategoryLabel(category, lang)}
+                  </Text>
+                  <Text style={styles.budgetLineSubtotal}>
+                    {copy.subtotal}{" "}
+                    {appendTbdAsterisk(
+                      formatCurrency(categoryTotal),
+                      categoryHasTbd
+                    )}
+                  </Text>
+                </View>
+
+                {lines.map((line) => (
+                  <View key={line.id} style={styles.budgetLineItem}>
+                    <Text style={styles.budgetLineItemName}>
+                      {getPdfSubcategoryLabel(category, line.subcategory, lang)}
+                    </Text>
+                    <Text style={styles.budgetLineItemDescription}>
+                      {line.description || ""}
+                    </Text>
+                    <Text style={styles.budgetLineItemAmount}>
+                      {isItemPriceTbd(line)
+                        ? copy.priceTbd
+                        : formatCurrency(Number(line.estimated_amount))}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    );
+  };
+
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page
+        size="A4"
+        style={
+          showVetaBranding
+            ? [styles.page, styles.pageWithBrandingFooter]
+            : styles.page
+        }
+      >
         {showVetaBranding && (
           <View style={styles.vetaHeader}>
             {logoIsEmbedded && (
@@ -465,7 +559,7 @@ export function ProjectPDF({
             {interpolatePdfCopy(copy.title, { name: project.name })}
           </Text>
 
-          <Text style={[styles.subtitle, { marginTop: 12 }]}>
+          <Text style={styles.subtitle}>
             {copy.dateLabel}{" "}
             {formatDateIntl(new Date(), lang, {
               year: "numeric",
@@ -475,11 +569,7 @@ export function ProjectPDF({
           </Text>
 
           {project.description && (
-            <Text
-              style={[styles.subtitle, { marginTop: 8, fontStyle: "italic" }]}
-            >
-              {project.description}
-            </Text>
+            <Text style={styles.subtitle}>{project.description}</Text>
           )}
 
           <View style={styles.clientArchitectRow}>
@@ -532,152 +622,35 @@ export function ProjectPDF({
           </View>
         </View>
 
-        {/* Budget Lines by Phase and Category */}
-        {budgetLines.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{copy.servicesAndLines}</Text>
-
-            {phaseOrder.map((phase) => {
-              const phaseData = budgetLinesByPhaseAndCategory[phase];
-              if (!phaseData) return null;
-
-              // Check if this phase has any lines
-              const hasLines = Object.values(phaseData).some(
-                (lines) => lines.length > 0
-              );
-              if (!hasLines) return null;
-
-              const phaseTotal = Object.values(phaseData).reduce(
-                (sum, lines) =>
-                  sum +
-                  lines.reduce(
-                    (lineSum, line) => lineSum + Number(line.estimated_amount),
-                    0
-                  ),
-                0
-              );
-
-              return (
-                <View
-                  key={phase}
-                  style={[styles.budgetLineGroup, { marginBottom: 20 }]}
-                >
-                  <View
-                    style={[
-                      styles.budgetLineHeader,
-                      { backgroundColor: colors.primary, marginBottom: 10 },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.budgetLineName,
-                        { color: "#FFFFFF", fontSize: 13 },
-                      ]}
-                    >
-                      {getPdfPhaseLabel(phase, lang)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.budgetLineSubtotal,
-                        { color: "#FFFFFF", fontSize: 12 },
-                      ]}
-                    >
-                      {copy.subtotal} {formatCurrency(phaseTotal)}
-                    </Text>
-                  </View>
-
-                  {categoryOrder.map((category) => {
-                    const lines = phaseData[category];
-                    if (!lines || lines.length === 0) return null;
-
-                    const categoryTotal = lines.reduce(
-                      (sum, line) => sum + Number(line.estimated_amount),
-                      0
-                    );
-
-                    return (
-                      <View
-                        key={category}
-                        style={[
-                          styles.budgetLineGroup,
-                          { marginLeft: 10, marginRight: 10, marginBottom: 12 },
-                        ]}
-                      >
-                        <View style={styles.budgetLineHeader}>
-                          <Text style={styles.budgetLineName}>
-                            {getPdfCategoryLabel(category, lang)}
-                          </Text>
-                          <Text style={styles.budgetLineSubtotal}>
-                            {copy.subtotal} {formatCurrency(categoryTotal)}
-                          </Text>
-                        </View>
-
-                        {lines.map((line) => (
-                          <View key={line.id} style={styles.budgetLineItem}>
-                            <Text style={styles.budgetLineItemName}>
-                              {getPdfSubcategoryLabel(
-                                category,
-                                line.subcategory,
-                                lang
-                              )}
-                            </Text>
-                            <Text style={styles.budgetLineItemDescription}>
-                              {line.description || ""}
-                            </Text>
-                            <Text style={styles.budgetLineItemAmount}>
-                              {formatCurrency(Number(line.estimated_amount))}
-                            </Text>
-                          </View>
-                        ))}
-                      </View>
-                    );
-                  })}
-                </View>
-              );
-            })}
-          </View>
-        )}
-
-        {/* Items by Location - solo si hay productos */}
+        {/* Products by space first, then services */}
         {Object.keys(itemsBySpace).length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{copy.furnitureAndProducts}</Text>
+            <View style={styles.sectionTitleBar}>
+              <Text style={styles.sectionTitleBarText}>
+                {copy.furnitureAndProducts}
+              </Text>
+            </View>
 
             {Object.entries(itemsBySpace).map(([spaceName, spaceItems]) => {
-              const spaceSubtotal = spaceItems.reduce(
-                (sum, item) => sum + item.unit_price * item.quantity,
-                0
-              );
+              const spaceSubtotal = sumItemSaleAmounts(spaceItems);
+              const spaceHasTbd = hasPricedItemsWithTbd(spaceItems);
 
               return (
-                <View key={spaceName} style={styles.budgetLineGroup}>
-                  <View
-                    style={[
-                      styles.budgetLineHeader,
-                      { backgroundColor: colors.primary, marginBottom: 10 },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.budgetLineName,
-                        { color: "#FFFFFF", fontSize: 13 },
-                      ]}
-                    >
-                      {spaceName}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.budgetLineSubtotal,
-                        { color: "#FFFFFF", fontSize: 12 },
-                      ]}
-                    >
-                      {copy.subtotal} {formatCurrency(spaceSubtotal)}
+                <View key={spaceName} style={styles.locationGroup}>
+                  <View style={styles.lineGroupTitleRow}>
+                    <Text style={styles.lineGroupTitleText}>{spaceName}</Text>
+                    <Text style={styles.budgetLineSubtotal}>
+                      {copy.subtotal}{" "}
+                      {appendTbdAsterisk(
+                        formatCurrency(spaceSubtotal),
+                        spaceHasTbd
+                      )}
                     </Text>
                   </View>
 
-                  <View style={[styles.table, { width: "100%" }]}>
+                  <View style={styles.table}>
                     {/* Table Header */}
-                    <View style={[styles.tableHeader, { width: "100%" }]}>
+                    <View style={styles.tableHeader}>
                       <View style={styles.colImage}>
                         <Text style={styles.tableHeaderText}></Text>
                       </View>
@@ -687,32 +660,17 @@ export function ProjectPDF({
                         </Text>
                       </View>
                       <View style={styles.colPrice}>
-                        <Text
-                          style={[
-                            styles.tableHeaderText,
-                            { textAlign: "right" },
-                          ]}
-                        >
+                        <Text style={styles.tableHeaderTextRight}>
                           {copy.unitPriceColumn}
                         </Text>
                       </View>
                       <View style={styles.colQuantity}>
-                        <Text
-                          style={[
-                            styles.tableHeaderText,
-                            { textAlign: "right" },
-                          ]}
-                        >
+                        <Text style={styles.tableHeaderTextRight}>
                           {copy.qtyColumn}
                         </Text>
                       </View>
                       <View style={styles.colTotal}>
-                        <Text
-                          style={[
-                            styles.tableHeaderText,
-                            { textAlign: "right" },
-                          ]}
-                        >
+                        <Text style={styles.tableHeaderTextRight}>
                           {copy.totalColumn}
                         </Text>
                       </View>
@@ -733,7 +691,7 @@ export function ProjectPDF({
                               cache={true}
                             />
                           ) : (
-                            <View style={{ width: 20, height: 20 }} />
+                            <View style={{ width: 30, height: 30 }} />
                           )}
                         </View>
                         <View style={styles.colName}>
@@ -741,42 +699,32 @@ export function ProjectPDF({
                             {item.product?.name ?? item.name}
                           </Text>
                           {item.description && (
-                            <Text
-                              style={[
-                                styles.tableCell,
-                                {
-                                  fontSize: 7,
-                                  marginTop: 2,
-                                  color: colors.textLight,
-                                },
-                              ]}
-                            >
+                            <Text style={styles.tableCellMuted}>
                               {item.description}
                             </Text>
                           )}
                         </View>
                         <View style={styles.colPrice}>
-                          <Text
-                            style={[styles.tableCell, { textAlign: "right" }]}
-                          >
-                            {formatCurrency(item.unit_price)}
+                          <Text style={styles.tableCellRight}>
+                            {formatItemSalePrice(
+                              item,
+                              formatCurrency,
+                              copy.priceTbd
+                            )}
                           </Text>
                         </View>
                         <View style={styles.colQuantity}>
-                          <Text
-                            style={[styles.tableCell, { textAlign: "right" }]}
-                          >
+                          <Text style={styles.tableCellRight}>
                             {item.quantity}
                           </Text>
                         </View>
                         <View style={styles.colTotal}>
-                          <Text
-                            style={[
-                              styles.tableCellBold,
-                              { textAlign: "right" },
-                            ]}
-                          >
-                            {formatCurrency(item.unit_price * item.quantity)}
+                          <Text style={styles.tableCellBoldRight}>
+                            {formatItemSaleTotal(
+                              item,
+                              formatCurrency,
+                              copy.priceTbd
+                            )}
                           </Text>
                         </View>
                         <View style={styles.colEmpty} />
@@ -789,43 +737,73 @@ export function ProjectPDF({
           </View>
         )}
 
-        {/* Summary */}
-        <View style={styles.section}>
-          <View style={styles.summary}>
-            {budgetLines.length > 0 && (
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>{copy.subtotalServices}</Text>
-                <Text style={styles.summaryValue}>
-                  {formatCurrency(totalBudgetLines)}
+        {/* Budget Lines by Phase and Category — title stays with first phase */}
+        {firstPhase && (
+          <View style={styles.section}>
+            <View wrap={false}>
+              <View style={styles.sectionTitleBar}>
+                <Text style={styles.sectionTitleBarText}>
+                  {copy.servicesAndLines}
                 </Text>
               </View>
-            )}
+              {renderPhaseGroup(firstPhase)}
+            </View>
+            {restPhases.map((phase) => renderPhaseGroup(phase))}
+          </View>
+        )}
+
+        {/* Summary — keep on one page; fixed footer needs bottom padding */}
+        <View
+          wrap={false}
+          minPresenceAhead={SUMMARY_MIN_PRESENCE}
+          style={styles.section}
+        >
+          <View style={styles.summary}>
             {items.length > 0 && (
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>{copy.subtotalProducts}</Text>
                 <Text style={styles.summaryValue}>
-                  {formatCurrency(totalItemsPrice)}
+                  {appendTbdAsterisk(
+                    formatCurrency(totalItemsPrice),
+                    hasPricedItemsWithTbd(includedItems)
+                  )}
+                </Text>
+              </View>
+            )}
+            {budgetLines.length > 0 && (
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>{copy.subtotalServices}</Text>
+                <Text style={styles.summaryValue}>
+                  {appendTbdAsterisk(
+                    formatCurrency(totalBudgetLines),
+                    hasBudgetLinesWithTbd(budgetLines)
+                  )}
                 </Text>
               </View>
             )}
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>{copy.subtotal}</Text>
               <Text style={styles.summaryValue}>
-                {formatCurrency(subtotal)}
+                {appendTbdAsterisk(formatCurrency(subtotal), hasPriceTbd)}
               </Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>
                 {interpolatePdfCopy(copy.tax, { rate: taxRate })}
               </Text>
-              <Text style={styles.summaryValue}>{formatCurrency(tax)}</Text>
+              <Text style={styles.summaryValue}>
+                {appendTbdAsterisk(formatCurrency(tax), hasPriceTbd)}
+              </Text>
             </View>
             <View style={styles.summaryTotal}>
               <Text style={styles.summaryTotalLabel}>{copy.grandTotal}</Text>
               <Text style={styles.summaryTotalValue}>
-                {formatCurrency(grandTotal)}
+                {appendTbdAsterisk(formatCurrency(grandTotal), hasPriceTbd)}
               </Text>
             </View>
+            {hasPriceTbd && (
+              <Text style={styles.priceTbdNote}>{copy.priceTbdNote}</Text>
+            )}
           </View>
         </View>
         {showVetaBranding && (

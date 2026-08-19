@@ -11,6 +11,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { formatCurrencyWithLang } from "@/lib/formatting";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,7 @@ interface ProductRow {
   status: string;
   image_url: string | null;
   space_name: string;
+  is_price_tbd?: boolean;
 }
 
 interface RenderRow {
@@ -212,13 +214,20 @@ export function ViewProjectSpacesClient({
                                     <p className="text-foreground mt-4 text-sm font-semibold tabular-nums">
                                       {t("productQuantityLabel")} {p.quantity}
                                     </p>
-                                    <p className="text-foreground mt-2 text-sm font-semibold tabular-nums">
+                                    <p className="text-foreground mt-2 flex flex-wrap items-center gap-1.5 text-sm font-semibold">
                                       {t("productPriceLabel")}{" "}
-                                      {formatCurrencyWithLang(
-                                        Number(p.unit_price),
-                                        currency,
-                                        locale
-                                      )}
+                                      <ItemPriceOrTbd
+                                        item={p}
+                                        tbdLabel={t("priceTbd")}
+                                      >
+                                        <span className="tabular-nums">
+                                          {formatCurrencyWithLang(
+                                            p.unit_price,
+                                            currency,
+                                            locale
+                                          )}
+                                        </span>
+                                      </ItemPriceOrTbd>
                                     </p>
                                   </div>
                                   <button

@@ -140,6 +140,8 @@
   "DialogAddItem": {
     "titleEdit": "Editar Ítem del Presupuesto",
     "titleNew": "Añadir Ítem al Presupuesto",
+    "descriptionEdit": "Actualiza el producto, la cantidad y los precios de este ítem del presupuesto.",
+    "descriptionNew": "Elige un producto del catálogo o crea uno nuevo, y define cantidad y precios.",
     "tabCatalog": "Seleccionar del Catálogo",
     "tabNewProduct": "Nuevo Producto",
     "searchPlaceholder": "Buscar por nombre, descripción o referencia...",
@@ -174,6 +176,8 @@
     "internalNotesLabel": "Notas internas",
     "internalNotesPlaceholder": "Notas privadas de este producto en este proyecto",
     "internalNotesDescription": "No se muestran en el presupuesto del cliente, el PDF ni la vista pública.",
+    "priceTbdLabel": "Precio por definir",
+    "priceTbdDescription": "El producto se incluye en el presupuesto sin coste unitario ni precio de venta. El total queda parcial hasta que indiques los importes.",
     "excludeLabel": "Excluir del proyecto",
     "excludeDescription": "Si está marcado, el producto no se incluirá en el presupuesto ni en los cálculos de costos.",
     "upgradePlan": "Mejora tu plan",
@@ -209,6 +213,8 @@
     "actualAmountLabel": "Importe Real",
     "amountPlaceholder": "0.00",
     "feesHint": "Para honorarios el importe real se rellena con este valor.",
+    "priceTbdLabel": "Precio por definir",
+    "priceTbdDescription": "La partida se incluye en el presupuesto sin importe. El total queda parcial hasta que lo indiques.",
     "internalCostLabel": "Coste interno",
     "internalCostDescription": "Si está marcado, esta partida NO aparecerá en el presupuesto del cliente ni en el PDF.",
     "phaseLabel": "Fase",
@@ -414,6 +420,7 @@
     "addProduct": "Añadir Producto",
     "noSupplier": "Sin proveedor",
     "excludedFromProject": "Excluido del proyecto",
+    "priceTbd": "Por definir",
     "noImage": "Sin imagen"
   },
   "ProductImageUpload": {
@@ -454,6 +461,7 @@
   "ProductDetailModal": {
     "noSupplier": "Sin proveedor",
     "noImage": "Sin imagen",
+    "dialogDescription": "Especificaciones del producto, proveedor y precios.",
     "description": "Descripción",
     "internalNotes": "Notas internas",
     "supplier": "Proveedor",
@@ -464,6 +472,7 @@
     "unitCost": "Costo Unitario",
     "quantity": "Cantidad",
     "salePrice": "Precio de Venta",
+    "priceTbd": "Por definir",
     "total": "Total",
     "purchaseOrder": "Pedido de compra",
     "poRef": "Ref",

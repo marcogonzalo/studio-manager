@@ -36,6 +36,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical } from "lucide-react";
 import { getDemoAccountMessage } from "@/lib/utils";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
+import {
+  hasPricedItemsWithTbd,
+  itemCostAmount,
+} from "@/lib/project-item-price";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface PurchaseOrder {
@@ -54,6 +59,7 @@ interface PurchaseOrder {
     name: string;
     quantity: number;
     unit_cost: number;
+    is_price_tbd?: boolean;
   }[];
 }
 
@@ -102,7 +108,7 @@ export function ProjectPurchases({
     const { data, error } = await supabase
       .from("purchase_orders")
       .select(
-        "*, supplier:suppliers(name), project_items(id, name, quantity, unit_cost)"
+        "*, supplier:suppliers(name), project_items(id, name, quantity, unit_cost, is_price_tbd)"
       )
       .eq("project_id", projectId)
       .order("created_at", { ascending: false });
@@ -208,12 +214,9 @@ export function ProjectPurchases({
   };
 
   const calculateOrderTotal = (
-    items: { quantity: number; unit_cost: number }[]
+    items: { quantity: number; unit_cost: number; is_price_tbd?: boolean }[]
   ) => {
-    return items.reduce(
-      (sum, item) => sum + item.quantity * (item.unit_cost || 0),
-      0
-    );
+    return items.reduce((sum, item) => sum + itemCostAmount(item), 0);
   };
 
   return (
@@ -246,6 +249,7 @@ export function ProjectPurchases({
           <div className="space-y-4">
             {orders.map((po) => {
               const total = calculateOrderTotal(po.project_items);
+              const hasTbd = hasPricedItemsWithTbd(po.project_items);
               return (
                 <Card key={po.id}>
                   <CardHeader className="pb-3">
@@ -358,8 +362,9 @@ export function ProjectPurchases({
                           <TableBody>
                             {po.project_items.map((item) => {
                               const expanded = isExpanded(item.id);
-                              const lineTotal =
-                                (item.unit_cost || 0) * item.quantity;
+                              const tbdLabel = ts("priceTbd");
+                              const formatUsd = (amount: number) =>
+                                `$${amount.toFixed(2)}`;
 
                               return (
                                 <Fragment key={item.id}>
@@ -368,13 +373,23 @@ export function ProjectPurchases({
                                       {item.name}
                                     </TableCell>
                                     <TableCell className="text-right font-medium tabular-nums">
-                                      ${lineTotal.toFixed(2)}
+                                      <ItemPriceOrTbd
+                                        item={item}
+                                        tbdLabel={tbdLabel}
+                                      >
+                                        {formatUsd(itemCostAmount(item))}
+                                      </ItemPriceOrTbd>
                                     </TableCell>
                                     <TableCellMd className="text-right tabular-nums">
                                       {item.quantity}
                                     </TableCellMd>
                                     <TableCellMd className="text-right tabular-nums">
-                                      ${(item.unit_cost || 0).toFixed(2)}
+                                      <ItemPriceOrTbd
+                                        item={item}
+                                        tbdLabel={tbdLabel}
+                                      >
+                                        {formatUsd(item.unit_cost)}
+                                      </ItemPriceOrTbd>
                                     </TableCellMd>
                                     <TableRowExpandTrigger
                                       expanded={expanded}
@@ -394,7 +409,14 @@ export function ProjectPurchases({
                                       />
                                       <MobileDetailField
                                         label={ts("colUnitCost")}
-                                        value={`$${(item.unit_cost || 0).toFixed(2)}`}
+                                        value={
+                                          <ItemPriceOrTbd
+                                            item={item}
+                                            tbdLabel={tbdLabel}
+                                          >
+                                            {formatUsd(item.unit_cost)}
+                                          </ItemPriceOrTbd>
+                                        }
                                       />
                                     </div>
                                   </TableRowMobileDetail>
@@ -410,6 +432,16 @@ export function ProjectPurchases({
                               </TableCell>
                               <TableCell />
                             </TableRow>
+                            {hasTbd && (
+                              <TableRow className="bg-secondary/30 md:hidden">
+                                <TableCell
+                                  colSpan={3}
+                                  className="text-muted-foreground text-right text-xs font-normal"
+                                >
+                                  {t("orderTotalPartialNote")}
+                                </TableCell>
+                              </TableRow>
+                            )}
                             <TableRow className="bg-secondary/30 hidden font-bold md:table-row">
                               <TableCell className="text-right">
                                 {t("orderTotal")}
@@ -420,6 +452,16 @@ export function ProjectPurchases({
                               <TableCellMd />
                               <TableCellMd />
                             </TableRow>
+                            {hasTbd && (
+                              <TableRow className="bg-secondary/30 hidden md:table-row">
+                                <TableCell
+                                  colSpan={4}
+                                  className="text-muted-foreground text-right text-xs font-normal"
+                                >
+                                  {t("orderTotalPartialNote")}
+                                </TableCell>
+                              </TableRow>
+                            )}
                           </TableBody>
                         </Table>
                       </div>

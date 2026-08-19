@@ -88,13 +88,16 @@ const nextConfig: NextConfig = {
             "default-src 'self'",
             // GTM + GA4 + Cloudflare Turnstile (magic-link anti-spam widget)
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://*.googletagmanager.com https://va.vercel-scripts.com https://vercel.live https://challenges.cloudflare.com",
+            // react-pdf toBlob() uses a blob: Worker; without worker-src, CSP falls back to script-src
+            "worker-src 'self' blob:",
             "style-src 'self' 'unsafe-inline'", // unsafe-inline needed for Tailwind
             "img-src 'self' data: https: blob:",
             "font-src 'self' data: https://fonts.gstatic.com",
-            // connect-src: Supabase, Backblaze, GTM/GA4, PDF fonts; blob: para react-pdf
+            // connect-src: Supabase, Backblaze, GTM/GA4; blob: + data: for react-pdf
+            // (Yoga WASM and inlined images are fetched as data:application/octet-stream)
             process.env.NODE_ENV === "production"
-              ? "connect-src 'self' blob: " + PRODUCTION_CSP
-              : "connect-src 'self' blob: http://localhost:54321 http://127.0.0.1:54321 ws://localhost:3000 ws://127.0.0.1:3000 " +
+              ? "connect-src 'self' blob: data: " + PRODUCTION_CSP
+              : "connect-src 'self' blob: data: http://localhost:54321 http://127.0.0.1:54321 ws://localhost:3000 ws://127.0.0.1:3000 " +
                 PRODUCTION_CSP,
             "frame-src 'self' https://www.googletagmanager.com https://challenges.cloudflare.com",
             "frame-ancestors 'none'",

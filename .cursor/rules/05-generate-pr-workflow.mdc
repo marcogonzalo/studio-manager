@@ -1,87 +1,68 @@
 ---
-description: Workflow when user asks to generate the PR (generate the PR, create PR, etc.)
+description: Workflow when user asks to generate the PR, push changes, or recheck an existing PR.
 alwaysApply: true
 ---
 
-# Workflow: Generate the PR / Push Changes
+# Workflow: Generate the PR / Push Changes / Recheck
 
-## Two scenarios
+CI (`.github/workflows/ci.yml`) already runs **lint + Prettier + full tests + production build** on every PR to `main`/`develop`. Do **not** duplicate that locally unless the intensity below says so.
 
-1. **Generate PR** (or equivalent: "generate the PR", "create the PR", "open the PR", "prepare the PR", **"crear la PR"**, **"abrir la PR"**, **"generar la PR"**): Run all steps including creating the PR. This **includes** using Cursor’s **Create PR** (or similar UI that creates/opens a pull request): treat it as **scenario 1**, not as “only open GitHub”.
+## Scenarios
 
-2. **Push changes** (or equivalent: "sube los cambios", "push changes", "commit and push", "subir cambios"): Run all steps **except** creating the PR (stop after pushing to remote).
+1. **Generate PR** (or equivalent: "generate the PR", "create the PR", "open the PR", "prepare the PR", **"crear la PR"**, **"abrir la PR"**, **"generar la PR"**; Cursor **Create PR**): short or full verify (see intensity), then create the PR if none exists.
+2. **Push changes** (or equivalent: "sube los cambios", "push changes", "commit and push", "subir cambios"): same verify, stop after push. Do not open a PR.
+3. **Recheck** (or equivalent: "recheck for PR", "recheck PR", "revisar la PR"): branch already has an open PR. **Always short path.** Push updates that PR. Do not open a second PR. Do not rewrite the PR body unless the summary is wrong.
 
-When either scenario is triggered, run **in this order**:
+## Verify intensity
 
-## 0. Branch
+### Short (default)
 
-- If currently on `main`, create and switch to a feature branch (e.g. `feat/...`, `fix/...`, `chore/...`) before making any changes. Never commit directly to `main`.
+Use for: **recheck**, **push**, and **generate PR** when a PR for this branch already exists.
 
-## 1. Clean
+1. Branch: if on `main`, create `feat/` / `fix/` / `chore/` first. Never commit to `main`.
+2. Clean **touched files**: `console.log`, `debugger`, unused imports, leftover temp files (e.g. stray SVGs).
+3. Prettier **on the diff** (not `prettier --write .`).
+4. ESLint **on changed files**.
+5. Vitest **only tests that match changed modules**. Coverage only if **new helper** landed (aim ≥80% on that file).
+6. New routes: if adding an unknown top-level route, ask public vs private; add to `PUBLIC_ROUTES` only if public.
+7. Commit (Conventional Commits) → push.
 
-- Remove `console.log`, `debugger`, and debug code.
-- Remove unused imports and variables.
-- Review and remove temporary or test files that should not be in the repo.
-- Fix linter warnings in touched files.
+Skip: full-repo Prettier, full test suite, `next build`, coverage of the whole tree, `memory-bank/progress.md`, extra `docker compose run --rm` per step, PR-body rewrite.
 
-## 2. Verify and fix formatting (Prettier)
+Run commands in the **already running** `app` container (`docker compose exec app …`). If that OOMs, **one** `docker compose --profile test run --rm test` with chained commands. Never spawn a new test container per step.
 
-- Run the formatter (e.g. `pnpm run format` or `pnpm exec prettier --write .`). Verify there are no format-only diffs left; fix any reported issues.
-- Do this **before** running tests and build so the build sees the final formatted code.
+### Full (opt-in)
 
-## 3. Verify everything works (in container)
+Use only when:
 
-- **Linter:** Run lint **inside the Docker/dev container** (e.g. `docker compose exec <service> pnpm run lint`). Fix all errors before continuing.
-- **Tests:** Run the test suite **inside the Docker/dev container** (e.g. `docker compose exec <service> pnpm test`). Fix failures before continuing. Minimum 80% coverage for new code (per project standards).
-- **Build:** Run the build **inside the Docker/dev container** (e.g. `docker compose exec <service> pnpm run build`). Ensure it completes without errors.
-- Do not proceed to the next step if lint, tests, or build fail.
+- user says **"full verify"**, **"PR completa"**, or **"verify in docker"**, **or**
+- **first Generate PR** on this branch (no open PR yet).
 
-## 4. Update documentation
+Then, **in one container**, after the short path:
 
-- Update `memory-bank/progress.md` (or equivalent) with what was completed on the branch.
-- Update README, API docs, or guides if the change requires it.
-- Include these changes in the documentation commit or in previous commits if already ready.
+- `pnpm run lint`
+- `pnpm test -- --run`
+- `pnpm run build`
 
-## 5. New routes and middleware (public vs private)
+Prefer `docker compose --profile test run --rm test` for this (dev `app` often OOMs if Next is already using the heap). If Turbopack font fetch fails in Docker, retry once with `pnpm exec next build --webpack`; do not loop.
 
-- If the changes **add new route(s)** (new segments under `app/` that are not under an existing known layout), decide whether each new route must be **public** or **private**:
-  - **Known folders (assume same behaviour):** `(marketing)` → public; `veta-app` → private; `(auth)` → public (sign-in, sign-up, callback, auth/complete). No need to ask.
-  - **Unknown / new top-level route or new route group:** Ask the user: “¿Esta ruta debe ser pública (accesible sin sesión) o privada?”
-  - If the user says **public** (or it belongs to a public group), add the path to `PUBLIC_ROUTES` in `src/lib/supabase/middleware.ts` so unauthenticated users are not redirected to sign-in.
-  - If **private**, no change in middleware (protected by default).
+Also update `memory-bank/progress.md` on first Generate PR. Skip it on recheck.
 
-## 6. Commits
+Do not proceed to push if lint, targeted/full tests, or (when full) build fail.
 
-- Review `git status` and ensure all relevant changes are included.
-- Create commits using **Conventional Commits** (`feat:`, `fix:`, `chore:`, `docs:`, etc.).
-- Clear, descriptive messages per logical set of changes.
-- Optional: a final commit `docs: update progress and release notes` if documentation was updated in step 4.
+## Create the PR (Generate PR only)
 
-## 7. Push to remote
+- Skip if user only asked to push, or if a PR for this branch already exists (print the URL).
+- Title + body: summary, test plan, what was verified locally (short vs full).
+- Use GitHub MCP `create_pull_request` (`owner`, `repo`, `title`, `head`, `base`, `body`). If MCP unavailable, give compare URL for manual creation.
 
-- Push the branch to the remote.
+## Opt-out
 
-## 8. Create the PR (only if user asked to "generate PR")
-
-- **Only execute this step if the user explicitly asked to generate/create/open the PR** (including via Cursor **Create PR** / equivalent UI).
-- **If the user only asked to "push changes" or "subir cambios", skip this step.**
-- Create the Pull Request with:
-  - Descriptive title.
-  - Description: summary of changes, modified/new files, build and test status, coverage.
-  - Review checklist or test plan if applicable.
-- **Use the GitHub MCP** (`user-github` server, tool `create_pull_request`) to create the PR. Required args: `owner`, `repo`, `title`, `head` (branch name), `base` (e.g. `main`), and `body` (description). If MCP is unavailable, provide the PR content and compare URL for manual creation.
-
----
-
-## Triggers and opt-out (wording / Cursor UI)
-
-- **Full workflow is mandatory** for **Generate PR** requests: chat **or** Cursor actions such as **Create PR** that mean “open/create a pull request”. Run steps 0–8 in order (through PR creation when applicable); do not skip to “push + create PR” only.
-- **Opt-out** — shorten or skip parts of this rule **only** if the user **explicitly** says so, for example: **"PR mínima"**, **"minimal PR"**, **"solo crear el PR sin workflow"**, **"solo push, sin workflow"**, **"push sin regla 05"**, or a clear equivalent. If in doubt, run the full workflow.
-- If the user combines “Create PR” with a **narrow** instruction (e.g. “no new commits”, “solo push”), follow the **strictest safe interpretation**: still run verification (lint/tests/build) when possible without violating the explicit constraint; call out in the PR body or reply if something could not be run (e.g. Docker unavailable).
+User can still say **"PR mínima"**, **"solo crear el PR sin workflow"**, **"push sin regla 05"** to skip verify entirely.
 
 **Summary:**
 
-- **Generate PR:** Branch (ensure not on main) → Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push → PR
-- **Push changes:** Branch (ensure not on main) → Clean → Format (Prettier) → Tests + Build → Documentation → Commits → Push (stop here)
-
-Do not skip steps; if something fails, fix it before continuing.
+- **Recheck / existing PR:** short → commit → push (update same PR)
+- **Push:** short → commit → push
+- **First Generate PR:** short + full Docker lint/test/build + progress.md → commit → push → create PR
+- **Full verify** (explicit): same as first Generate PR without creating a new PR

@@ -1,6 +1,7 @@
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -10,6 +11,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import type { Product, ProjectItem } from "@/types";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 
 interface ProductDetailModalProps {
@@ -64,7 +66,6 @@ export function ProductDetailModal({
   const costPrice = projectItem
     ? projectItem.unit_cost
     : product?.cost_price || 0;
-  const unitPrice = projectItem?.unit_price || undefined;
   const quantity = projectItem?.quantity || undefined;
   const currencyCode =
     currency ?? projectItem?.product?.currency ?? product?.currency;
@@ -74,6 +75,9 @@ export function ProductDetailModal({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle className="text-2xl">{name}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {t("dialogDescription")}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -162,13 +166,21 @@ export function ProductDetailModal({
             )}
 
             <div className="space-y-3 border-t pt-4">
-              <div className="flex justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-muted-foreground text-sm font-medium">
                   {t("unitCost")}
                 </span>
-                <span className="font-mono text-sm">
-                  {formatCurrency(costPrice, currencyCode)}
-                </span>
+                {projectItem ? (
+                  <ItemPriceOrTbd item={projectItem} tbdLabel={t("priceTbd")}>
+                    <span className="font-mono text-sm">
+                      {formatCurrency(costPrice, currencyCode)}
+                    </span>
+                  </ItemPriceOrTbd>
+                ) : (
+                  <span className="font-mono text-sm">
+                    {formatCurrency(costPrice, currencyCode)}
+                  </span>
+                )}
               </div>
 
               {quantity && (
@@ -180,23 +192,30 @@ export function ProductDetailModal({
                 </div>
               )}
 
-              {unitPrice && (
-                <div className="flex justify-between">
+              {projectItem && (
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-muted-foreground text-sm font-medium">
                     {t("salePrice")}
                   </span>
-                  <span className="font-mono text-sm">
-                    {formatCurrency(unitPrice, currencyCode)}
-                  </span>
+                  <ItemPriceOrTbd item={projectItem} tbdLabel={t("priceTbd")}>
+                    <span className="font-mono text-sm">
+                      {formatCurrency(projectItem.unit_price, currencyCode)}
+                    </span>
+                  </ItemPriceOrTbd>
                 </div>
               )}
 
-              {quantity && unitPrice && (
-                <div className="flex justify-between border-t pt-3">
+              {projectItem && quantity && (
+                <div className="flex items-center justify-between gap-2 border-t pt-3">
                   <span className="font-medium">{t("total")}</span>
-                  <span className="text-lg font-bold">
-                    {formatCurrency(unitPrice * quantity, currencyCode)}
-                  </span>
+                  <ItemPriceOrTbd item={projectItem} tbdLabel={t("priceTbd")}>
+                    <span className="text-lg font-bold">
+                      {formatCurrency(
+                        Number(quantity) * projectItem.unit_price,
+                        currencyCode
+                      )}
+                    </span>
+                  </ItemPriceOrTbd>
                 </div>
               )}
             </div>

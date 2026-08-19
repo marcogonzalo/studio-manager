@@ -68,6 +68,7 @@ import {
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import { useAuth } from "@/components/auth-provider";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
@@ -77,6 +78,12 @@ import {
   reportError,
 } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
+import {
+  hasBudgetLinesWithTbd,
+  hasPricedItemsWithTbd,
+  sumBudgetLineEstimatedAmounts,
+  sumItemSaleAmounts,
+} from "@/lib/project-item-price";
 
 import type {
   Project,
@@ -290,41 +297,31 @@ export function ProjectBudget({
           ? project.tax_rate
           : 0;
 
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : undefined;
+      const { attachPdfItemThumbnails, fetchImageAsDataUrl } =
+        await import("@/lib/pdf-item-images");
       const itemsToPdf = option === "lines" ? [] : includedItems;
+      const itemsWithThumbs = await attachPdfItemThumbnails(
+        itemsToPdf,
+        fetch,
+        origin
+      );
       const linesToPdf = option === "products" ? [] : budgetLines;
 
-      // Logo como data URL para que react-pdf lo incruste sin depender de fetch/CORS
+      // Logo as data URL so react-pdf embeds it without a CORS fetch
       let vetaLogoDataUrl: string | undefined;
-      if (typeof window !== "undefined" && showVetaBranding) {
-        try {
-          const logoRes = await fetch(
-            `${window.location.origin}/img/veta-logo.png`
-          );
-          if (logoRes.ok) {
-            const blob = await logoRes.blob();
-            const dataUrl = await new Promise<string>((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result as string);
-              reader.onerror = reject;
-              reader.readAsDataURL(blob);
-            });
-            // Solo pasar data URLs válidas para evitar RangeError en react-pdf toBlob()
-            if (
-              typeof dataUrl === "string" &&
-              dataUrl.startsWith("data:image/") &&
-              dataUrl.includes(",")
-            ) {
-              vetaLogoDataUrl = dataUrl;
-            }
-          }
-        } catch {
-          // Sin fallback a URL: react-pdf haría otro fetch y podría repetir "Failed to fetch"
-          vetaLogoDataUrl = undefined;
-        }
+      if (origin && showVetaBranding) {
+        vetaLogoDataUrl =
+          (await fetchImageAsDataUrl(
+            `${origin}/img/veta-logo.png`,
+            fetch,
+            origin
+          )) ?? undefined;
       }
       const asPdf = await generateProjectPDF(
         project,
-        itemsToPdf,
+        itemsWithThumbs,
         linesToPdf,
         taxRate,
         architectName,
@@ -374,16 +371,13 @@ export function ProjectBudget({
 
   // Exclude products marked as excluded from display and totals
   const includedItems = items.filter((item) => !item.is_excluded);
+  const tbdLabel = t("priceTbd");
+  const hasPriceTbd =
+    hasPricedItemsWithTbd(includedItems) || hasBudgetLinesWithTbd(budgetLines);
 
   // Calculate totals
-  const totalItemsPrice = includedItems.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
-  const totalBudgetLinesEstimated = budgetLines.reduce(
-    (sum, line) => sum + Number(line.estimated_amount),
-    0
-  );
+  const totalItemsPrice = sumItemSaleAmounts(includedItems);
+  const totalBudgetLinesEstimated = sumBudgetLineEstimatedAmounts(budgetLines);
 
   // For client budget, we use estimated_amount as the price shown
   const grandTotal = totalItemsPrice + totalBudgetLinesEstimated;
@@ -629,6 +623,11 @@ export function ProjectBudget({
                   <p className="text-primary text-3xl font-bold">
                     {formatCurrency(grandTotal)}
                   </p>
+                  {hasPriceTbd && (
+                    <p className="text-muted-foreground max-w-[16rem] text-right text-xs">
+                      {t("priceTbdNote")}
+                    </p>
+                  )}
                 </div>
               </div>
               {(() => {
@@ -671,6 +670,7 @@ export function ProjectBudget({
                     </CardTitle>
                     <span className="text-foreground font-semibold">
                       {formatCurrency(totalItemsPrice)}
+                      {hasPriceTbd ? "*" : ""}
                     </span>
                   </div>
                 </CardHeader>
@@ -803,15 +803,21 @@ export function ProjectBudget({
                                 {item.quantity}
                               </TableCellMd>
                               <TableCellMd className="text-muted-foreground text-right tabular-nums">
-                                {formatCurrency(item.unit_cost)}
+                                <ItemPriceOrTbd item={item} tbdLabel={tbdLabel}>
+                                  {formatCurrency(item.unit_cost)}
+                                </ItemPriceOrTbd>
                               </TableCellMd>
                               <TableCellMd className="text-right font-medium tabular-nums">
-                                {formatCurrency(item.unit_price)}
+                                <ItemPriceOrTbd item={item} tbdLabel={tbdLabel}>
+                                  {formatCurrency(item.unit_price)}
+                                </ItemPriceOrTbd>
                               </TableCellMd>
                               <TableCell className="text-right font-bold tabular-nums">
-                                {formatCurrency(
-                                  item.unit_price * item.quantity
-                                )}
+                                <ItemPriceOrTbd item={item} tbdLabel={tbdLabel}>
+                                  {formatCurrency(
+                                    item.unit_price * item.quantity
+                                  )}
+                                </ItemPriceOrTbd>
                               </TableCell>
                               <TableCellMd className="text-right">
                                 <ExpandableRowActionsMenu
@@ -841,11 +847,25 @@ export function ProjectBudget({
                                 />
                                 <MobileDetailField
                                   label={ts("colUnitCost")}
-                                  value={formatCurrency(item.unit_cost)}
+                                  value={
+                                    <ItemPriceOrTbd
+                                      item={item}
+                                      tbdLabel={tbdLabel}
+                                    >
+                                      {formatCurrency(item.unit_cost)}
+                                    </ItemPriceOrTbd>
+                                  }
                                 />
                                 <MobileDetailField
                                   label={ts("colSalePrice")}
-                                  value={formatCurrency(item.unit_price)}
+                                  value={
+                                    <ItemPriceOrTbd
+                                      item={item}
+                                      tbdLabel={tbdLabel}
+                                    >
+                                      {formatCurrency(item.unit_price)}
+                                    </ItemPriceOrTbd>
+                                  }
                                 />
                                 <ExpandableRowActionsPanel
                                   actions={rowActions}
@@ -884,12 +904,7 @@ export function ProjectBudget({
             if (!hasLines) return null;
 
             const phaseTotal = Object.values(phaseData).reduce(
-              (sum, lines) =>
-                sum +
-                lines.reduce(
-                  (lineSum, line) => lineSum + Number(line.estimated_amount),
-                  0
-                ),
+              (sum, lines) => sum + sumBudgetLineEstimatedAmounts(lines),
               0
             );
 
@@ -925,10 +940,8 @@ export function ProjectBudget({
                           const lines = phaseData[category] || [];
                           if (lines.length === 0) return null;
 
-                          const categoryTotal = lines.reduce(
-                            (sum, line) => sum + Number(line.estimated_amount),
-                            0
-                          );
+                          const categoryTotal =
+                            sumBudgetLineEstimatedAmounts(lines);
                           const categorySectionKey = `${phaseSectionKey}_${category}`;
 
                           return (
@@ -963,12 +976,12 @@ export function ProjectBudget({
                                           <TableHead>
                                             {ts("colConcept")}
                                           </TableHead>
-                                          <TableHead className="text-right">
-                                            {ts("colAmount")}
-                                          </TableHead>
                                           <TableHeadMd>
                                             {ts("colDescription")}
                                           </TableHeadMd>
+                                          <TableHead className="text-right">
+                                            {ts("colAmount")}
+                                          </TableHead>
                                           <TableHeadMd className="w-[80px]" />
                                           <TableHeadExpandPlaceholder
                                             srLabel={ts("expandRow")}
@@ -1013,16 +1026,21 @@ export function ProjectBudget({
                                                   ]?.[line.subcategory] ??
                                                     line.subcategory}
                                                 </TableCell>
-                                                <TableCell className="text-right font-semibold tabular-nums">
-                                                  {formatCurrency(
-                                                    Number(
-                                                      line.estimated_amount
-                                                    )
-                                                  )}
-                                                </TableCell>
                                                 <TableCellMd className="text-muted-foreground">
                                                   {line.description || "-"}
                                                 </TableCellMd>
+                                                <TableCell className="text-right font-semibold tabular-nums">
+                                                  <ItemPriceOrTbd
+                                                    item={line}
+                                                    tbdLabel={tbdLabel}
+                                                  >
+                                                    {formatCurrency(
+                                                      Number(
+                                                        line.estimated_amount
+                                                      )
+                                                    )}
+                                                  </ItemPriceOrTbd>
+                                                </TableCell>
                                                 <TableCellMd className="text-right">
                                                   <ExpandableRowActionsMenu
                                                     actions={rowActions}

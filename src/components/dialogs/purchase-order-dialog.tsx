@@ -35,6 +35,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
+import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import { Card } from "@/components/ui/card";
 import { Search } from "lucide-react";
 import type { Supplier } from "@/types";
@@ -59,6 +60,7 @@ interface ProjectItem {
   status: string;
   purchase_order_id: string | null;
   is_excluded?: boolean;
+  is_price_tbd?: boolean;
   product?: { supplier_id: string | null; supplier?: Supplier };
 }
 
@@ -107,6 +109,7 @@ export function PurchaseOrderDialog({
   order,
 }: PurchaseOrderDialogProps) {
   const t = useTranslations("DialogPurchaseOrder");
+  const ts = useTranslations("ProjectModuleShared");
   const locale = useLocale() as Locale;
   const statusOptions = [
     { value: "draft", label: t("statusDraft") },
@@ -912,11 +915,16 @@ export function PurchaseOrderDialog({
                               </div>
                               <div className="flex-1">
                                 <div className="font-medium">{item.name}</div>
-                                <div className="text-muted-foreground text-sm">
+                                <div className="text-muted-foreground flex flex-wrap items-center gap-1 text-sm">
                                   {t("quantityPrefix")} {item.quantity} |{" "}
-                                  {t("costPrefix")} $
-                                  {(item.unit_cost || 0).toFixed(2)} |{" "}
-                                  {t("statusPrefix")} {item.status}
+                                  {t("costPrefix")}{" "}
+                                  <ItemPriceOrTbd
+                                    item={item}
+                                    tbdLabel={ts("priceTbd")}
+                                  >
+                                    {`$${item.unit_cost.toFixed(2)}`}
+                                  </ItemPriceOrTbd>{" "}
+                                  | {t("statusPrefix")} {item.status}
                                 </div>
                               </div>
                             </div>
