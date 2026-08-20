@@ -125,7 +125,7 @@ export async function uploadProductImage(params: {
   const { buffer, mimeType, userId, productId, projectId } = params;
 
   if (!isAllowedImageType(mimeType)) {
-    throw new Error("Solo se permiten imágenes JPG, PNG o WebP");
+    throw new Error("Solo se permiten imágenes JPG, PNG, WebP o AVIF");
   }
 
   const ext = getExtensionFromMime(mimeType);
@@ -191,7 +191,7 @@ export async function uploadSpaceImage(params: {
   const { buffer, mimeType, userId, projectId, imageId } = params;
 
   if (!isAllowedImageType(mimeType)) {
-    throw new Error("Solo se permiten imágenes JPG, PNG o WebP");
+    throw new Error("Solo se permiten imágenes JPG, PNG, WebP o AVIF");
   }
 
   const ext = getExtensionFromMime(mimeType);

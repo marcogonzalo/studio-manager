@@ -434,7 +434,7 @@
     "previewAlt": "Vista previa",
     "dropImage": "Arrastra una imagen aquí",
     "clickToSelect": "o haz clic para seleccionar",
-    "formats": "JPG, PNG o WebP (máx. 5MB)",
+    "formats": "JPG, PNG, WebP o AVIF (máx. 5MB)",
     "deferredHint": "La imagen se subirá al guardar el producto.",
     "resizeHint": "La imagen será redimensionada a 1200px como máximo y convertida a formato WebP."
   },
@@ -456,7 +456,7 @@
     "dropImages": "Arrastra imágenes aquí",
     "dropImage": "Arrastra una imagen aquí",
     "clickToSelect": "o haz clic para seleccionar",
-    "formats": "JPG, PNG o WebP (máx. 5MB)"
+    "formats": "JPG, PNG, WebP o AVIF (máx. 5MB)"
   },
   "ProductDetailModal": {
     "noSupplier": "Sin proveedor",

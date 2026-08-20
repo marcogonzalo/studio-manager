@@ -170,7 +170,7 @@ export function ProductImageUpload({
       >
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+          accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif"
           onChange={handleFileInput}
           disabled={disabled || isUploading}
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
