@@ -21,11 +21,14 @@ import {
 import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import { formatCurrencyWithLang } from "@/lib/formatting";
 import {
+  budgetLineEstimatedAmount,
   hasBudgetLinesWithTbd,
   hasPricedItemsWithTbd,
+  itemSaleAmount,
   sumBudgetLineEstimatedAmounts,
   sumItemSaleAmounts,
 } from "@/lib/project-item-price";
+import { computeTaxGroups, sumTaxAmounts } from "@/lib/tax-totals";
 import {
   groupBudgetLinesByPhaseThenCategory,
   groupItemsBySpaceThenCreatedAt,
@@ -44,6 +47,7 @@ export type PublicBudgetLine = {
   estimated_amount: number;
   phase: string | null;
   is_price_tbd?: boolean;
+  tax_rate?: number | null;
   created_at?: string;
 };
 
@@ -60,6 +64,7 @@ export type PublicProduct = {
   space_created_at?: string | null;
   created_at?: string;
   is_price_tbd?: boolean;
+  tax_rate?: number | null;
 };
 
 export function ViewProjectCostsClient({
@@ -67,6 +72,7 @@ export function ViewProjectCostsClient({
   products,
   currency,
   taxRate,
+  multitax = false,
   locale,
   categoryLabels,
   subcategoryLabels,
@@ -75,6 +81,7 @@ export function ViewProjectCostsClient({
   products: PublicProduct[];
   currency: string;
   taxRate: number;
+  multitax?: boolean;
   locale: Locale;
   categoryLabels: Record<BudgetCategory, string>;
   subcategoryLabels: Record<BudgetCategory, Record<string, string>>;
@@ -102,7 +109,20 @@ export function ViewProjectCostsClient({
   const hasPriceTbd =
     hasPricedItemsWithTbd(productRows) || hasBudgetLinesWithTbd(budgetLines);
   const subtotal = budgetSubtotal + productsSubtotal;
-  const tax = subtotal * (taxRate / 100);
+  const taxGroups = computeTaxGroups(
+    [
+      ...productRows.map((item) => ({
+        amount: itemSaleAmount(item),
+        tax_rate: item.tax_rate,
+      })),
+      ...budgetLines.map((line) => ({
+        amount: budgetLineEstimatedAmount(line),
+        tax_rate: line.tax_rate,
+      })),
+    ],
+    { multitax, tax_rate: taxRate }
+  );
+  const tax = sumTaxAmounts(taxGroups);
   const total = subtotal + tax;
   const hasContent = budgetLines.length > 0 || productRows.length > 0;
 
@@ -414,14 +434,16 @@ export function ViewProjectCostsClient({
             <span className="text-muted-foreground">{t("costsSubtotal")}</span>
             <span className="tabular-nums">{formatCurrency(subtotal)}</span>
           </div>
-          {taxRate > 0 && (
-            <div className="flex justify-between text-sm">
+          {taxGroups.map((group) => (
+            <div key={group.rate} className="flex justify-between text-sm">
               <span className="text-muted-foreground">
-                {t("costsTax", { rate: taxRate })}
+                {t("costsTax", { rate: group.rate })}
               </span>
-              <span className="tabular-nums">{formatCurrency(tax)}</span>
+              <span className="tabular-nums">
+                {formatCurrency(group.taxAmount)}
+              </span>
             </div>
-          )}
+          ))}
           <div className="flex justify-between border-t pt-2 font-semibold">
             <span>{t("costsTotal")}</span>
             <span className="tabular-nums">{formatCurrency(total)}</span>

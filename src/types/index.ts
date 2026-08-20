@@ -85,6 +85,8 @@ export interface Project {
   address?: string;
   phase?: ProjectPhase;
   tax_rate?: number;
+  /** When true, each line item can override tax_rate. */
+  multitax?: boolean;
   currency?: string;
   client?: { full_name: string };
 }
@@ -228,6 +230,8 @@ export interface ProjectBudgetLine {
   actual_amount: number;
   is_internal_cost: boolean;
   is_price_tbd?: boolean;
+  /** Tax rate (%) for this line; defaults to project.tax_rate. */
+  tax_rate?: number | null;
   phase?: ProjectPhase;
   supplier_id?: string;
   supplier?: { name: string };
@@ -255,6 +259,8 @@ export interface ProjectItem {
   purchase_order_id?: string | null;
   is_excluded?: boolean;
   is_price_tbd?: boolean;
+  /** Tax rate (%) for this item; defaults to project.tax_rate. */
+  tax_rate?: number | null;
   created_at?: string;
   purchase_order?: {
     order_number: string;

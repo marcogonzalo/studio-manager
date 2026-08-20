@@ -91,10 +91,11 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
 
   if (shareRes.error || !shareRes.data?.length) notFound();
   const currencyRow = currencyRes.data?.[0] as
-    | { currency: string | null; tax_rate: number }
+    | { currency: string | null; tax_rate: number; multitax?: boolean }
     | undefined;
   const currency = currencyRow?.currency ?? "EUR";
   const taxRate = Number(currencyRow?.tax_rate ?? 0);
+  const multitax = currencyRow?.multitax === true;
 
   return (
     <ViewProjectShell token={token} showBack title={t("costsTitle")}>
@@ -103,6 +104,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
         products={(productsRes.data ?? []) as PublicProduct[]}
         currency={currency}
         taxRate={taxRate}
+        multitax={multitax}
         locale={locale}
         categoryLabels={categoryLabels}
         subcategoryLabels={subcategoryLabels}

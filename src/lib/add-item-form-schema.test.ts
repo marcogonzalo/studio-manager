@@ -118,6 +118,24 @@ describe("buildAddItemFormSchema internal_notes", () => {
   });
 });
 
+describe("buildAddItemFormSchema tax_rate", () => {
+  it("parses optional non-negative tax rate", () => {
+    const result = parse({ tax_rate: "10.5" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.tax_rate).toBe(10.5);
+  });
+
+  it("allows empty tax rate", () => {
+    const result = parse({ tax_rate: "" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.tax_rate).toBeUndefined();
+  });
+
+  it("rejects negative tax rate", () => {
+    expect(parse({ tax_rate: "-1" }).success).toBe(false);
+  });
+});
+
 describe("shouldBlockNumericKey", () => {
   it("blocks scientific notation and signs for both modes", () => {
     expect(shouldBlockNumericKey("e", "positive-integer")).toBe(true);

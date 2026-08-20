@@ -127,6 +127,7 @@
     "priceTbd": "Por definir",
     "priceTbdNote": "Total parcial: hay productos o partidas con precio por definir.",
     "taxLabel": "Impuesto ({rate}%): {amount}",
+    "taxTotal": "Total impuestos: {amount}",
     "withTax": "Con impuestos: {amount}",
     "furnitureAndProducts": "Mobiliario, Accesorios y Equipamiento",
     "noProducts": "No hay productos añadidos.",

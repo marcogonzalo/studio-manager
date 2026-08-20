@@ -85,11 +85,14 @@ import {
 } from "@/lib/project-list-order";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 import {
+  budgetLineEstimatedAmount,
   hasBudgetLinesWithTbd,
   hasPricedItemsWithTbd,
+  itemSaleAmount,
   sumBudgetLineEstimatedAmounts,
   sumItemSaleAmounts,
 } from "@/lib/project-item-price";
+import { computeTaxGroups, sumTaxAmounts } from "@/lib/tax-totals";
 
 import type {
   Project,
@@ -378,6 +381,24 @@ export function ProjectBudget({
 
   // For client budget, we use estimated_amount as the price shown
   const grandTotal = totalItemsPrice + totalBudgetLinesEstimated;
+  const taxGroups = computeTaxGroups(
+    [
+      ...includedItems.map((item) => ({
+        amount: itemSaleAmount(item),
+        tax_rate: item.tax_rate,
+      })),
+      ...budgetLines.map((line) => ({
+        amount: budgetLineEstimatedAmount(line),
+        tax_rate: line.tax_rate,
+      })),
+    ],
+    {
+      multitax: project?.multitax === true,
+      tax_rate: project?.tax_rate ?? 0,
+    }
+  );
+  const taxAmountTotal = sumTaxAmounts(taxGroups);
+  const totalWithTax = grandTotal + taxAmountTotal;
 
   const formatCurrency = (amount: number) =>
     formatCurrencyWithSettings(amount, project?.currency);
@@ -617,26 +638,44 @@ export function ProjectBudget({
                   )}
                 </div>
               </div>
-              {(() => {
-                const taxRate =
-                  project?.tax_rate != null ? project.tax_rate : 0;
-                const taxAmount = grandTotal * (taxRate / 100);
-                const totalWithTax = grandTotal + taxAmount;
-                if (taxRate === 0) return null;
-                return (
-                  <div className="flex items-center justify-between pt-2">
-                    <p className="text-muted-foreground text-xs">
-                      {t("taxLabel", {
-                        rate: taxRate,
-                        amount: formatCurrency(taxAmount),
-                      })}
-                    </p>
-                    <p className="text-muted-foreground text-xs font-medium">
-                      {t("withTax", { amount: formatCurrency(totalWithTax) })}
-                    </p>
-                  </div>
-                );
-              })()}
+              {taxGroups.length > 0 && (
+                <div className="space-y-1 pt-2">
+                  {taxGroups.map((group) => (
+                    <div
+                      key={group.rate}
+                      className="flex items-center justify-between"
+                    >
+                      <p className="text-muted-foreground text-xs">
+                        {t("taxLabel", {
+                          rate: group.rate,
+                          amount: formatCurrency(group.taxAmount),
+                        })}
+                      </p>
+                      {taxGroups.length === 1 && (
+                        <p className="text-muted-foreground text-xs font-medium">
+                          {t("withTax", {
+                            amount: formatCurrency(totalWithTax),
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  {taxGroups.length > 1 && (
+                    <div className="flex items-center justify-between pt-1">
+                      <p className="text-muted-foreground text-xs font-medium">
+                        {t("taxTotal", {
+                          amount: formatCurrency(taxAmountTotal),
+                        })}
+                      </p>
+                      <p className="text-muted-foreground text-xs font-medium">
+                        {t("withTax", {
+                          amount: formatCurrency(totalWithTax),
+                        })}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 

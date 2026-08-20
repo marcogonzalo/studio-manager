@@ -96,3 +96,21 @@ describe("buildBudgetLineFormSchema is_price_tbd", () => {
     }
   });
 });
+
+describe("buildBudgetLineFormSchema tax_rate", () => {
+  it("parses optional non-negative tax rate", () => {
+    const result = parse({ tax_rate: "21" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.tax_rate).toBe(21);
+  });
+
+  it("allows empty tax rate", () => {
+    const result = parse({ tax_rate: "" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.tax_rate).toBeUndefined();
+  });
+
+  it("rejects negative tax rate", () => {
+    expect(parse({ tax_rate: "-0.5" }).success).toBe(false);
+  });
+});

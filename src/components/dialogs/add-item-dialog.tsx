@@ -83,9 +83,14 @@ export function AddItemDialog({
   const excludeFromBudgetOptionEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "plus",
   });
+  const costsManagementAtLeastPlus = usePlanCapability("costs_management", {
+    minModality: "plus",
+  });
   const supabase = getSupabaseClient();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [projectCurrency, setProjectCurrency] = useState<string | undefined>();
+  const [projectTaxRate, setProjectTaxRate] = useState(0);
+  const [projectMultitax, setProjectMultitax] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [, setSelectedProduct] = useState<Product | null>(null);
@@ -129,8 +134,11 @@ export function AddItemDialog({
       image_url: "",
       is_excluded: false,
       is_price_tbd: false,
+      tax_rate: "",
     },
   });
+
+  const lineTaxEditable = costsManagementAtLeastPlus && projectMultitax;
 
   // Filter products based on search query
   const filteredProducts = useMemo(() => {
@@ -169,12 +177,18 @@ export function AddItemDialog({
           .order("created_at"),
         supabase
           .from("projects")
-          .select("currency")
+          .select("currency, tax_rate, multitax")
           .eq("id", projectId)
           .single(),
       ]);
       setSpaces(rData || []);
       setProjectCurrency(projectData?.currency);
+      const loadedProjectTax = Number(projectData?.tax_rate ?? 0);
+      const safeProjectTax = Number.isNaN(loadedProjectTax)
+        ? 0
+        : loadedProjectTax;
+      setProjectTaxRate(safeProjectTax);
+      setProjectMultitax(projectData?.multitax === true);
       const { data: pData } = await supabase
         .from("products")
         .select("*, supplier:suppliers(name)")
@@ -232,6 +246,10 @@ export function AddItemDialog({
           image_url: item.image_url || "",
           is_excluded: item.is_excluded || false,
           is_price_tbd: item.is_price_tbd || false,
+          tax_rate:
+            item.tax_rate != null
+              ? String(item.tax_rate)
+              : safeProjectTax.toString(),
         });
         if (item.product_id && pData) {
           const prod = pData.find((p: Product) => p.id === item.product_id);
@@ -264,6 +282,7 @@ export function AddItemDialog({
           image_url: "",
           is_excluded: false,
           is_price_tbd: false,
+          tax_rate: safeProjectTax.toString(),
         });
         setSelectedProduct(null);
         setActiveTab("catalog");
@@ -463,6 +482,9 @@ export function AddItemDialog({
         is_excluded: excludeFromBudgetOptionEnabled
           ? values.is_excluded || false
           : false,
+        tax_rate: lineTaxEditable
+          ? (values.tax_rate ?? projectTaxRate)
+          : projectTaxRate,
         ...(isEditing ? {} : { status: "pending" }),
       };
 
@@ -877,7 +899,13 @@ export function AddItemDialog({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+              <div
+                className={
+                  lineTaxEditable
+                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.7fr)]"
+                    : "grid grid-cols-2 gap-4 lg:grid-cols-4"
+                }
+              >
                 <FormField
                   control={form.control}
                   name="quantity"
@@ -995,6 +1023,29 @@ export function AddItemDialog({
                     </FormItem>
                   )}
                 />
+                {lineTaxEditable && (
+                  <FormField
+                    control={form.control}
+                    name="tax_rate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("taxLabel")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder={t("taxPlaceholder")}
+                            {...field}
+                            value={field.value ?? ""}
+                            className="bg-background"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
               <FormField
