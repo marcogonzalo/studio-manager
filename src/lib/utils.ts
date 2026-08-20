@@ -307,6 +307,7 @@ export const BUDGET_SUBCATEGORIES: Record<
     insurance: "Seguros",
     customs: "Aduanas",
     handling: "Manipulación",
+    assembly: "Ensamblaje",
     other: "Otros",
   },
 } as const;

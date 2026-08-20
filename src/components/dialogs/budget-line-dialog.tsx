@@ -33,8 +33,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { toast } from "sonner";
+import { CircleHelp, Plus } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
+import { SupplierDialog } from "./supplier-dialog";
 import { usePlanCapability } from "@/lib/use-plan-capability";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   getDemoAccountMessage,
   getErrorMessage,
@@ -103,6 +111,10 @@ export function BudgetLineDialog({
   const supabase = getSupabaseClient();
   const isEditing = !!budgetLine;
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
+  const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(
+    null
+  );
   const [selectedCategory, setSelectedCategory] = useState<BudgetCategory | "">(
     ""
   );
@@ -126,17 +138,38 @@ export function BudgetLineDialog({
 
   const isPriceTbd = form.watch("is_price_tbd") === true;
 
-  // Fetch suppliers
   useEffect(() => {
-    const fetchSuppliers = async () => {
+    async function loadSuppliers() {
       const { data } = await supabase
         .from("suppliers")
         .select("*")
         .order("name");
-      if (data) setSuppliers(data);
-    };
-    fetchSuppliers();
-  }, [supabase]);
+      setSuppliers(data || []);
+    }
+    if (open) void loadSuppliers();
+  }, [open, supabase]);
+
+  useEffect(() => {
+    if (pendingSupplierId && suppliers.length > 0) {
+      const supplierExists = suppliers.some((s) => s.id === pendingSupplierId);
+      if (supplierExists) {
+        form.setValue("supplier_id", pendingSupplierId, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+        setPendingSupplierId(null);
+      }
+    }
+  }, [suppliers, pendingSupplierId, form]);
+
+  const handleSupplierCreated = async (newSupplierId: string) => {
+    const { data } = await supabase.from("suppliers").select("*").order("name");
+    if (data) {
+      setSuppliers(data);
+      setPendingSupplierId(newSupplierId);
+    }
+    setIsSupplierDialogOpen(false);
+  };
 
   // Reset form when dialog opens/closes or budgetLine changes
   useEffect(() => {
@@ -498,13 +531,34 @@ export function BudgetLineDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <FormField
                 control={form.control}
                 name="phase"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("phaseLabel")}</FormLabel>
+                  <FormItem className="sm:col-span-1">
+                    <FormLabel className="flex items-center gap-1.5">
+                      <span>{t("phaseLabel")}</span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="text-muted-foreground hover:text-foreground inline-flex items-center"
+                              aria-label={t("phaseHelp")}
+                            >
+                              <CircleHelp className="h-3.5 w-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            variant="tertiary"
+                            className="max-w-56"
+                          >
+                            {t("phaseHelp")}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </FormLabel>
                     <Select
                       onValueChange={(value) =>
                         field.onChange(value || undefined)
@@ -533,27 +587,43 @@ export function BudgetLineDialog({
                 control={form.control}
                 name="supplier_id"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2">
                     <FormLabel>{t("supplierLabel")}</FormLabel>
-                    <Select
-                      onValueChange={(value) =>
-                        field.onChange(value || undefined)
-                      }
-                      value={field.value || undefined}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("supplierPlaceholder")} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {suppliers.map((supplier) => (
-                          <SelectItem key={supplier.id} value={supplier.id}>
-                            {supplier.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                      <div className="min-w-0 flex-1">
+                        <Select
+                          onValueChange={(value) =>
+                            field.onChange(value || undefined)
+                          }
+                          value={field.value || undefined}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue
+                                placeholder={t("supplierPlaceholder")}
+                              />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {suppliers.map((supplier) => (
+                              <SelectItem key={supplier.id} value={supplier.id}>
+                                {supplier.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setIsSupplierDialogOpen(true)}
+                        title={t("addSupplier")}
+                        aria-label={t("addSupplier")}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -628,6 +698,15 @@ export function BudgetLineDialog({
           </form>
         </Form>
       </DialogContent>
+
+      <SupplierDialog
+        open={isSupplierDialogOpen}
+        onOpenChange={setIsSupplierDialogOpen}
+        supplier={null}
+        onSuccess={async (supplierId) => {
+          if (supplierId) await handleSupplierCreated(supplierId);
+        }}
+      />
     </Dialog>
   );
 }
