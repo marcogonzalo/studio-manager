@@ -48,6 +48,8 @@ export default async function ViewProjectSpacesPage({ params }: PageProps) {
     status: string;
     image_url: string | null;
     space_name: string;
+    space_created_at?: string | null;
+    created_at?: string;
     is_price_tbd?: boolean;
   }[];
   const renders = (rendersRes.data ?? []) as {
@@ -55,6 +57,8 @@ export default async function ViewProjectSpacesPage({ params }: PageProps) {
     url: string;
     description: string;
     space_name: string;
+    space_created_at?: string | null;
+    created_at?: string;
   }[];
 
   return (

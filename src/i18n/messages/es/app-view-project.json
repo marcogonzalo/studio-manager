@@ -56,6 +56,7 @@
     "documentsMetaDescription": "Documentos del proyecto compartido",
     "noDocuments": "No hay documentos visibles en este proyecto.",
     "viewDocumentAria": "Ver documento {name}",
+    "costsNoPhase": "Sin fase",
     "costsTitle": "Presupuesto",
     "costsNoLines": "No hay partidas de presupuesto visibles.",
     "costsColDescription": "Descripción",

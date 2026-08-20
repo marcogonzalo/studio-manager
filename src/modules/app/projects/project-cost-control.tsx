@@ -53,9 +53,13 @@ import {
   isCostCategory,
   reportError,
 } from "@/lib/utils";
-import { usePhaseLabel } from "@/lib/use-project-labels";
+import {
+  orderedBudgetCategoryKeys,
+  sortBudgetLines,
+} from "@/lib/project-list-order";
 import { isDeviationCalculable } from "@/lib/budget-line-deviation";
 import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
+import { usePhaseLabel } from "@/lib/use-project-labels";
 import {
   sumBudgetLineActualAmounts,
   sumBudgetLineEstimatedAmounts,
@@ -174,9 +178,10 @@ export function ProjectCostControl({
         supabase
           .from("project_items")
           .select(
-            "id, name, quantity, unit_cost, unit_price, is_excluded, is_price_tbd"
+            "id, name, quantity, unit_cost, unit_price, is_excluded, is_price_tbd, created_at, space_id, space:spaces(name, created_at)"
           )
-          .eq("project_id", projectId),
+          .eq("project_id", projectId)
+          .order("created_at"),
       ]);
     if (projectData) setProject(projectData);
     if (!error) setItems(itemsData || []);
@@ -236,7 +241,7 @@ export function ProjectCostControl({
   };
 
   // Group budget lines by category
-  const budgetLinesByCategory = budgetLines.reduce(
+  const budgetLinesByCategory = sortBudgetLines(budgetLines).reduce(
     (acc, line) => {
       if (!acc[line.category]) {
         acc[line.category] = [];
@@ -316,15 +321,7 @@ export function ProjectCostControl({
 
   // Show every line-item category, including own fees (income).
   // Grand totals below still use cost categories only.
-  const categoryOrder: BudgetCategory[] = [
-    "own_fees",
-    "construction",
-    "external_services",
-    "operations",
-  ];
-  const extraCategories = (
-    Object.keys(budgetLinesByCategory) as BudgetCategory[]
-  ).filter((category) => !categoryOrder.includes(category));
+  const categoryOrder = orderedBudgetCategoryKeys(budgetLinesByCategory);
 
   if (loading) {
     return (
@@ -411,273 +408,263 @@ export function ProjectCostControl({
           </Card>
 
           {/* Budget Lines by Category */}
-          {([...categoryOrder, ...extraCategories] as BudgetCategory[]).map(
-            (category) => {
-              const lines = budgetLinesByCategory[category] || [];
-              if (lines.length === 0) return null;
+          {categoryOrder.map((category) => {
+            const lines = budgetLinesByCategory[category] || [];
+            if (lines.length === 0) return null;
 
-              const categoryEstimated = sumBudgetLineEstimatedAmounts(lines);
-              const categoryActual = sumBudgetLineActualAmounts(lines);
-              const categoryDeviation = getDeviationIndicator(
-                categoryEstimated,
-                categoryActual
-              );
+            const categoryEstimated = sumBudgetLineEstimatedAmounts(lines);
+            const categoryActual = sumBudgetLineActualAmounts(lines);
+            const categoryDeviation = getDeviationIndicator(
+              categoryEstimated,
+              categoryActual
+            );
 
-              return (
-                <Collapsible
-                  key={category}
-                  open={openSections[category] !== false}
-                  onOpenChange={() => toggleSection(category)}
-                >
-                  <Card>
-                    <CollapsibleTrigger asChild>
-                      <CardHeader className="hover:bg-accent/30 cursor-pointer">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="flex items-center gap-2 text-base">
-                            <ChevronDown
-                              className={`h-4 w-4 transition-transform ${openSections[category] ? "" : "-rotate-90"}`}
-                            />
-                            {categoryLabels[category] ?? category}
-                          </CardTitle>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="text-muted-foreground text-sm">
-                                {t("estimatedShort")}{" "}
-                                {formatCurrency(categoryEstimated)}
-                              </p>
-                              <p className="font-semibold">
-                                {t("actualShort")}{" "}
-                                {formatCurrency(categoryActual)}
-                              </p>
-                            </div>
-                            {isDeviationCalculable(
-                              categoryEstimated,
-                              categoryActual
-                            ) && (
-                              <div
-                                className={`flex items-center gap-1 ${categoryDeviation.color}`}
-                              >
-                                <categoryDeviation.icon className="h-4 w-4" />
-                                <span className="text-sm font-medium">
-                                  {categoryDeviation.text}
-                                </span>
-                              </div>
-                            )}
+            return (
+              <Collapsible
+                key={category}
+                open={openSections[category] !== false}
+                onOpenChange={() => toggleSection(category)}
+              >
+                <Card>
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="hover:bg-accent/30 cursor-pointer">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform ${openSections[category] ? "" : "-rotate-90"}`}
+                          />
+                          {categoryLabels[category as BudgetCategory] ??
+                            category}
+                        </CardTitle>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="text-muted-foreground text-sm">
+                              {t("estimatedShort")}{" "}
+                              {formatCurrency(categoryEstimated)}
+                            </p>
+                            <p className="font-semibold">
+                              {t("actualShort")}{" "}
+                              {formatCurrency(categoryActual)}
+                            </p>
                           </div>
+                          {isDeviationCalculable(
+                            categoryEstimated,
+                            categoryActual
+                          ) && (
+                            <div
+                              className={`flex items-center gap-1 ${categoryDeviation.color}`}
+                            >
+                              <categoryDeviation.icon className="h-4 w-4" />
+                              <span className="text-sm font-medium">
+                                {categoryDeviation.text}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      </CardHeader>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <CardContent className="pt-0">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>{ts("colConcept")}</TableHead>
-                              <TableHead className="text-right">
-                                {ts("colEstimated")}
-                              </TableHead>
-                              <TableHeadMd>{ts("colDescription")}</TableHeadMd>
-                              <TableHeadMd>{ts("colPhase")}</TableHeadMd>
-                              <TableHeadMd className="text-right">
-                                {ts("colActual")}
-                              </TableHeadMd>
-                              <TableHeadMd className="text-right">
-                                {ts("colDeviation")}
-                              </TableHeadMd>
-                              <TableHeadMd className="w-[100px]" />
-                              <TableHeadExpandPlaceholder
-                                srLabel={ts("expandRow")}
-                              />
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {lines.map((line) => {
-                              const lineEstimated = Number(
-                                line.estimated_amount
-                              );
-                              const lineActual = Number(line.actual_amount);
-                              const showDeviation = isDeviationCalculable(
-                                lineEstimated,
-                                lineActual
-                              );
-                              const deviation = showDeviation
-                                ? getDeviationIndicator(
-                                    lineEstimated,
-                                    lineActual
-                                  )
-                                : null;
-                              const expanded = isExpanded(line.id);
-                              const rowActions: ExpandableTableRowAction[] =
-                                canEdit
-                                  ? [
-                                      {
-                                        id: "edit",
-                                        label: ts("edit"),
-                                        icon: Pencil,
-                                        onClick: () =>
-                                          handleEditBudgetLine(line),
-                                      },
-                                      {
-                                        id: "delete",
-                                        label: ts("delete"),
-                                        icon: Trash2,
-                                        onClick: () =>
-                                          setDeleteTargetId(line.id),
-                                        destructive: true,
-                                      },
-                                    ]
-                                  : [];
-                              const visibilityLabel = line.is_internal_cost
-                                ? t("internalCost")
-                                : t("visibleToClient");
+                      </div>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <CardContent className="pt-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{ts("colConcept")}</TableHead>
+                            <TableHead className="text-right">
+                              {ts("colEstimated")}
+                            </TableHead>
+                            <TableHeadMd>{ts("colDescription")}</TableHeadMd>
+                            <TableHeadMd>{ts("colPhase")}</TableHeadMd>
+                            <TableHeadMd className="text-right">
+                              {ts("colActual")}
+                            </TableHeadMd>
+                            <TableHeadMd className="text-right">
+                              {ts("colDeviation")}
+                            </TableHeadMd>
+                            <TableHeadMd className="w-[100px]" />
+                            <TableHeadExpandPlaceholder
+                              srLabel={ts("expandRow")}
+                            />
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {lines.map((line) => {
+                            const lineEstimated = Number(line.estimated_amount);
+                            const lineActual = Number(line.actual_amount);
+                            const showDeviation = isDeviationCalculable(
+                              lineEstimated,
+                              lineActual
+                            );
+                            const deviation = showDeviation
+                              ? getDeviationIndicator(lineEstimated, lineActual)
+                              : null;
+                            const expanded = isExpanded(line.id);
+                            const rowActions: ExpandableTableRowAction[] =
+                              canEdit
+                                ? [
+                                    {
+                                      id: "edit",
+                                      label: ts("edit"),
+                                      icon: Pencil,
+                                      onClick: () => handleEditBudgetLine(line),
+                                    },
+                                    {
+                                      id: "delete",
+                                      label: ts("delete"),
+                                      icon: Trash2,
+                                      onClick: () => setDeleteTargetId(line.id),
+                                      destructive: true,
+                                    },
+                                  ]
+                                : [];
+                            const visibilityLabel = line.is_internal_cost
+                              ? t("internalCost")
+                              : t("visibleToClient");
 
-                              return (
-                                <Fragment key={line.id}>
-                                  <TableRow>
-                                    <TableCell className="max-w-[8rem] truncate font-medium sm:max-w-none">
-                                      {subcategoryLabels[category]?.[
-                                        line.subcategory
-                                      ] ?? line.subcategory}
-                                    </TableCell>
-                                    <TableCell className="text-right tabular-nums">
-                                      <ItemPriceOrTbd
-                                        item={line}
-                                        tbdLabel={ts("priceTbd")}
-                                      >
-                                        {formatCurrency(
-                                          Number(line.estimated_amount)
-                                        )}
-                                      </ItemPriceOrTbd>
-                                    </TableCell>
-                                    <TableCellMd className="text-muted-foreground max-w-[200px] truncate">
-                                      {line.description || "-"}
-                                    </TableCellMd>
-                                    <TableCellMd className="text-muted-foreground text-xs">
-                                      {line.phase
-                                        ? phaseLabel(line.phase)
-                                        : "-"}
-                                    </TableCellMd>
-                                    <TableCellMd className="text-right font-semibold tabular-nums">
-                                      <ItemPriceOrTbd
-                                        item={line}
-                                        tbdLabel={ts("priceTbd")}
-                                      >
-                                        {formatCurrency(
-                                          Number(line.actual_amount)
-                                        )}
-                                      </ItemPriceOrTbd>
-                                    </TableCellMd>
-                                    <TableCellMd className="text-right">
-                                      {showDeviation && deviation && (
-                                        <div
-                                          className={`flex items-center justify-end gap-1 ${deviation.color}`}
-                                        >
-                                          <deviation.icon className="h-3 w-3" />
-                                          <span className="text-sm">
-                                            {deviation.text}
-                                          </span>
-                                        </div>
+                            return (
+                              <Fragment key={line.id}>
+                                <TableRow>
+                                  <TableCell className="max-w-[8rem] truncate font-medium sm:max-w-none">
+                                    {subcategoryLabels[category]?.[
+                                      line.subcategory
+                                    ] ?? line.subcategory}
+                                  </TableCell>
+                                  <TableCell className="text-right tabular-nums">
+                                    <ItemPriceOrTbd
+                                      item={line}
+                                      tbdLabel={ts("priceTbd")}
+                                    >
+                                      {formatCurrency(
+                                        Number(line.estimated_amount)
                                       )}
-                                    </TableCellMd>
-                                    <TableCellMd>
-                                      <div className="flex items-center justify-end gap-2">
-                                        {line.is_internal_cost ? (
-                                          <span title={visibilityLabel}>
-                                            <EyeOff className="text-muted-foreground h-4 w-4" />
-                                          </span>
-                                        ) : (
-                                          <span title={visibilityLabel}>
-                                            <Eye className="text-muted-foreground h-4 w-4" />
-                                          </span>
-                                        )}
-                                        <ExpandableRowActionsMenu
-                                          actions={rowActions}
-                                          menuAriaLabel={t(
-                                            "budgetLineActionsAria"
-                                          )}
-                                        />
+                                    </ItemPriceOrTbd>
+                                  </TableCell>
+                                  <TableCellMd className="text-muted-foreground max-w-[200px] truncate">
+                                    {line.description || "-"}
+                                  </TableCellMd>
+                                  <TableCellMd className="text-muted-foreground text-xs">
+                                    {line.phase ? phaseLabel(line.phase) : "-"}
+                                  </TableCellMd>
+                                  <TableCellMd className="text-right font-semibold tabular-nums">
+                                    <ItemPriceOrTbd
+                                      item={line}
+                                      tbdLabel={ts("priceTbd")}
+                                    >
+                                      {formatCurrency(
+                                        Number(line.actual_amount)
+                                      )}
+                                    </ItemPriceOrTbd>
+                                  </TableCellMd>
+                                  <TableCellMd className="text-right">
+                                    {showDeviation && deviation && (
+                                      <div
+                                        className={`flex items-center justify-end gap-1 ${deviation.color}`}
+                                      >
+                                        <deviation.icon className="h-3 w-3" />
+                                        <span className="text-sm">
+                                          {deviation.text}
+                                        </span>
                                       </div>
-                                    </TableCellMd>
-                                    <TableRowExpandTrigger
-                                      expanded={expanded}
-                                      onToggle={() => toggleRow(line.id)}
-                                      expandLabel={t("expandLineDetails")}
-                                      collapseLabel={t("collapseLineDetails")}
-                                    />
-                                  </TableRow>
-                                  <TableRowMobileDetail
-                                    open={expanded}
-                                    colSpan={mobileVisibleColumnCount}
-                                  >
-                                    <div className="space-y-2">
-                                      <MobileDetailField
-                                        label={ts("colDescription")}
-                                        value={line.description || "-"}
-                                      />
-                                      <MobileDetailField
-                                        label={ts("colPhase")}
-                                        value={
-                                          line.phase
-                                            ? phaseLabel(line.phase)
-                                            : "-"
-                                        }
-                                      />
-                                      <MobileDetailField
-                                        label={ts("colActual")}
-                                        value={
-                                          <ItemPriceOrTbd
-                                            item={line}
-                                            tbdLabel={ts("priceTbd")}
-                                          >
-                                            {formatCurrency(
-                                              Number(line.actual_amount)
-                                            )}
-                                          </ItemPriceOrTbd>
-                                        }
-                                      />
-                                      {showDeviation && deviation && (
-                                        <MobileDetailField
-                                          label={ts("colDeviation")}
-                                          value={
-                                            <span
-                                              className={`inline-flex items-center gap-1 ${deviation.color}`}
-                                            >
-                                              <deviation.icon className="h-3 w-3" />
-                                              {deviation.text}
-                                            </span>
-                                          }
-                                        />
+                                    )}
+                                  </TableCellMd>
+                                  <TableCellMd>
+                                    <div className="flex items-center justify-end gap-2">
+                                      {line.is_internal_cost ? (
+                                        <span title={visibilityLabel}>
+                                          <EyeOff className="text-muted-foreground h-4 w-4" />
+                                        </span>
+                                      ) : (
+                                        <span title={visibilityLabel}>
+                                          <Eye className="text-muted-foreground h-4 w-4" />
+                                        </span>
                                       )}
-                                      <MobileDetailField
-                                        label={ts("colVisibility")}
-                                        value={
-                                          <span className="inline-flex items-center gap-1">
-                                            {line.is_internal_cost ? (
-                                              <EyeOff className="h-4 w-4" />
-                                            ) : (
-                                              <Eye className="h-4 w-4" />
-                                            )}
-                                            {visibilityLabel}
-                                          </span>
-                                        }
-                                      />
-                                      <ExpandableRowActionsPanel
+                                      <ExpandableRowActionsMenu
                                         actions={rowActions}
+                                        menuAriaLabel={t(
+                                          "budgetLineActionsAria"
+                                        )}
                                       />
                                     </div>
-                                  </TableRowMobileDetail>
-                                </Fragment>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
-                      </CardContent>
-                    </CollapsibleContent>
-                  </Card>
-                </Collapsible>
-              );
-            }
-          )}
+                                  </TableCellMd>
+                                  <TableRowExpandTrigger
+                                    expanded={expanded}
+                                    onToggle={() => toggleRow(line.id)}
+                                    expandLabel={t("expandLineDetails")}
+                                    collapseLabel={t("collapseLineDetails")}
+                                  />
+                                </TableRow>
+                                <TableRowMobileDetail
+                                  open={expanded}
+                                  colSpan={mobileVisibleColumnCount}
+                                >
+                                  <div className="space-y-2">
+                                    <MobileDetailField
+                                      label={ts("colDescription")}
+                                      value={line.description || "-"}
+                                    />
+                                    <MobileDetailField
+                                      label={ts("colPhase")}
+                                      value={
+                                        line.phase
+                                          ? phaseLabel(line.phase)
+                                          : "-"
+                                      }
+                                    />
+                                    <MobileDetailField
+                                      label={ts("colActual")}
+                                      value={
+                                        <ItemPriceOrTbd
+                                          item={line}
+                                          tbdLabel={ts("priceTbd")}
+                                        >
+                                          {formatCurrency(
+                                            Number(line.actual_amount)
+                                          )}
+                                        </ItemPriceOrTbd>
+                                      }
+                                    />
+                                    {showDeviation && deviation && (
+                                      <MobileDetailField
+                                        label={ts("colDeviation")}
+                                        value={
+                                          <span
+                                            className={`inline-flex items-center gap-1 ${deviation.color}`}
+                                          >
+                                            <deviation.icon className="h-3 w-3" />
+                                            {deviation.text}
+                                          </span>
+                                        }
+                                      />
+                                    )}
+                                    <MobileDetailField
+                                      label={ts("colVisibility")}
+                                      value={
+                                        <span className="inline-flex items-center gap-1">
+                                          {line.is_internal_cost ? (
+                                            <EyeOff className="h-4 w-4" />
+                                          ) : (
+                                            <Eye className="h-4 w-4" />
+                                          )}
+                                          {visibilityLabel}
+                                        </span>
+                                      }
+                                    />
+                                    <ExpandableRowActionsPanel
+                                      actions={rowActions}
+                                    />
+                                  </div>
+                                </TableRowMobileDetail>
+                              </Fragment>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Card>
+              </Collapsible>
+            );
+          })}
 
           {/* Products Cost Summary */}
           <Collapsible

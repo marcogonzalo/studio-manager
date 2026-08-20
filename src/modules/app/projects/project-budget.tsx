@@ -77,6 +77,12 @@ import {
   getErrorMessage,
   reportError,
 } from "@/lib/utils";
+import {
+  BUDGET_PHASE_DISPLAY_ORDER,
+  groupBudgetLinesByPhaseThenCategory,
+  groupItemsBySpaceThenCreatedAt,
+  orderedBudgetCategoryKeys,
+} from "@/lib/project-list-order";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 import {
   hasBudgetLinesWithTbd,
@@ -178,7 +184,7 @@ export function ProjectBudget({
       const { data: itemsData, error: itemsError } = await supabase
         .from("project_items")
         .select(
-          "*, space:spaces(name), product:products(name, supplier:suppliers(name), description, reference_code, category, image_url), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
+          "*, space:spaces(name, created_at), product:products(name, supplier:suppliers(name), description, reference_code, category, image_url), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
         )
         .eq("project_id", projectId)
         .order("created_at");
@@ -353,24 +359,15 @@ export function ProjectBudget({
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Group budget lines by phase first, then by category
-  const budgetLinesByPhaseAndCategory = budgetLines.reduce(
-    (acc, line) => {
-      const phaseKey = line.phase || "no_phase";
-      if (!acc[phaseKey]) {
-        acc[phaseKey] = {} as Record<BudgetCategory, ProjectBudgetLine[]>;
-      }
-      if (!acc[phaseKey][line.category]) {
-        acc[phaseKey][line.category] = [];
-      }
-      acc[phaseKey][line.category].push(line);
-      return acc;
-    },
-    {} as Record<string, Record<BudgetCategory, ProjectBudgetLine[]>>
-  );
+  const budgetLinesByPhaseAndCategory =
+    groupBudgetLinesByPhaseThenCategory(budgetLines);
 
   // Exclude products marked as excluded from display and totals
   const includedItems = items.filter((item) => !item.is_excluded);
+  const itemsBySpace = groupItemsBySpaceThenCreatedAt(
+    includedItems,
+    t("spaceGeneral")
+  );
   const tbdLabel = t("priceTbd");
   const hasPriceTbd =
     hasPricedItemsWithTbd(includedItems) || hasBudgetLinesWithTbd(budgetLines);
@@ -496,24 +493,13 @@ export function ProjectBudget({
     }
   };
 
-  // Order of phases to display
-  const phaseOrder: (ProjectPhase | "no_phase")[] = [
-    "diagnosis",
-    "design",
-    "executive",
-    "budget",
-    "construction",
-    "delivery",
-    "no_phase",
-  ];
-
-  // Order of categories to display within each phase
-  const categoryOrder: BudgetCategory[] = [
-    "own_fees",
-    "external_services",
-    "construction",
-    "operations",
-  ];
+  const phaseOrder = BUDGET_PHASE_DISPLAY_ORDER.filter(
+    (phase) => budgetLinesByPhaseAndCategory[phase]
+  );
+  const extraPhases = Object.keys(budgetLinesByPhaseAndCategory).filter(
+    (phase) =>
+      !(BUDGET_PHASE_DISPLAY_ORDER as readonly string[]).includes(phase)
+  );
 
   if (loading) {
     return (
@@ -671,230 +657,303 @@ export function ProjectBudget({
                     </CardTitle>
                     <span className="text-foreground font-semibold">
                       {formatCurrency(totalItemsPrice)}
-                      {hasPriceTbd ? "*" : ""}
+                      {hasPricedItemsWithTbd(includedItems) ? "*" : ""}
                     </span>
                   </div>
                 </CardHeader>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <CardContent className="pt-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{ts("colItem")}</TableHead>
-                        <TableHeadMd>{ts("colLocation")}</TableHeadMd>
-                        <TableHeadMd>{ts("colStatus")}</TableHeadMd>
-                        <TableHeadMd className="text-right">
-                          {ts("colQuantity")}
-                        </TableHeadMd>
-                        <TableHeadMd className="text-right">
-                          {ts("colUnitCost")}
-                        </TableHeadMd>
-                        <TableHeadMd className="text-right">
-                          {ts("colSalePrice")}
-                        </TableHeadMd>
-                        <TableHead className="text-right">
-                          {ts("colTotal")}
-                        </TableHead>
-                        <TableHeadMd className="w-[80px]" />
-                        <TableHeadExpandPlaceholder srLabel={ts("expandRow")} />
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {includedItems.map((item) => {
-                        const expanded = isExpanded(item.id);
-                        const rowActions: ExpandableTableRowAction[] = readOnly
-                          ? []
-                          : [
-                              {
-                                id: "edit",
-                                label: ts("edit"),
-                                icon: Pencil,
-                                onClick: () => handleEditItem(item),
-                              },
-                              {
-                                id: "delete",
-                                label: ts("delete"),
-                                icon: Trash2,
-                                onClick: () =>
-                                  setDeleteTarget({
-                                    kind: "item",
-                                    id: item.id,
-                                  }),
-                                destructive: true,
-                              },
-                            ];
-                        const imageSrc =
-                          item.image_url || item.product?.image_url;
-                        const statusDisplay = getStatusDisplay(item.status);
-                        const StatusIcon = statusDisplay.icon;
-                        const po = item.purchase_order;
-                        const isOrderedNotReceived =
-                          item.status === "ordered" && po;
-                        const deliveryInfo =
-                          isOrderedNotReceived &&
-                          (po.delivery_date || po.delivery_deadline)
-                            ? po.delivery_date
-                              ? `${t("deliveryPrefix")} ${new Date(po.delivery_date).toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" })}`
-                              : `${t("deliveryPrefix")} ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
-                            : null;
-                        const statusLabel = deliveryInfo ?? statusDisplay.label;
-                        const statusIndicator = (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="flex items-center justify-center">
-                                <StatusIcon
-                                  className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
-                                />
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent variant="tertiary">
-                              <p>{statusLabel}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        );
-
+                <CardContent className="space-y-3 pt-0">
+                  {items.length === 0 ? (
+                    <p className="text-muted-foreground py-8 text-center">
+                      {t("noProducts")}
+                    </p>
+                  ) : (
+                    itemsBySpace.map(
+                      ({ spaceKey, spaceName, items: spaceItems }) => {
+                        const spaceSectionKey = `products_${spaceKey}`;
+                        const spaceTotal = sumItemSaleAmounts(spaceItems);
+                        const spaceHasTbd = hasPricedItemsWithTbd(spaceItems);
                         return (
-                          <Fragment key={item.id}>
-                            <TableRow>
-                              <TableCell>
-                                <div className="flex items-center gap-2.5">
-                                  {imageSrc ? (
-                                    <button
-                                      type="button"
-                                      className="relative h-10 w-10 shrink-0 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80 md:h-8 md:w-8"
-                                      onClick={() => {
-                                        setSelectedItem(item);
-                                        setIsProductModalOpen(true);
-                                      }}
-                                    >
-                                      <Image
-                                        src={imageSrc}
-                                        alt={item.product?.name || item.name}
-                                        fill
-                                        className="object-cover"
-                                        sizes="40px"
-                                      />
-                                    </button>
-                                  ) : null}
-                                  <div className="min-w-0 flex-1">
-                                    <div className="max-w-[10rem] font-medium sm:max-w-none">
-                                      {item.product?.name || item.name}
-                                    </div>
-                                    {item.internal_reference && (
-                                      <div className="text-muted-foreground mt-1 font-mono text-xs">
-                                        {t("codePrefix")}{" "}
-                                        {item.internal_reference}
-                                      </div>
-                                    )}
-                                    <div className="text-muted-foreground text-xs">
-                                      {item.product?.supplier?.name || "-"}
-                                    </div>
-                                  </div>
-                                  <span className="shrink-0 md:hidden">
-                                    {statusIndicator}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCellMd>
-                                {item.space?.name || t("spaceGeneral")}
-                              </TableCellMd>
-                              <TableCellMd>{statusIndicator}</TableCellMd>
-                              <TableCellMd className="text-right tabular-nums">
-                                {item.quantity}
-                              </TableCellMd>
-                              <TableCellMd className="text-muted-foreground text-right tabular-nums">
-                                <ItemPriceOrTbd item={item} tbdLabel={tbdLabel}>
-                                  {formatCurrency(item.unit_cost)}
-                                </ItemPriceOrTbd>
-                              </TableCellMd>
-                              <TableCellMd className="text-right font-medium tabular-nums">
-                                <ItemPriceOrTbd item={item} tbdLabel={tbdLabel}>
-                                  {formatCurrency(item.unit_price)}
-                                </ItemPriceOrTbd>
-                              </TableCellMd>
-                              <TableCell className="text-right font-bold tabular-nums">
-                                <ItemPriceOrTbd item={item} tbdLabel={tbdLabel}>
-                                  {formatCurrency(
-                                    item.unit_price * item.quantity
-                                  )}
-                                </ItemPriceOrTbd>
-                              </TableCell>
-                              <TableCellMd className="text-right">
-                                <ExpandableRowActionsMenu
-                                  actions={rowActions}
-                                  menuAriaLabel={t("productActionsAria")}
-                                />
-                              </TableCellMd>
-                              <TableRowExpandTrigger
-                                expanded={expanded}
-                                onToggle={() => toggleRow(item.id)}
-                                expandLabel={t("expandProductDetails")}
-                                collapseLabel={t("collapseProductDetails")}
-                              />
-                            </TableRow>
-                            <TableRowMobileDetail
-                              open={expanded}
-                              colSpan={mobileVisibleColumnCount}
-                            >
-                              <div className="space-y-2">
-                                <MobileDetailField
-                                  label={ts("colLocation")}
-                                  value={item.space?.name || t("spaceGeneral")}
-                                />
-                                <MobileDetailField
-                                  label={ts("colQuantity")}
-                                  value={item.quantity}
-                                />
-                                <MobileDetailField
-                                  label={ts("colUnitCost")}
-                                  value={
-                                    <ItemPriceOrTbd
-                                      item={item}
-                                      tbdLabel={tbdLabel}
-                                    >
-                                      {formatCurrency(item.unit_cost)}
-                                    </ItemPriceOrTbd>
-                                  }
-                                />
-                                <MobileDetailField
-                                  label={ts("colSalePrice")}
-                                  value={
-                                    <ItemPriceOrTbd
-                                      item={item}
-                                      tbdLabel={tbdLabel}
-                                    >
-                                      {formatCurrency(item.unit_price)}
-                                    </ItemPriceOrTbd>
-                                  }
-                                />
-                                <ExpandableRowActionsPanel
-                                  actions={rowActions}
-                                />
-                              </div>
-                            </TableRowMobileDetail>
-                          </Fragment>
-                        );
-                      })}
-                      {items.length === 0 && (
-                        <TableRow>
-                          <TableCell
-                            colSpan={9}
-                            className="text-muted-foreground py-8 text-center"
+                          <Collapsible
+                            key={spaceKey}
+                            open={openSections[spaceSectionKey] !== false}
+                            onOpenChange={() => toggleSection(spaceSectionKey)}
                           >
-                            {t("noProducts")}
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
+                            <Card className="ml-4">
+                              <CollapsibleTrigger asChild>
+                                <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
+                                  <div className="flex items-center justify-between">
+                                    <CardTitle className="flex items-center gap-2 text-sm">
+                                      <ChevronDown
+                                        className={`h-3 w-3 transition-transform ${openSections[spaceSectionKey] !== false ? "" : "-rotate-90"}`}
+                                      />
+                                      {spaceName}
+                                    </CardTitle>
+                                    <span className="text-foreground text-sm font-semibold">
+                                      {formatCurrency(spaceTotal)}
+                                      {spaceHasTbd ? "*" : ""}
+                                    </span>
+                                  </div>
+                                </CardHeader>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent>
+                                <CardContent className="pt-0">
+                                  <Table>
+                                    <TableHeader>
+                                      <TableRow>
+                                        <TableHead>{ts("colItem")}</TableHead>
+                                        <TableHeadMd>
+                                          {ts("colStatus")}
+                                        </TableHeadMd>
+                                        <TableHeadMd className="text-right">
+                                          {ts("colQuantity")}
+                                        </TableHeadMd>
+                                        <TableHeadMd className="text-right">
+                                          {ts("colUnitCost")}
+                                        </TableHeadMd>
+                                        <TableHeadMd className="text-right">
+                                          {ts("colSalePrice")}
+                                        </TableHeadMd>
+                                        <TableHead className="text-right">
+                                          {ts("colTotal")}
+                                        </TableHead>
+                                        <TableHeadMd className="w-[80px]" />
+                                        <TableHeadExpandPlaceholder
+                                          srLabel={ts("expandRow")}
+                                        />
+                                      </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                      {spaceItems.map((item) => {
+                                        const expanded = isExpanded(item.id);
+                                        const rowActions: ExpandableTableRowAction[] =
+                                          readOnly
+                                            ? []
+                                            : [
+                                                {
+                                                  id: "edit",
+                                                  label: ts("edit"),
+                                                  icon: Pencil,
+                                                  onClick: () =>
+                                                    handleEditItem(item),
+                                                },
+                                                {
+                                                  id: "delete",
+                                                  label: ts("delete"),
+                                                  icon: Trash2,
+                                                  onClick: () =>
+                                                    setDeleteTarget({
+                                                      kind: "item",
+                                                      id: item.id,
+                                                    }),
+                                                  destructive: true,
+                                                },
+                                              ];
+                                        const imageSrc =
+                                          item.image_url ||
+                                          item.product?.image_url;
+                                        const statusDisplay = getStatusDisplay(
+                                          item.status
+                                        );
+                                        const StatusIcon = statusDisplay.icon;
+                                        const po = item.purchase_order;
+                                        const isOrderedNotReceived =
+                                          item.status === "ordered" && po;
+                                        const deliveryInfo =
+                                          isOrderedNotReceived &&
+                                          (po.delivery_date ||
+                                            po.delivery_deadline)
+                                            ? po.delivery_date
+                                              ? `${t("deliveryPrefix")} ${new Date(po.delivery_date).toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" })}`
+                                              : `${t("deliveryPrefix")} ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
+                                            : null;
+                                        const statusLabel =
+                                          deliveryInfo ?? statusDisplay.label;
+                                        const statusIndicator = (
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <span className="flex items-center justify-center">
+                                                <StatusIcon
+                                                  className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
+                                                />
+                                              </span>
+                                            </TooltipTrigger>
+                                            <TooltipContent variant="tertiary">
+                                              <p>{statusLabel}</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        );
+
+                                        return (
+                                          <Fragment key={item.id}>
+                                            <TableRow>
+                                              <TableCell>
+                                                <div className="flex items-center gap-2.5">
+                                                  {imageSrc ? (
+                                                    <button
+                                                      type="button"
+                                                      className="relative h-10 w-10 shrink-0 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80 md:h-8 md:w-8"
+                                                      onClick={() => {
+                                                        setSelectedItem(item);
+                                                        setIsProductModalOpen(
+                                                          true
+                                                        );
+                                                      }}
+                                                    >
+                                                      <Image
+                                                        src={imageSrc}
+                                                        alt={
+                                                          item.product?.name ||
+                                                          item.name
+                                                        }
+                                                        fill
+                                                        className="object-cover"
+                                                        sizes="40px"
+                                                      />
+                                                    </button>
+                                                  ) : null}
+                                                  <div className="min-w-0 flex-1">
+                                                    <div className="max-w-[10rem] font-medium sm:max-w-none">
+                                                      {item.product?.name ||
+                                                        item.name}
+                                                    </div>
+                                                    {item.internal_reference && (
+                                                      <div className="text-muted-foreground mt-1 font-mono text-xs">
+                                                        {t("codePrefix")}{" "}
+                                                        {
+                                                          item.internal_reference
+                                                        }
+                                                      </div>
+                                                    )}
+                                                    <div className="text-muted-foreground text-xs">
+                                                      {item.product?.supplier
+                                                        ?.name || "-"}
+                                                    </div>
+                                                  </div>
+                                                  <span className="shrink-0 md:hidden">
+                                                    {statusIndicator}
+                                                  </span>
+                                                </div>
+                                              </TableCell>
+                                              <TableCellMd>
+                                                {statusIndicator}
+                                              </TableCellMd>
+                                              <TableCellMd className="text-right tabular-nums">
+                                                {item.quantity}
+                                              </TableCellMd>
+                                              <TableCellMd className="text-muted-foreground text-right tabular-nums">
+                                                <ItemPriceOrTbd
+                                                  item={item}
+                                                  tbdLabel={tbdLabel}
+                                                >
+                                                  {formatCurrency(
+                                                    item.unit_cost
+                                                  )}
+                                                </ItemPriceOrTbd>
+                                              </TableCellMd>
+                                              <TableCellMd className="text-right font-medium tabular-nums">
+                                                <ItemPriceOrTbd
+                                                  item={item}
+                                                  tbdLabel={tbdLabel}
+                                                >
+                                                  {formatCurrency(
+                                                    item.unit_price
+                                                  )}
+                                                </ItemPriceOrTbd>
+                                              </TableCellMd>
+                                              <TableCell className="text-right font-bold tabular-nums">
+                                                <ItemPriceOrTbd
+                                                  item={item}
+                                                  tbdLabel={tbdLabel}
+                                                >
+                                                  {formatCurrency(
+                                                    item.unit_price *
+                                                      item.quantity
+                                                  )}
+                                                </ItemPriceOrTbd>
+                                              </TableCell>
+                                              <TableCellMd className="text-right">
+                                                <ExpandableRowActionsMenu
+                                                  actions={rowActions}
+                                                  menuAriaLabel={t(
+                                                    "productActionsAria"
+                                                  )}
+                                                />
+                                              </TableCellMd>
+                                              <TableRowExpandTrigger
+                                                expanded={expanded}
+                                                onToggle={() =>
+                                                  toggleRow(item.id)
+                                                }
+                                                expandLabel={t(
+                                                  "expandProductDetails"
+                                                )}
+                                                collapseLabel={t(
+                                                  "collapseProductDetails"
+                                                )}
+                                              />
+                                            </TableRow>
+                                            <TableRowMobileDetail
+                                              open={expanded}
+                                              colSpan={mobileVisibleColumnCount}
+                                            >
+                                              <div className="space-y-2">
+                                                <MobileDetailField
+                                                  label={ts("colQuantity")}
+                                                  value={item.quantity}
+                                                />
+                                                <MobileDetailField
+                                                  label={ts("colUnitCost")}
+                                                  value={
+                                                    <ItemPriceOrTbd
+                                                      item={item}
+                                                      tbdLabel={tbdLabel}
+                                                    >
+                                                      {formatCurrency(
+                                                        item.unit_cost
+                                                      )}
+                                                    </ItemPriceOrTbd>
+                                                  }
+                                                />
+                                                <MobileDetailField
+                                                  label={ts("colSalePrice")}
+                                                  value={
+                                                    <ItemPriceOrTbd
+                                                      item={item}
+                                                      tbdLabel={tbdLabel}
+                                                    >
+                                                      {formatCurrency(
+                                                        item.unit_price
+                                                      )}
+                                                    </ItemPriceOrTbd>
+                                                  }
+                                                />
+                                                <ExpandableRowActionsPanel
+                                                  actions={rowActions}
+                                                />
+                                              </div>
+                                            </TableRowMobileDetail>
+                                          </Fragment>
+                                        );
+                                      })}
+                                    </TableBody>
+                                  </Table>
+                                </CardContent>
+                              </CollapsibleContent>
+                            </Card>
+                          </Collapsible>
+                        );
+                      }
+                    )
+                  )}
                 </CardContent>
               </CollapsibleContent>
             </Card>
           </Collapsible>
 
           {/* Budget Lines by Phase and Category */}
-          {phaseOrder.map((phase) => {
+          {[...phaseOrder, ...extraPhases].map((phase) => {
             const phaseData = budgetLinesByPhaseAndCategory[phase];
             if (!phaseData) return null;
 
@@ -937,161 +996,171 @@ export function ProjectBudget({
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                       <CardContent className="space-y-3 pt-0">
-                        {categoryOrder.map((category) => {
-                          const lines = phaseData[category] || [];
-                          if (lines.length === 0) return null;
+                        {orderedBudgetCategoryKeys(phaseData).map(
+                          (category) => {
+                            const lines = phaseData[category] || [];
+                            if (lines.length === 0) return null;
 
-                          const categoryTotal =
-                            sumBudgetLineEstimatedAmounts(lines);
-                          const categorySectionKey = `${phaseSectionKey}_${category}`;
+                            const categoryTotal =
+                              sumBudgetLineEstimatedAmounts(lines);
+                            const categorySectionKey = `${phaseSectionKey}_${category}`;
 
-                          return (
-                            <Collapsible
-                              key={category}
-                              open={openSections[categorySectionKey] !== false}
-                              onOpenChange={() =>
-                                toggleSection(categorySectionKey)
-                              }
-                            >
-                              <Card className="ml-4">
-                                <CollapsibleTrigger asChild>
-                                  <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
-                                    <div className="flex items-center justify-between">
-                                      <CardTitle className="flex items-center gap-2 text-sm">
-                                        <ChevronDown
-                                          className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
-                                        />
-                                        {categoryLabels[category] ?? category}
-                                      </CardTitle>
-                                      <span className="text-foreground text-sm font-semibold">
-                                        {formatCurrency(categoryTotal)}
-                                      </span>
-                                    </div>
-                                  </CardHeader>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                  <CardContent className="pt-0">
-                                    <Table>
-                                      <TableHeader>
-                                        <TableRow>
-                                          <TableHead>
-                                            {ts("colConcept")}
-                                          </TableHead>
-                                          <TableHeadMd>
-                                            {ts("colDescription")}
-                                          </TableHeadMd>
-                                          <TableHead className="text-right">
-                                            {ts("colAmount")}
-                                          </TableHead>
-                                          <TableHeadMd className="w-[80px]" />
-                                          <TableHeadExpandPlaceholder
-                                            srLabel={ts("expandRow")}
+                            return (
+                              <Collapsible
+                                key={category}
+                                open={
+                                  openSections[categorySectionKey] !== false
+                                }
+                                onOpenChange={() =>
+                                  toggleSection(categorySectionKey)
+                                }
+                              >
+                                <Card className="ml-4">
+                                  <CollapsibleTrigger asChild>
+                                    <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
+                                      <div className="flex items-center justify-between">
+                                        <CardTitle className="flex items-center gap-2 text-sm">
+                                          <ChevronDown
+                                            className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
                                           />
-                                        </TableRow>
-                                      </TableHeader>
-                                      <TableBody>
-                                        {lines.map((line) => {
-                                          const expanded = isExpanded(line.id);
-                                          const rowActions: ExpandableTableRowAction[] =
-                                            readOnly
-                                              ? []
-                                              : [
-                                                  {
-                                                    id: "edit",
-                                                    label: ts("edit"),
-                                                    icon: Pencil,
-                                                    onClick: () =>
-                                                      handleEditBudgetLine(
-                                                        line
-                                                      ),
-                                                  },
-                                                  {
-                                                    id: "delete",
-                                                    label: ts("delete"),
-                                                    icon: Trash2,
-                                                    onClick: () =>
-                                                      setDeleteTarget({
-                                                        kind: "budgetLine",
-                                                        id: line.id,
-                                                      }),
-                                                    destructive: true,
-                                                  },
-                                                ];
+                                          {categoryLabels[
+                                            category as BudgetCategory
+                                          ] ?? category}
+                                        </CardTitle>
+                                        <span className="text-foreground text-sm font-semibold">
+                                          {formatCurrency(categoryTotal)}
+                                        </span>
+                                      </div>
+                                    </CardHeader>
+                                  </CollapsibleTrigger>
+                                  <CollapsibleContent>
+                                    <CardContent className="pt-0">
+                                      <Table>
+                                        <TableHeader>
+                                          <TableRow>
+                                            <TableHead>
+                                              {ts("colConcept")}
+                                            </TableHead>
+                                            <TableHeadMd>
+                                              {ts("colDescription")}
+                                            </TableHeadMd>
+                                            <TableHead className="text-right">
+                                              {ts("colAmount")}
+                                            </TableHead>
+                                            <TableHeadMd className="w-[80px]" />
+                                            <TableHeadExpandPlaceholder
+                                              srLabel={ts("expandRow")}
+                                            />
+                                          </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                          {lines.map((line) => {
+                                            const expanded = isExpanded(
+                                              line.id
+                                            );
+                                            const rowActions: ExpandableTableRowAction[] =
+                                              readOnly
+                                                ? []
+                                                : [
+                                                    {
+                                                      id: "edit",
+                                                      label: ts("edit"),
+                                                      icon: Pencil,
+                                                      onClick: () =>
+                                                        handleEditBudgetLine(
+                                                          line
+                                                        ),
+                                                    },
+                                                    {
+                                                      id: "delete",
+                                                      label: ts("delete"),
+                                                      icon: Trash2,
+                                                      onClick: () =>
+                                                        setDeleteTarget({
+                                                          kind: "budgetLine",
+                                                          id: line.id,
+                                                        }),
+                                                      destructive: true,
+                                                    },
+                                                  ];
 
-                                          return (
-                                            <Fragment key={line.id}>
-                                              <TableRow>
-                                                <TableCell className="max-w-[8rem] truncate font-medium sm:max-w-none">
-                                                  {subcategoryLabels[
-                                                    category
-                                                  ]?.[line.subcategory] ??
-                                                    line.subcategory}
-                                                </TableCell>
-                                                <TableCellMd className="text-muted-foreground">
-                                                  {line.description || "-"}
-                                                </TableCellMd>
-                                                <TableCell className="text-right font-semibold tabular-nums">
-                                                  <ItemPriceOrTbd
-                                                    item={line}
-                                                    tbdLabel={tbdLabel}
-                                                  >
-                                                    {formatCurrency(
-                                                      Number(
-                                                        line.estimated_amount
-                                                      )
-                                                    )}
-                                                  </ItemPriceOrTbd>
-                                                </TableCell>
-                                                <TableCellMd className="text-right">
-                                                  <ExpandableRowActionsMenu
-                                                    actions={rowActions}
-                                                    menuAriaLabel={t(
-                                                      "budgetLineActionsAria"
-                                                    )}
-                                                  />
-                                                </TableCellMd>
-                                                <TableRowExpandTrigger
-                                                  expanded={expanded}
-                                                  onToggle={() =>
-                                                    toggleRow(line.id)
-                                                  }
-                                                  expandLabel={t(
-                                                    "expandLineDetails"
-                                                  )}
-                                                  collapseLabel={t(
-                                                    "collapseLineDetails"
-                                                  )}
-                                                />
-                                              </TableRow>
-                                              <TableRowMobileDetail
-                                                open={expanded}
-                                                colSpan={
-                                                  mobileVisibleColumnCount
-                                                }
-                                              >
-                                                <div className="space-y-2">
-                                                  <MobileDetailField
-                                                    label={ts("colDescription")}
-                                                    value={
-                                                      line.description || "-"
+                                            return (
+                                              <Fragment key={line.id}>
+                                                <TableRow>
+                                                  <TableCell className="max-w-[8rem] truncate font-medium sm:max-w-none">
+                                                    {subcategoryLabels[
+                                                      category
+                                                    ]?.[line.subcategory] ??
+                                                      line.subcategory}
+                                                  </TableCell>
+                                                  <TableCellMd className="text-muted-foreground">
+                                                    {line.description || "-"}
+                                                  </TableCellMd>
+                                                  <TableCell className="text-right font-semibold tabular-nums">
+                                                    <ItemPriceOrTbd
+                                                      item={line}
+                                                      tbdLabel={tbdLabel}
+                                                    >
+                                                      {formatCurrency(
+                                                        Number(
+                                                          line.estimated_amount
+                                                        )
+                                                      )}
+                                                    </ItemPriceOrTbd>
+                                                  </TableCell>
+                                                  <TableCellMd className="text-right">
+                                                    <ExpandableRowActionsMenu
+                                                      actions={rowActions}
+                                                      menuAriaLabel={t(
+                                                        "budgetLineActionsAria"
+                                                      )}
+                                                    />
+                                                  </TableCellMd>
+                                                  <TableRowExpandTrigger
+                                                    expanded={expanded}
+                                                    onToggle={() =>
+                                                      toggleRow(line.id)
                                                     }
+                                                    expandLabel={t(
+                                                      "expandLineDetails"
+                                                    )}
+                                                    collapseLabel={t(
+                                                      "collapseLineDetails"
+                                                    )}
                                                   />
-                                                  <ExpandableRowActionsPanel
-                                                    actions={rowActions}
-                                                  />
-                                                </div>
-                                              </TableRowMobileDetail>
-                                            </Fragment>
-                                          );
-                                        })}
-                                      </TableBody>
-                                    </Table>
-                                  </CardContent>
-                                </CollapsibleContent>
-                              </Card>
-                            </Collapsible>
-                          );
-                        })}
+                                                </TableRow>
+                                                <TableRowMobileDetail
+                                                  open={expanded}
+                                                  colSpan={
+                                                    mobileVisibleColumnCount
+                                                  }
+                                                >
+                                                  <div className="space-y-2">
+                                                    <MobileDetailField
+                                                      label={ts(
+                                                        "colDescription"
+                                                      )}
+                                                      value={
+                                                        line.description || "-"
+                                                      }
+                                                    />
+                                                    <ExpandableRowActionsPanel
+                                                      actions={rowActions}
+                                                    />
+                                                  </div>
+                                                </TableRowMobileDetail>
+                                              </Fragment>
+                                            );
+                                          })}
+                                        </TableBody>
+                                      </Table>
+                                    </CardContent>
+                                  </CollapsibleContent>
+                                </Card>
+                              </Collapsible>
+                            );
+                          }
+                        )}
                       </CardContent>
                     </CollapsibleContent>
                   </Card>

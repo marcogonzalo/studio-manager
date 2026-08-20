@@ -27,6 +27,12 @@ import {
   sumBudgetLineEstimatedAmounts,
   sumItemSaleAmounts,
 } from "@/lib/project-item-price";
+import {
+  groupBudgetLinesByPhaseThenCategory,
+  groupItemsBySpaceThenCreatedAt,
+  orderedBudgetCategoryKeys,
+  orderedBudgetPhaseKeys,
+} from "@/lib/project-list-order";
 import type {
   Project,
   ProjectBudgetLine,
@@ -398,34 +404,13 @@ export function ProjectPDF({
   const hasPriceTbd =
     hasPricedItemsWithTbd(includedItems) || hasBudgetLinesWithTbd(budgetLines);
 
-  // Group items by space (location)
-  const itemsBySpace = includedItems.reduce(
-    (acc, item) => {
-      const spaceName = item.space?.name || copy.spaceGeneral;
-      if (!acc[spaceName]) {
-        acc[spaceName] = [];
-      }
-      acc[spaceName].push(item);
-      return acc;
-    },
-    {} as Record<string, ProjectItem[]>
+  const itemsBySpace = groupItemsBySpaceThenCreatedAt(
+    includedItems,
+    copy.spaceGeneral
   );
 
-  // Group budget lines by phase first, then by category
-  const budgetLinesByPhaseAndCategory = budgetLines.reduce(
-    (acc, line) => {
-      const phaseKey = line.phase || "no_phase";
-      if (!acc[phaseKey]) {
-        acc[phaseKey] = {} as Record<BudgetCategory, ProjectBudgetLine[]>;
-      }
-      if (!acc[phaseKey][line.category]) {
-        acc[phaseKey][line.category] = [];
-      }
-      acc[phaseKey][line.category].push(line);
-      return acc;
-    },
-    {} as Record<string, Record<BudgetCategory, ProjectBudgetLine[]>>
-  );
+  const budgetLinesByPhaseAndCategory =
+    groupBudgetLinesByPhaseThenCategory(budgetLines);
 
   // Calculate totals (only included items)
   const totalItemsPrice = sumItemSaleAmounts(includedItems);
@@ -437,26 +422,9 @@ export function ProjectPDF({
   const formatCurrency = (amount: number) =>
     formatCurrencyWithLang(amount, project?.currency, lang);
 
-  // Order of phases to display in PDF
-  const phaseOrder: (ProjectPhase | "no_phase")[] = [
-    "diagnosis",
-    "design",
-    "executive",
-    "budget",
-    "construction",
-    "delivery",
-    "no_phase",
-  ];
-
-  // Order of categories to display within each phase
-  const categoryOrder: BudgetCategory[] = [
-    "own_fees",
-    "external_services",
-    "construction",
-    "operations",
-  ];
-
-  const visiblePhases = phaseOrder.filter((phase) => {
+  const visiblePhases = orderedBudgetPhaseKeys(
+    budgetLinesByPhaseAndCategory
+  ).filter((phase) => {
     const phaseData = budgetLinesByPhaseAndCategory[phase];
     return (
       !!phaseData && Object.values(phaseData).some((lines) => lines.length > 0)
@@ -464,7 +432,7 @@ export function ProjectPDF({
   });
   const [firstPhase, ...restPhases] = visiblePhases;
 
-  const renderPhaseGroup = (phase: ProjectPhase | "no_phase") => {
+  const renderPhaseGroup = (phase: string) => {
     const phaseData = budgetLinesByPhaseAndCategory[phase];
     if (!phaseData) return null;
 
@@ -476,7 +444,7 @@ export function ProjectPDF({
       <View key={phase} style={styles.budgetLineGroup}>
         <View style={styles.lineGroupTitleRow}>
           <Text style={styles.lineGroupTitleText}>
-            {getPdfPhaseLabel(phase, lang)}
+            {getPdfPhaseLabel(phase as ProjectPhase | "no_phase", lang)}
           </Text>
           <Text style={styles.budgetLineSubtotal}>
             {copy.subtotal}{" "}
@@ -485,7 +453,7 @@ export function ProjectPDF({
         </View>
 
         <View style={styles.budgetLineGroupIndent}>
-          {categoryOrder.map((category) => {
+          {orderedBudgetCategoryKeys(phaseData).map((category) => {
             const lines = phaseData[category];
             if (!lines || lines.length === 0) return null;
 
@@ -496,7 +464,7 @@ export function ProjectPDF({
               <View key={category} style={styles.budgetLineGroup}>
                 <View style={styles.budgetLineHeader}>
                   <Text style={styles.budgetLineName}>
-                    {getPdfCategoryLabel(category, lang)}
+                    {getPdfCategoryLabel(category as BudgetCategory, lang)}
                   </Text>
                   <Text style={styles.budgetLineSubtotal}>
                     {copy.subtotal}{" "}
@@ -510,7 +478,11 @@ export function ProjectPDF({
                 {lines.map((line) => (
                   <View key={line.id} style={styles.budgetLineItem}>
                     <Text style={styles.budgetLineItemName}>
-                      {getPdfSubcategoryLabel(category, line.subcategory, lang)}
+                      {getPdfSubcategoryLabel(
+                        category as BudgetCategory,
+                        line.subcategory,
+                        lang
+                      )}
                     </Text>
                     <Text style={styles.budgetLineItemDescription}>
                       {line.description || ""}
@@ -623,7 +595,7 @@ export function ProjectPDF({
         </View>
 
         {/* Products by space first, then services */}
-        {Object.keys(itemsBySpace).length > 0 && (
+        {itemsBySpace.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionTitleBar}>
               <Text style={styles.sectionTitleBarText}>
@@ -631,12 +603,12 @@ export function ProjectPDF({
               </Text>
             </View>
 
-            {Object.entries(itemsBySpace).map(([spaceName, spaceItems]) => {
+            {itemsBySpace.map(({ spaceKey, spaceName, items: spaceItems }) => {
               const spaceSubtotal = sumItemSaleAmounts(spaceItems);
               const spaceHasTbd = hasPricedItemsWithTbd(spaceItems);
 
               return (
-                <View key={spaceName} style={styles.locationGroup}>
+                <View key={spaceKey} style={styles.locationGroup}>
                   <View style={styles.lineGroupTitleRow}>
                     <Text style={styles.lineGroupTitleText}>{spaceName}</Text>
                     <Text style={styles.budgetLineSubtotal}>

@@ -36,7 +36,6 @@ export function useProjectBudgetLines(
         .from("project_budget_lines")
         .select("*, supplier:suppliers(name)")
         .eq("project_id", projectId)
-        .order("category")
         .order("created_at");
 
       if (excludeInternal) {
