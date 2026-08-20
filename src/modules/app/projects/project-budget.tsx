@@ -1000,6 +1000,7 @@ export function ProjectBudget({
                           (category) => {
                             const lines = phaseData[category] || [];
                             if (lines.length === 0) return null;
+                            const categoryKey = category as BudgetCategory;
 
                             const categoryTotal =
                               sumBudgetLineEstimatedAmounts(lines);
@@ -1023,9 +1024,8 @@ export function ProjectBudget({
                                           <ChevronDown
                                             className={`h-3 w-3 transition-transform ${openSections[categorySectionKey] !== false ? "" : "-rotate-90"}`}
                                           />
-                                          {categoryLabels[
-                                            category as BudgetCategory
-                                          ] ?? category}
+                                          {categoryLabels[categoryKey] ??
+                                            category}
                                         </CardTitle>
                                         <span className="text-foreground text-sm font-semibold">
                                           {formatCurrency(categoryTotal)}
@@ -1089,7 +1089,7 @@ export function ProjectBudget({
                                                 <TableRow>
                                                   <TableCell className="max-w-[8rem] truncate font-medium sm:max-w-none">
                                                     {subcategoryLabels[
-                                                      category
+                                                      categoryKey
                                                     ]?.[line.subcategory] ??
                                                       line.subcategory}
                                                   </TableCell>

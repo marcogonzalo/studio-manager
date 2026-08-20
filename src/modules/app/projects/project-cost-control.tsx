@@ -409,7 +409,8 @@ export function ProjectCostControl({
 
           {/* Budget Lines by Category */}
           {categoryOrder.map((category) => {
-            const lines = budgetLinesByCategory[category] || [];
+            const categoryKey = category as BudgetCategory;
+            const lines = budgetLinesByCategory[categoryKey] || [];
             if (lines.length === 0) return null;
 
             const categoryEstimated = sumBudgetLineEstimatedAmounts(lines);
@@ -433,8 +434,7 @@ export function ProjectCostControl({
                           <ChevronDown
                             className={`h-4 w-4 transition-transform ${openSections[category] ? "" : "-rotate-90"}`}
                           />
-                          {categoryLabels[category as BudgetCategory] ??
-                            category}
+                          {categoryLabels[categoryKey] ?? category}
                         </CardTitle>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
@@ -525,7 +525,7 @@ export function ProjectCostControl({
                               <Fragment key={line.id}>
                                 <TableRow>
                                   <TableCell className="max-w-[8rem] truncate font-medium sm:max-w-none">
-                                    {subcategoryLabels[category]?.[
+                                    {subcategoryLabels[categoryKey]?.[
                                       line.subcategory
                                     ] ?? line.subcategory}
                                   </TableCell>
