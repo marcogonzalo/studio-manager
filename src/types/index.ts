@@ -208,6 +208,7 @@ export type OperationsSubcategory =
   | "insurance" // Seguros
   | "customs" // Aduanas
   | "handling" // Manipulación
+  | "assembly" // Ensamblaje
   | "other"; // Otros
 
 export type BudgetSubcategory =

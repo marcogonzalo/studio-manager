@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { BudgetCategory, ProjectPhase } from "@/types";
 import {
   getLocalizedCategoryOptions,
@@ -37,10 +37,12 @@ export function useProjectStatusLabel() {
 
 export function useCategoryOptions() {
   const t = useTranslations("BudgetCategory");
-  return getLocalizedCategoryOptions((key) => t(key));
+  const locale = useLocale();
+  return getLocalizedCategoryOptions((key) => t(key), locale);
 }
 
 export function useSubcategoryOptions(category: BudgetCategory | "") {
   const t = useTranslations("BudgetSubcategory");
-  return getLocalizedSubcategoryOptions(category, (key) => t(key));
+  const locale = useLocale();
+  return getLocalizedSubcategoryOptions(category, (key) => t(key), locale);
 }
