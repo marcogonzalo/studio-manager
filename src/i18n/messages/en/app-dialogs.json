@@ -436,7 +436,7 @@
     "previewAlt": "Preview",
     "dropImage": "Drag an image here",
     "clickToSelect": "or click to select",
-    "formats": "JPG, PNG or WebP (max. 5MB)",
+    "formats": "JPG, PNG, WebP or AVIF (max. 5MB)",
     "deferredHint": "The image will be uploaded when saving the product.",
     "resizeHint": "The image will be resized to a max width of 1200px and converted to WebP."
   },
@@ -458,7 +458,7 @@
     "dropImages": "Drag images here",
     "dropImage": "Drag an image here",
     "clickToSelect": "or click to select",
-    "formats": "JPG, PNG or WebP (max. 5MB)"
+    "formats": "JPG, PNG, WebP or AVIF (max. 5MB)"
   },
   "ProductDetailModal": {
     "noSupplier": "No supplier",

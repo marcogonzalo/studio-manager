@@ -192,7 +192,7 @@ export function SpaceImageUpload({
       >
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+          accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif"
           multiple={multiple}
           onChange={handleFileInput}
           disabled={disabled || isUploading}

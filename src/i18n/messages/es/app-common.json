@@ -177,7 +177,7 @@
     "phoneInvalid": "Introduce un teléfono válido",
     "phoneInvalidWithExample": "Introduce un teléfono válido (ej. {example})",
     "taxMin": "Debe ser mayor o igual a 0",
-    "imageType": "Solo se permiten imágenes JPG, PNG o WebP",
+    "imageType": "Solo se permiten imágenes JPG, PNG, WebP o AVIF",
     "fileTooLarge5mb": "El archivo no puede superar 5MB",
     "documentType": "Tipo no permitido. Use PDFs, docs, hojas de cálculo, presentaciones, texto u otros documentos relacionados.",
     "documentSize": "No se pueden subir archivos de más de 10Mb. Si lo tienes en Drive, OneDrive o iCloud, añádelo como URL."

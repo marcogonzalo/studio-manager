@@ -15,7 +15,7 @@ describe("getAppUiCopy", () => {
     expect(copy.validation.emailInvalid).toBe("Enter a valid email address");
     expect(copy.validation.emailRequired).toBe("Email is required");
     expect(copy.errors.authMissingCode).toContain("access code");
-    expect(copy.validation.imageType).toContain("JPG");
+    expect(copy.validation.imageType).toContain("AVIF");
     expect(copy.validation.fileTooLarge5mb).toContain("5MB");
   });
 
