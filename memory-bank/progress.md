@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama feat/supplier-add-button-in-forms:** Partidas de presupuesto (`BudgetLineDialog`): botón `+` para crear proveedor inline (`SupplierDialog`), tooltip de ayuda en Fase (`phaseHelp`, variante tertiary), layout Fase 1/3 + Proveedor 2/3. Subcategoría operativa `assembly` / Ensamblaje en tipos, `BUDGET_SUBCATEGORIES`, i18n app/view-project/cost control. Categorías y subcategorías de partida ordenadas alfabéticamente por etiqueta localizada (`budget-labels.ts`, `use-project-labels`). Producto y ítem de presupuesto (catálogo/nuevo producto) ya tenían `+` proveedor en `main`. Lint OK; tests `budget-labels` OK; build OK (Docker test profile). Suite completa local: 465/466 (timeout flaky en test ajeno `document/route`).
+
 - **Rama feat/price-tbd-project-items (issue #192, PR #194):** Productos y partidas de presupuesto pueden marcarse como «precio por definir». Columnas `project_items.is_price_tbd` y `project_budget_lines.is_price_tbd`; checkbox en `AddItemDialog` y `BudgetLineDialog` (importes deshabilitados). UI (`PriceTbdPill`), PDF, vista pública y compras muestran «Por definir» / «To be defined» en vez de 0; totales omiten TBD y avisan que el total es parcial (también en pedidos). Control de costes muestra todas las partidas (incl. honorarios); % desviación solo si estimado y real > 0. RPCs públicas exponen el flag. Helpers `project-item-price.ts` / `budget-line-deviation.ts`. Lint OK; tests 463; build OK (Docker test profile).
 
 ## Completado (resumen por áreas)
