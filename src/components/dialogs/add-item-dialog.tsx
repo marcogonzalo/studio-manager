@@ -43,6 +43,10 @@ import type { Product, ProjectItem, Space, Supplier } from "@/types";
 import Link from "next/link";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
 import { appendCurrencyToLabel } from "@/lib/formatting";
+import {
+  buildCatalogProductInsertFromProject,
+  buildCatalogProductUpdateFromProject,
+} from "@/lib/catalog-product-from-project";
 import { useAuth } from "@/components/auth-provider";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
@@ -360,20 +364,19 @@ export function AddItemDialog({
           return;
         }
 
-        const productData: Record<string, unknown> = {
+        const productData = buildCatalogProductInsertFromProject({
           name: values.name,
           description: values.description || "",
           reference_code: values.reference_code || "",
           reference_url: values.reference_url || null,
           category: values.category || "",
-          cost_price: values.unit_cost,
-          image_url: pendingImageFile ? null : values.image_url || null,
-          supplier_id:
-            values.supplier_id === "none" || !values.supplier_id
-              ? null
-              : values.supplier_id,
+          unit_cost: values.unit_cost,
+          image_url: values.image_url || null,
+          supplier_id: values.supplier_id,
           user_id: user.id,
-        };
+          projectCurrency,
+          pendingImageUpload: !!pendingImageFile,
+        });
 
         const { data: newProduct, error: productError } = await supabase
           .from("products")
@@ -479,16 +482,16 @@ export function AddItemDialog({
           item.product_id
         ) {
           const productUpdate: Record<string, unknown> = {
-            name: values.name,
-            reference_code: values.reference_code || "",
-            reference_url: values.reference_url || null,
-            category: values.category || "",
-            cost_price: values.unit_cost,
-            image_url: values.image_url || null,
-            supplier_id:
-              values.supplier_id === "none" || !values.supplier_id
-                ? null
-                : values.supplier_id,
+            ...buildCatalogProductUpdateFromProject({
+              name: values.name,
+              reference_code: values.reference_code || "",
+              reference_url: values.reference_url || null,
+              category: values.category || "",
+              unit_cost: values.unit_cost,
+              image_url: values.image_url || null,
+              supplier_id: values.supplier_id,
+              projectCurrency,
+            }),
           };
           if (uploadedImageSizeBytesRef.current != null) {
             productUpdate.image_size_bytes = uploadedImageSizeBytesRef.current;
