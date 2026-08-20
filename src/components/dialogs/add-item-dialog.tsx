@@ -902,7 +902,7 @@ export function AddItemDialog({
               <div
                 className={
                   lineTaxEditable
-                    ? "grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-[minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.7fr)]"
+                    ? "grid grid-cols-2 gap-3 sm:grid-cols-[minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.7fr)]"
                     : "grid grid-cols-2 gap-4 lg:grid-cols-4"
                 }
               >
