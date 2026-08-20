@@ -15,15 +15,15 @@ const EN_CATEGORIES: Record<BudgetCategory, string> = {
 };
 
 describe("getLocalizedCategoryOptions", () => {
-  it("maps all category keys through translator", () => {
-    const opts = getLocalizedCategoryOptions((key) => EN_CATEGORIES[key]);
+  it("maps all category keys through translator and sorts by label", () => {
+    const opts = getLocalizedCategoryOptions((key) => EN_CATEGORIES[key], "en");
 
     expect(opts).toHaveLength(4);
-    expect(opts.map((o) => o.value)).toEqual([
-      "construction",
-      "own_fees",
-      "external_services",
-      "operations",
+    expect(opts.map((o) => o.label)).toEqual([
+      "Construction",
+      "External Services",
+      "Operating Expenses",
+      "Own Fees",
     ]);
     expect(opts.find((o) => o.value === "construction")).toEqual({
       value: "construction",
@@ -33,6 +33,20 @@ describe("getLocalizedCategoryOptions", () => {
       value: "own_fees",
       label: "Own Fees",
     });
+  });
+
+  it("sorts Spanish category labels alphabetically", () => {
+    const opts = getLocalizedCategoryOptions(
+      (key) => es.BudgetCategory[key],
+      "es"
+    );
+
+    expect(opts.map((o) => o.label)).toEqual([
+      "Gastos Operativos",
+      "Honorarios Propios",
+      "Obra",
+      "Servicios Externos",
+    ]);
   });
 });
 
@@ -47,17 +61,29 @@ describe("getLocalizedSubcategoryOptions", () => {
     ).toEqual([]);
   });
 
-  it("maps subcategory keys through translator for known category", () => {
-    const opts = getLocalizedSubcategoryOptions("construction", (key) =>
-      key === "construction.demolition" ? "Demolition" : key
+  it("sorts subcategory labels alphabetically for the locale", () => {
+    const opts = getLocalizedSubcategoryOptions(
+      "operations",
+      (key) => {
+        const [, subcategory] = key.split(".");
+        return es.BudgetSubcategory.operations[
+          subcategory as keyof typeof es.BudgetSubcategory.operations
+        ];
+      },
+      "es"
     );
 
-    expect(opts.length).toBeGreaterThan(0);
-    expect(opts.find((o) => o.value === "demolition")).toEqual({
-      value: "demolition",
-      label: "Demolition",
-    });
-    expect(opts.every((o) => o.value && o.label)).toBe(true);
+    expect(opts.map((o) => o.label)).toEqual([
+      "Aduanas",
+      "Almacenamiento",
+      "Embalaje",
+      "Ensamblaje",
+      "Envío",
+      "Manipulación",
+      "Otros",
+      "Seguros",
+      "Transporte",
+    ]);
   });
 });
 

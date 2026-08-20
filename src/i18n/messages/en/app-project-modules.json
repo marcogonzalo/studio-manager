@@ -212,6 +212,7 @@
         "insurance": "Insurance",
         "customs": "Customs",
         "handling": "Handling",
+        "assembly": "Assembly",
         "other": "Other"
       }
     }
@@ -386,6 +387,7 @@
         "insurance": "Insurance",
         "customs": "Customs",
         "handling": "Handling",
+        "assembly": "Assembly",
         "other": "Other"
       }
     }

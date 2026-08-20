@@ -103,6 +103,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
       insurance: t("budgetSubcategory.operations.insurance"),
       customs: t("budgetSubcategory.operations.customs"),
       handling: t("budgetSubcategory.operations.handling"),
+      assembly: t("budgetSubcategory.operations.assembly"),
       other: t("budgetSubcategory.operations.other"),
     },
   };
