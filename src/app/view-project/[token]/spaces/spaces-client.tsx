@@ -13,9 +13,11 @@ import {
 import { formatCurrencyWithLang } from "@/lib/formatting";
 import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import type { Locale } from "@/i18n/config";
+import {
+  UNASSIGNED_SPACE_KEY,
+  uniqueSpaceKeysByCreatedAt,
+} from "@/lib/project-list-order";
 import { cn } from "@/lib/utils";
-
-const GENERAL_SPACE_KEY = "__general_space__";
 
 interface ProductRow {
   id: string;
@@ -28,6 +30,8 @@ interface ProductRow {
   status: string;
   image_url: string | null;
   space_name: string;
+  space_created_at?: string | null;
+  created_at?: string;
   is_price_tbd?: boolean;
 }
 
@@ -36,6 +40,8 @@ interface RenderRow {
   url: string;
   description: string;
   space_name: string;
+  space_created_at?: string | null;
+  created_at?: string;
 }
 
 export function ViewProjectSpacesClient({
@@ -78,7 +84,7 @@ export function ViewProjectSpacesClient({
 
   const productsBySpace = products.reduce(
     (acc, p) => {
-      const key = p.space_name?.trim() || GENERAL_SPACE_KEY;
+      const key = p.space_name?.trim() || UNASSIGNED_SPACE_KEY;
       if (!acc[key]) acc[key] = [];
       acc[key].push(p);
       return acc;
@@ -88,7 +94,7 @@ export function ViewProjectSpacesClient({
 
   const rendersBySpace = renders.reduce(
     (acc, r) => {
-      const key = r.space_name?.trim() || GENERAL_SPACE_KEY;
+      const key = r.space_name?.trim() || UNASSIGNED_SPACE_KEY;
       if (!acc[key]) acc[key] = [];
       acc[key].push(r);
       return acc;
@@ -96,15 +102,16 @@ export function ViewProjectSpacesClient({
     {} as Record<string, RenderRow[]>
   );
 
-  const allSpaceNames = Array.from(
-    new Set([...Object.keys(productsBySpace), ...Object.keys(rendersBySpace)])
-  ).sort((a, b) =>
-    a === GENERAL_SPACE_KEY
-      ? 1
-      : b === GENERAL_SPACE_KEY
-        ? -1
-        : a.localeCompare(b)
-  );
+  const allSpaceNames = uniqueSpaceKeysByCreatedAt([
+    ...products.map((p) => ({
+      key: p.space_name?.trim() || UNASSIGNED_SPACE_KEY,
+      createdAt: p.space_created_at ?? null,
+    })),
+    ...renders.map((r) => ({
+      key: r.space_name?.trim() || UNASSIGNED_SPACE_KEY,
+      createdAt: r.space_created_at ?? null,
+    })),
+  ]);
 
   return (
     <>
@@ -120,7 +127,9 @@ export function ViewProjectSpacesClient({
             const spaceProducts = productsBySpace[spaceName] ?? [];
             const spaceRenders = rendersBySpace[spaceName] ?? [];
             const spaceLabel =
-              spaceName === GENERAL_SPACE_KEY ? t("spaceGeneral") : spaceName;
+              spaceName === UNASSIGNED_SPACE_KEY
+                ? t("spaceGeneral")
+                : spaceName;
             const isOpen = openSpaces[spaceName] ?? true;
             const hasRenders = spaceRenders.length > 0;
             const hasProducts = spaceProducts.length > 0;

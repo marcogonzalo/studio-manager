@@ -116,6 +116,7 @@ export interface Space {
   id: string;
   name: string;
   description: string;
+  created_at?: string;
 }
 
 export interface AdditionalCost {
@@ -241,7 +242,7 @@ export interface ProjectItem {
   description: string;
   space_id: string | null;
   product_id: string | null;
-  space?: { name: string };
+  space?: { name: string; created_at?: string };
   quantity: number;
   unit_cost: number;
   markup: number;
@@ -254,6 +255,7 @@ export interface ProjectItem {
   purchase_order_id?: string | null;
   is_excluded?: boolean;
   is_price_tbd?: boolean;
+  created_at?: string;
   purchase_order?: {
     order_number: string;
     status: string;

@@ -162,7 +162,11 @@ export function AddItemDialog({
   useEffect(() => {
     async function loadData() {
       const [{ data: rData }, { data: projectData }] = await Promise.all([
-        supabase.from("spaces").select("*").eq("project_id", projectId),
+        supabase
+          .from("spaces")
+          .select("*")
+          .eq("project_id", projectId)
+          .order("created_at"),
         supabase
           .from("projects")
           .select("currency")
