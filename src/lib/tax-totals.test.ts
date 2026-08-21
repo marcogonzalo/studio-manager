@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeTaxGroups,
   effectiveLineTaxRate,
+  formatTaxRatePercent,
   sumTaxAmounts,
   type TaxableLine,
 } from "./tax-totals";
@@ -103,5 +104,13 @@ describe("sumTaxAmounts", () => {
         { rate: 21, taxableBase: 100, taxAmount: 21 },
       ])
     ).toBe(26);
+  });
+});
+
+describe("formatTaxRatePercent", () => {
+  it("formats rates with a percent sign", () => {
+    expect(formatTaxRatePercent(21)).toBe("21%");
+    expect(formatTaxRatePercent(10.5)).toBe("10.5%");
+    expect(formatTaxRatePercent(Number.NaN)).toBe("0%");
   });
 });

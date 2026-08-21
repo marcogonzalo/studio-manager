@@ -29,7 +29,12 @@ import {
   sumBudgetLineEstimatedAmounts,
   sumItemSaleAmounts,
 } from "@/lib/project-item-price";
-import { computeTaxGroups, sumTaxAmounts } from "@/lib/tax-totals";
+import {
+  computeTaxGroups,
+  effectiveLineTaxRate,
+  formatTaxRatePercent,
+  sumTaxAmounts,
+} from "@/lib/tax-totals";
 import {
   groupBudgetLinesByPhaseThenCategory,
   groupItemsBySpaceThenCreatedAt,
@@ -214,16 +219,17 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   colImage: {
-    width: "8%",
+    width: "7%",
     justifyContent: "center",
     alignItems: "center",
   },
   colName: {
-    width: "40%",
+    width: "36%",
   },
-  colPrice: colRight("16%"),
-  colQuantity: colRight("12%"),
-  colTotal: colRight("20%"),
+  colPrice: colRight("14%"),
+  colQuantity: colRight("10%"),
+  colTax: colRight("10%"),
+  colTotal: colRight("19%"),
   colEmpty: {
     width: "4%",
   },
@@ -262,7 +268,7 @@ const styles = StyleSheet.create({
   budgetLineItemName: {
     ...text9,
     ...boldText,
-    width: "30%",
+    width: "28%",
   },
   budgetLineItemDescription: {
     ...text9,
@@ -270,11 +276,17 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 8,
   },
+  budgetLineItemTax: {
+    ...text9,
+    color: colors.textLight,
+    textAlign: "right",
+    width: "12%",
+  },
   budgetLineItemAmount: {
     ...text9,
     ...boldText,
     textAlign: "right",
-    width: "20%",
+    width: "18%",
   },
   summary: {
     flexDirection: "column",
@@ -439,6 +451,10 @@ export function ProjectPDF({
   );
   const tax = sumTaxAmounts(taxGroups);
   const grandTotal = subtotal + tax;
+  const taxProjectCtx = {
+    multitax: project.multitax === true,
+    tax_rate: projectTaxRate,
+  };
 
   const formatCurrency = (amount: number) =>
     formatCurrencyWithLang(amount, project?.currency, lang);
@@ -507,6 +523,11 @@ export function ProjectPDF({
                     </Text>
                     <Text style={styles.budgetLineItemDescription}>
                       {line.description || ""}
+                    </Text>
+                    <Text style={styles.budgetLineItemTax}>
+                      {formatTaxRatePercent(
+                        effectiveLineTaxRate(line, taxProjectCtx)
+                      )}
                     </Text>
                     <Text style={styles.budgetLineItemAmount}>
                       {isItemPriceTbd(line)
@@ -662,6 +683,11 @@ export function ProjectPDF({
                           {copy.qtyColumn}
                         </Text>
                       </View>
+                      <View style={styles.colTax}>
+                        <Text style={styles.tableHeaderTextRight}>
+                          {copy.taxColumn}
+                        </Text>
+                      </View>
                       <View style={styles.colTotal}>
                         <Text style={styles.tableHeaderTextRight}>
                           {copy.totalColumn}
@@ -709,6 +735,13 @@ export function ProjectPDF({
                         <View style={styles.colQuantity}>
                           <Text style={styles.tableCellRight}>
                             {item.quantity}
+                          </Text>
+                        </View>
+                        <View style={styles.colTax}>
+                          <Text style={styles.tableCellRight}>
+                            {formatTaxRatePercent(
+                              effectiveLineTaxRate(item, taxProjectCtx)
+                            )}
                           </Text>
                         </View>
                         <View style={styles.colTotal}>

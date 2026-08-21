@@ -92,7 +92,12 @@ import {
   sumBudgetLineEstimatedAmounts,
   sumItemSaleAmounts,
 } from "@/lib/project-item-price";
-import { computeTaxGroups, sumTaxAmounts } from "@/lib/tax-totals";
+import {
+  computeTaxGroups,
+  effectiveLineTaxRate,
+  formatTaxRatePercent,
+  sumTaxAmounts,
+} from "@/lib/tax-totals";
 
 import type {
   Project,
@@ -399,6 +404,10 @@ export function ProjectBudget({
   );
   const taxAmountTotal = sumTaxAmounts(taxGroups);
   const totalWithTax = grandTotal + taxAmountTotal;
+  const taxProjectCtx = {
+    multitax: project?.multitax === true,
+    tax_rate: project?.tax_rate ?? 0,
+  };
 
   const formatCurrency = (amount: number) =>
     formatCurrencyWithSettings(amount, project?.currency);
@@ -719,7 +728,7 @@ export function ProjectBudget({
                             open={openSections[spaceSectionKey] !== false}
                             onOpenChange={() => toggleSection(spaceSectionKey)}
                           >
-                            <Card className="ml-4">
+                            <Card>
                               <CollapsibleTrigger asChild>
                                 <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
                                   <div className="flex items-center justify-between">
@@ -754,8 +763,11 @@ export function ProjectBudget({
                                         <TableHeadMd className="text-right">
                                           {ts("colSalePrice")}
                                         </TableHeadMd>
+                                        <TableHeadMd className="text-right">
+                                          {ts("colTax")}
+                                        </TableHeadMd>
                                         <TableHead className="text-right">
-                                          {ts("colTotal")}
+                                          {ts("colAmount")}
                                         </TableHead>
                                         <TableHeadMd className="w-[80px]" />
                                         <TableHeadExpandPlaceholder
@@ -901,6 +913,14 @@ export function ProjectBudget({
                                                   )}
                                                 </ItemPriceOrTbd>
                                               </TableCellMd>
+                                              <TableCellMd className="text-muted-foreground text-right tabular-nums">
+                                                {formatTaxRatePercent(
+                                                  effectiveLineTaxRate(
+                                                    item,
+                                                    taxProjectCtx
+                                                  )
+                                                )}
+                                              </TableCellMd>
                                               <TableCell className="text-right font-bold tabular-nums">
                                                 <ItemPriceOrTbd
                                                   item={item}
@@ -967,6 +987,15 @@ export function ProjectBudget({
                                                       )}
                                                     </ItemPriceOrTbd>
                                                   }
+                                                />
+                                                <MobileDetailField
+                                                  label={ts("colTax")}
+                                                  value={formatTaxRatePercent(
+                                                    effectiveLineTaxRate(
+                                                      item,
+                                                      taxProjectCtx
+                                                    )
+                                                  )}
                                                 />
                                                 <ExpandableRowActionsPanel
                                                   actions={rowActions}
@@ -1055,7 +1084,7 @@ export function ProjectBudget({
                                   toggleSection(categorySectionKey)
                                 }
                               >
-                                <Card className="ml-4">
+                                <Card>
                                   <CollapsibleTrigger asChild>
                                     <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
                                       <div className="flex items-center justify-between">
@@ -1082,6 +1111,9 @@ export function ProjectBudget({
                                             </TableHead>
                                             <TableHeadMd>
                                               {ts("colDescription")}
+                                            </TableHeadMd>
+                                            <TableHeadMd className="text-right">
+                                              {ts("colTax")}
                                             </TableHeadMd>
                                             <TableHead className="text-right">
                                               {ts("colAmount")}
@@ -1135,6 +1167,14 @@ export function ProjectBudget({
                                                   <TableCellMd className="text-muted-foreground">
                                                     {line.description || "-"}
                                                   </TableCellMd>
+                                                  <TableCellMd className="text-muted-foreground text-right tabular-nums">
+                                                    {formatTaxRatePercent(
+                                                      effectiveLineTaxRate(
+                                                        line,
+                                                        taxProjectCtx
+                                                      )
+                                                    )}
+                                                  </TableCellMd>
                                                   <TableCell className="text-right font-semibold tabular-nums">
                                                     <ItemPriceOrTbd
                                                       item={line}
@@ -1182,6 +1222,15 @@ export function ProjectBudget({
                                                       value={
                                                         line.description || "-"
                                                       }
+                                                    />
+                                                    <MobileDetailField
+                                                      label={ts("colTax")}
+                                                      value={formatTaxRatePercent(
+                                                        effectiveLineTaxRate(
+                                                          line,
+                                                          taxProjectCtx
+                                                        )
+                                                      )}
                                                     />
                                                     <ExpandableRowActionsPanel
                                                       actions={rowActions}

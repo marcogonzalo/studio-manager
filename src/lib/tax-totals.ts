@@ -63,3 +63,10 @@ export function computeTaxGroups(
 export function sumTaxAmounts(groups: TaxGroup[]): number {
   return groups.reduce((sum, group) => sum + group.taxAmount, 0);
 }
+
+/** Display helper for listing columns (e.g. `21%`). */
+export function formatTaxRatePercent(rate: number): string {
+  const n = Number(rate);
+  if (Number.isNaN(n)) return "0%";
+  return `${n}%`;
+}

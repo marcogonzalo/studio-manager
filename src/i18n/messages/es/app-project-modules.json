@@ -12,6 +12,7 @@
     "colDate": "Fecha",
     "colType": "Tipo",
     "colAmount": "Importe",
+    "colTax": "Impuesto",
     "colReference": "Referencia",
     "colPhase": "Fase",
     "colConcept": "Concepto",

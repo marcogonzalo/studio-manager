@@ -12,6 +12,7 @@
     "colDate": "Date",
     "colType": "Type",
     "colAmount": "Amount",
+    "colTax": "Tax",
     "colReference": "Reference",
     "colPhase": "Phase",
     "colConcept": "Concept",

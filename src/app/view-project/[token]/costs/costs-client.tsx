@@ -28,7 +28,12 @@ import {
   sumBudgetLineEstimatedAmounts,
   sumItemSaleAmounts,
 } from "@/lib/project-item-price";
-import { computeTaxGroups, sumTaxAmounts } from "@/lib/tax-totals";
+import {
+  computeTaxGroups,
+  effectiveLineTaxRate,
+  formatTaxRatePercent,
+  sumTaxAmounts,
+} from "@/lib/tax-totals";
 import {
   groupBudgetLinesByPhaseThenCategory,
   groupItemsBySpaceThenCreatedAt,
@@ -124,6 +129,7 @@ export function ViewProjectCostsClient({
   );
   const tax = sumTaxAmounts(taxGroups);
   const total = subtotal + tax;
+  const taxProjectCtx = { multitax, tax_rate: taxRate };
   const hasContent = budgetLines.length > 0 || productRows.length > 0;
 
   const toggleSection = (section: string) => {
@@ -183,7 +189,7 @@ export function ViewProjectCostsClient({
                         open={openSections[spaceSectionKey] !== false}
                         onOpenChange={() => toggleSection(spaceSectionKey)}
                       >
-                        <Card className="ml-4">
+                        <Card>
                           <CollapsibleTrigger asChild>
                             <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
                               <div className="flex items-center justify-between">
@@ -216,7 +222,10 @@ export function ViewProjectCostsClient({
                                       {t("costsColQuantity")}
                                     </TableHead>
                                     <TableHead className="text-right">
-                                      {t("costsColPrice")}
+                                      {t("costsColTax")}
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                      {t("costsColAmount")}
                                     </TableHead>
                                   </TableRow>
                                 </TableHeader>
@@ -257,6 +266,11 @@ export function ViewProjectCostsClient({
                                       </TableCell>
                                       <TableCell className="text-right align-middle tabular-nums">
                                         {p.quantity}
+                                      </TableCell>
+                                      <TableCell className="text-muted-foreground text-right align-middle tabular-nums">
+                                        {formatTaxRatePercent(
+                                          effectiveLineTaxRate(p, taxProjectCtx)
+                                        )}
                                       </TableCell>
                                       <TableCell className="text-right align-middle font-medium tabular-nums">
                                         <ItemPriceOrTbd
@@ -333,7 +347,7 @@ export function ViewProjectCostsClient({
                         open={openSections[categorySectionKey] !== false}
                         onOpenChange={() => toggleSection(categorySectionKey)}
                       >
-                        <Card className="ml-4">
+                        <Card>
                           <CollapsibleTrigger asChild>
                             <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
                               <div className="flex items-center justify-between">
@@ -363,6 +377,9 @@ export function ViewProjectCostsClient({
                                     </TableHead>
                                     <TableHead>{t("costsColLine")}</TableHead>
                                     <TableHead className="text-right">
+                                      {t("costsColTax")}
+                                    </TableHead>
+                                    <TableHead className="text-right">
                                       {t("costsColAmount")}
                                     </TableHead>
                                   </TableRow>
@@ -377,6 +394,14 @@ export function ViewProjectCostsClient({
                                         {subcategoryLabels[categoryKey]?.[
                                           line.subcategory
                                         ] ?? line.subcategory}
+                                      </TableCell>
+                                      <TableCell className="text-muted-foreground text-right tabular-nums">
+                                        {formatTaxRatePercent(
+                                          effectiveLineTaxRate(
+                                            line,
+                                            taxProjectCtx
+                                          )
+                                        )}
                                       </TableCell>
                                       <TableCell className="text-right font-medium tabular-nums">
                                         <ItemPriceOrTbd
