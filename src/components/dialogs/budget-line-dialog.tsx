@@ -70,6 +70,7 @@ type FormValues = {
   actual_amount: string;
   is_internal_cost: boolean;
   is_price_tbd?: boolean;
+  tax_rate?: string;
   phase?: string | undefined;
   supplier_id?: string | undefined;
   notes?: string;
@@ -111,6 +112,8 @@ export function BudgetLineDialog({
   const supabase = getSupabaseClient();
   const isEditing = !!budgetLine;
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [projectTaxRate, setProjectTaxRate] = useState(0);
+  const [projectMultitax, setProjectMultitax] = useState(false);
   const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(
     null
@@ -130,6 +133,7 @@ export function BudgetLineDialog({
       actual_amount: "0",
       is_internal_cost: false,
       is_price_tbd: false,
+      tax_rate: "",
       phase: undefined,
       supplier_id: undefined,
       notes: "",
@@ -137,6 +141,21 @@ export function BudgetLineDialog({
   });
 
   const isPriceTbd = form.watch("is_price_tbd") === true;
+  const lineTaxEditable = advancedCostLineOptionsEnabled && projectMultitax;
+
+  useEffect(() => {
+    async function loadProjectTax() {
+      const { data } = await supabase
+        .from("projects")
+        .select("tax_rate, multitax")
+        .eq("id", projectId)
+        .single();
+      const rate = Number(data?.tax_rate ?? 0);
+      setProjectTaxRate(Number.isNaN(rate) ? 0 : rate);
+      setProjectMultitax(data?.multitax === true);
+    }
+    if (open) void loadProjectTax();
+  }, [open, projectId, supabase]);
 
   useEffect(() => {
     async function loadSuppliers() {
@@ -191,6 +210,10 @@ export function BudgetLineDialog({
               : budgetLine.actual_amount.toString(),
           is_internal_cost: budgetLine.is_internal_cost,
           is_price_tbd: budgetLine.is_price_tbd || false,
+          tax_rate:
+            budgetLine.tax_rate != null
+              ? String(budgetLine.tax_rate)
+              : projectTaxRate.toString(),
           phase: budgetLine.phase || undefined,
           supplier_id: budgetLine.supplier_id || undefined,
           notes: budgetLine.notes || "",
@@ -205,6 +228,7 @@ export function BudgetLineDialog({
           actual_amount: "0",
           is_internal_cost: false,
           is_price_tbd: false,
+          tax_rate: projectTaxRate.toString(),
           phase: undefined,
           supplier_id: undefined,
           notes: "",
@@ -212,7 +236,7 @@ export function BudgetLineDialog({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, budgetLine]);
+  }, [open, budgetLine, projectTaxRate]);
 
   // Update subcategory options when category changes
   const handleCategoryChange = (value: string) => {
@@ -263,6 +287,11 @@ export function BudgetLineDialog({
           ? values.is_internal_cost
           : false,
         is_price_tbd: values.is_price_tbd === true,
+        tax_rate: lineTaxEditable
+          ? typeof values.tax_rate === "number"
+            ? values.tax_rate
+            : projectTaxRate
+          : projectTaxRate,
         phase: values.phase || null,
         supplier_id: values.supplier_id || null,
         notes: values.notes || null,
@@ -431,7 +460,13 @@ export function BudgetLineDialog({
               )}
             />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div
+              className={
+                lineTaxEditable
+                  ? "grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,0.7fr)]"
+                  : "grid grid-cols-1 gap-4 sm:grid-cols-2"
+              }
+            >
               <FormField
                 control={form.control}
                 name="estimated_amount"
@@ -504,6 +539,29 @@ export function BudgetLineDialog({
                   </FormItem>
                 )}
               />
+
+              {lineTaxEditable && (
+                <FormField
+                  control={form.control}
+                  name="tax_rate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("taxLabel")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder={t("taxPlaceholder")}
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
             <FormField

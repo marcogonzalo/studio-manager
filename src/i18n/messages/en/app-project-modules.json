@@ -127,6 +127,7 @@
     "priceTbd": "To be defined",
     "priceTbdNote": "Partial total: some products or line items have a price to be defined.",
     "taxLabel": "Tax ({rate}%): {amount}",
+    "taxTotal": "Tax total: {amount}",
     "withTax": "With tax: {amount}",
     "furnitureAndProducts": "Furniture, Fixtures & Equipment",
     "noProducts": "No products added yet.",

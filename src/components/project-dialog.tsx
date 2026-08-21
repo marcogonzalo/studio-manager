@@ -27,6 +27,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -40,10 +41,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
+import { usePlanCapability } from "@/lib/use-plan-capability";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import type { Client, Project, ProjectStatus } from "@/types";
@@ -82,6 +85,7 @@ function buildFormSchema(t: ReturnType<typeof useTranslations>) {
         return !isNaN(num) && num >= 0;
       }, t("validationTaxNonNegative")),
     currency: z.string().optional(),
+    multitax: z.boolean().optional(),
   });
 }
 
@@ -118,6 +122,9 @@ export function ProjectDialog({
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const currencyDisabled = isBasePlan;
   const taxRateDisabled = isBasePlan;
+  const multitaxEnabled = usePlanCapability("costs_management", {
+    minModality: "plus",
+  });
   const defaultCurrency = profileDefaults?.default_currency ?? "EUR";
   const defaultTaxRateStr =
     profileDefaults?.default_tax_rate != null
@@ -136,6 +143,7 @@ export function ProjectDialog({
       address: "",
       tax_rate: "",
       currency: "EUR",
+      multitax: false,
     },
   });
 
@@ -209,6 +217,7 @@ export function ProjectDialog({
             ? project.tax_rate.toString()
             : "",
         currency: project.currency ?? "EUR",
+        multitax: project.multitax === true,
       });
     } else if (!project && open) {
       form.reset({
@@ -222,6 +231,7 @@ export function ProjectDialog({
         phase: undefined,
         tax_rate: defaultTaxRateStr,
         currency: defaultCurrency,
+        multitax: false,
       });
     }
   }, [project, open, form, defaultCurrency, defaultTaxRateStr]);
@@ -286,6 +296,7 @@ export function ProjectDialog({
         end_date: values.end_date || null,
         tax_rate: taxRateValue,
         currency: values.currency ?? "EUR",
+        multitax: multitaxEnabled ? values.multitax === true : false,
       };
 
       // Only include optional fields if they have values
@@ -719,6 +730,40 @@ export function ProjectDialog({
                     {t("basePlanHintSuffix")}
                   </p>
                 )}
+                <FormField
+                  control={form.control}
+                  name="multitax"
+                  render={({ field }) => (
+                    <FormItem
+                      className={`col-span-2 flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
+                        !multitaxEnabled ? "opacity-60" : ""
+                      }`}
+                    >
+                      <FormControl>
+                        <Checkbox
+                          checked={
+                            multitaxEnabled ? field.value === true : false
+                          }
+                          onCheckedChange={(checked) => {
+                            if (!multitaxEnabled) return;
+                            field.onChange(checked === true);
+                          }}
+                          disabled={!multitaxEnabled}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="cursor-pointer">
+                          {t("multitaxLabel")}
+                        </FormLabel>
+                        <FormDescription>
+                          {multitaxEnabled
+                            ? t("multitaxDescription")
+                            : t("multitaxUpgradeHint")}
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <DialogFooter>

@@ -4,7 +4,8 @@ export type AddItemFormMessageKey =
   | "validationNameRequired"
   | "validationQuantityInteger"
   | "validationUnitCostPositive"
-  | "validationUnitPricePositive";
+  | "validationUnitPricePositive"
+  | "validationTaxNonNegative";
 
 export type AddItemFormTranslate = (key: AddItemFormMessageKey) => string;
 
@@ -63,6 +64,7 @@ export function buildAddItemFormSchema(t: AddItemFormTranslate) {
       image_url: z.string().optional(),
       is_excluded: z.boolean().optional(),
       is_price_tbd: z.boolean().optional(),
+      tax_rate: z.string().optional(),
     })
     .superRefine((data, ctx) => {
       if (data.is_price_tbd) return;
@@ -80,15 +82,32 @@ export function buildAddItemFormSchema(t: AddItemFormTranslate) {
           message: t("validationUnitPricePositive"),
         });
       }
+      const taxRaw = data.tax_rate?.trim() ?? "";
+      if (taxRaw !== "") {
+        const tax = parseRequiredNumber(taxRaw);
+        if (Number.isNaN(tax) || tax < 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["tax_rate"],
+            message: t("validationTaxNonNegative"),
+          });
+        }
+      }
     })
-    .transform((data) => ({
-      ...data,
-      is_price_tbd: data.is_price_tbd === true,
-      unit_cost: data.is_price_tbd
-        ? 0
-        : parseRequiredNumber(data.unit_cost ?? ""),
-      unit_price: data.is_price_tbd
-        ? 0
-        : parseRequiredNumber(data.unit_price ?? ""),
-    }));
+    .transform((data) => {
+      const taxRaw = data.tax_rate?.trim() ?? "";
+      const taxParsed = taxRaw === "" ? undefined : parseRequiredNumber(taxRaw);
+      return {
+        ...data,
+        is_price_tbd: data.is_price_tbd === true,
+        unit_cost: data.is_price_tbd
+          ? 0
+          : parseRequiredNumber(data.unit_cost ?? ""),
+        unit_price: data.is_price_tbd
+          ? 0
+          : parseRequiredNumber(data.unit_price ?? ""),
+        tax_rate:
+          taxParsed != null && !Number.isNaN(taxParsed) ? taxParsed : undefined,
+      };
+    });
 }

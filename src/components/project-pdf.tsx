@@ -19,14 +19,17 @@ import {
 } from "@/lib/project-pdf-copy";
 import {
   appendTbdAsterisk,
+  budgetLineEstimatedAmount,
   formatItemSalePrice,
   formatItemSaleTotal,
   hasBudgetLinesWithTbd,
   hasPricedItemsWithTbd,
   isItemPriceTbd,
+  itemSaleAmount,
   sumBudgetLineEstimatedAmounts,
   sumItemSaleAmounts,
 } from "@/lib/project-item-price";
+import { computeTaxGroups, sumTaxAmounts } from "@/lib/tax-totals";
 import {
   groupBudgetLinesByPhaseThenCategory,
   groupItemsBySpaceThenCreatedAt,
@@ -416,7 +419,25 @@ export function ProjectPDF({
   const totalItemsPrice = sumItemSaleAmounts(includedItems);
   const totalBudgetLines = sumBudgetLineEstimatedAmounts(budgetLines);
   const subtotal = totalItemsPrice + totalBudgetLines;
-  const tax = subtotal * (taxRate / 100);
+  const projectTaxRate =
+    taxRate ?? (project.tax_rate != null ? Number(project.tax_rate) : 0);
+  const taxGroups = computeTaxGroups(
+    [
+      ...includedItems.map((item) => ({
+        amount: itemSaleAmount(item),
+        tax_rate: item.tax_rate,
+      })),
+      ...budgetLines.map((line) => ({
+        amount: budgetLineEstimatedAmount(line),
+        tax_rate: line.tax_rate,
+      })),
+    ],
+    {
+      multitax: project.multitax === true,
+      tax_rate: projectTaxRate,
+    }
+  );
+  const tax = sumTaxAmounts(taxGroups);
   const grandTotal = subtotal + tax;
 
   const formatCurrency = (amount: number) =>
@@ -759,14 +780,19 @@ export function ProjectPDF({
                 {appendTbdAsterisk(formatCurrency(subtotal), hasPriceTbd)}
               </Text>
             </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>
-                {interpolatePdfCopy(copy.tax, { rate: taxRate })}
-              </Text>
-              <Text style={styles.summaryValue}>
-                {appendTbdAsterisk(formatCurrency(tax), hasPriceTbd)}
-              </Text>
-            </View>
+            {taxGroups.map((group) => (
+              <View key={group.rate} style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>
+                  {interpolatePdfCopy(copy.tax, { rate: group.rate })}
+                </Text>
+                <Text style={styles.summaryValue}>
+                  {appendTbdAsterisk(
+                    formatCurrency(group.taxAmount),
+                    hasPriceTbd
+                  )}
+                </Text>
+              </View>
+            ))}
             <View style={styles.summaryTotal}>
               <Text style={styles.summaryTotalLabel}>{copy.grandTotal}</Text>
               <Text style={styles.summaryTotalValue}>
