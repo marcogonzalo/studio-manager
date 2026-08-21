@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import Image from "next/image";
 import { ChevronDown, Image as ImageIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -34,6 +34,7 @@ import {
   formatTaxRatePercent,
   sumTaxAmounts,
 } from "@/lib/tax-totals";
+import { splitBudgetNotesLines } from "@/lib/budget-notes";
 import {
   groupBudgetLinesByPhaseThenCategory,
   groupItemsBySpaceThenCreatedAt,
@@ -78,6 +79,7 @@ export function ViewProjectCostsClient({
   currency,
   taxRate,
   multitax = false,
+  budgetNotes = null,
   locale,
   categoryLabels,
   subcategoryLabels,
@@ -87,6 +89,7 @@ export function ViewProjectCostsClient({
   currency: string;
   taxRate: number;
   multitax?: boolean;
+  budgetNotes?: string | null;
   locale: Locale;
   categoryLabels: Record<BudgetCategory, string>;
   subcategoryLabels: Record<BudgetCategory, Record<string, string>>;
@@ -480,6 +483,17 @@ export function ViewProjectCostsClient({
           )}
         </CardContent>
       </Card>
+
+      {budgetNotes ? (
+        <p className="text-muted-foreground px-4 text-[9px] leading-relaxed">
+          {splitBudgetNotesLines(budgetNotes).map((line, index, lines) => (
+            <Fragment key={index}>
+              {line}
+              {index < lines.length - 1 ? <br /> : null}
+            </Fragment>
+          ))}
+        </p>
+      ) : null}
     </div>
   );
 }

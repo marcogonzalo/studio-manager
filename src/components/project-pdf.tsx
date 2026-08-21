@@ -35,6 +35,7 @@ import {
   formatTaxRatePercent,
   sumTaxAmounts,
 } from "@/lib/tax-totals";
+import { splitBudgetNotesLines } from "@/lib/budget-notes";
 import {
   groupBudgetLinesByPhaseThenCategory,
   groupItemsBySpaceThenCreatedAt,
@@ -335,6 +336,17 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     fontStyle: "italic",
   },
+  budgetNotes: {
+    marginTop: 12,
+    paddingHorizontal: 16,
+    fontSize: 8,
+    color: colors.textLight,
+    lineHeight: 1.35,
+  },
+  budgetNotesLine: {
+    fontSize: 8,
+    color: colors.textLight,
+  },
   itemImage: {
     width: 30,
     height: 30,
@@ -418,6 +430,7 @@ export function ProjectPDF({
   const includedItems = items.filter((item) => !item.is_excluded);
   const hasPriceTbd =
     hasPricedItemsWithTbd(includedItems) || hasBudgetLinesWithTbd(budgetLines);
+  const budgetNoteLines = splitBudgetNotesLines(project.budget_notes);
 
   const itemsBySpace = groupItemsBySpaceThenCreatedAt(
     includedItems,
@@ -837,6 +850,18 @@ export function ProjectPDF({
             )}
           </View>
         </View>
+        {budgetNoteLines.length > 0 ? (
+          <View style={styles.section}>
+            <Text style={styles.budgetNotes}>
+              {budgetNoteLines.map((line, index) => (
+                <Text key={index} style={styles.budgetNotesLine}>
+                  {line.length > 0 ? line : " "}
+                  {index < budgetNoteLines.length - 1 ? "\n" : ""}
+                </Text>
+              ))}
+            </Text>
+          </View>
+        ) : null}
         {showVetaBranding && (
           <View style={styles.vetaFooter} fixed>
             {logoIsEmbedded && (

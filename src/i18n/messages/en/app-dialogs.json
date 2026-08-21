@@ -261,6 +261,17 @@
     "generatePdf": "Generate PDF",
     "generating": "Generating..."
   },
+  "DialogBudgetNotes": {
+    "title": "Budget notes",
+    "description": "These notes appear at the end of the budget on the public view and in the PDF. Plain text and line breaks are preserved.",
+    "notesLabel": "Notes",
+    "notesPlaceholder": "E.g. Valid for 30 days. Municipal fees not included.",
+    "charCount": "{count} / {max}",
+    "tooLong": "Text exceeds the maximum allowed length.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving..."
+  },
   "DialogPurchaseOrder": {
     "titleEdit": "Edit Purchase Order",
     "titleNew": "New Purchase Order",

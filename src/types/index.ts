@@ -88,6 +88,8 @@ export interface Project {
   /** When true, each line item can override tax_rate. */
   multitax?: boolean;
   currency?: string;
+  /** Client-facing notes after budget totals (public page + PDF). */
+  budget_notes?: string | null;
   client?: { full_name: string };
 }
 

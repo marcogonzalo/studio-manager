@@ -261,6 +261,17 @@
     "generatePdf": "Generar PDF",
     "generating": "Generando..."
   },
+  "DialogBudgetNotes": {
+    "title": "Notas del presupuesto",
+    "description": "Estas notas aparecen al final del presupuesto en la vista pública y en el PDF. Se respeta el texto plano y los saltos de línea.",
+    "notesLabel": "Notas",
+    "notesPlaceholder": "Ej.: Validez 30 días. No incluye tasas municipales.",
+    "charCount": "{count} / {max}",
+    "tooLong": "El texto supera el máximo permitido.",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "saving": "Guardando..."
+  },
   "DialogPurchaseOrder": {
     "titleEdit": "Editar Pedido de Compra",
     "titleNew": "Nuevo Pedido de Compra",
