@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { AuthProvider, useAuth } from "./auth-provider";
 import { createMockUser, createMockSession } from "@/test/mocks/supabase";
 import type { Session } from "@supabase/supabase-js";
@@ -241,6 +241,34 @@ describe("AuthProvider", () => {
     unmount();
 
     expect(unsubscribe).toHaveBeenCalled();
+  });
+
+  it("should ignore getSession result after unmount", async () => {
+    let resolveSession!: (value: {
+      data: { session: Session | null };
+      error: null;
+    }) => void;
+    mockGetSession.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSession = resolve;
+      })
+    );
+
+    const { unmount } = render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    unmount();
+
+    const mockUser = createMockUser({ email: "late@example.com" });
+    await act(async () => {
+      resolveSession({
+        data: { session: createMockSession(mockUser) },
+        error: null,
+      });
+    });
   });
 
   it("should handle URL hash cleanup on SIGNED_IN event", async () => {

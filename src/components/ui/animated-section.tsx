@@ -57,9 +57,12 @@ function useInViewOnLoad(ref: React.RefObject<HTMLElement | null>) {
       }
     };
     check();
-    requestAnimationFrame(check);
+    const rafId = requestAnimationFrame(check);
     const t = setTimeout(check, 100);
-    return () => clearTimeout(t);
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(t);
+    };
   }, [ref]);
   return inViewOnLoad;
 }

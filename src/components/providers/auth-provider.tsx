@@ -46,9 +46,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = getSupabaseClient();
 
   useEffect(() => {
+    let cancelled = false;
     supabase.auth
       .getSession()
       .then((res: { data: { session: Session | null } }) => {
+        if (cancelled) return;
         const session = res.data.session;
         setSession(session);
         setUser(session?.user ?? null);
@@ -59,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(
       (event: AuthChangeEvent, session: Session | null) => {
+        if (cancelled) return;
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -69,7 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   }, [supabase]);
 
   useEffect(() => {
@@ -81,19 +87,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     let cancelled = false;
     setPlanLoading(true);
-    void Promise.resolve(
-      supabase.from("profiles").select("full_name").eq("id", user.id).single()
-    )
-      .then(({ data }) => {
-        if (!cancelled && data?.full_name != null) {
-          setProfileFullName(data.full_name.trim() || null);
-        } else if (!cancelled) {
-          setProfileFullName(null);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setProfileFullName(null);
-      });
     void Promise.resolve(
       supabase.from("profiles").select("full_name").eq("id", user.id).single()
     )

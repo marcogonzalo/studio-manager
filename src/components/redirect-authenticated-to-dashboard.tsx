@@ -20,11 +20,14 @@ export function RedirectAuthenticatedToDashboard() {
     const supabase = getSupabaseClient();
     const dashboardPath = appPath("/dashboard");
     let subscription: { unsubscribe: () => void } | undefined;
+    let disposed = false;
 
     const start = () => {
+      if (disposed) return;
       supabase.auth
         .getSession()
         .then((res: { data: { session: { user?: unknown } | null } }) => {
+          if (disposed) return;
           const session = res.data.session;
           if (session?.user) {
             router.replace(dashboardPath);
@@ -33,6 +36,7 @@ export function RedirectAuthenticatedToDashboard() {
 
       const { data } = supabase.auth.onAuthStateChange(
         (_event: string, session: { user?: unknown } | null) => {
+          if (disposed) return;
           if (session?.user) {
             router.replace(dashboardPath);
           }
@@ -47,6 +51,7 @@ export function RedirectAuthenticatedToDashboard() {
         : window.setTimeout(start, 1);
 
     return () => {
+      disposed = true;
       if (typeof cancelIdleCallback === "function") {
         cancelIdleCallback(idleId);
       } else {

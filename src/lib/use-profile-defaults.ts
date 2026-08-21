@@ -16,6 +16,7 @@ export function useProfileDefaults(): ProfileDefaults | null {
 
   useEffect(() => {
     if (!user?.id) return;
+    let cancelled = false;
     supabase
       .from("account_settings")
       .select("default_tax_rate, default_currency")
@@ -28,6 +29,7 @@ export function useProfileDefaults(): ProfileDefaults | null {
             default_currency?: string | null;
           } | null;
         }) => {
+          if (cancelled) return;
           const data = res.data;
           if (data) {
             setDefaults({
@@ -40,6 +42,9 @@ export function useProfileDefaults(): ProfileDefaults | null {
           }
         }
       );
+    return () => {
+      cancelled = true;
+    };
   }, [user?.id, supabase]);
 
   return defaults;
