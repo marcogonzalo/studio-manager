@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   checkRateLimit,
   getClientIp,
@@ -85,6 +85,10 @@ describe("getClientIp", () => {
 });
 
 describe("checkRateLimit", () => {
+  beforeEach(() => {
+    globalThis.__rateLimitStore?.clear();
+  });
+
   afterEach(() => {
     vi.useRealTimers();
   });
@@ -140,5 +144,18 @@ describe("checkRateLimit", () => {
     }
     const r = checkRateLimit(ip, "contact");
     expect(r.allowed).toBe(false);
+  });
+
+  it("drops expired IPs so the store cannot grow without bound", () => {
+    vi.useFakeTimers({ now: 0 });
+    for (let i = 0; i < 40; i++) {
+      checkRateLimit(`10.0.0.${i}`, "auth");
+    }
+    expect(globalThis.__rateLimitStore?.size).toBe(40);
+
+    vi.setSystemTime(61_000);
+    checkRateLimit("10.0.1.1", "auth");
+
+    expect(globalThis.__rateLimitStore?.size).toBe(1);
   });
 });

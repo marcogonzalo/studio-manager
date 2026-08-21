@@ -91,7 +91,7 @@ export default function CustomizationPage() {
     defaultValues: { lang: "es", date_format: "DD/MM/YYYY" },
   });
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (isCancelled: () => boolean = () => false) => {
     if (!user?.id) return;
     try {
       // Fetch profile for full_name and email
@@ -102,6 +102,7 @@ export default function CustomizationPage() {
         .single();
 
       if (profileError) throw profileError;
+      if (isCancelled()) return;
       setProfile(profileData);
 
       // Fetch account settings (public_email independiente del email de login)
@@ -126,12 +127,13 @@ export default function CustomizationPage() {
             date_format: "DD/MM/YYYY",
           });
         if (insertError) throw insertError;
-        await fetchProfile();
+        await fetchProfile(isCancelled);
         return;
       }
       if (settingsError) {
         throw settingsError;
       }
+      if (isCancelled()) return;
 
       formPresupuesto.reset({
         public_name: settingsData?.public_name ?? "",
@@ -157,19 +159,24 @@ export default function CustomizationPage() {
             : "DD/MM/YYYY",
       });
     } catch (err) {
+      if (isCancelled()) return;
       reportError(err, "Error fetching personalization:");
       toast.error(t("toastLoadError"));
     } finally {
-      setLoading(false);
+      if (!isCancelled()) setLoading(false);
     }
   };
 
   useEffect(() => {
+    let cancelled = false;
     if (user?.id) {
-      fetchProfile();
+      void fetchProfile(() => cancelled);
     } else {
       setLoading(false);
     }
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when user?.id changes only
   }, [user?.id]);
 
@@ -184,16 +191,22 @@ export default function CustomizationPage() {
     window.sessionStorage.removeItem("veta_onboarding_focus");
     const el = defaultsCardRef.current;
     if (!el) return;
-    setTimeout(() => {
+    let highlightTimeout: number | undefined;
+    const delayTimeout = window.setTimeout(() => {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       el.focus();
       setDefaultsHighlight(true);
-      const timeout = window.setTimeout(
+      highlightTimeout = window.setTimeout(
         () => setDefaultsHighlight(false),
         2000
       );
-      return () => window.clearTimeout(timeout);
     }, 50);
+    return () => {
+      window.clearTimeout(delayTimeout);
+      if (highlightTimeout !== undefined) {
+        window.clearTimeout(highlightTimeout);
+      }
+    };
   }, []);
 
   async function onSubmitPresupuesto(values: PublicProfileFormValues) {

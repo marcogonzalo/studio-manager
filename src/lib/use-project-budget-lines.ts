@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { getSupabaseClient } from "@/lib/supabase";
 import { isCostCategory, reportError, reportWarn } from "@/lib/utils";
 import type { BudgetCategory, ProjectBudgetLine } from "@/types";
@@ -27,9 +27,11 @@ export function useProjectBudgetLines(
   const supabase = getSupabaseClient();
   const [budgetLines, setBudgetLines] = useState<ProjectBudgetLine[]>([]);
   const [loading, setLoading] = useState(autoFetch);
+  const fetchGen = useRef(0);
 
   const refetch = useCallback(async () => {
     if (!projectId) return;
+    const gen = ++fetchGen.current;
     setLoading(true);
     try {
       let query = supabase
@@ -44,6 +46,8 @@ export function useProjectBudgetLines(
       }
 
       const { data, error } = await query;
+
+      if (gen !== fetchGen.current) return;
 
       if (error) {
         if (
@@ -68,14 +72,17 @@ export function useProjectBudgetLines(
         setBudgetLines(lines);
       }
     } finally {
-      setLoading(false);
+      if (gen === fetchGen.current) setLoading(false);
     }
   }, [projectId, excludeInternal, costOnly, supabase]);
 
   useEffect(() => {
     if (autoFetch && projectId) {
-      refetch();
+      void refetch();
     }
+    return () => {
+      fetchGen.current += 1;
+    };
   }, [projectId, autoFetch, refetch]);
 
   return { budgetLines, loading, refetch };

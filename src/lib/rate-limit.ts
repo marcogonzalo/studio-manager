@@ -57,8 +57,8 @@ export function checkRateLimit(
   const key = `${ip}:${routeGroup}`;
   const now = Date.now();
 
-  // Prune expired entries occasionally (every ~100 checks we might prune once)
-  if (Math.random() < 0.01) prune();
+  // Always drop expired keys. Random prune left dead IPs in the Map on long-lived Node.
+  prune();
 
   let entry = store.get(key);
   if (!entry || entry.resetAt <= now) {

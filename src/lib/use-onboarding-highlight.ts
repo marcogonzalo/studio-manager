@@ -28,6 +28,9 @@ export function useOnboardingHighlight(
     const t = setTimeout(() => {
       el.classList.remove("onboarding-highlight");
     }, HIGHLIGHT_DURATION_MS);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      el.classList.remove("onboarding-highlight");
+    };
   }, [param, stepId, ready]);
 }
