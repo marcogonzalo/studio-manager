@@ -140,7 +140,7 @@ This will:
 - Mount your code for hot-reload
 - Expose the app on `http://localhost:3000`
 
-**Optional:** copy `.env.docker.example` to `.env` and set `DOCKER_DEV_POLLING=true` if hot reload misses file changes on Mac Docker bind mounts (default is off to save CPU/RAM).
+**Optional:** file watching in Docker uses polling by default (stable on Mac bind mounts). Set `DOCKER_DEV_POLLING=false` in `.env` if CPU is too high.
 
 **Run tests in Docker:**
 

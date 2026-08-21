@@ -13,12 +13,18 @@ services:
       - app-next-cache:/app/.next
     extra_hosts:
       - "localhost:host-gateway"
+    stdin_open: true
+    tty: true
+    # Next may exit 0 on a false file-watch restart; relaunch inside the container.
+    command: ["sh", "/app/scripts/docker-dev.sh"]
     environment:
       # Cap V8 heap so Turbopack/dev cannot consume all host RAM (OOM → exit 137)
       NODE_OPTIONS: --max-old-space-size=3072
-      # Polling is CPU-heavy on Mac bind mounts. Default off; set DOCKER_DEV_POLLING=true if HMR misses edits.
-      CHOKIDAR_USEPOLLING: ${DOCKER_DEV_POLLING:-false}
-      WATCHPACK_POLLING: ${DOCKER_DEV_POLLING:-false}
+      # Native inotify on Mac bind mounts is noisy and makes Next exit 0. Poll instead.
+      # Set DOCKER_DEV_POLLING=false to disable if CPU is too high.
+      CHOKIDAR_USEPOLLING: ${DOCKER_DEV_POLLING:-true}
+      CHOKIDAR_INTERVAL: "1000"
+      WATCHPACK_POLLING: ${DOCKER_DEV_POLLING:-true}
       NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH}
     mem_limit: 4096m
@@ -26,17 +32,19 @@ services:
     init: true
     restart: unless-stopped
     healthcheck:
+      # TCP only. HTTP GET / compiles the marketing home on every check (~5–8s) and
+      # retriggers Turbopack watch → process.exit(0) → container restart loop.
       test:
         [
           "CMD",
           "node",
           "-e",
-          "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+          "const s=require('net').connect(3000,'127.0.0.1');s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));s.setTimeout(3000,()=>{s.destroy();process.exit(1)});",
         ]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
-      start_period: 60s
+      start_period: 90s
 
   test:
     profiles: [test]

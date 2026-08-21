@@ -291,6 +291,8 @@ const nextConfig: NextConfig = {
   // Turbopack configuration for @react-pdf/renderer compatibility
   // Alias Node.js modules that aren't available in the browser
   turbopack: {
+    // Pin workspace root so Docker bind mounts do not watch a parent directory.
+    root: process.cwd(),
     resolveAlias: {
       canvas: "./src/lib/empty-module.ts",
       encoding: "./src/lib/empty-module.ts",
