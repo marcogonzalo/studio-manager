@@ -118,7 +118,7 @@
     "exportAria": "Exportar",
     "exportPdf": "Exportar PDF",
     "generatingPdf": "Generando PDF...",
-    "budgetNotes": "Notas del presupuesto",
+    "budgetNotes": "Notas",
     "budgetNotesAria": "Editar notas del presupuesto",
     "toastBudgetNotesSaved": "Notas del presupuesto guardadas",
     "toastBudgetNotesError": "Error al guardar las notas del presupuesto",
