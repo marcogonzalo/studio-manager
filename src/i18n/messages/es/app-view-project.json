@@ -62,6 +62,7 @@
     "costsColDescription": "Descripción",
     "costsColLine": "Partida",
     "costsColAmount": "Importe",
+    "costsColTax": "Impuesto",
     "costsSubtotal": "Subtotal",
     "costsProductsSection": "Productos",
     "costsColProduct": "Producto",
