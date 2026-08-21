@@ -1,25 +1,13 @@
 #!/bin/sh
-# Keep next dev alive inside the container.
-# Turbopack treats some bind-mount/watch events as a config change and
-# process.exit(0). Compose restart: unless-stopped then rebuilds the whole
-# container (~every minute). Relaunch Next here instead.
+# Do not background next. `cmd &` gives it EOF on stdin; Next 16 then
+# handleSessionStop() and process.exit(0) immediately after "Ready".
 set -eu
 
-term() {
-  if [ -n "${child:-}" ]; then
-    kill -TERM "$child" 2>/dev/null || true
-    wait "$child" 2>/dev/null || true
-  fi
-  exit 0
-}
-
-trap term TERM INT
+trap 'exit 0' TERM INT HUP
 
 while true; do
-  pnpm run dev &
-  child=$!
   set +e
-  wait "$child"
+  pnpm exec next dev --hostname 0.0.0.0
   status=$?
   set -e
   echo "next dev exited with ${status}; relaunching in 1s" >&2

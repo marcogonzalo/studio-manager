@@ -20,6 +20,9 @@ services:
     environment:
       # Cap V8 heap so Turbopack/dev cannot consume all host RAM (OOM → exit 137)
       NODE_OPTIONS: --max-old-space-size=3072
+      # Next sets heap to 50% of container RAM unless this is set (4GiB → 2GiB →
+      # restart when used heap > 80% after compiling a route).
+      NEXT_DISABLE_MEM_OVERRIDE: "1"
       # Native inotify on Mac bind mounts is noisy and makes Next exit 0. Poll instead.
       # Set DOCKER_DEV_POLLING=false to disable if CPU is too high.
       CHOKIDAR_USEPOLLING: ${DOCKER_DEV_POLLING:-true}
