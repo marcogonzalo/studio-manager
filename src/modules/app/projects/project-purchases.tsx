@@ -41,6 +41,11 @@ import {
   hasPricedItemsWithTbd,
   itemCostAmount,
 } from "@/lib/project-item-price";
+import {
+  effectiveLineTaxRate,
+  formatTaxRatePercent,
+  type TaxProjectContext,
+} from "@/lib/tax-totals";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface PurchaseOrder {
@@ -60,7 +65,150 @@ interface PurchaseOrder {
     quantity: number;
     unit_cost: number;
     is_price_tbd?: boolean;
+    tax_rate?: number | null;
   }[];
+}
+
+export type PurchaseOrderItemRow = PurchaseOrder["project_items"][number];
+
+const formatUsd = (amount: number) => `$${amount.toFixed(2)}`;
+
+function calculateOrderTotal(
+  items: { quantity: number; unit_cost: number; is_price_tbd?: boolean }[]
+) {
+  return items.reduce((sum, item) => sum + itemCostAmount(item), 0);
+}
+
+export function PurchaseOrderItemsTable({
+  items,
+  taxProject,
+}: {
+  items: PurchaseOrderItemRow[];
+  taxProject: TaxProjectContext;
+}) {
+  const t = useTranslations("ProjectModulePurchases");
+  const ts = useTranslations("ProjectModuleShared");
+  const { toggleRow, isExpanded } = useExpandableTableRow();
+  const mobileVisibleColumnCount = 4;
+  const tbdLabel = ts("priceTbd");
+  const total = calculateOrderTotal(items);
+  const hasTbd = hasPricedItemsWithTbd(items);
+
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{ts("colItem")}</TableHead>
+            <TableHeadMd className="text-right">
+              {ts("colUnitCost")}
+            </TableHeadMd>
+            <TableHead className="text-right">{ts("colQuantity")}</TableHead>
+            <TableHeadMd className="text-right">{ts("colTax")}</TableHeadMd>
+            <TableHead className="text-right">{ts("colAmount")}</TableHead>
+            <TableHeadExpandPlaceholder srLabel={ts("expandRow")} />
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {items.map((item) => {
+            const expanded = isExpanded(item.id);
+
+            return (
+              <Fragment key={item.id}>
+                <TableRow>
+                  <TableCell className="max-w-[10rem] truncate font-medium sm:max-w-none">
+                    {item.name}
+                  </TableCell>
+                  <TableCellMd className="text-right tabular-nums">
+                    <ItemPriceOrTbd item={item} tbdLabel={tbdLabel}>
+                      {formatUsd(item.unit_cost)}
+                    </ItemPriceOrTbd>
+                  </TableCellMd>
+                  <TableCell className="text-right tabular-nums">
+                    {item.quantity}
+                  </TableCell>
+                  <TableCellMd className="text-muted-foreground text-right tabular-nums">
+                    {formatTaxRatePercent(
+                      effectiveLineTaxRate(item, taxProject)
+                    )}
+                  </TableCellMd>
+                  <TableCell className="text-right font-medium tabular-nums">
+                    <ItemPriceOrTbd item={item} tbdLabel={tbdLabel}>
+                      {formatUsd(itemCostAmount(item))}
+                    </ItemPriceOrTbd>
+                  </TableCell>
+                  <TableRowExpandTrigger
+                    expanded={expanded}
+                    onToggle={() => toggleRow(item.id)}
+                    expandLabel={t("expandItemDetails")}
+                    collapseLabel={t("collapseItemDetails")}
+                  />
+                </TableRow>
+                <TableRowMobileDetail
+                  open={expanded}
+                  colSpan={mobileVisibleColumnCount}
+                >
+                  <div className="space-y-2">
+                    <MobileDetailField
+                      label={ts("colUnitCost")}
+                      value={
+                        <ItemPriceOrTbd item={item} tbdLabel={tbdLabel}>
+                          {formatUsd(item.unit_cost)}
+                        </ItemPriceOrTbd>
+                      }
+                    />
+                    <MobileDetailField
+                      label={ts("colTax")}
+                      value={formatTaxRatePercent(
+                        effectiveLineTaxRate(item, taxProject)
+                      )}
+                    />
+                  </div>
+                </TableRowMobileDetail>
+              </Fragment>
+            );
+          })}
+          <TableRow className="bg-secondary/30 font-bold md:hidden">
+            <TableCell className="text-right">{t("orderTotal")}</TableCell>
+            <TableCell />
+            <TableCell className="text-right tabular-nums">
+              {formatUsd(total)}
+            </TableCell>
+            <TableCell />
+          </TableRow>
+          {hasTbd && (
+            <TableRow className="bg-secondary/30 md:hidden">
+              <TableCell
+                colSpan={4}
+                className="text-muted-foreground text-right text-xs font-normal"
+              >
+                {t("orderTotalPartialNote")}
+              </TableCell>
+            </TableRow>
+          )}
+          <TableRow className="bg-secondary/30 hidden font-bold md:table-row">
+            <TableCell className="text-right">{t("orderTotal")}</TableCell>
+            <TableCellMd />
+            <TableCell />
+            <TableCellMd />
+            <TableCell className="text-right tabular-nums">
+              {formatUsd(total)}
+            </TableCell>
+          </TableRow>
+          {hasTbd && (
+            <TableRow className="bg-secondary/30 hidden md:table-row">
+              <TableCell
+                colSpan={5}
+                className="text-muted-foreground text-right text-xs font-normal"
+              >
+                {t("orderTotalPartialNote")}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -75,10 +223,14 @@ const STATUS_COLORS: Record<string, string> = {
 
 export function ProjectPurchases({
   projectId,
+  taxRate = 0,
+  multitax = false,
   readOnly = false,
   disabled = false,
 }: {
   projectId: string;
+  taxRate?: number | null;
+  multitax?: boolean | null;
   readOnly?: boolean;
   disabled?: boolean;
 }) {
@@ -100,15 +252,18 @@ export function ProjectPurchases({
   const [editingOrder, setEditingOrder] = useState<PurchaseOrder | null>(null);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const { toggleRow, isExpanded } = useExpandableTableRow();
-  const mobileVisibleColumnCount = 3;
+
+  const taxProject: TaxProjectContext = {
+    tax_rate: taxRate,
+    multitax,
+  };
 
   const fetchOrders = async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from("purchase_orders")
       .select(
-        "*, supplier:suppliers(name), project_items(id, name, quantity, unit_cost, is_price_tbd)"
+        "*, supplier:suppliers(name), project_items(id, name, quantity, unit_cost, is_price_tbd, tax_rate)"
       )
       .eq("project_id", projectId)
       .order("created_at", { ascending: false });
@@ -213,12 +368,6 @@ export function ProjectPurchases({
     }
   };
 
-  const calculateOrderTotal = (
-    items: { quantity: number; unit_cost: number; is_price_tbd?: boolean }[]
-  ) => {
-    return items.reduce((sum, item) => sum + itemCostAmount(item), 0);
-  };
-
   return (
     <ProjectTabContent
       disabled={disabled}
@@ -248,8 +397,6 @@ export function ProjectPurchases({
         ) : (
           <div className="space-y-4">
             {orders.map((po) => {
-              const total = calculateOrderTotal(po.project_items);
-              const hasTbd = hasPricedItemsWithTbd(po.project_items);
               return (
                 <Card key={po.id}>
                   <CardHeader className="pb-3">
@@ -340,131 +487,10 @@ export function ProjectPurchases({
                   </CardHeader>
                   <CardContent>
                     {po.project_items.length > 0 ? (
-                      <div className="rounded-md border">
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>{ts("colItem")}</TableHead>
-                              <TableHead className="text-right">
-                                {ts("colTotal")}
-                              </TableHead>
-                              <TableHeadMd className="text-right">
-                                {ts("colQuantity")}
-                              </TableHeadMd>
-                              <TableHeadMd className="text-right">
-                                {ts("colUnitCost")}
-                              </TableHeadMd>
-                              <TableHeadExpandPlaceholder
-                                srLabel={ts("expandRow")}
-                              />
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {po.project_items.map((item) => {
-                              const expanded = isExpanded(item.id);
-                              const tbdLabel = ts("priceTbd");
-                              const formatUsd = (amount: number) =>
-                                `$${amount.toFixed(2)}`;
-
-                              return (
-                                <Fragment key={item.id}>
-                                  <TableRow>
-                                    <TableCell className="max-w-[10rem] truncate font-medium sm:max-w-none">
-                                      {item.name}
-                                    </TableCell>
-                                    <TableCell className="text-right font-medium tabular-nums">
-                                      <ItemPriceOrTbd
-                                        item={item}
-                                        tbdLabel={tbdLabel}
-                                      >
-                                        {formatUsd(itemCostAmount(item))}
-                                      </ItemPriceOrTbd>
-                                    </TableCell>
-                                    <TableCellMd className="text-right tabular-nums">
-                                      {item.quantity}
-                                    </TableCellMd>
-                                    <TableCellMd className="text-right tabular-nums">
-                                      <ItemPriceOrTbd
-                                        item={item}
-                                        tbdLabel={tbdLabel}
-                                      >
-                                        {formatUsd(item.unit_cost)}
-                                      </ItemPriceOrTbd>
-                                    </TableCellMd>
-                                    <TableRowExpandTrigger
-                                      expanded={expanded}
-                                      onToggle={() => toggleRow(item.id)}
-                                      expandLabel={t("expandItemDetails")}
-                                      collapseLabel={t("collapseItemDetails")}
-                                    />
-                                  </TableRow>
-                                  <TableRowMobileDetail
-                                    open={expanded}
-                                    colSpan={mobileVisibleColumnCount}
-                                  >
-                                    <div className="space-y-2">
-                                      <MobileDetailField
-                                        label={ts("colQuantity")}
-                                        value={item.quantity}
-                                      />
-                                      <MobileDetailField
-                                        label={ts("colUnitCost")}
-                                        value={
-                                          <ItemPriceOrTbd
-                                            item={item}
-                                            tbdLabel={tbdLabel}
-                                          >
-                                            {formatUsd(item.unit_cost)}
-                                          </ItemPriceOrTbd>
-                                        }
-                                      />
-                                    </div>
-                                  </TableRowMobileDetail>
-                                </Fragment>
-                              );
-                            })}
-                            <TableRow className="bg-secondary/30 font-bold md:hidden">
-                              <TableCell className="text-right">
-                                {t("orderTotal")}
-                              </TableCell>
-                              <TableCell className="text-right tabular-nums">
-                                ${total.toFixed(2)}
-                              </TableCell>
-                              <TableCell />
-                            </TableRow>
-                            {hasTbd && (
-                              <TableRow className="bg-secondary/30 md:hidden">
-                                <TableCell
-                                  colSpan={3}
-                                  className="text-muted-foreground text-right text-xs font-normal"
-                                >
-                                  {t("orderTotalPartialNote")}
-                                </TableCell>
-                              </TableRow>
-                            )}
-                            <TableRow className="bg-secondary/30 hidden font-bold md:table-row">
-                              <TableCell className="text-right">
-                                {t("orderTotal")}
-                              </TableCell>
-                              <TableCell className="text-right tabular-nums">
-                                ${total.toFixed(2)}
-                              </TableCell>
-                              <TableCellMd />
-                              <TableCellMd />
-                            </TableRow>
-                            {hasTbd && (
-                              <TableRow className="bg-secondary/30 hidden md:table-row">
-                                <TableCell
-                                  colSpan={4}
-                                  className="text-muted-foreground text-right text-xs font-normal"
-                                >
-                                  {t("orderTotalPartialNote")}
-                                </TableCell>
-                              </TableRow>
-                            )}
-                          </TableBody>
-                        </Table>
-                      </div>
+                      <PurchaseOrderItemsTable
+                        items={po.project_items}
+                        taxProject={taxProject}
+                      />
                     ) : (
                       <div className="text-muted-foreground py-4 text-center text-sm">
                         {t("noItemsInOrder")}
