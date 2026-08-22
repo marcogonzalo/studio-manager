@@ -1,8 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { PurchaseOrderItemsTable } from "./project-purchases";
 import enModules from "@/i18n/messages/en/app-project-modules.json";
+
+vi.mock("@/lib/supabase", () => ({
+  getSupabaseClient: () => ({ from: vi.fn() }),
+}));
 
 function renderTable() {
   return render(
