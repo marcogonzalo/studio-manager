@@ -1,9 +1,10 @@
 #!/bin/sh
-# Do not background next. `cmd &` gives it EOF on stdin; Next 16 then
-# handleSessionStop() and process.exit(0) immediately after "Ready".
+# No TTY (Compose tty: false). Do not pipe stdin: `tail | next` leaves tail
+# running after next dies, so this loop never relaunches. Closed stdin is OK
+# when there is no PTY — Next only handleSessionStop() on SIGINT/SIGTERM.
 set -eu
 
-trap 'exit 0' TERM INT HUP
+trap 'exit 0' TERM INT
 
 while true; do
   set +e
