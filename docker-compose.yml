@@ -13,18 +13,16 @@ services:
       - app-next-cache:/app/.next
     extra_hosts:
       - "localhost:host-gateway"
-    stdin_open: true
-    tty: true
-    # Next may exit 0 on a false file-watch restart; relaunch inside the container.
+    # No TTY: Docker Desktop writes "Enable Watch / Detach" into the PTY and
+    # Next 16 handleSessionStop() → exit 0 after every log line / request.
+    stdin_open: false
+    tty: false
     command: ["sh", "/app/scripts/docker-dev.sh"]
     environment:
-      # Cap V8 heap so Turbopack/dev cannot consume all host RAM (OOM → exit 137)
-      NODE_OPTIONS: --max-old-space-size=3072
-      # Next sets heap to 50% of container RAM unless this is set (4GiB → 2GiB →
-      # restart when used heap > 80% after compiling a route).
+      NODE_OPTIONS: --max-old-space-size=3072 --require /app/scripts/next-ignore-restart-exit.cjs
       NEXT_DISABLE_MEM_OVERRIDE: "1"
-      # Native inotify on Mac bind mounts is noisy and makes Next exit 0. Poll instead.
-      # Set DOCKER_DEV_POLLING=false to disable if CPU is too high.
+      # Skip Watchpack auto-restart on next.config.ts (bind-mount false positives).
+      __NEXT_DISABLE_MEMORY_WATCHER: "1"
       CHOKIDAR_USEPOLLING: ${DOCKER_DEV_POLLING:-true}
       CHOKIDAR_INTERVAL: "1000"
       WATCHPACK_POLLING: ${DOCKER_DEV_POLLING:-true}
