@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
+import { ExpandableText } from "@/components/ui/expandable-text";
 import {
   MobileDetailField,
   TableCellMd,
@@ -130,8 +131,17 @@ export function ViewProjectPaymentsClient({
                     <TableCellMd className="text-muted-foreground max-w-[12rem] truncate">
                       {payment.reference_number ?? "—"}
                     </TableCellMd>
-                    <TableCellMd className="text-muted-foreground max-w-[16rem] truncate">
-                      {payment.description ?? "—"}
+                    <TableCellMd className="text-muted-foreground max-w-[16rem]">
+                      {payment.description ? (
+                        <ExpandableText
+                          text={payment.description}
+                          collapsedClassName="truncate"
+                          expandLabel={t("expandDescription")}
+                          collapseLabel={t("collapseDescription")}
+                        />
+                      ) : (
+                        "—"
+                      )}
                     </TableCellMd>
                     <TableRowExpandTrigger
                       expanded={expanded}
