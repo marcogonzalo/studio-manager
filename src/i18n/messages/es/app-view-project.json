@@ -52,6 +52,8 @@
     "productStatusReceived": "Recibido",
     "spaceGeneral": "General",
     "viewImageAria": "Ver imagen de {name}",
+    "expandDescription": "Mostrar descripción completa",
+    "collapseDescription": "Ocultar descripción completa",
     "documentsMetaTitle": "Documentos del proyecto",
     "documentsMetaDescription": "Documentos del proyecto compartido",
     "noDocuments": "No hay documentos visibles en este proyecto.",

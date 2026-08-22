@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronDown, Image as ImageIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
+import { ExpandableText } from "@/components/ui/expandable-text";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import {
   Collapsible,
@@ -211,6 +212,14 @@ export function ViewProjectSpacesClient({
                                     <p className="text-foreground line-clamp-2 font-medium">
                                       {p.name}
                                     </p>
+                                    {p.description?.trim() ? (
+                                      <ExpandableText
+                                        text={p.description}
+                                        className="text-muted-foreground mt-1 text-xs"
+                                        expandLabel={t("expandDescription")}
+                                        collapseLabel={t("collapseDescription")}
+                                      />
+                                    ) : null}
                                     <p className="text-muted-foreground mt-1 text-xs">
                                       {getStatusLabel(p.status) || "—"}
                                     </p>

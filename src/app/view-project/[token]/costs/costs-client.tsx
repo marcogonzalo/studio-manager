@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ExpandableText } from "@/components/ui/expandable-text";
 import { ItemPriceOrTbd } from "@/components/price-tbd-pill";
 import { formatCurrencyWithLang } from "@/lib/formatting";
 import {
@@ -260,9 +261,16 @@ export function ViewProjectCostsClient({
                                               {p.name}
                                             </div>
                                             {p.description ? (
-                                              <div className="text-muted-foreground line-clamp-2 text-xs">
-                                                {p.description}
-                                              </div>
+                                              <ExpandableText
+                                                text={p.description}
+                                                className="text-muted-foreground text-xs"
+                                                expandLabel={t(
+                                                  "expandDescription"
+                                                )}
+                                                collapseLabel={t(
+                                                  "collapseDescription"
+                                                )}
+                                              />
                                             ) : null}
                                           </div>
                                         </div>
@@ -390,8 +398,19 @@ export function ViewProjectCostsClient({
                                 <TableBody>
                                   {lines.map((line) => (
                                     <TableRow key={line.id}>
-                                      <TableCell className="text-muted-foreground max-w-[200px] truncate">
-                                        {line.description || "—"}
+                                      <TableCell className="text-muted-foreground max-w-xs">
+                                        {line.description ? (
+                                          <ExpandableText
+                                            text={line.description}
+                                            collapsedClassName="truncate"
+                                            expandLabel={t("expandDescription")}
+                                            collapseLabel={t(
+                                              "collapseDescription"
+                                            )}
+                                          />
+                                        ) : (
+                                          "—"
+                                        )}
                                       </TableCell>
                                       <TableCell>
                                         {subcategoryLabels[categoryKey]?.[
