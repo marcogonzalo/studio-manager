@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama feat/budget-notes-203 (issue #203):** Notas de presupuesto a nivel de proyecto (`projects.budget_notes`). Botón + modal en Presupuesto; texto plano con saltos de línea (`<br>` / soft breaks). Vista pública costes a 9px con `px-4`; PDF tras totales a 8px con `paddingHorizontal: 16`. RPC `get_project_public_currency` expone `budget_notes`. Helpers `budget-notes.ts` + tests diálogo. Lint OK; suite 529/530 (1 timeout flaky `add-item-dialog`, pasa aislado); build OK (Docker test profile).
+
 - **Rama fix/memory-cleanup:** Cleanup de timers/rAF, fetches stale y store in-memory de rate-limit. `checkRateLimit` poda IPs caducadas en cada check (ya no 1% aleatorio). `useProjectBudgetLines` ignora respuestas viejas al cambiar de proyecto o unmount. Auth/customization/profile-defaults no hacen `setState` tras unmount; highlight de onboarding y `AnimatedSection` limpian timers/rAF. Lint + tests targeted OK (Docker test profile: rate-limit, budget-lines, auth-provider). Coverage helpers `rate-limit` ~96%, `use-project-budget-lines` 100% lines.
 
 - **Rama feat/project-multitax-custom-taxes (issue #196):** Multitax por proyecto (`projects.multitax`, default off; UI solo con `costs_management` ≥ Plus). `tax_rate` en `project_items` y `project_budget_lines` (default = impuesto del proyecto). Campo impuesto en formularios de producto y partida cuando Multitax activo (misma fila que importes). Totales agrupados por tipo impositivo en presupuesto, PDF y vista pública. Helper `tax-totals.ts`; RPCs públicas exponen `multitax` + `tax_rate` por línea. Lint OK; tests targeted + suite; build OK (Docker test profile).

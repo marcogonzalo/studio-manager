@@ -52,6 +52,7 @@ import {
   Wrench,
   Check,
   XCircle,
+  StickyNote,
 } from "lucide-react";
 import {
   Tooltip,
@@ -65,6 +66,7 @@ import {
   BudgetPrintOptionsDialog,
   type BudgetPrintOption,
 } from "@/components/dialogs/budget-print-options-dialog";
+import { BudgetNotesDialog } from "@/components/dialogs/budget-notes-dialog";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
@@ -157,6 +159,8 @@ export function ProjectBudget({
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isPrintOptionsOpen, setIsPrintOptionsOpen] = useState(false);
+  const [isBudgetNotesOpen, setIsBudgetNotesOpen] = useState(false);
+  const [isSavingBudgetNotes, setIsSavingBudgetNotes] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -278,6 +282,37 @@ export function ProjectBudget({
   const handleAddBudgetLine = () => {
     setEditingBudgetLine(null);
     setIsBudgetLineDialogOpen(true);
+  };
+
+  const handleSaveBudgetNotes = async (notes: string | null) => {
+    if (!project) return;
+    setIsSavingBudgetNotes(true);
+    try {
+      const { error: updateError } = await supabase
+        .from("projects")
+        .update({ budget_notes: notes })
+        .eq("id", projectId);
+      if (updateError) {
+        const demoMsg = getDemoAccountMessage(updateError, locale);
+        if (demoMsg) {
+          toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
+            duration: 5000,
+          });
+        } else {
+          toast.error(t("toastBudgetNotesError"));
+          reportError(updateError, "Error saving budget notes:");
+        }
+        return;
+      }
+      setProject((prev) => (prev ? { ...prev, budget_notes: notes } : prev));
+      setIsBudgetNotesOpen(false);
+      toast.success(t("toastBudgetNotesSaved"));
+    } catch (error) {
+      reportError(error, "Unexpected error saving budget notes:");
+      toast.error(t("toastBudgetNotesError"));
+    } finally {
+      setIsSavingBudgetNotes(false);
+    }
   };
 
   const handleGeneratePDF = async (option: BudgetPrintOption) => {
@@ -570,6 +605,18 @@ export function ProjectBudget({
         <div className="space-y-6">
           <TabSectionHeader title={t("title")}>
             <div className="flex space-x-2">
+              {!readOnly && (
+                <Button
+                  variant="outline"
+                  className="shrink-0 print:hidden"
+                  onClick={() => setIsBudgetNotesOpen(true)}
+                  disabled={!project}
+                  aria-label={t("budgetNotesAria")}
+                >
+                  <StickyNote className="mr-2 h-4 w-4" />
+                  {t("budgetNotes")}
+                </Button>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -1311,6 +1358,14 @@ export function ProjectBudget({
             onConfirm={handleGeneratePDF}
             isGenerating={isGeneratingPDF}
             printFilterOptionsEnabled={printFilterOptionsEnabled}
+          />
+
+          <BudgetNotesDialog
+            open={isBudgetNotesOpen}
+            onOpenChange={setIsBudgetNotesOpen}
+            initialNotes={project?.budget_notes}
+            onSave={handleSaveBudgetNotes}
+            saving={isSavingBudgetNotes}
           />
 
           <ConfirmDeleteDialog
