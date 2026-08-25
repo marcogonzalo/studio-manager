@@ -68,6 +68,8 @@ import {
 } from "@/components/dialogs/budget-print-options-dialog";
 import { BudgetCustomizeDialog } from "@/components/dialogs/budget-customize-dialog";
 import type { BudgetCustomizeSavePayload } from "@/components/dialogs/budget-customize-dialog";
+import type { BudgetSettings } from "@/lib/budget-settings";
+import { resolveBudgetSettingsForPresentation } from "@/lib/budget-settings";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
@@ -82,7 +84,6 @@ import {
 } from "@/lib/utils";
 import {
   BUDGET_PHASE_DISPLAY_ORDER,
-  budgetPhaseKey,
   groupBudgetLinesByPhaseThenCategory,
   groupItemsBySpaceThenCreatedAt,
   orderedBudgetCategoryKeys,
@@ -131,6 +132,9 @@ export function ProjectBudget({
   const { user, effectivePlan } = useAuth();
   const printFilterOptionsEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "full",
+  });
+  const budgetCustomizationEnabled = usePlanCapability("pdf_export_mode", {
+    minModality: "plus",
   });
   const showVetaBranding =
     effectivePlan?.config?.pdf_export_mode === "basic" ||
@@ -308,9 +312,16 @@ export function ProjectBudget({
     if (!project) return;
     setIsSavingBudgetCustomize(true);
     try {
+      const payload: {
+        budget_notes: string | null;
+        budget_settings?: BudgetSettings;
+      } = { budget_notes: notes };
+      if (budgetCustomizationEnabled) {
+        payload.budget_settings = settings;
+      }
       const { error: updateError } = await supabase
         .from("projects")
-        .update({ budget_notes: notes, budget_settings: settings })
+        .update(payload)
         .eq("id", projectId);
       if (updateError) {
         const demoMsg = getDemoAccountMessage(updateError, locale);
@@ -326,7 +337,13 @@ export function ProjectBudget({
       }
       setProject((prev) =>
         prev
-          ? { ...prev, budget_notes: notes, budget_settings: settings }
+          ? {
+              ...prev,
+              budget_notes: notes,
+              ...(budgetCustomizationEnabled
+                ? { budget_settings: settings }
+                : {}),
+            }
           : prev
       );
       setIsBudgetCustomizeOpen(false);
@@ -392,8 +409,15 @@ export function ProjectBudget({
             origin
           )) ?? undefined;
       }
+      const projectForPdf = {
+        ...project,
+        budget_settings: resolveBudgetSettingsForPresentation(
+          project.budget_settings,
+          effectivePlan?.config
+        ),
+      };
       const asPdf = await generateProjectPDF(
-        project,
+        projectForPdf,
         itemsWithThumbs,
         linesToPdf,
         taxRate,
@@ -428,11 +452,6 @@ export function ProjectBudget({
 
   const budgetLinesByPhaseAndCategory =
     groupBudgetLinesByPhaseThenCategory(budgetLines);
-
-  const availableCustomizePhases = useMemo(
-    () => [...new Set(budgetLines.map((line) => budgetPhaseKey(line.phase)))],
-    [budgetLines]
-  );
 
   const includeUnassignedProducts = useMemo(
     () => items.some((item) => !item.is_excluded && !item.space_id),
@@ -1399,7 +1418,7 @@ export function ProjectBudget({
             onOpenChange={setIsBudgetCustomizeOpen}
             initialNotes={project?.budget_notes}
             initialSettings={project?.budget_settings}
-            availablePhases={availableCustomizePhases}
+            customizationEnabled={budgetCustomizationEnabled}
             availableSpaces={spaces}
             includeUnassignedSpace={includeUnassignedProducts}
             unassignedSpaceLabel={t("spaceGeneral")}

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   checkCapability,
   hasModalityAtLeast,
+  isBudgetCustomizationAvailable,
   isCapabilityAvailable,
 } from "./plan-capability";
 import { getPlanConfigForDisplay } from "./plan-copy";
@@ -62,6 +63,20 @@ describe("plan-capability", () => {
       const studio = getPlanConfigForDisplay("STUDIO");
       expect(
         checkCapability(studio, "pdf_export_mode", { minModality: "full" })
+      ).toBe(true);
+    });
+  });
+
+  describe("isBudgetCustomizationAvailable", () => {
+    it("is false for BASE (basic pdf export) and true for PRO/STUDIO", () => {
+      expect(
+        isBudgetCustomizationAvailable(getPlanConfigForDisplay("BASE"))
+      ).toBe(false);
+      expect(
+        isBudgetCustomizationAvailable(getPlanConfigForDisplay("PRO"))
+      ).toBe(true);
+      expect(
+        isBudgetCustomizationAvailable(getPlanConfigForDisplay("STUDIO"))
       ).toBe(true);
     });
   });

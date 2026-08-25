@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { ProjectPhase } from "@/types";
+import type { PlanConfig } from "@/types";
 import { UNASSIGNED_SPACE_KEY } from "@/lib/project-list-order";
+import { isBudgetCustomizationAvailable } from "@/lib/plan-capability";
 
 export type BudgetSpaceOption = {
   id: string;
@@ -82,6 +84,17 @@ const budgetSettingsSchema = z
   })
   .strict();
 
+/** Returns settings for public/PDF presentation, or null when plan is basic (BASE). */
+export function resolveBudgetSettingsForPresentation(
+  settings: BudgetSettings | null | undefined,
+  planConfig: PlanConfig | null | undefined
+): BudgetSettings | null {
+  if (!isBudgetCustomizationAvailable(planConfig)) {
+    return null;
+  }
+  return settings ?? null;
+}
+
 export function parseBudgetSettings(raw: unknown): BudgetSettings {
   if (
     raw == null ||
@@ -150,7 +163,26 @@ export function shouldShowProductField(
   settings: BudgetSettings | null | undefined,
   field: keyof BudgetProductFieldVisibility
 ): boolean {
+  if (field === "sku") return false;
   return normalizeBudgetSettings(settings).product_fields[field];
+}
+
+/** True when both sensitive fields (model, supplier) are enabled. */
+export function isSensitiveProductDataVisible(
+  settings: BudgetSettings | null | undefined
+): boolean {
+  const fields = normalizeBudgetSettings(settings).product_fields;
+  return fields.model && fields.supplier;
+}
+
+export function productFieldsFromSensitiveToggle(
+  enabled: boolean
+): BudgetProductFieldVisibility {
+  return {
+    model: enabled,
+    supplier: enabled,
+    sku: false,
+  };
 }
 
 /** All space option ids including unassigned pseudo-key. */

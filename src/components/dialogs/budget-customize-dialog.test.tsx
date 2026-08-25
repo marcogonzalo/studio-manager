@@ -66,4 +66,34 @@ describe("BudgetCustomizeDialog", () => {
       settings: expect.any(Object),
     });
   });
+
+  it("hides customization controls when customizationEnabled is false", () => {
+    renderDialog({ customizationEnabled: false });
+
+    expect(screen.getByLabelText("Notas")).toBeInTheDocument();
+    expect(screen.queryByText("Fase a mostrar")).not.toBeInTheDocument();
+    expect(screen.queryByText("Ordenar por")).not.toBeInTheDocument();
+  });
+
+  it("preserves initial settings on save when customization is disabled", async () => {
+    const user = userEvent.setup();
+    const initialSettings = {
+      phase_filter: "design" as const,
+      sort_field: "supplier" as const,
+    };
+    const { onSave } = renderDialog({
+      customizationEnabled: false,
+      initialSettings,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Guardar" }));
+
+    expect(onSave).toHaveBeenCalledWith({
+      notes: "Nota inicial",
+      settings: expect.objectContaining({
+        phase_filter: "design",
+        sort_field: "supplier",
+      }),
+    });
+  });
 });

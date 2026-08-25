@@ -16,14 +16,14 @@ describe("getProductPublicMeta", () => {
     });
   });
 
-  it("shows only enabled fields", () => {
+  it("shows only enabled sensitive fields (internal code never shown)", () => {
     expect(
       getProductPublicMeta(item, {
         product_fields: { model: true, supplier: false, sku: true },
       })
     ).toEqual({
       model: "REF-1",
-      sku: "INT-9",
+      sku: "",
       supplier: "",
     });
   });

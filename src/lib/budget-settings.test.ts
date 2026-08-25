@@ -6,9 +6,34 @@ import {
   normalizeBudgetSettings,
   parseBudgetSettings,
   getSelectedSpaceIds,
+  resolveBudgetSettingsForPresentation,
   shouldShowProductField,
+  isSensitiveProductDataVisible,
+  productFieldsFromSensitiveToggle,
   toStoredVisibleSpaceIds,
 } from "./budget-settings";
+import { getPlanConfigForDisplay } from "./plan-copy";
+
+describe("resolveBudgetSettingsForPresentation", () => {
+  it("returns null for BASE plan", () => {
+    expect(
+      resolveBudgetSettingsForPresentation(
+        { phase_filter: "design" },
+        getPlanConfigForDisplay("BASE")
+      )
+    ).toBeNull();
+  });
+
+  it("returns settings for PRO plan", () => {
+    const settings = { phase_filter: "design" as const };
+    expect(
+      resolveBudgetSettingsForPresentation(
+        settings,
+        getPlanConfigForDisplay("PRO")
+      )
+    ).toEqual(settings);
+  });
+});
 
 describe("parseBudgetSettings", () => {
   it("returns empty object for null/undefined/empty", () => {
@@ -93,13 +118,48 @@ describe("shouldShowProductField", () => {
     expect(shouldShowProductField(null, "sku")).toBe(false);
   });
 
-  it("respects explicit visibility", () => {
+  it("respects explicit visibility for sensitive fields", () => {
     expect(
       shouldShowProductField(
         { product_fields: { model: true, supplier: false, sku: true } },
         "sku"
       )
+    ).toBe(false);
+    expect(
+      shouldShowProductField(
+        { product_fields: { model: true, supplier: false, sku: true } },
+        "model"
+      )
     ).toBe(true);
+  });
+});
+
+describe("sensitive product data toggle", () => {
+  it("is on only when model and supplier are both enabled", () => {
+    expect(isSensitiveProductDataVisible(null)).toBe(false);
+    expect(
+      isSensitiveProductDataVisible({
+        product_fields: { model: true, supplier: true, sku: false },
+      })
+    ).toBe(true);
+    expect(
+      isSensitiveProductDataVisible({
+        product_fields: { model: true, supplier: false, sku: false },
+      })
+    ).toBe(false);
+  });
+
+  it("maps toggle to model and supplier, never sku", () => {
+    expect(productFieldsFromSensitiveToggle(true)).toEqual({
+      model: true,
+      supplier: true,
+      sku: false,
+    });
+    expect(productFieldsFromSensitiveToggle(false)).toEqual({
+      model: false,
+      supplier: false,
+      sku: false,
+    });
   });
 });
 
