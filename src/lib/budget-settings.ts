@@ -32,12 +32,11 @@ export interface BudgetSettings {
   visible_space_ids?: string[] | null;
 }
 
-export const DEFAULT_PRODUCT_FIELD_VISIBILITY: BudgetProductFieldVisibility =
-  {
-    model: false,
-    supplier: false,
-    sku: false,
-  };
+export const DEFAULT_PRODUCT_FIELD_VISIBILITY: BudgetProductFieldVisibility = {
+  model: false,
+  supplier: false,
+  sku: false,
+};
 
 export const DEFAULT_BUDGET_SETTINGS: Required<
   Pick<
@@ -84,7 +83,10 @@ const budgetSettingsSchema = z
   .strict();
 
 export function parseBudgetSettings(raw: unknown): BudgetSettings {
-  if (raw == null || (typeof raw === "object" && Object.keys(raw).length === 0)) {
+  if (
+    raw == null ||
+    (typeof raw === "object" && Object.keys(raw).length === 0)
+  ) {
     return {};
   }
   const result = budgetSettingsSchema.safeParse(raw);
@@ -113,7 +115,8 @@ export function normalizeBudgetSettings(
         parsed.product_fields?.supplier ??
         DEFAULT_BUDGET_SETTINGS.product_fields.supplier,
       sku:
-        parsed.product_fields?.sku ?? DEFAULT_BUDGET_SETTINGS.product_fields.sku,
+        parsed.product_fields?.sku ??
+        DEFAULT_BUDGET_SETTINGS.product_fields.sku,
     },
     visible_space_ids:
       parsed.visible_space_ids === undefined

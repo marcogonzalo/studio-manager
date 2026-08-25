@@ -289,8 +289,18 @@ describe("project-list-order", () => {
 describe("budget settings presentation", () => {
   it("filters budget lines by phase", () => {
     const lines = [
-      { id: "a", phase: "design", category: "own_fees", created_at: "2026-01-01" },
-      { id: "b", phase: "diagnosis", category: "operations", created_at: "2026-01-02" },
+      {
+        id: "a",
+        phase: "design",
+        category: "own_fees",
+        created_at: "2026-01-01",
+      },
+      {
+        id: "b",
+        phase: "diagnosis",
+        category: "operations",
+        created_at: "2026-01-02",
+      },
     ];
     expect(
       filterBudgetLinesByPhase(lines, "design").map((line) => line.id)

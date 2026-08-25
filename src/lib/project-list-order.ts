@@ -126,7 +126,6 @@ function productSupplierName(
   return item.supplier?.name ?? item.supplier_name ?? "";
 }
 
-
 function compareBudgetLineByField(
   a: SortableBudgetLine,
   b: SortableBudgetLine,
@@ -159,7 +158,10 @@ function compareProductByField(
     case "alphabetical":
       return compareNullableText(a.name, b.name);
     case "supplier":
-      return compareNullableText(productSupplierName(a), productSupplierName(b));
+      return compareNullableText(
+        productSupplierName(a),
+        productSupplierName(b)
+      );
     case "created_at":
     default:
       return timestampOrLast(a.created_at) - timestampOrLast(b.created_at);

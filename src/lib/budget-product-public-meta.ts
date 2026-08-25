@@ -7,7 +7,10 @@ type ProductMetaSource = {
   reference_code?: string | null;
   internal_reference?: string | null;
   supplier_name?: string | null;
-  product?: { reference_code?: string | null; supplier?: { name?: string | null } | null };
+  product?: {
+    reference_code?: string | null;
+    supplier?: { name?: string | null } | null;
+  };
 };
 
 export function getProductPublicMeta(
@@ -15,9 +18,7 @@ export function getProductPublicMeta(
   settings: BudgetSettings | null | undefined
 ) {
   const referenceCode =
-    item.reference_code?.trim() ||
-    item.product?.reference_code?.trim() ||
-    "";
+    item.reference_code?.trim() || item.product?.reference_code?.trim() || "";
   const internalReference = item.internal_reference?.trim() || "";
   const supplierName =
     item.supplier_name?.trim() || item.product?.supplier?.name?.trim() || "";

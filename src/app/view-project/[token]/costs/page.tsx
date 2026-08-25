@@ -104,7 +104,8 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
   const taxRate = Number(currencyRow?.tax_rate ?? 0);
   const multitax = currencyRow?.multitax === true;
   const budgetNotes = currencyRow?.budget_notes?.trim() || null;
-  const budgetSettings = (currencyRow?.budget_settings as BudgetSettings | null) ?? null;
+  const budgetSettings =
+    (currencyRow?.budget_settings as BudgetSettings | null) ?? null;
 
   return (
     <ViewProjectShell token={token} showBack title={t("costsTitle")}>

@@ -255,88 +255,91 @@ export function ViewProjectCostsClient({
                                       budgetSettings
                                     );
                                     return (
-                                    <TableRow key={p.id}>
-                                      <TableCell className="align-middle">
-                                        <div className="flex items-center gap-3">
-                                          {p.image_url ? (
-                                            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
-                                              <Image
-                                                src={p.image_url}
-                                                alt={p.name}
-                                                fill
-                                                className="object-cover"
-                                                sizes="40px"
-                                              />
-                                            </div>
-                                          ) : (
-                                            <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded">
-                                              <ImageIcon
-                                                className="text-muted-foreground h-5 w-5"
-                                                aria-hidden
-                                              />
-                                            </div>
-                                          )}
-                                          <div className="min-w-0">
-                                            <div className="font-medium">
-                                              {p.name}
-                                            </div>
-                                            {meta.model ? (
-                                              <div className="text-muted-foreground text-xs">
-                                                {t("costsProductModel")}:{" "}
-                                                {meta.model}
+                                      <TableRow key={p.id}>
+                                        <TableCell className="align-middle">
+                                          <div className="flex items-center gap-3">
+                                            {p.image_url ? (
+                                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
+                                                <Image
+                                                  src={p.image_url}
+                                                  alt={p.name}
+                                                  fill
+                                                  className="object-cover"
+                                                  sizes="40px"
+                                                />
                                               </div>
-                                            ) : null}
-                                            {meta.sku ? (
-                                              <div className="text-muted-foreground mt-0.5 font-mono text-xs">
-                                                {t("costsProductSku")}:{" "}
-                                                {meta.sku}
+                                            ) : (
+                                              <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded">
+                                                <ImageIcon
+                                                  className="text-muted-foreground h-5 w-5"
+                                                  aria-hidden
+                                                />
                                               </div>
-                                            ) : null}
-                                            {meta.supplier ? (
-                                              <div className="text-muted-foreground text-xs">
-                                                {t("costsProductSupplier")}:{" "}
-                                                {meta.supplier}
+                                            )}
+                                            <div className="min-w-0">
+                                              <div className="font-medium">
+                                                {p.name}
                                               </div>
-                                            ) : null}
-                                            {p.description ? (
-                                              <ExpandableText
-                                                text={p.description}
-                                                className="text-muted-foreground text-xs"
-                                                expandLabel={t(
-                                                  "expandDescription"
-                                                )}
-                                                collapseLabel={t(
-                                                  "collapseDescription"
-                                                )}
-                                              />
-                                            ) : null}
+                                              {meta.model ? (
+                                                <div className="text-muted-foreground text-xs">
+                                                  {t("costsProductModel")}:{" "}
+                                                  {meta.model}
+                                                </div>
+                                              ) : null}
+                                              {meta.sku ? (
+                                                <div className="text-muted-foreground mt-0.5 font-mono text-xs">
+                                                  {t("costsProductSku")}:{" "}
+                                                  {meta.sku}
+                                                </div>
+                                              ) : null}
+                                              {meta.supplier ? (
+                                                <div className="text-muted-foreground text-xs">
+                                                  {t("costsProductSupplier")}:{" "}
+                                                  {meta.supplier}
+                                                </div>
+                                              ) : null}
+                                              {p.description ? (
+                                                <ExpandableText
+                                                  text={p.description}
+                                                  className="text-muted-foreground text-xs"
+                                                  expandLabel={t(
+                                                    "expandDescription"
+                                                  )}
+                                                  collapseLabel={t(
+                                                    "collapseDescription"
+                                                  )}
+                                                />
+                                              ) : null}
+                                            </div>
                                           </div>
-                                        </div>
-                                      </TableCell>
-                                      <TableCell className="text-right align-middle tabular-nums">
-                                        {p.quantity}
-                                      </TableCell>
-                                      <TableCell className="text-muted-foreground text-right align-middle tabular-nums">
-                                        {formatTaxRatePercent(
-                                          effectiveLineTaxRate(p, taxProjectCtx)
-                                        )}
-                                      </TableCell>
-                                      <TableCell className="text-right align-middle font-medium tabular-nums">
-                                        <ItemPriceOrTbd
-                                          item={p}
-                                          tbdLabel={tbdLabel}
-                                        >
-                                          {formatCurrency(
-                                            Number(p.unit_price ?? 0) *
-                                              Number(p.quantity ?? 0)
+                                        </TableCell>
+                                        <TableCell className="text-right align-middle tabular-nums">
+                                          {p.quantity}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground text-right align-middle tabular-nums">
+                                          {formatTaxRatePercent(
+                                            effectiveLineTaxRate(
+                                              p,
+                                              taxProjectCtx
+                                            )
                                           )}
-                                        </ItemPriceOrTbd>
-                                      </TableCell>
-                                    </TableRow>
+                                        </TableCell>
+                                        <TableCell className="text-right align-middle font-medium tabular-nums">
+                                          <ItemPriceOrTbd
+                                            item={p}
+                                            tbdLabel={tbdLabel}
+                                          >
+                                            {formatCurrency(
+                                              Number(p.unit_price ?? 0) *
+                                                Number(p.quantity ?? 0)
+                                            )}
+                                          </ItemPriceOrTbd>
+                                        </TableCell>
+                                      </TableRow>
                                     );
                                   })}
                                 </TableBody>
-                                </Table>
+                              </Table>
                             </CardContent>
                           </CollapsibleContent>
                         </Card>

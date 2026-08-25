@@ -44,7 +44,10 @@ import {
   toStoredVisibleSpaceIds,
 } from "@/lib/budget-settings";
 import type { BudgetProductFieldVisibility } from "@/lib/budget-settings";
-import { UNASSIGNED_SPACE_KEY, orderedBudgetPhaseKeys } from "@/lib/project-list-order";
+import {
+  UNASSIGNED_SPACE_KEY,
+  orderedBudgetPhaseKeys,
+} from "@/lib/project-list-order";
 import type { ProjectPhase } from "@/types";
 
 const EMPTY_PHASES: string[] = [];
@@ -119,7 +122,10 @@ export function BudgetCustomizeDialog({
   const [settings, setSettings] = useState(() =>
     normalizeBudgetSettings(initialSettings)
   );
-  const allSpaceIds = allSpaceOptionIds(availableSpaces, includeUnassignedSpace);
+  const allSpaceIds = allSpaceOptionIds(
+    availableSpaces,
+    includeUnassignedSpace
+  );
   const spaceOptionsKey = [
     ...availableSpaces.map((space) => space.id),
     includeUnassignedSpace ? UNASSIGNED_SPACE_KEY : "",
@@ -221,8 +227,17 @@ export function BudgetCustomizeDialog({
     const normalized = normalizeBudgetSettings(initialSettings);
     const spaceIds = allSpaceOptionIds(availableSpaces, includeUnassignedSpace);
     setSettings(normalized);
-    setSelectedSpaceIds(getSelectedSpaceIds(normalized.visible_space_ids, spaceIds));
-  }, [open, initialNotes, initialSettings, includeUnassignedSpace, spaceOptionsKey]);
+    setSelectedSpaceIds(
+      getSelectedSpaceIds(normalized.visible_space_ids, spaceIds)
+    );
+  }, [
+    open,
+    initialNotes,
+    initialSettings,
+    includeUnassignedSpace,
+    spaceOptionsKey,
+    availableSpaces,
+  ]);
 
   const tooLong = isBudgetNotesTooLong(notes);
 
@@ -439,7 +454,9 @@ export function BudgetCustomizeDialog({
                     <div className="flex items-center gap-2">
                       <Checkbox
                         id="space-unassigned"
-                        checked={selectedSpaceIds.includes(UNASSIGNED_SPACE_KEY)}
+                        checked={selectedSpaceIds.includes(
+                          UNASSIGNED_SPACE_KEY
+                        )}
                         onCheckedChange={(checked) =>
                           toggleSpaceSelection(
                             UNASSIGNED_SPACE_KEY,

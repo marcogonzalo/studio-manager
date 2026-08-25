@@ -42,7 +42,6 @@ import {
   orderedBudgetCategoryKeys,
   orderedBudgetPhaseKeys,
 } from "@/lib/project-list-order";
-import type { BudgetSettings } from "@/lib/budget-settings";
 import type {
   Project,
   ProjectBudgetLine,

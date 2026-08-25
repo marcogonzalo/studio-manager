@@ -325,7 +325,9 @@ export function ProjectBudget({
         return;
       }
       setProject((prev) =>
-        prev ? { ...prev, budget_notes: notes, budget_settings: settings } : prev
+        prev
+          ? { ...prev, budget_notes: notes, budget_settings: settings }
+          : prev
       );
       setIsBudgetCustomizeOpen(false);
       toast.success(t("toastBudgetCustomizeSaved"));
