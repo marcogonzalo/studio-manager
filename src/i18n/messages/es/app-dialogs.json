@@ -261,10 +261,12 @@
     "generatePdf": "Generar PDF",
     "generating": "Generando..."
   },
-  "DialogBudgetNotes": {
-    "title": "Notas del presupuesto",
-    "description": "Estas notas aparecen al final del presupuesto en la vista pública y en el PDF. Se respeta el texto plano y los saltos de línea.",
+  "DialogBudgetCustomize": {
+    "title": "Personalizar",
+    "description": "Configura cómo se muestra el presupuesto en la vista pública del cliente y en la exportación PDF.",
     "notesLabel": "Notas",
+    "notesHelp": "Se muestran al final del presupuesto en la página pública y en el PDF. Texto plano; se respetan los saltos de línea.",
+    "notesHelpAria": "Ayuda sobre las notas",
     "notesPlaceholder": "Ej.: Validez 30 días. No incluye tasas municipales.",
     "charCount": "{count} / {max}",
     "tooLong": "El texto supera el máximo permitido.",

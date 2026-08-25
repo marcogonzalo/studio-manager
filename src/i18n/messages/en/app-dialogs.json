@@ -261,10 +261,12 @@
     "generatePdf": "Generate PDF",
     "generating": "Generating..."
   },
-  "DialogBudgetNotes": {
-    "title": "Budget notes",
-    "description": "These notes appear at the end of the budget on the public view and in the PDF. Plain text and line breaks are preserved.",
+  "DialogBudgetCustomize": {
+    "title": "Customize",
+    "description": "Configure how the budget appears on the public client view and in the PDF export.",
     "notesLabel": "Notes",
+    "notesHelp": "Shown at the end of the budget on the public page and in the PDF. Plain text; line breaks are preserved.",
+    "notesHelpAria": "Notes help",
     "notesPlaceholder": "E.g. Valid for 30 days. Municipal fees not included.",
     "charCount": "{count} / {max}",
     "tooLong": "Text exceeds the maximum allowed length.",

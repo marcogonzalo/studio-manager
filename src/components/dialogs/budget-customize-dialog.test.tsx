@@ -2,23 +2,26 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import { BudgetNotesDialog } from "./budget-notes-dialog";
+import { BudgetCustomizeDialog } from "./budget-customize-dialog";
 import esDialogs from "@/i18n/messages/es/app-dialogs.json";
 
 function renderDialog(
-  props: Partial<React.ComponentProps<typeof BudgetNotesDialog>> = {}
+  props: Partial<React.ComponentProps<typeof BudgetCustomizeDialog>> = {}
 ) {
   const onOpenChange = vi.fn();
   const onSave = vi.fn();
   render(
     <NextIntlClientProvider
       locale="es"
-      messages={{ DialogBudgetNotes: esDialogs.DialogBudgetNotes }}
+      messages={{
+        DialogBudgetCustomize: esDialogs.DialogBudgetCustomize,
+      }}
     >
-      <BudgetNotesDialog
+      <BudgetCustomizeDialog
         open
         onOpenChange={onOpenChange}
         initialNotes={props.initialNotes ?? "Nota inicial"}
+        initialSettings={props.initialSettings ?? null}
         onSave={onSave}
         saving={props.saving}
         {...props}
@@ -28,8 +31,8 @@ function renderDialog(
   return { onOpenChange, onSave };
 }
 
-describe("BudgetNotesDialog", () => {
-  it("loads initial notes and saves normalized text", async () => {
+describe("BudgetCustomizeDialog", () => {
+  it("loads initial notes and saves normalized payload", async () => {
     const user = userEvent.setup();
     const { onSave } = renderDialog({
       initialNotes: "  primera\nsegunda  ",
@@ -42,16 +45,25 @@ describe("BudgetNotesDialog", () => {
     await user.type(textarea, "Validez 30 días\nIVA no incluido");
     await user.click(screen.getByRole("button", { name: "Guardar" }));
 
-    expect(onSave).toHaveBeenCalledWith("Validez 30 días\nIVA no incluido");
+    expect(onSave).toHaveBeenCalledWith({
+      notes: "Validez 30 días\nIVA no incluido",
+      settings: expect.objectContaining({
+        phase_filter: "all",
+        sort_field: "created_at",
+      }),
+    });
   });
 
-  it("saves null when notes cleared", async () => {
+  it("saves null notes when cleared", async () => {
     const user = userEvent.setup();
     const { onSave } = renderDialog({ initialNotes: "algo" });
 
     await user.clear(screen.getByLabelText("Notas"));
     await user.click(screen.getByRole("button", { name: "Guardar" }));
 
-    expect(onSave).toHaveBeenCalledWith(null);
+    expect(onSave).toHaveBeenCalledWith({
+      notes: null,
+      settings: expect.any(Object),
+    });
   });
 });
