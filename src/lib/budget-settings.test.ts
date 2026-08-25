@@ -5,7 +5,9 @@ import {
   mergeBudgetSettings,
   normalizeBudgetSettings,
   parseBudgetSettings,
+  getSelectedSpaceIds,
   shouldShowProductField,
+  toStoredVisibleSpaceIds,
 } from "./budget-settings";
 
 describe("parseBudgetSettings", () => {
@@ -98,5 +100,21 @@ describe("shouldShowProductField", () => {
         "sku"
       )
     ).toBe(true);
+  });
+});
+
+describe("space selection helpers", () => {
+  const allIds = ["space-a", "__unassigned_space__"];
+
+  it("returns all ids when stored value is null", () => {
+    expect(getSelectedSpaceIds(null, allIds)).toEqual(allIds);
+  });
+
+  it("stores null when every space is selected", () => {
+    expect(toStoredVisibleSpaceIds(allIds, allIds)).toBeNull();
+  });
+
+  it("stores explicit ids for partial selection", () => {
+    expect(toStoredVisibleSpaceIds(["space-a"], allIds)).toEqual(["space-a"]);
   });
 });

@@ -301,7 +301,12 @@
     "productFieldSupplierHelpAria": "Supplier field help",
     "productFieldSku": "SKU / internal code",
     "productFieldSkuHelp": "Shows the internal SKU or code for each product on the public page and PDF.",
-    "productFieldSkuHelpAria": "SKU field help"
+    "productFieldSkuHelpAria": "SKU field help",
+    "spacesLabel": "Spaces to show",
+    "spacesHelp": "Limits which spaces appear in the products section on the public costs page and in the PDF export.",
+    "spacesHelpAria": "Spaces filter help",
+    "spacesSelectAll": "Select all",
+    "spacesDeselectAll": "Deselect all"
   },
   "DialogPurchaseOrder": {
     "titleEdit": "Edit Purchase Order",

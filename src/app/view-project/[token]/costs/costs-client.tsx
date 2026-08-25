@@ -72,6 +72,7 @@ export type PublicProduct = {
   status: string;
   image_url: string | null;
   space_name: string;
+  space_id?: string | null;
   space_created_at?: string | null;
   created_at?: string;
   is_price_tbd?: boolean;

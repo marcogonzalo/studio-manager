@@ -38,10 +38,17 @@ import {
   type BudgetSettings,
   type BudgetSortDirection,
   type BudgetSortField,
+  type BudgetSpaceOption,
+  allSpaceOptionIds,
+  getSelectedSpaceIds,
+  toStoredVisibleSpaceIds,
 } from "@/lib/budget-settings";
 import type { BudgetProductFieldVisibility } from "@/lib/budget-settings";
-import { orderedBudgetPhaseKeys } from "@/lib/project-list-order";
+import { UNASSIGNED_SPACE_KEY, orderedBudgetPhaseKeys } from "@/lib/project-list-order";
 import type { ProjectPhase } from "@/types";
+
+const EMPTY_PHASES: string[] = [];
+const EMPTY_SPACES: BudgetSpaceOption[] = [];
 
 export type BudgetCustomizeSavePayload = {
   notes: string | null;
@@ -55,6 +62,9 @@ interface BudgetCustomizeDialogProps {
   initialSettings: BudgetSettings | null | undefined;
   /** Phase keys present in project budget lines (e.g. design, no_phase). */
   availablePhases?: string[];
+  availableSpaces?: BudgetSpaceOption[];
+  includeUnassignedSpace?: boolean;
+  unassignedSpaceLabel?: string;
   onSave: (payload: BudgetCustomizeSavePayload) => Promise<void> | void;
   saving?: boolean;
 }
@@ -96,7 +106,10 @@ export function BudgetCustomizeDialog({
   onOpenChange,
   initialNotes,
   initialSettings,
-  availablePhases = [],
+  availablePhases = EMPTY_PHASES,
+  availableSpaces = EMPTY_SPACES,
+  includeUnassignedSpace = false,
+  unassignedSpaceLabel = "General",
   onSave,
   saving = false,
 }: BudgetCustomizeDialogProps) {
@@ -105,6 +118,17 @@ export function BudgetCustomizeDialog({
   const [notes, setNotes] = useState(initialNotes ?? "");
   const [settings, setSettings] = useState(() =>
     normalizeBudgetSettings(initialSettings)
+  );
+  const allSpaceIds = allSpaceOptionIds(availableSpaces, includeUnassignedSpace);
+  const spaceOptionsKey = [
+    ...availableSpaces.map((space) => space.id),
+    includeUnassignedSpace ? UNASSIGNED_SPACE_KEY : "",
+  ].join("|");
+  const [selectedSpaceIds, setSelectedSpaceIds] = useState<string[]>(() =>
+    getSelectedSpaceIds(
+      normalizeBudgetSettings(initialSettings).visible_space_ids,
+      allSpaceOptionIds(availableSpaces, includeUnassignedSpace)
+    )
   );
 
   const phaseOptions = orderedBudgetPhaseKeys(
@@ -169,12 +193,36 @@ export function BudgetCustomizeDialog({
     });
   };
 
+  const toggleSpaceSelection = (spaceId: string, checked: boolean) => {
+    setSelectedSpaceIds((prev) => {
+      const next = checked
+        ? [...new Set([...prev, spaceId])]
+        : prev.filter((id) => id !== spaceId);
+      updateSettings({
+        visible_space_ids: toStoredVisibleSpaceIds(next, allSpaceIds),
+      });
+      return next;
+    });
+  };
+
+  const selectAllSpaces = () => {
+    setSelectedSpaceIds(allSpaceIds);
+    updateSettings({ visible_space_ids: null });
+  };
+
+  const deselectAllSpaces = () => {
+    setSelectedSpaceIds([]);
+    updateSettings({ visible_space_ids: [] });
+  };
+
   useEffect(() => {
-    if (open) {
-      setNotes(initialNotes ?? "");
-      setSettings(normalizeBudgetSettings(initialSettings));
-    }
-  }, [open, initialNotes, initialSettings]);
+    if (!open) return;
+    setNotes(initialNotes ?? "");
+    const normalized = normalizeBudgetSettings(initialSettings);
+    const spaceIds = allSpaceOptionIds(availableSpaces, includeUnassignedSpace);
+    setSettings(normalized);
+    setSelectedSpaceIds(getSelectedSpaceIds(normalized.visible_space_ids, spaceIds));
+  }, [open, initialNotes, initialSettings, includeUnassignedSpace, spaceOptionsKey]);
 
   const tooLong = isBudgetNotesTooLong(notes);
 
@@ -358,6 +406,69 @@ export function BudgetCustomizeDialog({
                 </div>
               ))}
             </div>
+
+            {allSpaceIds.length > 0 ? (
+              <div className="space-y-3">
+                <FieldLabelWithInfo
+                  label={t("spacesLabel")}
+                  info={t("spacesHelp")}
+                  infoAriaLabel={t("spacesHelpAria")}
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={selectAllSpaces}
+                    disabled={saving}
+                  >
+                    {t("spacesSelectAll")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={deselectAllSpaces}
+                    disabled={saving}
+                  >
+                    {t("spacesDeselectAll")}
+                  </Button>
+                </div>
+                <div className="max-h-40 space-y-2 overflow-y-auto rounded-md border p-3">
+                  {includeUnassignedSpace ? (
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="space-unassigned"
+                        checked={selectedSpaceIds.includes(UNASSIGNED_SPACE_KEY)}
+                        onCheckedChange={(checked) =>
+                          toggleSpaceSelection(
+                            UNASSIGNED_SPACE_KEY,
+                            checked === true
+                          )
+                        }
+                        disabled={saving}
+                      />
+                      <Label htmlFor="space-unassigned">
+                        {unassignedSpaceLabel}
+                      </Label>
+                    </div>
+                  ) : null}
+                  {availableSpaces.map((space) => (
+                    <div key={space.id} className="flex items-center gap-2">
+                      <Checkbox
+                        id={`space-${space.id}`}
+                        checked={selectedSpaceIds.includes(space.id)}
+                        onCheckedChange={(checked) =>
+                          toggleSpaceSelection(space.id, checked === true)
+                        }
+                        disabled={saving}
+                      />
+                      <Label htmlFor={`space-${space.id}`}>{space.name}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
         </TooltipProvider>
         <DialogFooter>

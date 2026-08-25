@@ -1,5 +1,11 @@
 import { z } from "zod";
 import type { ProjectPhase } from "@/types";
+import { UNASSIGNED_SPACE_KEY } from "@/lib/project-list-order";
+
+export type BudgetSpaceOption = {
+  id: string;
+  name: string;
+};
 
 export type BudgetSortField =
   | "created_at"
@@ -142,4 +148,33 @@ export function shouldShowProductField(
   field: keyof BudgetProductFieldVisibility
 ): boolean {
   return normalizeBudgetSettings(settings).product_fields[field];
+}
+
+/** All space option ids including unassigned pseudo-key. */
+export function allSpaceOptionIds(
+  spaces: BudgetSpaceOption[],
+  includeUnassigned: boolean
+): string[] {
+  const ids = spaces.map((space) => space.id);
+  return includeUnassigned ? [...ids, UNASSIGNED_SPACE_KEY] : ids;
+}
+
+/** Resolve stored settings to explicit selected ids for the dialog. */
+export function getSelectedSpaceIds(
+  visibleSpaceIds: string[] | null | undefined,
+  allIds: string[]
+): string[] {
+  if (visibleSpaceIds == null) return allIds;
+  return visibleSpaceIds;
+}
+
+/** Persist selection; null means all spaces visible. */
+export function toStoredVisibleSpaceIds(
+  selectedIds: string[],
+  allIds: string[]
+): string[] | null {
+  if (allIds.length === 0) return null;
+  const selected = new Set(selectedIds);
+  const allSelected = allIds.every((id) => selected.has(id));
+  return allSelected ? null : selectedIds;
 }

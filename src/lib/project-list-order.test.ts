@@ -343,11 +343,18 @@ describe("budget settings presentation", () => {
           space_id: "space-1",
           created_at: "2026-01-01",
         },
+        {
+          id: "p2",
+          name: "Lamp",
+          space_id: "space-2",
+          created_at: "2026-01-02",
+        },
       ],
-      settings: { phase_filter: "design" },
+      settings: { phase_filter: "design", visible_space_ids: ["space-1"] },
       unassignedLabel: "General",
     });
     expect(result.visibleBudgetLines).toHaveLength(1);
-    expect(result.productsBySpace).toHaveLength(1);
+    expect(result.visibleProducts).toHaveLength(1);
+    expect(result.visibleProducts[0]?.id).toBe("p1");
   });
 });

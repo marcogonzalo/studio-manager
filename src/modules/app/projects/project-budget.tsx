@@ -109,6 +109,7 @@ import type {
   ProjectItem,
   BudgetCategory,
   ProjectPhase,
+  Space,
 } from "@/types";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
@@ -141,6 +142,7 @@ export function ProjectBudget({
   );
 
   const [items, setItems] = useState<ProjectItem[]>([]);
+  const [spaces, setSpaces] = useState<Pick<Space, "id" | "name">[]>([]);
   const [project, setProject] = useState<
     | (Project & {
         client?: {
@@ -208,6 +210,19 @@ export function ProjectBudget({
         setItems([]);
       } else {
         setItems(itemsData || []);
+      }
+
+      const { data: spacesData, error: spacesError } = await supabase
+        .from("spaces")
+        .select("id, name, created_at")
+        .eq("project_id", projectId)
+        .order("created_at");
+
+      if (spacesError) {
+        reportError(spacesError, "Error fetching spaces:");
+        setSpaces([]);
+      } else {
+        setSpaces(spacesData ?? []);
       }
 
       await refetchBudgetLines();
@@ -415,6 +430,11 @@ export function ProjectBudget({
   const availableCustomizePhases = useMemo(
     () => [...new Set(budgetLines.map((line) => budgetPhaseKey(line.phase)))],
     [budgetLines]
+  );
+
+  const includeUnassignedProducts = useMemo(
+    () => items.some((item) => !item.is_excluded && !item.space_id),
+    [items]
   );
 
   // Exclude products marked as excluded from display and totals
@@ -1378,6 +1398,9 @@ export function ProjectBudget({
             initialNotes={project?.budget_notes}
             initialSettings={project?.budget_settings}
             availablePhases={availableCustomizePhases}
+            availableSpaces={spaces}
+            includeUnassignedSpace={includeUnassignedProducts}
+            unassignedSpaceLabel={t("spaceGeneral")}
             onSave={handleSaveBudgetCustomize}
             saving={isSavingBudgetCustomize}
           />
