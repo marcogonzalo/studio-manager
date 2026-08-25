@@ -3,8 +3,11 @@ import {
   BUDGET_CATEGORY_DISPLAY_ORDER,
   BUDGET_PHASE_DISPLAY_ORDER,
   UNASSIGNED_SPACE_KEY,
+  applyBudgetPresentation,
   compareBudgetLines,
+  filterBudgetLinesByPhase,
   groupBudgetLinesByPhaseThenCategory,
+  groupBudgetLinesByPhaseThenCategoryWithSettings,
   groupItemsBySpaceThenCreatedAt,
   orderedBudgetCategoryKeys,
   orderedBudgetPhaseKeys,
@@ -280,5 +283,71 @@ describe("project-list-order", () => {
       },
     ]);
     expect(lines.map((line) => line.id)).toEqual(["first", "later"]);
+  });
+});
+
+describe("budget settings presentation", () => {
+  it("filters budget lines by phase", () => {
+    const lines = [
+      { id: "a", phase: "design", category: "own_fees", created_at: "2026-01-01" },
+      { id: "b", phase: "diagnosis", category: "operations", created_at: "2026-01-02" },
+    ];
+    expect(
+      filterBudgetLinesByPhase(lines, "design").map((line) => line.id)
+    ).toEqual(["a"]);
+  });
+
+  it("sorts lines within category by supplier desc", () => {
+    const grouped = groupBudgetLinesByPhaseThenCategoryWithSettings(
+      [
+        {
+          id: "a",
+          phase: "design",
+          category: "own_fees",
+          subcategory: "design",
+          supplier: { name: "Alpha" },
+          created_at: "2026-01-01",
+        },
+        {
+          id: "b",
+          phase: "design",
+          category: "own_fees",
+          subcategory: "design",
+          supplier: { name: "Zeta" },
+          created_at: "2026-01-02",
+        },
+      ],
+      { sort_field: "supplier", sort_direction: "desc" }
+    );
+    expect(grouped.design?.own_fees?.map((line) => line.id)).toEqual([
+      "b",
+      "a",
+    ]);
+  });
+
+  it("applyBudgetPresentation filters and groups for client view", () => {
+    const result = applyBudgetPresentation({
+      budgetLines: [
+        {
+          id: "line-1",
+          phase: "design",
+          category: "own_fees",
+          subcategory: "design",
+          created_at: "2026-01-01",
+        },
+      ],
+      products: [
+        {
+          id: "p1",
+          name: "Chair",
+          space_id: "space-1",
+          created_at: "2026-01-01",
+        },
+      ],
+      settings: { phase_filter: "design" },
+      unassignedLabel: "General",
+    });
+    expect(result.visibleBudgetLines).toHaveLength(1);
+    expect(result.productsBySpace).toHaveLength(1);
   });
 });

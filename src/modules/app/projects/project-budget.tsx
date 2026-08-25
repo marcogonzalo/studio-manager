@@ -1,7 +1,7 @@
 "use client";
 
 import type { Locale } from "@/i18n/config";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -82,6 +82,7 @@ import {
 } from "@/lib/utils";
 import {
   BUDGET_PHASE_DISPLAY_ORDER,
+  budgetPhaseKey,
   groupBudgetLinesByPhaseThenCategory,
   groupItemsBySpaceThenCreatedAt,
   orderedBudgetCategoryKeys,
@@ -410,6 +411,11 @@ export function ProjectBudget({
 
   const budgetLinesByPhaseAndCategory =
     groupBudgetLinesByPhaseThenCategory(budgetLines);
+
+  const availableCustomizePhases = useMemo(
+    () => [...new Set(budgetLines.map((line) => budgetPhaseKey(line.phase)))],
+    [budgetLines]
+  );
 
   // Exclude products marked as excluded from display and totals
   const includedItems = items.filter((item) => !item.is_excluded);
@@ -1371,6 +1377,7 @@ export function ProjectBudget({
             onOpenChange={setIsBudgetCustomizeOpen}
             initialNotes={project?.budget_notes}
             initialSettings={project?.budget_settings}
+            availablePhases={availableCustomizePhases}
             onSave={handleSaveBudgetCustomize}
             saving={isSavingBudgetCustomize}
           />

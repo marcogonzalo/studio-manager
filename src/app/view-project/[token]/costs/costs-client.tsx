@@ -37,11 +37,11 @@ import {
 } from "@/lib/tax-totals";
 import { splitBudgetNotesLines } from "@/lib/budget-notes";
 import {
-  groupBudgetLinesByPhaseThenCategory,
-  groupItemsBySpaceThenCreatedAt,
+  applyBudgetPresentation,
   orderedBudgetCategoryKeys,
   orderedBudgetPhaseKeys,
 } from "@/lib/project-list-order";
+import type { BudgetSettings } from "@/lib/budget-settings";
 import type { Locale } from "@/i18n/config";
 import type { BudgetCategory, ProjectPhase } from "@/types";
 import { cn } from "@/lib/utils";
@@ -81,6 +81,7 @@ export function ViewProjectCostsClient({
   taxRate,
   multitax = false,
   budgetNotes = null,
+  budgetSettings = null,
   locale,
   categoryLabels,
   subcategoryLabels,
@@ -91,6 +92,7 @@ export function ViewProjectCostsClient({
   taxRate: number;
   multitax?: boolean;
   budgetNotes?: string | null;
+  budgetSettings?: BudgetSettings | null;
   locale: Locale;
   categoryLabels: Record<BudgetCategory, string>;
   subcategoryLabels: Record<BudgetCategory, Record<string, string>>;
@@ -105,18 +107,26 @@ export function ViewProjectCostsClient({
     formatCurrencyWithLang(amount, currency, locale);
   const tbdLabel = t("priceTbd");
 
-  const productsBySpace = groupItemsBySpaceThenCreatedAt(
+  const presentation = applyBudgetPresentation({
+    budgetLines,
     products,
-    t("spaceGeneral")
-  );
-  const productRows = productsBySpace.flatMap((group) => group.items);
-  const budgetByPhaseAndCategory =
-    groupBudgetLinesByPhaseThenCategory(budgetLines);
+    settings: budgetSettings,
+    unassignedLabel: t("spaceGeneral"),
+  });
+  const {
+    visibleBudgetLines,
+    visibleProducts,
+    budgetLinesByPhaseAndCategory: budgetByPhaseAndCategory,
+    productsBySpace,
+  } = presentation;
 
-  const budgetSubtotal = sumBudgetLineEstimatedAmounts(budgetLines);
+  const productRows = visibleProducts;
+
+  const budgetSubtotal = sumBudgetLineEstimatedAmounts(visibleBudgetLines);
   const productsSubtotal = sumItemSaleAmounts(productRows);
   const hasPriceTbd =
-    hasPricedItemsWithTbd(productRows) || hasBudgetLinesWithTbd(budgetLines);
+    hasPricedItemsWithTbd(productRows) ||
+    hasBudgetLinesWithTbd(visibleBudgetLines);
   const subtotal = budgetSubtotal + productsSubtotal;
   const taxGroups = computeTaxGroups(
     [
@@ -124,7 +134,7 @@ export function ViewProjectCostsClient({
         amount: itemSaleAmount(item),
         tax_rate: item.tax_rate,
       })),
-      ...budgetLines.map((line) => ({
+      ...visibleBudgetLines.map((line) => ({
         amount: budgetLineEstimatedAmount(line),
         tax_rate: line.tax_rate,
       })),
@@ -134,7 +144,7 @@ export function ViewProjectCostsClient({
   const tax = sumTaxAmounts(taxGroups);
   const total = subtotal + tax;
   const taxProjectCtx = { multitax, tax_rate: taxRate };
-  const hasContent = budgetLines.length > 0 || productRows.length > 0;
+  const hasContent = visibleBudgetLines.length > 0 || productRows.length > 0;
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -457,7 +467,7 @@ export function ViewProjectCostsClient({
           <CardTitle className="text-base">{t("costsSummary")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {budgetLines.length > 0 && (
+          {visibleBudgetLines.length > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">
                 {t("costsSubtotalLines")}

@@ -15,6 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -28,7 +35,11 @@ import {
 import {
   normalizeBudgetSettings,
   type BudgetSettings,
+  type BudgetSortDirection,
+  type BudgetSortField,
 } from "@/lib/budget-settings";
+import { orderedBudgetPhaseKeys } from "@/lib/project-list-order";
+import type { ProjectPhase } from "@/types";
 
 export type BudgetCustomizeSavePayload = {
   notes: string | null;
@@ -40,6 +51,8 @@ interface BudgetCustomizeDialogProps {
   onOpenChange: (open: boolean) => void;
   initialNotes: string | null | undefined;
   initialSettings: BudgetSettings | null | undefined;
+  /** Phase keys present in project budget lines (e.g. design, no_phase). */
+  availablePhases?: string[];
   onSave: (payload: BudgetCustomizeSavePayload) => Promise<void> | void;
   saving?: boolean;
 }
@@ -81,14 +94,40 @@ export function BudgetCustomizeDialog({
   onOpenChange,
   initialNotes,
   initialSettings,
+  availablePhases = [],
   onSave,
   saving = false,
 }: BudgetCustomizeDialogProps) {
   const t = useTranslations("DialogBudgetCustomize");
+  const tPhase = useTranslations("Phases");
   const [notes, setNotes] = useState(initialNotes ?? "");
   const [settings, setSettings] = useState(() =>
     normalizeBudgetSettings(initialSettings)
   );
+
+  const phaseOptions = orderedBudgetPhaseKeys(
+    Object.fromEntries(availablePhases.map((phase) => [phase, true]))
+  );
+
+  const updateSettings = (patch: Partial<BudgetSettings>) => {
+    setSettings((prev) => normalizeBudgetSettings({ ...prev, ...patch }));
+  };
+
+  const phaseLabel = (phase: string) =>
+    phase === "no_phase" ? t("phaseNoPhase") : tPhase(phase as ProjectPhase);
+
+  const sortFieldLabel = (field: BudgetSortField) => {
+    const labels: Record<BudgetSortField, string> = {
+      created_at: t("sortFieldCreatedAt"),
+      internal_code: t("sortFieldInternalCode"),
+      alphabetical: t("sortFieldAlphabetical"),
+      supplier: t("sortFieldSupplier"),
+    };
+    return labels[field];
+  };
+
+  const sortDirectionLabel = (direction: BudgetSortDirection) =>
+    direction === "asc" ? t("sortDirectionAsc") : t("sortDirectionDesc");
 
   useEffect(() => {
     if (open) {
@@ -109,7 +148,7 @@ export function BudgetCustomizeDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" aria-hidden />
@@ -145,6 +184,97 @@ export function BudgetCustomizeDialog({
               {tooLong && (
                 <p className="text-destructive text-xs">{t("tooLong")}</p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <FieldLabelWithInfo
+                label={t("phaseFilterLabel")}
+                info={t("phaseFilterHelp")}
+                infoAriaLabel={t("phaseFilterHelpAria")}
+              />
+              <Select
+                value={settings.phase_filter}
+                onValueChange={(value) =>
+                  updateSettings({
+                    phase_filter: value as BudgetSettings["phase_filter"],
+                  })
+                }
+                disabled={saving}
+              >
+                <SelectTrigger id="budget-phase-filter">
+                  <SelectValue placeholder={t("phaseFilterAll")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("phaseFilterAll")}</SelectItem>
+                  {phaseOptions.map((phase) => (
+                    <SelectItem key={phase} value={phase}>
+                      {phaseLabel(phase)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <FieldLabelWithInfo
+                  label={t("sortFieldLabel")}
+                  info={t("sortFieldHelp")}
+                  infoAriaLabel={t("sortFieldHelpAria")}
+                />
+                <Select
+                  value={settings.sort_field}
+                  onValueChange={(value) =>
+                    updateSettings({ sort_field: value as BudgetSortField })
+                  }
+                  disabled={saving}
+                >
+                  <SelectTrigger id="budget-sort-field">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(
+                      [
+                        "created_at",
+                        "internal_code",
+                        "alphabetical",
+                        "supplier",
+                      ] as const
+                    ).map((field) => (
+                      <SelectItem key={field} value={field}>
+                        {sortFieldLabel(field)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <FieldLabelWithInfo
+                  label={t("sortDirectionLabel")}
+                  info={t("sortDirectionHelp")}
+                  infoAriaLabel={t("sortDirectionHelpAria")}
+                />
+                <Select
+                  value={settings.sort_direction}
+                  onValueChange={(value) =>
+                    updateSettings({
+                      sort_direction: value as BudgetSortDirection,
+                    })
+                  }
+                  disabled={saving}
+                >
+                  <SelectTrigger id="budget-sort-direction">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(["asc", "desc"] as const).map((direction) => (
+                      <SelectItem key={direction} value={direction}>
+                        {sortDirectionLabel(direction)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </TooltipProvider>
