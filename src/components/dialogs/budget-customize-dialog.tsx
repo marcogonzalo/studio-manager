@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Tooltip,
   TooltipContent,
@@ -38,6 +39,7 @@ import {
   type BudgetSortDirection,
   type BudgetSortField,
 } from "@/lib/budget-settings";
+import type { BudgetProductFieldVisibility } from "@/lib/budget-settings";
 import { orderedBudgetPhaseKeys } from "@/lib/project-list-order";
 import type { ProjectPhase } from "@/types";
 
@@ -128,6 +130,44 @@ export function BudgetCustomizeDialog({
 
   const sortDirectionLabel = (direction: BudgetSortDirection) =>
     direction === "asc" ? t("sortDirectionAsc") : t("sortDirectionDesc");
+
+  const productFieldOptions: {
+    key: keyof BudgetProductFieldVisibility;
+    label: string;
+    help: string;
+    helpAria: string;
+  }[] = [
+    {
+      key: "model",
+      label: t("productFieldModel"),
+      help: t("productFieldModelHelp"),
+      helpAria: t("productFieldModelHelpAria"),
+    },
+    {
+      key: "supplier",
+      label: t("productFieldSupplier"),
+      help: t("productFieldSupplierHelp"),
+      helpAria: t("productFieldSupplierHelpAria"),
+    },
+    {
+      key: "sku",
+      label: t("productFieldSku"),
+      help: t("productFieldSkuHelp"),
+      helpAria: t("productFieldSkuHelpAria"),
+    },
+  ];
+
+  const toggleProductField = (
+    key: keyof BudgetProductFieldVisibility,
+    checked: boolean
+  ) => {
+    updateSettings({
+      product_fields: {
+        ...settings.product_fields,
+        [key]: checked,
+      },
+    });
+  };
 
   useEffect(() => {
     if (open) {
@@ -275,6 +315,48 @@ export function BudgetCustomizeDialog({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-3">
+              <FieldLabelWithInfo
+                label={t("productFieldsLabel")}
+                info={t("productFieldsHelp")}
+                infoAriaLabel={t("productFieldsHelpAria")}
+              />
+              {productFieldOptions.map((option) => (
+                <div
+                  key={option.key}
+                  className="flex items-center justify-between gap-3 rounded-md border px-3 py-2"
+                >
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id={`product-field-${option.key}`}
+                      checked={settings.product_fields[option.key]}
+                      onCheckedChange={(checked) =>
+                        toggleProductField(option.key, checked === true)
+                      }
+                      disabled={saving}
+                    />
+                    <Label htmlFor={`product-field-${option.key}`}>
+                      {option.label}
+                    </Label>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-muted-foreground hover:text-foreground inline-flex items-center"
+                        aria-label={option.helpAria}
+                      >
+                        <CircleHelp className="h-3.5 w-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent variant="tertiary" className="max-w-64">
+                      {option.help}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              ))}
             </div>
           </div>
         </TooltipProvider>

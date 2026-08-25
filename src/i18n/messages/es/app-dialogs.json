@@ -289,7 +289,19 @@
     "sortDirectionAsc": "Ascendente",
     "sortDirectionDesc": "Descendente",
     "sortDirectionHelp": "Orden ascendente o descendente del campo seleccionado en la vista pública y el PDF.",
-    "sortDirectionHelpAria": "Ayuda sobre dirección de ordenación"
+    "sortDirectionHelpAria": "Ayuda sobre dirección de ordenación",
+    "productFieldsLabel": "Campos de producto",
+    "productFieldsHelp": "Elige qué datos sensibles del producto aparecen en la vista pública y en la exportación PDF.",
+    "productFieldsHelpAria": "Ayuda sobre campos de producto",
+    "productFieldModel": "Modelo de producto",
+    "productFieldModelHelp": "Muestra la referencia o modelo de catálogo de cada producto en la vista pública y el PDF.",
+    "productFieldModelHelpAria": "Ayuda sobre modelo de producto",
+    "productFieldSupplier": "Proveedor",
+    "productFieldSupplierHelp": "Muestra el nombre del proveedor de cada producto en la vista pública y el PDF.",
+    "productFieldSupplierHelpAria": "Ayuda sobre proveedor",
+    "productFieldSku": "SKU / código interno",
+    "productFieldSkuHelp": "Muestra el SKU o código interno de cada producto en la vista pública y el PDF.",
+    "productFieldSkuHelpAria": "Ayuda sobre SKU"
   },
   "DialogPurchaseOrder": {
     "titleEdit": "Editar Pedido de Compra",

@@ -42,6 +42,7 @@ import {
   orderedBudgetPhaseKeys,
 } from "@/lib/project-list-order";
 import type { BudgetSettings } from "@/lib/budget-settings";
+import { getProductPublicMeta } from "@/lib/budget-product-public-meta";
 import type { Locale } from "@/i18n/config";
 import type { BudgetCategory, ProjectPhase } from "@/types";
 import { cn } from "@/lib/utils";
@@ -62,6 +63,9 @@ export type PublicProduct = {
   id: string;
   name: string;
   description: string | null;
+  internal_reference?: string | null;
+  reference_code?: string | null;
+  supplier_name?: string | null;
   quantity: number;
   unit_price: number;
   total_price: number;
@@ -244,7 +248,12 @@ export function ViewProjectCostsClient({
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                  {spaceItems.map((p) => (
+                                  {spaceItems.map((p) => {
+                                    const meta = getProductPublicMeta(
+                                      p,
+                                      budgetSettings
+                                    );
+                                    return (
                                     <TableRow key={p.id}>
                                       <TableCell className="align-middle">
                                         <div className="flex items-center gap-3">
@@ -270,6 +279,24 @@ export function ViewProjectCostsClient({
                                             <div className="font-medium">
                                               {p.name}
                                             </div>
+                                            {meta.model ? (
+                                              <div className="text-muted-foreground text-xs">
+                                                {t("costsProductModel")}:{" "}
+                                                {meta.model}
+                                              </div>
+                                            ) : null}
+                                            {meta.sku ? (
+                                              <div className="text-muted-foreground mt-0.5 font-mono text-xs">
+                                                {t("costsProductSku")}:{" "}
+                                                {meta.sku}
+                                              </div>
+                                            ) : null}
+                                            {meta.supplier ? (
+                                              <div className="text-muted-foreground text-xs">
+                                                {t("costsProductSupplier")}:{" "}
+                                                {meta.supplier}
+                                              </div>
+                                            ) : null}
                                             {p.description ? (
                                               <ExpandableText
                                                 text={p.description}
@@ -305,9 +332,10 @@ export function ViewProjectCostsClient({
                                         </ItemPriceOrTbd>
                                       </TableCell>
                                     </TableRow>
-                                  ))}
+                                    );
+                                  })}
                                 </TableBody>
-                              </Table>
+                                </Table>
                             </CardContent>
                           </CollapsibleContent>
                         </Card>

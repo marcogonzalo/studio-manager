@@ -36,6 +36,7 @@ import {
   sumTaxAmounts,
 } from "@/lib/tax-totals";
 import { splitBudgetNotesLines } from "@/lib/budget-notes";
+import { getProductPublicMeta } from "@/lib/budget-product-public-meta";
 import {
   applyBudgetPresentation,
   orderedBudgetCategoryKeys,
@@ -736,6 +737,36 @@ export function ProjectPDF({
                           <Text style={styles.tableCellBold}>
                             {item.product?.name ?? item.name}
                           </Text>
+                          {(() => {
+                            const meta = getProductPublicMeta(
+                              {
+                                reference_code: item.product?.reference_code,
+                                internal_reference: item.internal_reference,
+                                supplier_name: item.product?.supplier?.name,
+                                product: item.product,
+                              },
+                              project.budget_settings
+                            );
+                            return (
+                              <>
+                                {meta.model ? (
+                                  <Text style={styles.tableCellMuted}>
+                                    {copy.productModelLabel}: {meta.model}
+                                  </Text>
+                                ) : null}
+                                {meta.sku ? (
+                                  <Text style={styles.tableCellMuted}>
+                                    {copy.productSkuLabel}: {meta.sku}
+                                  </Text>
+                                ) : null}
+                                {meta.supplier ? (
+                                  <Text style={styles.tableCellMuted}>
+                                    {copy.productSupplierLabel}: {meta.supplier}
+                                  </Text>
+                                ) : null}
+                              </>
+                            );
+                          })()}
                           {item.description && (
                             <Text style={styles.tableCellMuted}>
                               {item.description}

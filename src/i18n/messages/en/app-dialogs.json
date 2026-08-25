@@ -289,7 +289,19 @@
     "sortDirectionAsc": "Ascending",
     "sortDirectionDesc": "Descending",
     "sortDirectionHelp": "Ascending or descending order for the selected sort field on the public page and PDF.",
-    "sortDirectionHelpAria": "Sort direction help"
+    "sortDirectionHelpAria": "Sort direction help",
+    "productFieldsLabel": "Product fields",
+    "productFieldsHelp": "Choose which sensitive product details appear on the public costs page and in the PDF export.",
+    "productFieldsHelpAria": "Product fields help",
+    "productFieldModel": "Product model",
+    "productFieldModelHelp": "Shows the catalog reference / model number for each product on the public page and PDF.",
+    "productFieldModelHelpAria": "Product model help",
+    "productFieldSupplier": "Supplier",
+    "productFieldSupplierHelp": "Shows the supplier name for each product on the public page and PDF.",
+    "productFieldSupplierHelpAria": "Supplier field help",
+    "productFieldSku": "SKU / internal code",
+    "productFieldSkuHelp": "Shows the internal SKU or code for each product on the public page and PDF.",
+    "productFieldSkuHelpAria": "SKU field help"
   },
   "DialogPurchaseOrder": {
     "titleEdit": "Edit Purchase Order",

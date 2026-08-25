@@ -147,7 +147,10 @@
     "priceTbd": "Por definir",
     "priceTbdNote": "Total parcial: hay productos o partidas con precio por definir.",
     "generatedWith": "Documento generado con Veta - veta.pro",
-    "spaceGeneral": "General"
+    "spaceGeneral": "General",
+    "productModelLabel": "Modelo",
+    "productSkuLabel": "SKU",
+    "productSupplierLabel": "Proveedor"
   },
   "AppErrors": {
     "unknown": "Error desconocido",
