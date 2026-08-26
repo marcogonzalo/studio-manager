@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { ViewProjectShell } from "../view-project-shell";
 import { getViewProjectLocale } from "@/lib/view-project-locale";
+import type { BudgetSettings } from "@/lib/budget-settings";
 import type { BudgetCategory } from "@/types";
 import {
   ViewProjectCostsClient,
@@ -96,12 +97,15 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
         tax_rate: number;
         multitax?: boolean;
         budget_notes?: string | null;
+        budget_settings?: BudgetSettings | null;
       }
     | undefined;
   const currency = currencyRow?.currency ?? "EUR";
   const taxRate = Number(currencyRow?.tax_rate ?? 0);
   const multitax = currencyRow?.multitax === true;
   const budgetNotes = currencyRow?.budget_notes?.trim() || null;
+  const budgetSettings =
+    (currencyRow?.budget_settings as BudgetSettings | null) ?? null;
 
   return (
     <ViewProjectShell token={token} showBack title={t("costsTitle")}>
@@ -112,6 +116,7 @@ export default async function ViewProjectCostsPage({ params }: PageProps) {
         taxRate={taxRate}
         multitax={multitax}
         budgetNotes={budgetNotes}
+        budgetSettings={budgetSettings}
         locale={locale}
         categoryLabels={categoryLabels}
         subcategoryLabels={subcategoryLabels}

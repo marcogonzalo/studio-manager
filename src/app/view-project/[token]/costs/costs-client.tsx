@@ -37,11 +37,12 @@ import {
 } from "@/lib/tax-totals";
 import { splitBudgetNotesLines } from "@/lib/budget-notes";
 import {
-  groupBudgetLinesByPhaseThenCategory,
-  groupItemsBySpaceThenCreatedAt,
+  applyBudgetPresentation,
   orderedBudgetCategoryKeys,
   orderedBudgetPhaseKeys,
 } from "@/lib/project-list-order";
+import type { BudgetSettings } from "@/lib/budget-settings";
+import { getProductPublicMeta } from "@/lib/budget-product-public-meta";
 import type { Locale } from "@/i18n/config";
 import type { BudgetCategory, ProjectPhase } from "@/types";
 import { cn } from "@/lib/utils";
@@ -62,12 +63,16 @@ export type PublicProduct = {
   id: string;
   name: string;
   description: string | null;
+  internal_reference?: string | null;
+  reference_code?: string | null;
+  supplier_name?: string | null;
   quantity: number;
   unit_price: number;
   total_price: number;
   status: string;
   image_url: string | null;
   space_name: string;
+  space_id?: string | null;
   space_created_at?: string | null;
   created_at?: string;
   is_price_tbd?: boolean;
@@ -81,6 +86,7 @@ export function ViewProjectCostsClient({
   taxRate,
   multitax = false,
   budgetNotes = null,
+  budgetSettings = null,
   locale,
   categoryLabels,
   subcategoryLabels,
@@ -91,6 +97,7 @@ export function ViewProjectCostsClient({
   taxRate: number;
   multitax?: boolean;
   budgetNotes?: string | null;
+  budgetSettings?: BudgetSettings | null;
   locale: Locale;
   categoryLabels: Record<BudgetCategory, string>;
   subcategoryLabels: Record<BudgetCategory, Record<string, string>>;
@@ -105,18 +112,26 @@ export function ViewProjectCostsClient({
     formatCurrencyWithLang(amount, currency, locale);
   const tbdLabel = t("priceTbd");
 
-  const productsBySpace = groupItemsBySpaceThenCreatedAt(
+  const presentation = applyBudgetPresentation({
+    budgetLines,
     products,
-    t("spaceGeneral")
-  );
-  const productRows = productsBySpace.flatMap((group) => group.items);
-  const budgetByPhaseAndCategory =
-    groupBudgetLinesByPhaseThenCategory(budgetLines);
+    settings: budgetSettings,
+    unassignedLabel: t("spaceGeneral"),
+  });
+  const {
+    visibleBudgetLines,
+    visibleProducts,
+    budgetLinesByPhaseAndCategory: budgetByPhaseAndCategory,
+    productsBySpace,
+  } = presentation;
 
-  const budgetSubtotal = sumBudgetLineEstimatedAmounts(budgetLines);
+  const productRows = visibleProducts;
+
+  const budgetSubtotal = sumBudgetLineEstimatedAmounts(visibleBudgetLines);
   const productsSubtotal = sumItemSaleAmounts(productRows);
   const hasPriceTbd =
-    hasPricedItemsWithTbd(productRows) || hasBudgetLinesWithTbd(budgetLines);
+    hasPricedItemsWithTbd(productRows) ||
+    hasBudgetLinesWithTbd(visibleBudgetLines);
   const subtotal = budgetSubtotal + productsSubtotal;
   const taxGroups = computeTaxGroups(
     [
@@ -124,7 +139,7 @@ export function ViewProjectCostsClient({
         amount: itemSaleAmount(item),
         tax_rate: item.tax_rate,
       })),
-      ...budgetLines.map((line) => ({
+      ...visibleBudgetLines.map((line) => ({
         amount: budgetLineEstimatedAmount(line),
         tax_rate: line.tax_rate,
       })),
@@ -134,7 +149,7 @@ export function ViewProjectCostsClient({
   const tax = sumTaxAmounts(taxGroups);
   const total = subtotal + tax;
   const taxProjectCtx = { multitax, tax_rate: taxRate };
-  const hasContent = budgetLines.length > 0 || productRows.length > 0;
+  const hasContent = visibleBudgetLines.length > 0 || productRows.length > 0;
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -234,68 +249,95 @@ export function ViewProjectCostsClient({
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                  {spaceItems.map((p) => (
-                                    <TableRow key={p.id}>
-                                      <TableCell className="align-middle">
-                                        <div className="flex items-center gap-3">
-                                          {p.image_url ? (
-                                            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
-                                              <Image
-                                                src={p.image_url}
-                                                alt={p.name}
-                                                fill
-                                                className="object-cover"
-                                                sizes="40px"
-                                              />
+                                  {spaceItems.map((p) => {
+                                    const meta = getProductPublicMeta(
+                                      p,
+                                      budgetSettings
+                                    );
+                                    return (
+                                      <TableRow key={p.id}>
+                                        <TableCell className="align-middle">
+                                          <div className="flex items-center gap-3">
+                                            {p.image_url ? (
+                                              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded">
+                                                <Image
+                                                  src={p.image_url}
+                                                  alt={p.name}
+                                                  fill
+                                                  className="object-cover"
+                                                  sizes="40px"
+                                                />
+                                              </div>
+                                            ) : (
+                                              <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded">
+                                                <ImageIcon
+                                                  className="text-muted-foreground h-5 w-5"
+                                                  aria-hidden
+                                                />
+                                              </div>
+                                            )}
+                                            <div className="min-w-0">
+                                              <div className="font-medium">
+                                                {p.name}
+                                              </div>
+                                              {meta.model ? (
+                                                <div className="text-muted-foreground text-xs">
+                                                  {t("costsProductModel")}:{" "}
+                                                  {meta.model}
+                                                </div>
+                                              ) : null}
+                                              {meta.sku ? (
+                                                <div className="text-muted-foreground mt-0.5 font-mono text-xs">
+                                                  {t("costsProductSku")}:{" "}
+                                                  {meta.sku}
+                                                </div>
+                                              ) : null}
+                                              {meta.supplier ? (
+                                                <div className="text-muted-foreground text-xs">
+                                                  {t("costsProductSupplier")}:{" "}
+                                                  {meta.supplier}
+                                                </div>
+                                              ) : null}
+                                              {p.description ? (
+                                                <ExpandableText
+                                                  text={p.description}
+                                                  className="text-muted-foreground text-xs"
+                                                  expandLabel={t(
+                                                    "expandDescription"
+                                                  )}
+                                                  collapseLabel={t(
+                                                    "collapseDescription"
+                                                  )}
+                                                />
+                                              ) : null}
                                             </div>
-                                          ) : (
-                                            <div className="bg-muted flex h-10 w-10 shrink-0 items-center justify-center rounded">
-                                              <ImageIcon
-                                                className="text-muted-foreground h-5 w-5"
-                                                aria-hidden
-                                              />
-                                            </div>
-                                          )}
-                                          <div className="min-w-0">
-                                            <div className="font-medium">
-                                              {p.name}
-                                            </div>
-                                            {p.description ? (
-                                              <ExpandableText
-                                                text={p.description}
-                                                className="text-muted-foreground text-xs"
-                                                expandLabel={t(
-                                                  "expandDescription"
-                                                )}
-                                                collapseLabel={t(
-                                                  "collapseDescription"
-                                                )}
-                                              />
-                                            ) : null}
                                           </div>
-                                        </div>
-                                      </TableCell>
-                                      <TableCell className="text-right align-middle tabular-nums">
-                                        {p.quantity}
-                                      </TableCell>
-                                      <TableCell className="text-muted-foreground text-right align-middle tabular-nums">
-                                        {formatTaxRatePercent(
-                                          effectiveLineTaxRate(p, taxProjectCtx)
-                                        )}
-                                      </TableCell>
-                                      <TableCell className="text-right align-middle font-medium tabular-nums">
-                                        <ItemPriceOrTbd
-                                          item={p}
-                                          tbdLabel={tbdLabel}
-                                        >
-                                          {formatCurrency(
-                                            Number(p.unit_price ?? 0) *
-                                              Number(p.quantity ?? 0)
+                                        </TableCell>
+                                        <TableCell className="text-right align-middle tabular-nums">
+                                          {p.quantity}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground text-right align-middle tabular-nums">
+                                          {formatTaxRatePercent(
+                                            effectiveLineTaxRate(
+                                              p,
+                                              taxProjectCtx
+                                            )
                                           )}
-                                        </ItemPriceOrTbd>
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
+                                        </TableCell>
+                                        <TableCell className="text-right align-middle font-medium tabular-nums">
+                                          <ItemPriceOrTbd
+                                            item={p}
+                                            tbdLabel={tbdLabel}
+                                          >
+                                            {formatCurrency(
+                                              Number(p.unit_price ?? 0) *
+                                                Number(p.quantity ?? 0)
+                                            )}
+                                          </ItemPriceOrTbd>
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
                                 </TableBody>
                               </Table>
                             </CardContent>
@@ -457,7 +499,7 @@ export function ViewProjectCostsClient({
           <CardTitle className="text-base">{t("costsSummary")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {budgetLines.length > 0 && (
+          {visibleBudgetLines.length > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">
                 {t("costsSubtotalLines")}

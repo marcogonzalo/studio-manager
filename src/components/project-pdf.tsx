@@ -36,9 +36,9 @@ import {
   sumTaxAmounts,
 } from "@/lib/tax-totals";
 import { splitBudgetNotesLines } from "@/lib/budget-notes";
+import { getProductPublicMeta } from "@/lib/budget-product-public-meta";
 import {
-  groupBudgetLinesByPhaseThenCategory,
-  groupItemsBySpaceThenCreatedAt,
+  applyBudgetPresentation,
   orderedBudgetCategoryKeys,
   orderedBudgetPhaseKeys,
 } from "@/lib/project-list-order";
@@ -428,31 +428,37 @@ export function ProjectPDF({
 
   // Filter out excluded items
   const includedItems = items.filter((item) => !item.is_excluded);
+  const presentation = applyBudgetPresentation({
+    budgetLines,
+    products: includedItems,
+    settings: project.budget_settings,
+    unassignedLabel: copy.spaceGeneral,
+  });
+  const {
+    visibleBudgetLines,
+    visibleProducts,
+    budgetLinesByPhaseAndCategory,
+    productsBySpace: itemsBySpace,
+  } = presentation;
+
   const hasPriceTbd =
-    hasPricedItemsWithTbd(includedItems) || hasBudgetLinesWithTbd(budgetLines);
+    hasPricedItemsWithTbd(visibleProducts) ||
+    hasBudgetLinesWithTbd(visibleBudgetLines);
   const budgetNoteLines = splitBudgetNotesLines(project.budget_notes);
 
-  const itemsBySpace = groupItemsBySpaceThenCreatedAt(
-    includedItems,
-    copy.spaceGeneral
-  );
-
-  const budgetLinesByPhaseAndCategory =
-    groupBudgetLinesByPhaseThenCategory(budgetLines);
-
-  // Calculate totals (only included items)
-  const totalItemsPrice = sumItemSaleAmounts(includedItems);
-  const totalBudgetLines = sumBudgetLineEstimatedAmounts(budgetLines);
+  // Calculate totals (only visible client-facing items)
+  const totalItemsPrice = sumItemSaleAmounts(visibleProducts);
+  const totalBudgetLines = sumBudgetLineEstimatedAmounts(visibleBudgetLines);
   const subtotal = totalItemsPrice + totalBudgetLines;
   const projectTaxRate =
     taxRate ?? (project.tax_rate != null ? Number(project.tax_rate) : 0);
   const taxGroups = computeTaxGroups(
     [
-      ...includedItems.map((item) => ({
+      ...visibleProducts.map((item) => ({
         amount: itemSaleAmount(item),
         tax_rate: item.tax_rate,
       })),
-      ...budgetLines.map((line) => ({
+      ...visibleBudgetLines.map((line) => ({
         amount: budgetLineEstimatedAmount(line),
         tax_rate: line.tax_rate,
       })),
@@ -730,6 +736,36 @@ export function ProjectPDF({
                           <Text style={styles.tableCellBold}>
                             {item.product?.name ?? item.name}
                           </Text>
+                          {(() => {
+                            const meta = getProductPublicMeta(
+                              {
+                                reference_code: item.product?.reference_code,
+                                internal_reference: item.internal_reference,
+                                supplier_name: item.product?.supplier?.name,
+                                product: item.product,
+                              },
+                              project.budget_settings
+                            );
+                            return (
+                              <>
+                                {meta.model ? (
+                                  <Text style={styles.tableCellMuted}>
+                                    {copy.productModelLabel}: {meta.model}
+                                  </Text>
+                                ) : null}
+                                {meta.sku ? (
+                                  <Text style={styles.tableCellMuted}>
+                                    {copy.productSkuLabel}: {meta.sku}
+                                  </Text>
+                                ) : null}
+                                {meta.supplier ? (
+                                  <Text style={styles.tableCellMuted}>
+                                    {copy.productSupplierLabel}: {meta.supplier}
+                                  </Text>
+                                ) : null}
+                              </>
+                            );
+                          })()}
                           {item.description && (
                             <Text style={styles.tableCellMuted}>
                               {item.description}
@@ -798,24 +834,24 @@ export function ProjectPDF({
           style={styles.section}
         >
           <View style={styles.summary}>
-            {items.length > 0 && (
+            {visibleProducts.length > 0 && (
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>{copy.subtotalProducts}</Text>
                 <Text style={styles.summaryValue}>
                   {appendTbdAsterisk(
                     formatCurrency(totalItemsPrice),
-                    hasPricedItemsWithTbd(includedItems)
+                    hasPricedItemsWithTbd(visibleProducts)
                   )}
                 </Text>
               </View>
             )}
-            {budgetLines.length > 0 && (
+            {visibleBudgetLines.length > 0 && (
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>{copy.subtotalServices}</Text>
                 <Text style={styles.summaryValue}>
                   {appendTbdAsterisk(
                     formatCurrency(totalBudgetLines),
-                    hasBudgetLinesWithTbd(budgetLines)
+                    hasBudgetLinesWithTbd(visibleBudgetLines)
                   )}
                 </Text>
               </View>

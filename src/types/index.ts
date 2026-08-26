@@ -1,3 +1,5 @@
+import type { BudgetSettings } from "@/lib/budget-settings";
+
 export type PlanFeatureModality = "none" | "basic" | "plus" | "full";
 
 export interface PlanConfig {
@@ -73,6 +75,14 @@ export type ProjectPhase =
 
 export type ProjectStatus = "active" | "completed" | "cancelled";
 
+export type {
+  BudgetPhaseFilter,
+  BudgetProductFieldVisibility,
+  BudgetSettings,
+  BudgetSortDirection,
+  BudgetSortField,
+} from "@/lib/budget-settings";
+
 export interface Project {
   id: string;
   name: string;
@@ -90,6 +100,8 @@ export interface Project {
   currency?: string;
   /** Client-facing notes after budget totals (public page + PDF). */
   budget_notes?: string | null;
+  /** Client-facing budget presentation settings (public page + PDF). */
+  budget_settings?: BudgetSettings | null;
   client?: { full_name: string };
 }
 

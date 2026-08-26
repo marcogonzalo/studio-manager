@@ -111,3 +111,10 @@ export function checkCapability(
   }
   return isCapabilityAvailable(config, featureKey);
 }
+
+/** Client-facing budget customization (filter, sort, fields, spaces) requires plus or full pdf export. */
+export function isBudgetCustomizationAvailable(
+  config: PlanConfig | null | undefined
+): boolean {
+  return hasModalityAtLeast(config, "pdf_export_mode", "plus");
+}

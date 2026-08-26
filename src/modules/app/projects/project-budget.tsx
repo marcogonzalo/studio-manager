@@ -1,7 +1,7 @@
 "use client";
 
 import type { Locale } from "@/i18n/config";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -52,7 +52,7 @@ import {
   Wrench,
   Check,
   XCircle,
-  StickyNote,
+  Settings2,
 } from "lucide-react";
 import {
   Tooltip,
@@ -66,7 +66,10 @@ import {
   BudgetPrintOptionsDialog,
   type BudgetPrintOption,
 } from "@/components/dialogs/budget-print-options-dialog";
-import { BudgetNotesDialog } from "@/components/dialogs/budget-notes-dialog";
+import { BudgetCustomizeDialog } from "@/components/dialogs/budget-customize-dialog";
+import type { BudgetCustomizeSavePayload } from "@/components/dialogs/budget-customize-dialog";
+import type { BudgetSettings } from "@/lib/budget-settings";
+import { resolveBudgetSettingsForPresentation } from "@/lib/budget-settings";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
@@ -107,6 +110,7 @@ import type {
   ProjectItem,
   BudgetCategory,
   ProjectPhase,
+  Space,
 } from "@/types";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
@@ -129,6 +133,9 @@ export function ProjectBudget({
   const printFilterOptionsEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "full",
   });
+  const budgetCustomizationEnabled = usePlanCapability("pdf_export_mode", {
+    minModality: "plus",
+  });
   const showVetaBranding =
     effectivePlan?.config?.pdf_export_mode === "basic" ||
     effectivePlan?.config?.pdf_export_mode === "plus";
@@ -139,6 +146,7 @@ export function ProjectBudget({
   );
 
   const [items, setItems] = useState<ProjectItem[]>([]);
+  const [spaces, setSpaces] = useState<Pick<Space, "id" | "name">[]>([]);
   const [project, setProject] = useState<
     | (Project & {
         client?: {
@@ -159,8 +167,8 @@ export function ProjectBudget({
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isPrintOptionsOpen, setIsPrintOptionsOpen] = useState(false);
-  const [isBudgetNotesOpen, setIsBudgetNotesOpen] = useState(false);
-  const [isSavingBudgetNotes, setIsSavingBudgetNotes] = useState(false);
+  const [isBudgetCustomizeOpen, setIsBudgetCustomizeOpen] = useState(false);
+  const [isSavingBudgetCustomize, setIsSavingBudgetCustomize] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -206,6 +214,19 @@ export function ProjectBudget({
         setItems([]);
       } else {
         setItems(itemsData || []);
+      }
+
+      const { data: spacesData, error: spacesError } = await supabase
+        .from("spaces")
+        .select("id, name, created_at")
+        .eq("project_id", projectId)
+        .order("created_at");
+
+      if (spacesError) {
+        reportError(spacesError, "Error fetching spaces:");
+        setSpaces([]);
+      } else {
+        setSpaces(spacesData ?? []);
       }
 
       await refetchBudgetLines();
@@ -284,13 +305,23 @@ export function ProjectBudget({
     setIsBudgetLineDialogOpen(true);
   };
 
-  const handleSaveBudgetNotes = async (notes: string | null) => {
+  const handleSaveBudgetCustomize = async ({
+    notes,
+    settings,
+  }: BudgetCustomizeSavePayload) => {
     if (!project) return;
-    setIsSavingBudgetNotes(true);
+    setIsSavingBudgetCustomize(true);
     try {
+      const payload: {
+        budget_notes: string | null;
+        budget_settings?: BudgetSettings;
+      } = { budget_notes: notes };
+      if (budgetCustomizationEnabled) {
+        payload.budget_settings = settings;
+      }
       const { error: updateError } = await supabase
         .from("projects")
-        .update({ budget_notes: notes })
+        .update(payload)
         .eq("id", projectId);
       if (updateError) {
         const demoMsg = getDemoAccountMessage(updateError, locale);
@@ -299,19 +330,29 @@ export function ProjectBudget({
             duration: 5000,
           });
         } else {
-          toast.error(t("toastBudgetNotesError"));
-          reportError(updateError, "Error saving budget notes:");
+          toast.error(t("toastBudgetCustomizeError"));
+          reportError(updateError, "Error saving budget customization:");
         }
         return;
       }
-      setProject((prev) => (prev ? { ...prev, budget_notes: notes } : prev));
-      setIsBudgetNotesOpen(false);
-      toast.success(t("toastBudgetNotesSaved"));
+      setProject((prev) =>
+        prev
+          ? {
+              ...prev,
+              budget_notes: notes,
+              ...(budgetCustomizationEnabled
+                ? { budget_settings: settings }
+                : {}),
+            }
+          : prev
+      );
+      setIsBudgetCustomizeOpen(false);
+      toast.success(t("toastBudgetCustomizeSaved"));
     } catch (error) {
-      reportError(error, "Unexpected error saving budget notes:");
-      toast.error(t("toastBudgetNotesError"));
+      reportError(error, "Unexpected error saving budget customization:");
+      toast.error(t("toastBudgetCustomizeError"));
     } finally {
-      setIsSavingBudgetNotes(false);
+      setIsSavingBudgetCustomize(false);
     }
   };
 
@@ -368,8 +409,15 @@ export function ProjectBudget({
             origin
           )) ?? undefined;
       }
+      const projectForPdf = {
+        ...project,
+        budget_settings: resolveBudgetSettingsForPresentation(
+          project.budget_settings,
+          effectivePlan?.config
+        ),
+      };
       const asPdf = await generateProjectPDF(
-        project,
+        projectForPdf,
         itemsWithThumbs,
         linesToPdf,
         taxRate,
@@ -404,6 +452,11 @@ export function ProjectBudget({
 
   const budgetLinesByPhaseAndCategory =
     groupBudgetLinesByPhaseThenCategory(budgetLines);
+
+  const includeUnassignedProducts = useMemo(
+    () => items.some((item) => !item.is_excluded && !item.space_id),
+    [items]
+  );
 
   // Exclude products marked as excluded from display and totals
   const includedItems = items.filter((item) => !item.is_excluded);
@@ -609,12 +662,12 @@ export function ProjectBudget({
                 <Button
                   variant="outline"
                   className="shrink-0 print:hidden"
-                  onClick={() => setIsBudgetNotesOpen(true)}
+                  onClick={() => setIsBudgetCustomizeOpen(true)}
                   disabled={!project}
-                  aria-label={t("budgetNotesAria")}
+                  aria-label={t("budgetCustomizeAria")}
                 >
-                  <StickyNote className="mr-2 h-4 w-4" />
-                  {t("budgetNotes")}
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  {t("budgetCustomize")}
                 </Button>
               )}
               <DropdownMenu>
@@ -1360,12 +1413,17 @@ export function ProjectBudget({
             printFilterOptionsEnabled={printFilterOptionsEnabled}
           />
 
-          <BudgetNotesDialog
-            open={isBudgetNotesOpen}
-            onOpenChange={setIsBudgetNotesOpen}
+          <BudgetCustomizeDialog
+            open={isBudgetCustomizeOpen}
+            onOpenChange={setIsBudgetCustomizeOpen}
             initialNotes={project?.budget_notes}
-            onSave={handleSaveBudgetNotes}
-            saving={isSavingBudgetNotes}
+            initialSettings={project?.budget_settings}
+            customizationEnabled={budgetCustomizationEnabled}
+            availableSpaces={spaces}
+            includeUnassignedSpace={includeUnassignedProducts}
+            unassignedSpaceLabel={t("spaceGeneral")}
+            onSave={handleSaveBudgetCustomize}
+            saving={isSavingBudgetCustomize}
           />
 
           <ConfirmDeleteDialog
