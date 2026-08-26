@@ -79,7 +79,7 @@ as $$
   join project_items pi on pi.project_id = p.id
   left join spaces s on s.id = pi.space_id
   left join products prod on prod.id = pi.product_id
-  left join suppliers sup on sup.id = coalesce(pi.supplier_id, prod.supplier_id)
+  left join suppliers sup on sup.id = prod.supplier_id
   where p.token = share_token and p.is_public_enabled = true
     and (pi.is_excluded = false or pi.is_excluded is null)
   order by
