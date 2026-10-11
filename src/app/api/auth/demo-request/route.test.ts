@@ -12,7 +12,18 @@ vi.mock("@/lib/supabase/keys", () => ({
 }));
 
 vi.mock("@supabase/supabase-js", () => ({
-  createClient: vi.fn(),
+  createClient: vi.fn(() => ({
+    auth: {
+      admin: {
+        generateLink: vi.fn(),
+      },
+    },
+    from: vi.fn(() => ({
+      upsert: vi.fn(() => ({
+        then: vi.fn((cb) => cb({ error: null })),
+      })),
+    })),
+  })),
 }));
 
 vi.mock("@/lib/email/mailersend", () => ({
@@ -108,6 +119,11 @@ describe("POST /api/auth/demo-request", () => {
           }),
         },
       },
+      from: vi.fn(() => ({
+        upsert: vi.fn(() => ({
+          then: vi.fn((cb) => cb({ error: null })),
+        })),
+      })),
     } as never);
 
     const request = new NextRequest("http://localhost/api/auth/demo-request", {
@@ -146,6 +162,11 @@ describe("POST /api/auth/demo-request", () => {
           }),
         },
       },
+      from: vi.fn(() => ({
+        upsert: vi.fn(() => ({
+          then: vi.fn((cb) => cb({ error: null })),
+        })),
+      })),
     } as never);
 
     const request = new NextRequest("http://localhost/api/auth/demo-request", {
@@ -180,6 +201,11 @@ describe("POST /api/auth/demo-request", () => {
           }),
         },
       },
+      from: vi.fn(() => ({
+        upsert: vi.fn(() => ({
+          then: vi.fn((cb) => cb({ error: null })),
+        })),
+      })),
     } as never);
 
     const request = new NextRequest("http://localhost/api/auth/demo-request", {
