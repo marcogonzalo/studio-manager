@@ -155,6 +155,46 @@ export async function POST(request: NextRequest) {
       text: `Solicitud de demo.\nCorreo: ${email}\nIdioma (locale): ${lang}\nFecha: ${notifiedAt}`,
     });
 
+    const name = typeof body.name === "string" ? body.name.trim() : undefined;
+    const studio = typeof body.studio === "string" ? body.studio.trim() : undefined;
+    const role = typeof body.role === "string" ? body.role.trim() : undefined;
+    const marketingConsent = typeof body.marketingConsent === "boolean" ? body.marketingConsent : false;
+    const utmSource = typeof body.utm_source === "string" ? body.utm_source : undefined;
+    const utmMedium = typeof body.utm_medium === "string" ? body.utm_medium : undefined;
+    const utmCampaign = typeof body.utm_campaign === "string" ? body.utm_campaign : undefined;
+    const utmTerm = typeof body.utm_term === "string" ? body.utm_term : undefined;
+    const utmContent = typeof body.utm_content === "string" ? body.utm_content : undefined;
+    const referrer = typeof body.referrer === "string" ? body.referrer : undefined;
+    const landingPath = typeof body.landing_path === "string" ? body.landing_path : undefined;
+
+    await admin
+      .from("leads")
+      .upsert(
+        {
+          email,
+          name,
+          studio,
+          role,
+          locale: lang,
+          source: "demo_request",
+          utm_source: utmSource,
+          utm_medium: utmMedium,
+          utm_campaign: utmCampaign,
+          utm_term: utmTerm,
+          utm_content: utmContent,
+          referrer,
+          landing_path: landingPath,
+          marketing_consent: marketingConsent,
+          consent_at: marketingConsent ? new Date().toISOString() : null,
+        },
+        { onConflict: "email" }
+      )
+      .then(({ error: leadError }) => {
+        if (leadError) {
+          console.error("[demo-request] lead insert error", leadError);
+        }
+      });
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[demo-request]", err);

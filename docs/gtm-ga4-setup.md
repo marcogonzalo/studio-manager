@@ -2,6 +2,19 @@
 
 Implementación de GTM en las rutas de marketing (`/`, `/pricing`, `/about`, `/contact`, `/legal`, páginas de planes) con dataLayer preparado para GA4 y seguimiento del funnel de conversión.
 
+## 0. Índice
+
+1. [Variable de entorno](#1-variable-de-entorno)
+2. [Dónde está implementado](#2-dónde-está-implementado)
+3. [Eventos del dataLayer (funnel y engagement)](#3-eventos-del-datalayer-funnel-y-engagement)
+4. [Configuración recomendada en GTM](#4-configuración-recomendada-en-gtm)
+5. [Rutas de auth](#5-rutas-de-auth-sign-in-sign-up)
+6. [Funnel demo](#6-funnel-demo-demo)
+7. [Conversiones en GA4](#7-conversiones-en-ga4)
+8. [Search Console](#8-search-console)
+9. [GDPR y Consent Mode v2](#9-gdpr-y-consent-mode-v2)
+10. [Referencias](#10-referencias)
+
 ## 1. Variable de entorno
 
 En tu entorno (`.env.local`, Vercel, etc.) define:
@@ -83,7 +96,82 @@ Eventos específicos del funnel demo:
 - **Variables de capa de datos** si necesitas: `page_path`, `page_location`, `lead_source`.
 - En **GA4**, marcar como conversión (opcional): `generate_lead` (filtrar por `lead_source` = `demo_request`) y/o `demo_access` para el funnel demo (vista /demo por page_view → solicitud → acceso).
 
-## 7. Referencias
+## 7. Conversiones en GA4
+
+En GA4: **Administración → Eventos → Marcar como conversión**:
+
+- `sign_up` — Registro completado (usuario creó cuenta)
+- `demo_access` — Usuario accedió a la demo
+- `begin_checkout` — Inicio de proceso de compra de plan
+- `contact` — Formulario de contacto enviado
+- `generate_lead` — Lead capturado (demo_request, contact_form)
+
+Usa estos eventos para medir el funnel de conversión desde la vista de la landing hasta la activación.
+
+## 8. Search Console
+
+Conecta Google Search Console a GA4 para ver las queries de búsqueda orgánica que traen tráfico:
+
+1. En GA4: **Administración → Vínculos de productos → Search Console → Vincular**.
+2. Selecciona la propiedad de Search Console correspondiente (ej. `https://veta.pro`).
+3. Después de vincular, en GA4 puedes ver las consultas de búsqueda en **Informes → Adquisición → Google Organic Search**.
+
+**Verificación en Search Console:**
+
+- Añade la propiedad del dominio en Search Console (`https://veta.pro`).
+- Verifica la propiedad usando el método de **etiqueta HTML** (GA4 verifica automáticamente si ya tienes GTM/GA4 instalado).
+- Envía el sitemap en Search Console: `https://veta.pro/sitemap.xml` (si tienes sitemap generado por Next.js o manualmente).
+
+## 9. GDPR y Consent Mode v2
+
+Veta implementa GDPR Consent Mode v2 para cumplir con la normativa europea de privacidad:
+
+### 9.1. Cookie Consent Banner
+
+- El banner de cookies (`src/components/consent/cookie-consent-banner.tsx`) se muestra en el layout de marketing.
+- El usuario puede aceptar todo, rechazar todo o personalizar sus preferencias.
+- Las preferencias se guardan en `localStorage` y se envían a GTM con `gtag('consent', 'update', ...)`.
+
+### 9.2. Consent Mode v2
+
+- **Default consent:** Se envía `gtag('consent', 'default', ...)` en el script de GTM antes de cargar el contenedor (deny para EU/EEA, granted para el resto).
+- **Update consent:** Cuando el usuario acepta/rechaza en el banner, se envía `gtag('consent', 'update', ...)` con las categorías seleccionadas.
+- **Categorías:**
+  - `ad_storage`, `ad_user_data`, `ad_personalization` — Marketing
+  - `analytics_storage` — Analítica
+  - `functionality_storage`, `personalization_storage` — Funcionalidad/Personalización
+  - `security_storage` — Siempre granted (sesión, seguridad)
+
+### 9.3. Attribution Tracking
+
+- **Primera visita:** Se capturan los parámetros UTM (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`), el referrer y el landing path.
+- **Cookie de atribución:** Se guarda en una cookie first-party (`veta_attribution`) solo si el usuario ha aceptado analítica (consent). La cookie expira a los 90 días.
+- **Persistencia:** Los datos de atribución se envían en el formulario de demo request y de sign-up para guardarlos en la tabla `leads` y en el perfil del usuario.
+
+**Código:** `src/lib/attribution.ts`, `src/components/attribution-capture.tsx`.
+
+### 9.4. Marketing Consent
+
+- Los formularios de **demo request** (`/demo`) y **sign-up** (`/sign-up`) incluyen un checkbox opcional de marketing consent.
+- Si el usuario marca la casilla, se guarda `marketing_consent: true` en la tabla `leads` (demo) y en el user metadata (sign-up).
+- **Uso futuro:** Este flag se usará para segmentar campañas de email marketing y remarketing (solo usuarios que aceptaron).
+
+**Campos en la DB:**
+- `leads.marketing_consent` (boolean) — Si el usuario aceptó recibir comunicaciones comerciales al solicitar demo.
+- `leads.consent_at` (timestamp) — Cuándo aceptó.
+- `profiles.raw_user_meta_data.marketing_consent` (boolean) — Si el usuario aceptó al registrarse.
+
+### 9.5. Unsubscribe / Opt-out
+
+Para futuros envíos de email marketing:
+
+- **Incluir link de unsubscribe** en todos los emails de marketing (no transaccionales).
+- **Gestión de preferencias:** Idealmente, un panel en `/veta-app/settings` donde el usuario pueda actualizar su `marketing_consent` (futuro).
+- **Base legal GDPR:** Consentimiento explícito (opt-in) en el momento de captura. El usuario puede retirar el consentimiento en cualquier momento (link de unsubscribe en emails).
+
+**Documentación:** Para más detalle sobre GDPR y cookies, ver `/legal` (Política de privacidad y Cookies).
+
+## 10. Referencias
 
 - [Guía para desarrolladores - API de Google Tag Manager (Tag Platform)](https://developers.google.com/tag-platform/tag-manager/api/v2/devguide?hl=es-419)
 - [Eventos recomendados de GA4](https://support.google.com/analytics/answer/9267738)

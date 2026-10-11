@@ -7,8 +7,10 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
 import { pushDemoRequest } from "@/lib/gtm";
+import { loadAttributionCookie } from "@/lib/attribution";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -35,13 +37,17 @@ export function DemoRequestForm({
 
   const formSchema = z.object({
     email: z.string().email(t("emailInvalid")),
+    marketingConsent: z.boolean().optional(),
   });
 
   type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { email: "" },
+    defaultValues: { 
+      email: "",
+      marketingConsent: false,
+    },
   });
 
   const watchedEmail = form.watch("email");
@@ -55,12 +61,21 @@ export function DemoRequestForm({
     values: FormValues,
     captchaToken?: string
   ): Promise<{ sent: boolean }> {
+    const attribution = loadAttributionCookie();
     const res = await fetch("/api/auth/demo-request", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: values.email.trim(),
         lang: locale,
+        marketingConsent: values.marketingConsent ?? false,
+        ...(attribution?.utm_source && { utm_source: attribution.utm_source }),
+        ...(attribution?.utm_medium && { utm_medium: attribution.utm_medium }),
+        ...(attribution?.utm_campaign && { utm_campaign: attribution.utm_campaign }),
+        ...(attribution?.utm_term && { utm_term: attribution.utm_term }),
+        ...(attribution?.utm_content && { utm_content: attribution.utm_content }),
+        ...(attribution?.referrer && { referrer: attribution.referrer }),
+        ...(attribution?.landing_path && { landing_path: attribution.landing_path }),
         ...(captchaToken ? { captchaToken } : {}),
       }),
     });
@@ -164,6 +179,27 @@ export function DemoRequestForm({
                     </Button>
                   </div>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="marketingConsent"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value === true}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked === true)
+                      }
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="text-muted-foreground text-sm font-normal">
+                      {t("marketingConsentLabel")}
+                    </FormLabel>
+                  </div>
                 </FormItem>
               )}
             />

@@ -27,6 +27,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { pushSignUp } from "@/lib/gtm";
+import { loadAttributionCookie } from "@/lib/attribution";
 import { CaptchaGuard } from "@/lib/anti-spam/react";
 import { translateMagicLinkErrorCode } from "@/lib/auth/magic-link-error-i18n";
 
@@ -37,6 +38,7 @@ type SignUpValues = {
   email: string;
   fullName?: string;
   acceptTerms: boolean;
+  marketingConsent?: boolean;
 };
 
 type SignUpFormProps = {
@@ -73,6 +75,7 @@ export function SignUpForm({
     acceptTerms: z.boolean().refine((val) => val === true, {
       message: t("acceptTermsError"),
     }),
+    marketingConsent: z.boolean().optional(),
   });
 
   useEffect(() => {
@@ -86,6 +89,7 @@ export function SignUpForm({
       email: "",
       fullName: "",
       acceptTerms: false,
+      marketingConsent: false,
     },
   });
 
@@ -123,6 +127,8 @@ export function SignUpForm({
     const finalRedirect = redirectTo || appPath("/dashboard");
     const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
 
+    const attribution = loadAttributionCookie();
+
     const response = await fetch("/api/auth/magic-link", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -134,6 +140,14 @@ export function SignUpForm({
           full_name: values.fullName,
           signup_plan: selectedPlan,
           ...(billingParam && { signup_billing: billingParam }),
+          marketing_consent: values.marketingConsent ?? false,
+          ...(attribution?.utm_source && { utm_source: attribution.utm_source }),
+          ...(attribution?.utm_medium && { utm_medium: attribution.utm_medium }),
+          ...(attribution?.utm_campaign && { utm_campaign: attribution.utm_campaign }),
+          ...(attribution?.utm_term && { utm_term: attribution.utm_term }),
+          ...(attribution?.utm_content && { utm_content: attribution.utm_content }),
+          ...(attribution?.referrer && { referrer: attribution.referrer }),
+          ...(attribution?.landing_path && { landing_path: attribution.landing_path }),
         },
         ...(captchaToken ? { captchaToken } : {}),
       }),
@@ -320,6 +334,27 @@ export function SignUpForm({
                       </Link>
                     </FormLabel>
                     <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="marketingConsent"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value === true}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked === true)
+                      }
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="text-muted-foreground text-sm font-normal">
+                      {t("marketingConsentLabel")}
+                    </FormLabel>
                   </div>
                 </FormItem>
               )}

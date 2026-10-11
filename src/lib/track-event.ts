@@ -1,0 +1,53 @@
+/**
+ * F3: Server-side event tracking helper for user_events table.
+ * Emit product engagement events: signup, login, project_created, budget_created, supplier_created, invite_sent, plan_selected.
+ */
+
+import { createClient } from "@/lib/supabase/server";
+
+export type UserEvent =
+  | "signup"
+  | "login"
+  | "project_created"
+  | "budget_created"
+  | "supplier_created"
+  | "invite_sent"
+  | "plan_selected";
+
+/**
+ * Track a user event in the user_events table.
+ * Uses the current authenticated user from the Supabase server client.
+ * Returns true if event was tracked successfully, false otherwise.
+ * Errors are logged but not thrown - tracking failures should not break user flows.
+ */
+export async function trackEvent(
+  event: UserEvent,
+  props?: Record<string, unknown>
+): Promise<boolean> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return false;
+    }
+
+    const { error } = await supabase.from("user_events").insert({
+      user_id: user.id,
+      event,
+      props: props ?? {},
+    });
+
+    if (error) {
+      console.error("[trackEvent]", event, error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("[trackEvent]", event, err);
+    return false;
+  }
+}
