@@ -45,8 +45,18 @@ function AuthCompleteContent() {
     const supabase = getSupabaseClient();
     supabase.auth
       .setSession({ access_token: accessToken, refresh_token: refreshToken })
-      .then(() => {
-        if (isDemoAccess) pushDemoAccess();
+      .then(async () => {
+        if (isDemoAccess) {
+          pushDemoAccess();
+          const user = (await supabase.auth.getUser()).data.user;
+          if (user?.email) {
+            await fetch("/api/auth/demo-accessed", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email: user.email }),
+            }).catch(() => {});
+          }
+        }
         const origin = window.location.origin;
         window.location.replace(`${origin}${redirectPath}`);
       })

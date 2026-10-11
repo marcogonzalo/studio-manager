@@ -43,6 +43,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { trackUserEvent } from "@/app/actions/track-event";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
@@ -357,6 +358,8 @@ export function ProjectDialog({
         ]);
 
         if (error) throw error;
+
+        void trackUserEvent("project_created");
 
         toast.success(t("toastCreated"));
         form.reset();

@@ -6,6 +6,7 @@ import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
 import { appPath } from "@/lib/app-paths";
 import { getAppUiCopy } from "@/lib/app-ui-copy";
 import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
+import { trackEvent } from "@/lib/track-event";
 import type { Locale } from "@/i18n/config";
 
 interface CookieToSet {
@@ -92,6 +93,13 @@ export async function GET(request: NextRequest) {
             : "monthly";
         if (plan) redirectUrl.searchParams.set("plan_code", plan);
         redirectUrl.searchParams.set("billing_period", billing);
+
+        await trackEvent("signup", {
+          plan_code: plan ?? "BASE",
+          billing_period: billing,
+        });
+      } else {
+        await trackEvent("login");
       }
 
       const response = NextResponse.redirect(redirectUrl.toString());
