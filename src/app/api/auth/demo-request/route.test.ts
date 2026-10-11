@@ -111,6 +111,14 @@ describe("POST /api/auth/demo-request", () => {
     vi.mocked(createClient).mockReturnValue({
       auth: {
         admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: [] },
+            error: null,
+          }),
+          createUser: vi.fn().mockResolvedValue({
+            data: { user: { id: "new-user-id", email: "visitor@example.com" } },
+            error: null,
+          }),
           generateLink: vi.fn().mockResolvedValue({
             data: {
               properties: { action_link: "https://example.com/demo-magic" },
@@ -154,6 +162,14 @@ describe("POST /api/auth/demo-request", () => {
     vi.mocked(createClient).mockReturnValue({
       auth: {
         admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: [] },
+            error: null,
+          }),
+          createUser: vi.fn().mockResolvedValue({
+            data: { user: { id: "new-user-id", email: "evil<img>@example.com" } },
+            error: null,
+          }),
           generateLink: vi.fn().mockResolvedValue({
             data: {
               properties: { action_link: "https://example.com/demo-magic" },
@@ -193,6 +209,14 @@ describe("POST /api/auth/demo-request", () => {
     vi.mocked(createClient).mockReturnValue({
       auth: {
         admin: {
+          listUsers: vi.fn().mockResolvedValue({
+            data: { users: [] },
+            error: null,
+          }),
+          createUser: vi.fn().mockResolvedValue({
+            data: { user: { id: "new-user-id", email: "test&visitor@example.com" } },
+            error: null,
+          }),
           generateLink: vi.fn().mockResolvedValue({
             data: {
               properties: { action_link: "https://example.com/demo-magic" },

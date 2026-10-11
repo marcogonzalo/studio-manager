@@ -22,8 +22,6 @@ import { appPath } from "@/lib/app-paths";
 import { resolveMagicLinkAntiSpam } from "@/lib/anti-spam";
 import { getMagicLinkAntiSpamConfig } from "@/lib/auth/magic-link-anti-spam-config";
 
-const DEMO_EMAIL = "demo@veta.pro";
-
 export async function POST(request: NextRequest) {
   try {
     const ip = getClientIp(request);
@@ -49,6 +47,18 @@ export async function POST(request: NextRequest) {
     const captchaToken =
       typeof body.captchaToken === "string" ? body.captchaToken : undefined;
     const email = typeof body.email === "string" ? body.email.trim() : "";
+    const name = typeof body.name === "string" ? body.name.trim() : undefined;
+    const studio = typeof body.studio === "string" ? body.studio.trim() : undefined;
+    const role = typeof body.role === "string" ? body.role.trim() : undefined;
+    const marketingConsent = typeof body.marketingConsent === "boolean" ? body.marketingConsent : false;
+    const utmSource = typeof body.utm_source === "string" ? body.utm_source : undefined;
+    const utmMedium = typeof body.utm_medium === "string" ? body.utm_medium : undefined;
+    const utmCampaign = typeof body.utm_campaign === "string" ? body.utm_campaign : undefined;
+    const utmTerm = typeof body.utm_term === "string" ? body.utm_term : undefined;
+    const utmContent = typeof body.utm_content === "string" ? body.utm_content : undefined;
+    const referrer = typeof body.referrer === "string" ? body.referrer : undefined;
+    const landingPath = typeof body.landing_path === "string" ? body.landing_path : undefined;
+
     if (!email) {
       return NextResponse.json(
         { error: getAppUiCopy(lang).validation.emailRequired },
@@ -104,10 +114,41 @@ export async function POST(request: NextRequest) {
     const dashboardPath = appPath("/dashboard");
     const redirectTo = `${origin}/auth/complete?next=${encodeURIComponent(dashboardPath)}&demo=1`;
 
+    // Create or get existing user for this email
+    const { data: existingUser } = await admin.auth.admin.listUsers();
+    const userExists = existingUser?.users.find((u) => u.email === email);
+
+    let userId: string;
+
+    if (userExists) {
+      userId = userExists.id;
+    } else {
+      // Create new user with Base plan
+      const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+        email,
+        email_confirm: true,
+        user_metadata: {
+          full_name: name,
+          demo_user: true,
+        },
+      });
+
+      if (createError || !newUser.user) {
+        console.error("[demo-request] createUser error", createError);
+        return NextResponse.json(
+          { error: "No se pudo crear la cuenta de demo. Inténtalo más tarde." },
+          { status: 503 }
+        );
+      }
+
+      userId = newUser.user.id;
+    }
+
+    // Generate magic link for the user's own account
     const { data: linkData, error: linkError } =
       await admin.auth.admin.generateLink({
         type: "magiclink",
-        email: DEMO_EMAIL,
+        email,
         options: { redirectTo },
       });
 
@@ -154,18 +195,6 @@ export async function POST(request: NextRequest) {
       html: `<p>Se solicitó enlace de demo.</p><p>Visitante: ${safeEmailHtml}</p><p>Idioma (locale): ${safeLangHtml}</p><p>Fecha: ${escapeHtml(notifiedAt)}</p>`,
       text: `Solicitud de demo.\nCorreo: ${email}\nIdioma (locale): ${lang}\nFecha: ${notifiedAt}`,
     });
-
-    const name = typeof body.name === "string" ? body.name.trim() : undefined;
-    const studio = typeof body.studio === "string" ? body.studio.trim() : undefined;
-    const role = typeof body.role === "string" ? body.role.trim() : undefined;
-    const marketingConsent = typeof body.marketingConsent === "boolean" ? body.marketingConsent : false;
-    const utmSource = typeof body.utm_source === "string" ? body.utm_source : undefined;
-    const utmMedium = typeof body.utm_medium === "string" ? body.utm_medium : undefined;
-    const utmCampaign = typeof body.utm_campaign === "string" ? body.utm_campaign : undefined;
-    const utmTerm = typeof body.utm_term === "string" ? body.utm_term : undefined;
-    const utmContent = typeof body.utm_content === "string" ? body.utm_content : undefined;
-    const referrer = typeof body.referrer === "string" ? body.referrer : undefined;
-    const landingPath = typeof body.landing_path === "string" ? body.landing_path : undefined;
 
     await admin
       .from("leads")

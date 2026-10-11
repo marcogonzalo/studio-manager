@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import { toast } from "sonner";
+import { trackUserEvent } from "@/app/actions/track-event";
 import { CircleHelp, Plus } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { SupplierDialog } from "./supplier-dialog";
@@ -343,6 +344,8 @@ export function BudgetLineDialog({
           reportError(error, "Error creating budget line:");
           return;
         }
+
+        void trackUserEvent("budget_created");
 
         toast.success(t("toastCreated"));
         onSuccess();

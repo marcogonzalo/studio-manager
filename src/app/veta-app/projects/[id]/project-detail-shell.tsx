@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { FileText, Eye, EyeOff } from "lucide-react";
 import { ProjectShareDialog } from "@/components/dialogs/project-share-dialog";
 import { ProjectContext } from "./project-context";
+import { ExampleProjectBanner } from "@/components/example-project-banner";
 import { cn } from "@/lib/utils";
 
 function ProjectDetailShellContent({
@@ -196,7 +197,7 @@ function ProjectDetailShellContent({
     setLoading(true);
     const { data, error } = await supabase
       .from("projects")
-      .select("*, client:clients(full_name)")
+      .select("*, client:clients(full_name), is_example")
       .eq("id", id)
       .single();
 
@@ -293,7 +294,7 @@ function ProjectDetailShellContent({
     return <div className="text-muted-foreground">{t("notFound")}</div>;
 
   const isReadOnly =
-    project.status === "completed" || project.status === "cancelled";
+    project.status === "completed" || project.status === "cancelled" || project.is_example === true;
 
   const handleProjectSwitch = (projectId: string) => {
     if (projectId === id) return;
@@ -388,6 +389,8 @@ function ProjectDetailShellContent({
             </Button>
           </div>
         </div>
+
+        {project.is_example && <ExampleProjectBanner />}
 
         <Tabs value={activeTab} onValueChange={setActiveTabAndUrl}>
           <div className="bg-muted dark:bg-sidebar/70 dark:border-border/30 rounded-lg border p-1 md:hidden dark:border">

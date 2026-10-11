@@ -30,9 +30,18 @@ export async function POST(request: NextRequest) {
       auth: { persistSession: false },
     });
 
+    // Get the user_id for this email
+    const { data: usersData } = await admin.auth.admin.listUsers();
+    const user = usersData?.users.find((u) => u.email === email);
+    const userId = user?.id;
+
+    // Update leads table with demo_accessed_at and user_id
     const { error } = await admin
       .from("leads")
-      .update({ demo_accessed_at: new Date().toISOString() })
+      .update({
+        demo_accessed_at: new Date().toISOString(),
+        user_id: userId,
+      })
       .eq("email", email);
 
     if (error) {

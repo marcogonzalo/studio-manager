@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { trackUserEvent } from "@/app/actions/track-event";
 import type { Supplier } from "@/types";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
@@ -98,6 +99,9 @@ export function SupplierDialog({
           .single();
 
         if (error) throw error;
+
+        void trackUserEvent("supplier_created");
+
         toast.success(t("toastCreated"));
         onSuccess(newSupplier.id);
       }

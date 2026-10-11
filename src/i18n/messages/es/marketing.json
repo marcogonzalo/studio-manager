@@ -279,7 +279,7 @@
   },
   "DemoRequestForm": {
     "title": "Probar la demo",
-    "subtitle": "Introduce tu correo y te enviaremos el enlace para acceder a la demo.",
+    "subtitle": "Introduce tu correo y te enviaremos el enlace para acceder a tu cuenta de prueba con un proyecto de ejemplo.",
     "emailLabel": "Correo electrónico",
     "emailPlaceholder": "tu@email.com",
     "submit": "Recibir enlace de demo",
@@ -293,9 +293,8 @@
     "emailNotAllowed": "No podemos usar esta dirección de correo. Prueba con otra.",
     "captchaLoading": "Cargando verificación…",
     "captchaLoadFailed": "No se pudo cargar la verificación (red, bloqueador de anuncios o dominio del widget).",
-    "successToast": "Revisa tu correo. Te hemos enviado un enlace para acceder a la demo.",
-    "sentTitle": "Revisa tu correo electrónico. Te hemos enviado un enlace para acceder a la demo de Veta. El enlace es válido durante un máximo de 1 hora.",
-    "privacyNote": "Al enviar tu correo aceptas recibir un mensaje de nuestro equipo para conocer tu experiencia en la aplicación.",
+    "successToast": "Revisa tu correo. Te hemos enviado un enlace para acceder a tu cuenta de prueba.",
+    "sentTitle": "Revisa tu correo electrónico. Te hemos enviado un enlace para acceder a tu cuenta de prueba de Veta. El enlace es válido durante un máximo de 1 hora.",
     "marketingConsentLabel": "Acepto recibir comunicaciones sobre novedades y recursos de Veta (opcional)"
   },
   "Pricing": {

@@ -17,7 +17,8 @@ create table leads (
   landing_path text,
   demo_accessed_at timestamptz,
   marketing_consent boolean not null default false,
-  consent_at timestamptz
+  consent_at timestamptz,
+  user_id uuid references auth.users(id) on delete set null
 );
 
 alter table leads enable row level security;
@@ -36,3 +37,4 @@ comment on table leads is 'Demo requests and lead capture for marketing funnel. 
 comment on column leads.source is 'demo_request, contact_form, sign_up, etc.';
 comment on column leads.marketing_consent is 'User opted-in to marketing communications at capture time.';
 comment on column leads.demo_accessed_at is 'Timestamp when user actually accessed the demo (landed on auth/complete with demo=1).';
+comment on column leads.user_id is 'User account ID if the lead signed up or accessed demo. Linked from auth.users.';
