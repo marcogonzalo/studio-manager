@@ -102,6 +102,8 @@ export interface Project {
   budget_notes?: string | null;
   /** Client-facing budget presentation settings (public page + PDF). */
   budget_settings?: BudgetSettings | null;
+  /** When true, this is the shared example project visible to all users. */
+  is_example?: boolean;
   client?: { full_name: string };
 }
 
