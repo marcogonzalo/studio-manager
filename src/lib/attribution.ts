@@ -43,7 +43,10 @@ export function captureAttribution(): AttributionData {
   if (utm_term) data.utm_term = utm_term;
   if (utm_content) data.utm_content = utm_content;
 
-  if (document.referrer && !document.referrer.includes(window.location.hostname)) {
+  if (
+    document.referrer &&
+    !document.referrer.includes(window.location.hostname)
+  ) {
     data.referrer = document.referrer;
   }
 
@@ -67,7 +70,9 @@ export function saveAttributionCookie(data: AttributionData): boolean {
     return false;
   }
 
-  const expires = new Date(Date.now() + ATTRIBUTION_COOKIE_MAX_AGE * 1000).toUTCString();
+  const expires = new Date(
+    Date.now() + ATTRIBUTION_COOKIE_MAX_AGE * 1000
+  ).toUTCString();
   document.cookie = `${ATTRIBUTION_COOKIE_NAME}=${encodeURIComponent(JSON.stringify(data))}; expires=${expires}; path=/; SameSite=Lax; Secure`;
   return true;
 }
@@ -114,7 +119,7 @@ export function captureAndSaveAttribution(): AttributionData | null {
 
   const data = captureAttribution();
   const saved = saveAttributionCookie(data);
-  
+
   return saved ? data : null;
 }
 

@@ -157,6 +157,7 @@ Veta implementa GDPR Consent Mode v2 para cumplir con la normativa europea de pr
 - **Uso futuro:** Este flag se usará para segmentar campañas de email marketing y remarketing (solo usuarios que aceptaron).
 
 **Campos en la DB:**
+
 - `leads.marketing_consent` (boolean) — Si el usuario aceptó recibir comunicaciones comerciales al solicitar demo.
 - `leads.consent_at` (timestamp) — Cuándo aceptó.
 - `profiles.raw_user_meta_data.marketing_consent` (boolean) — Si el usuario aceptó al registrarse.

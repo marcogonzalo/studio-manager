@@ -48,16 +48,27 @@ export async function POST(request: NextRequest) {
       typeof body.captchaToken === "string" ? body.captchaToken : undefined;
     const email = typeof body.email === "string" ? body.email.trim() : "";
     const name = typeof body.name === "string" ? body.name.trim() : undefined;
-    const studio = typeof body.studio === "string" ? body.studio.trim() : undefined;
+    const studio =
+      typeof body.studio === "string" ? body.studio.trim() : undefined;
     const role = typeof body.role === "string" ? body.role.trim() : undefined;
-    const marketingConsent = typeof body.marketingConsent === "boolean" ? body.marketingConsent : false;
-    const utmSource = typeof body.utm_source === "string" ? body.utm_source : undefined;
-    const utmMedium = typeof body.utm_medium === "string" ? body.utm_medium : undefined;
-    const utmCampaign = typeof body.utm_campaign === "string" ? body.utm_campaign : undefined;
-    const utmTerm = typeof body.utm_term === "string" ? body.utm_term : undefined;
-    const utmContent = typeof body.utm_content === "string" ? body.utm_content : undefined;
-    const referrer = typeof body.referrer === "string" ? body.referrer : undefined;
-    const landingPath = typeof body.landing_path === "string" ? body.landing_path : undefined;
+    const marketingConsent =
+      typeof body.marketingConsent === "boolean"
+        ? body.marketingConsent
+        : false;
+    const utmSource =
+      typeof body.utm_source === "string" ? body.utm_source : undefined;
+    const utmMedium =
+      typeof body.utm_medium === "string" ? body.utm_medium : undefined;
+    const utmCampaign =
+      typeof body.utm_campaign === "string" ? body.utm_campaign : undefined;
+    const utmTerm =
+      typeof body.utm_term === "string" ? body.utm_term : undefined;
+    const utmContent =
+      typeof body.utm_content === "string" ? body.utm_content : undefined;
+    const referrer =
+      typeof body.referrer === "string" ? body.referrer : undefined;
+    const landingPath =
+      typeof body.landing_path === "string" ? body.landing_path : undefined;
 
     if (!email) {
       return NextResponse.json(
@@ -124,14 +135,15 @@ export async function POST(request: NextRequest) {
       userId = userExists.id;
     } else {
       // Create new user with Base plan
-      const { data: newUser, error: createError } = await admin.auth.admin.createUser({
-        email,
-        email_confirm: true,
-        user_metadata: {
-          full_name: name,
-          demo_user: true,
-        },
-      });
+      const { data: newUser, error: createError } =
+        await admin.auth.admin.createUser({
+          email,
+          email_confirm: true,
+          user_metadata: {
+            full_name: name,
+            demo_user: true,
+          },
+        });
 
       if (createError || !newUser.user) {
         console.error("[demo-request] createUser error", createError);
@@ -215,6 +227,7 @@ export async function POST(request: NextRequest) {
           landing_path: landingPath,
           marketing_consent: marketingConsent,
           consent_at: marketingConsent ? new Date().toISOString() : null,
+          user_id: userId,
         },
         { onConflict: "email" }
       )

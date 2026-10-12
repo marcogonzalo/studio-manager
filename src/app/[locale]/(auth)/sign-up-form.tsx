@@ -141,13 +141,23 @@ export function SignUpForm({
           signup_plan: selectedPlan,
           ...(billingParam && { signup_billing: billingParam }),
           marketing_consent: values.marketingConsent ?? false,
-          ...(attribution?.utm_source && { utm_source: attribution.utm_source }),
-          ...(attribution?.utm_medium && { utm_medium: attribution.utm_medium }),
-          ...(attribution?.utm_campaign && { utm_campaign: attribution.utm_campaign }),
+          ...(attribution?.utm_source && {
+            utm_source: attribution.utm_source,
+          }),
+          ...(attribution?.utm_medium && {
+            utm_medium: attribution.utm_medium,
+          }),
+          ...(attribution?.utm_campaign && {
+            utm_campaign: attribution.utm_campaign,
+          }),
           ...(attribution?.utm_term && { utm_term: attribution.utm_term }),
-          ...(attribution?.utm_content && { utm_content: attribution.utm_content }),
+          ...(attribution?.utm_content && {
+            utm_content: attribution.utm_content,
+          }),
           ...(attribution?.referrer && { referrer: attribution.referrer }),
-          ...(attribution?.landing_path && { landing_path: attribution.landing_path }),
+          ...(attribution?.landing_path && {
+            landing_path: attribution.landing_path,
+          }),
         },
         ...(captchaToken ? { captchaToken } : {}),
       }),

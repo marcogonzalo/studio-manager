@@ -294,7 +294,9 @@ function ProjectDetailShellContent({
     return <div className="text-muted-foreground">{t("notFound")}</div>;
 
   const isReadOnly =
-    project.status === "completed" || project.status === "cancelled" || project.is_example === true;
+    project.status === "completed" ||
+    project.status === "cancelled" ||
+    project.is_example === true;
 
   const handleProjectSwitch = (projectId: string) => {
     if (projectId === id) return;

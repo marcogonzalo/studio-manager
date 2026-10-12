@@ -167,7 +167,9 @@ describe("POST /api/auth/demo-request", () => {
             error: null,
           }),
           createUser: vi.fn().mockResolvedValue({
-            data: { user: { id: "new-user-id", email: "evil<img>@example.com" } },
+            data: {
+              user: { id: "new-user-id", email: "evil<img>@example.com" },
+            },
             error: null,
           }),
           generateLink: vi.fn().mockResolvedValue({
@@ -214,7 +216,9 @@ describe("POST /api/auth/demo-request", () => {
             error: null,
           }),
           createUser: vi.fn().mockResolvedValue({
-            data: { user: { id: "new-user-id", email: "test&visitor@example.com" } },
+            data: {
+              user: { id: "new-user-id", email: "test&visitor@example.com" },
+            },
             error: null,
           }),
           generateLink: vi.fn().mockResolvedValue({

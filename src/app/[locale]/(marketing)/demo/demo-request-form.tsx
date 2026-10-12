@@ -44,7 +44,7 @@ export function DemoRequestForm({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { 
+    defaultValues: {
       email: "",
       marketingConsent: false,
     },
@@ -71,11 +71,17 @@ export function DemoRequestForm({
         marketingConsent: values.marketingConsent ?? false,
         ...(attribution?.utm_source && { utm_source: attribution.utm_source }),
         ...(attribution?.utm_medium && { utm_medium: attribution.utm_medium }),
-        ...(attribution?.utm_campaign && { utm_campaign: attribution.utm_campaign }),
+        ...(attribution?.utm_campaign && {
+          utm_campaign: attribution.utm_campaign,
+        }),
         ...(attribution?.utm_term && { utm_term: attribution.utm_term }),
-        ...(attribution?.utm_content && { utm_content: attribution.utm_content }),
+        ...(attribution?.utm_content && {
+          utm_content: attribution.utm_content,
+        }),
         ...(attribution?.referrer && { referrer: attribution.referrer }),
-        ...(attribution?.landing_path && { landing_path: attribution.landing_path }),
+        ...(attribution?.landing_path && {
+          landing_path: attribution.landing_path,
+        }),
         ...(captchaToken ? { captchaToken } : {}),
       }),
     });
