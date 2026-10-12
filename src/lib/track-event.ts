@@ -12,7 +12,8 @@ export type UserEvent =
   | "budget_created"
   | "supplier_created"
   | "invite_sent"
-  | "plan_selected";
+  | "plan_selected"
+  | "project_updated";
 
 /**
  * Track a user event in the user_events table.

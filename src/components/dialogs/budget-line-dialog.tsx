@@ -321,6 +321,8 @@ export function BudgetLineDialog({
           return;
         }
 
+        void trackUserEvent("project_updated");
+
         toast.success(t("toastUpdated"));
         onSuccess();
         onOpenChange(false);

@@ -89,6 +89,9 @@ export function SupplierDialog({
       const data = { ...values, user_id: user?.id };
       if (supplier) {
         await supabase.from("suppliers").update(data).eq("id", supplier.id);
+
+        void trackUserEvent("project_updated");
+
         toast.success(t("toastUpdated"));
         onSuccess();
       } else {

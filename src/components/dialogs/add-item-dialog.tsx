@@ -50,6 +50,7 @@ import {
 import { useAuth } from "@/components/auth-provider";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
+import { trackUserEvent } from "@/app/actions/track-event";
 import { SupplierDialog } from "./supplier-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -541,10 +542,16 @@ export function AddItemDialog({
           .update(data)
           .eq("id", item.id);
         if (error) throw error;
+
+        void trackUserEvent("project_updated");
+
         toast.success(t("toastUpdated"));
       } else {
         const { error } = await supabase.from("project_items").insert([data]);
         if (error) throw error;
+
+        void trackUserEvent("project_updated");
+
         toast.success(t("toastCreated"));
       }
 

@@ -25,6 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { getDemoAccountMessage } from "@/lib/utils";
+import { trackUserEvent } from "@/app/actions/track-event";
 
 function buildFormSchema(t: ReturnType<typeof useTranslations>) {
   return z.object({
@@ -68,6 +69,8 @@ export function SpaceDialog({
       ]);
 
       if (error) throw error;
+
+      void trackUserEvent("project_updated");
 
       toast.success(t("toastCreated"));
       form.reset();
