@@ -12,6 +12,18 @@
 - **Assets y almacenamiento:** Cada subida crea fila en tabla `assets` y opcionalmente `asset_id` en tablas de dominio (`products`, `project_documents`, `space_images`). Bytes en B2. `user_storage_usage` mantenido por triggers.
 - **RLS:** Todas las tablas con RLS habilitado; políticas por `user_id` / `auth.uid()`. No confiar solo en comprobaciones en cliente.
 
+## Funnel analytics (first-party)
+
+- **`user_events`:** Product engagement. Client components call `trackUserEvent` (server action); RSC/route handlers call `trackEvent`. Never import the server Supabase client in client components for tracking.
+- **Tracking never throws:** Failures go through `reportError` and must not block UX.
+- **Event props:** Pass `project_id` (or `supplier_id`) when the event is scoped; empty props weaken activation analysis.
+- **`leads`:** Service role only. Browser must not write leads; capture via `demo-request` / auth APIs. Demo conversion stamp via Bearer on `demo-accessed`.
+- **Attribution:** Cookie `veta_attribution` (90d) only when analytics consent is present; demo-request and sign-up attach UTMs to leads.
+- **Signup timestamp:** Use `auth.users.created_at` in SQL views — never invent `profiles.created_at`.
+- **Views:** `funnel_users` / `leads_users` are service_role analytics surfaces (no end-user dashboard yet). Query them with the service role for activation/conversion.
+- **Consent:** Store `marketing_consent` + `consent_at` at capture time.
+- **Sessions:** `trackSessionStart` in `veta-app` layout (deduped via own-row SELECT on `user_events`).
+
 ## Limitaciones técnicas
 
 - **Dependencias circulares:** Evitar importar interfaces desde archivos de componentes; usar `src/types/index.ts`.

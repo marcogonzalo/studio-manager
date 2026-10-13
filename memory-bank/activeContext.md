@@ -7,6 +7,7 @@
 
 ## Work in progress / Próximos pasos
 
+- **Funnel data foundations (PR #212):** First-party `leads` / `user_events`, attribution cookie, GDPR consent at capture, `funnel_users` / `leads_users` (service_role), session tracking in app layout, trusted demo-accessed Bearer stamp. Ops: query views with service role. Next: wire `invite_sent` / `plan_selected` when those flows exist.
 - **Control de pagos:** Registro de pagos por proyecto (fechas, importes, tipos: honorarios, provisión compras, coste adicional, otro; vinculación opcional a órdenes de compra o costes adicionales) ya implementado. Falta: que el Dashboard de cuenta calcule "Total de Ingresos este mes" desde la tabla `payments` (actualmente hardcodeado a 0).
 
 ## Decisiones activas
