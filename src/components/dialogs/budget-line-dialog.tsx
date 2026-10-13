@@ -321,7 +321,7 @@ export function BudgetLineDialog({
           return;
         }
 
-        void trackUserEvent("project_updated");
+        void trackUserEvent("project_updated", { project_id: projectId });
 
         toast.success(t("toastUpdated"));
         onSuccess();
@@ -347,7 +347,7 @@ export function BudgetLineDialog({
           return;
         }
 
-        void trackUserEvent("budget_created");
+        void trackUserEvent("budget_created", { project_id: projectId });
 
         toast.success(t("toastCreated"));
         onSuccess();

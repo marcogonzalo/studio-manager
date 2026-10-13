@@ -1,6 +1,8 @@
 /**
  * F3: Server-side event tracking helper for user_events table.
- * Emit product engagement events: signup, login, project_created, budget_created, supplier_created, invite_sent, plan_selected.
+ * Emit product engagement events for the first-party funnel.
+ * Prefer props.project_id (or supplier_id) when the event is scoped to a resource.
+ * invite_sent / plan_selected are reserved for future wiring.
  */
 
 import { createClient } from "@/lib/supabase/server";

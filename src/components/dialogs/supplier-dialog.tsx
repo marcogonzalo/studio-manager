@@ -90,8 +90,6 @@ export function SupplierDialog({
       if (supplier) {
         await supabase.from("suppliers").update(data).eq("id", supplier.id);
 
-        void trackUserEvent("project_updated");
-
         toast.success(t("toastUpdated"));
         onSuccess();
       } else {
@@ -103,7 +101,9 @@ export function SupplierDialog({
 
         if (error) throw error;
 
-        void trackUserEvent("supplier_created");
+        void trackUserEvent("supplier_created", {
+          supplier_id: newSupplier.id,
+        });
 
         toast.success(t("toastCreated"));
         onSuccess(newSupplier.id);

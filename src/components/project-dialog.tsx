@@ -350,16 +350,22 @@ export function ProjectDialog({
 
         toast.success(t("toastUpdated"));
       } else {
-        const { error } = await supabase.from("projects").insert([
-          {
-            ...updateData,
-            user_id: user?.id,
-          },
-        ]);
+        const { data: created, error } = await supabase
+          .from("projects")
+          .insert([
+            {
+              ...updateData,
+              user_id: user?.id,
+            },
+          ])
+          .select("id")
+          .single();
 
         if (error) throw error;
 
-        void trackUserEvent("project_created");
+        void trackUserEvent("project_created", {
+          project_id: created.id,
+        });
 
         toast.success(t("toastCreated"));
         form.reset();

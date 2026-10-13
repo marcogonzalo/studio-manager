@@ -543,14 +543,14 @@ export function AddItemDialog({
           .eq("id", item.id);
         if (error) throw error;
 
-        void trackUserEvent("project_updated");
+        void trackUserEvent("project_updated", { project_id: projectId });
 
         toast.success(t("toastUpdated"));
       } else {
         const { error } = await supabase.from("project_items").insert([data]);
         if (error) throw error;
 
-        void trackUserEvent("project_updated");
+        void trackUserEvent("project_updated", { project_id: projectId });
 
         toast.success(t("toastCreated"));
       }

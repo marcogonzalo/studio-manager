@@ -70,7 +70,7 @@ export function SpaceDialog({
 
       if (error) throw error;
 
-      void trackUserEvent("project_updated");
+      void trackUserEvent("project_updated", { project_id: projectId });
 
       toast.success(t("toastCreated"));
       form.reset();
