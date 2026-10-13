@@ -185,5 +185,11 @@
     "fileTooLarge5mb": "El archivo no puede superar 5MB",
     "documentType": "Tipo no permitido. Use PDFs, docs, hojas de cálculo, presentaciones, texto u otros documentos relacionados.",
     "documentSize": "No se pueden subir archivos de más de 10Mb. Si lo tienes en Drive, OneDrive o iCloud, añádelo como URL."
+  },
+  "ExampleProject": {
+    "title": "Este es un proyecto de ejemplo",
+    "description": "Este proyecto es de solo lectura. Puedes explorarlo libremente, pero no puedes hacer cambios. Crea tu propio proyecto para empezar a trabajar.",
+    "cta": "Crear mi proyecto",
+    "dismiss": "Cerrar"
   }
 }
