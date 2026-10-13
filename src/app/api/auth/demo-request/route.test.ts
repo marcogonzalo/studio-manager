@@ -45,6 +45,54 @@ vi.mock("@/lib/rate-limit", async (importOriginal) => {
   };
 });
 
+function mockAdminClient(options?: {
+  profileId?: string | null;
+  userEmail?: string;
+  createUser?: ReturnType<typeof vi.fn>;
+}) {
+  const userEmail = options?.userEmail ?? "visitor@example.com";
+  const createUser =
+    options?.createUser ??
+    vi.fn().mockResolvedValue({
+      data: { user: { id: "new-user-id", email: userEmail } },
+      error: null,
+    });
+  const maybeSingle = vi.fn().mockResolvedValue({
+    data: options?.profileId ? { id: options.profileId } : null,
+    error: null,
+  });
+
+  return {
+    auth: {
+      admin: {
+        createUser,
+        generateLink: vi.fn().mockResolvedValue({
+          data: {
+            properties: { action_link: "https://example.com/demo-magic" },
+          },
+          error: null,
+        }),
+      },
+    },
+    from: vi.fn((table: string) => {
+      if (table === "profiles") {
+        return {
+          select: vi.fn().mockReturnValue({
+            ilike: vi.fn().mockReturnValue({
+              maybeSingle,
+            }),
+          }),
+        };
+      }
+      return {
+        upsert: vi.fn(() => ({
+          then: vi.fn((cb) => cb({ error: null })),
+        })),
+      };
+    }),
+  };
+}
+
 describe("POST /api/auth/demo-request", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -88,6 +136,35 @@ describe("POST /api/auth/demo-request", () => {
     expect(data.error).toBe(getAppUiCopy("es").validation.emailInvalid);
   });
 
+  it("returns 400 if email exceeds RFC max length", async () => {
+    const local = "a".repeat(64);
+    const domain = "b".repeat(190) + ".com";
+    const request = new NextRequest("http://localhost/api/auth/demo-request", {
+      method: "POST",
+      body: JSON.stringify({ email: `${local}@${domain}` }),
+    });
+
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe(getAppUiCopy("es").validation.emailInvalid);
+  });
+
+  it("returns 400 if optional attribution fields are the wrong type", async () => {
+    const request = new NextRequest("http://localhost/api/auth/demo-request", {
+      method: "POST",
+      body: JSON.stringify({
+        email: "visitor@example.com",
+        utm_source: 123,
+      }),
+    });
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(400);
+  });
+
   it("returns 503 when service role key is not set", async () => {
     const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
     vi.mocked(getSupabaseServiceRoleKey).mockReturnValue(undefined);
@@ -108,31 +185,7 @@ describe("POST /api/auth/demo-request", () => {
     const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
     const { createClient } = await import("@supabase/supabase-js");
     vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
-    vi.mocked(createClient).mockReturnValue({
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [] },
-            error: null,
-          }),
-          createUser: vi.fn().mockResolvedValue({
-            data: { user: { id: "new-user-id", email: "visitor@example.com" } },
-            error: null,
-          }),
-          generateLink: vi.fn().mockResolvedValue({
-            data: {
-              properties: { action_link: "https://example.com/demo-magic" },
-            },
-            error: null,
-          }),
-        },
-      },
-      from: vi.fn(() => ({
-        upsert: vi.fn(() => ({
-          then: vi.fn((cb) => cb({ error: null })),
-        })),
-      })),
-    } as never);
+    vi.mocked(createClient).mockReturnValue(mockAdminClient() as never);
 
     const request = new NextRequest("http://localhost/api/auth/demo-request", {
       method: "POST",
@@ -155,101 +208,40 @@ describe("POST /api/auth/demo-request", () => {
     expect(internal?.html).not.toContain("Visitor");
   });
 
-  it("escapes visitor email in internal notification HTML", async () => {
+  it("reuses existing profile id and skips createUser", async () => {
     const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
     const { createClient } = await import("@supabase/supabase-js");
+    const createUser = vi.fn();
     vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
-    vi.mocked(createClient).mockReturnValue({
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [] },
-            error: null,
-          }),
-          createUser: vi.fn().mockResolvedValue({
-            data: {
-              user: { id: "new-user-id", email: "evil<img>@example.com" },
-            },
-            error: null,
-          }),
-          generateLink: vi.fn().mockResolvedValue({
-            data: {
-              properties: { action_link: "https://example.com/demo-magic" },
-            },
-            error: null,
-          }),
-        },
-      },
-      from: vi.fn(() => ({
-        upsert: vi.fn(() => ({
-          then: vi.fn((cb) => cb({ error: null })),
-        })),
-      })),
-    } as never);
+    vi.mocked(createClient).mockReturnValue(
+      mockAdminClient({ profileId: "existing-id", createUser }) as never
+    );
 
     const request = new NextRequest("http://localhost/api/auth/demo-request", {
       method: "POST",
       headers: { origin: "https://app.test" },
-      body: JSON.stringify({
-        email: "evil<img>@example.com",
-        lang: "en",
-      }),
+      body: JSON.stringify({ email: "Visitor@Example.com" }),
     });
 
     const response = await POST(request);
     expect(response.status).toBe(200);
-    expect(vi.mocked(sendTransactionalEmail).mock.calls.length).toBe(2);
-    const internal = vi.mocked(sendTransactionalEmail).mock.calls[1]?.[0];
-    expect(internal?.html).toContain("evil&lt;img&gt;");
-    expect(internal?.html).not.toContain("evil<img>");
+    expect(createUser).not.toHaveBeenCalled();
   });
 
-  it("escapes ampersand in visitor email in internal notification HTML", async () => {
-    const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
-    const { createClient } = await import("@supabase/supabase-js");
-    vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
-    vi.mocked(createClient).mockReturnValue({
-      auth: {
-        admin: {
-          listUsers: vi.fn().mockResolvedValue({
-            data: { users: [] },
-            error: null,
-          }),
-          createUser: vi.fn().mockResolvedValue({
-            data: {
-              user: { id: "new-user-id", email: "test&visitor@example.com" },
-            },
-            error: null,
-          }),
-          generateLink: vi.fn().mockResolvedValue({
-            data: {
-              properties: { action_link: "https://example.com/demo-magic" },
-            },
-            error: null,
-          }),
-        },
-      },
-      from: vi.fn(() => ({
-        upsert: vi.fn(() => ({
-          then: vi.fn((cb) => cb({ error: null })),
-        })),
-      })),
-    } as never);
-
+  it("rejects emails with HTML-special chars that fail Zod email validation", async () => {
     const request = new NextRequest("http://localhost/api/auth/demo-request", {
       method: "POST",
-      headers: { origin: "https://app.test" },
       body: JSON.stringify({
-        email: "test&visitor@example.com",
-        lang: "es",
+        email: "evil<img>@example.com",
       }),
     });
 
     const response = await POST(request);
-    expect(response.status).toBe(200);
-    const internal = vi.mocked(sendTransactionalEmail).mock.calls[1]?.[0];
-    expect(internal?.html).toContain("test&amp;visitor");
-    expect(internal?.html).not.toContain("test&visitor");
+    const data = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(data.error).toBe(getAppUiCopy("es").validation.emailInvalid);
+    expect(vi.mocked(sendTransactionalEmail)).not.toHaveBeenCalled();
   });
 
   it("returns 400 captcha_required when anti-spam requires captcha", async () => {
