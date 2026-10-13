@@ -1,18 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { getSupabaseUrl, getSupabaseServiceRoleKey } from "@/lib/supabase/keys";
+import {
+  checkRateLimit,
+  getClientIp,
+  getRateLimitMessage,
+} from "@/lib/rate-limit";
+import { localeFromRequest } from "@/lib/app-ui-copy";
+import {
+  getSupabaseClientKey,
+  getSupabaseServiceRoleKey,
+  getSupabaseUrl,
+} from "@/lib/supabase/keys";
+import { reportError } from "@/lib/utils";
 
 /**
- * F1: Update leads.demo_accessed_at when user accesses demo.
- * Called from auth/complete page when demo=1 query param is present.
+ * Mark lead as demo-accessed for the authenticated user.
+ * Requires Bearer access token (hash auth flow sets session client-side first).
+ * Identity comes only from the token — never from a client-supplied email.
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json().catch(() => ({}));
-    const email = typeof body.email === "string" ? body.email.trim() : "";
+    const ip = getClientIp(request);
+    const { allowed, resetAt } = checkRateLimit(ip, "auth");
+    if (!allowed) {
+      const retryAfter = Math.ceil((resetAt - Date.now()) / 1000);
+      return NextResponse.json(
+        { error: getRateLimitMessage(localeFromRequest(request)) },
+        {
+          status: 429,
+          headers: { "Retry-After": String(Math.max(1, retryAfter)) },
+        }
+      );
+    }
 
-    if (!email) {
-      return NextResponse.json({ error: "Email required" }, { status: 400 });
+    const authHeader = request.headers.get("authorization");
+    const bearer = authHeader?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+    if (!bearer) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userClient = createClient(getSupabaseUrl(), getSupabaseClientKey(), {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${bearer}` } },
+    });
+    const {
+      data: { user },
+      error: userError,
+    } = await userClient.auth.getUser(bearer);
+
+    if (userError || !user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const serviceRoleKey = getSupabaseServiceRoleKey();
@@ -27,27 +64,21 @@ export async function POST(request: NextRequest) {
       auth: { persistSession: false },
     });
 
-    // Get the user_id for this email
-    const { data: usersData } = await admin.auth.admin.listUsers();
-    const user = usersData?.users.find((u) => u.email === email);
-    const userId = user?.id;
-
-    // Update leads table with demo_accessed_at and user_id
     const { error } = await admin
       .from("leads")
       .update({
         demo_accessed_at: new Date().toISOString(),
-        user_id: userId,
+        user_id: user.id,
       })
-      .eq("email", email);
+      .eq("email", user.email);
 
     if (error) {
-      console.error("[demo-accessed] update error", error);
+      reportError(error, "[demo-accessed] update error");
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[demo-accessed]", err);
+    reportError(err, "[demo-accessed]");
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

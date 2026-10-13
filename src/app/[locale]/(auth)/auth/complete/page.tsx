@@ -48,14 +48,14 @@ function AuthCompleteContent() {
       .then(async () => {
         if (isDemoAccess) {
           pushDemoAccess();
-          const user = (await supabase.auth.getUser()).data.user;
-          if (user?.email) {
-            await fetch("/api/auth/demo-accessed", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email: user.email }),
-            }).catch(() => {});
-          }
+          await fetch("/api/auth/demo-accessed", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: "{}",
+          }).catch(() => {});
         }
         const origin = window.location.origin;
         window.location.replace(`${origin}${redirectPath}`);
