@@ -6,18 +6,20 @@ comment on column projects.is_example is 'True for the shared example project th
 -- Create index for efficient lookup
 create index if not exists projects_is_example_idx on projects (is_example) where is_example = true;
 
--- Update the existing demo project to be the example project
+-- Update the existing demo project to be the example project (Postgres has no UPDATE ... LIMIT)
 update projects
 set is_example = true
-where user_id = (select id from auth.users where email = 'demo@veta.pro' limit 1)
-  and name = 'Reforma integral de vivienda'
-limit 1;
+where id = (
+  select id
+  from projects
+  where user_id = (select id from auth.users where email = 'demo@veta.pro' limit 1)
+    and name = 'Reforma integral de vivienda'
+  order by created_at asc nulls last
+  limit 1
+);
 
 -- Add RLS policy for all authenticated users to read example projects
 create policy "All authenticated users can view example projects"
   on projects
   for select
   using (is_example = true and auth.uid() is not null);
-
--- Ensure example project doesn't count in project limit checks
--- (The trigger that checks project limits already filters by user_id, so example projects won't count)
