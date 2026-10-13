@@ -1,4 +1,5 @@
 -- F4: Create funnel analytics views (service role only)
+-- Signup timestamp comes from auth.users.created_at (profiles has no created_at).
 
 -- funnel_users: one row per user with activation status
 create or replace view funnel_users as
@@ -6,7 +7,7 @@ select
   p.id as user_id,
   p.email,
   coalesce(pa_recent.plan_code, 'BASE') as plan,
-  p.created_at as signup_at,
+  u.created_at as signup_at,
   latest_event.last_active_at,
   case
     when latest_event.last_active_at is null then null
@@ -20,8 +21,8 @@ select
   (
     exists(select 1 from projects pr where pr.user_id = p.id limit 1)
     and (
-      exists(select 1 from project_budget_lines pbl join projects pr on pr.id = pbl.project_id where pr.user_id = p.id and pbl.created_at <= p.created_at + interval '7 days' limit 1)
-      or exists(select 1 from suppliers s where s.user_id = p.id and s.created_at <= p.created_at + interval '7 days' limit 1)
+      exists(select 1 from project_budget_lines pbl join projects pr on pr.id = pbl.project_id where pr.user_id = p.id and pbl.created_at <= u.created_at + interval '7 days' limit 1)
+      or exists(select 1 from suppliers s where s.user_id = p.id and s.created_at <= u.created_at + interval '7 days' limit 1)
     )
   ) as activated_7d,
   case
@@ -29,8 +30,8 @@ select
     when (
       exists(select 1 from projects pr where pr.user_id = p.id limit 1)
       and (
-        exists(select 1 from project_budget_lines pbl join projects pr on pr.id = pbl.project_id where pr.user_id = p.id and pbl.created_at <= p.created_at + interval '7 days' limit 1)
-        or exists(select 1 from suppliers s where s.user_id = p.id and s.created_at <= p.created_at + interval '7 days' limit 1)
+        exists(select 1 from project_budget_lines pbl join projects pr on pr.id = pbl.project_id where pr.user_id = p.id and pbl.created_at <= u.created_at + interval '7 days' limit 1)
+        or exists(select 1 from suppliers s where s.user_id = p.id and s.created_at <= u.created_at + interval '7 days' limit 1)
       )
     ) then 'activated'
     when latest_event.last_active_at is not null and date_part('day', now() - latest_event.last_active_at)::int <= 30 then 'habitual'
@@ -38,6 +39,7 @@ select
     else 'signup'
   end as stage
 from profiles p
+join auth.users u on u.id = p.id
 left join lateral (
   select max(created_at) as last_active_at
   from user_events ue
@@ -78,13 +80,14 @@ select
   l.marketing_consent,
   l.consent_at,
   p.id as user_id,
-  p.created_at as user_signup_at,
+  u.created_at as user_signup_at,
   case
-    when p.id is not null then extract(epoch from (p.created_at - l.created_at)) / 3600
+    when p.id is not null then extract(epoch from (u.created_at - l.created_at)) / 3600
     else null
   end as hours_to_signup
 from leads l
-left join profiles p on lower(trim(p.email)) = lower(trim(l.email));
+left join profiles p on lower(trim(p.email)) = lower(trim(l.email))
+left join auth.users u on u.id = p.id;
 
 comment on view leads_users is 'Join leads to users by email to track demo-to-signup conversion. Service role only.';
 
