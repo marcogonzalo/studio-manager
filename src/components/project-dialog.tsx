@@ -150,14 +150,17 @@ export function ProjectDialog({
 
   useEffect(() => {
     async function loadClients() {
-      const { data } = await supabase
-        .from("clients")
-        .select("*")
-        .order("full_name");
+      const { data } = user?.id
+        ? await supabase
+            .from("clients")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("full_name")
+        : { data: [] };
       setClients(data || []);
     }
     if (open) loadClients();
-  }, [open, supabase]);
+  }, [open, supabase, user?.id]);
 
   // Sincronizar el valor del cliente cuando la lista se actualiza y hay un cliente pendiente
   useEffect(() => {
@@ -791,10 +794,13 @@ export function ProjectDialog({
           onSuccess={async (clientId) => {
             if (clientId) {
               // Recargar la lista de clientes y seleccionar el nuevo
-              const { data } = await supabase
-                .from("clients")
-                .select("*")
-                .order("full_name");
+              const { data } = user?.id
+                ? await supabase
+                    .from("clients")
+                    .select("*")
+                    .eq("user_id", user.id)
+                    .order("full_name")
+                : { data: [] };
               if (data) {
                 setClients(data);
                 setPendingClientId(clientId);

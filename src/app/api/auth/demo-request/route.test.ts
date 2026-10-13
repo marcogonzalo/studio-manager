@@ -181,6 +181,31 @@ describe("POST /api/auth/demo-request", () => {
     expect(data.error).toBeDefined();
   });
 
+  it("new demo user magic link lands on the dashboard that lists the example project", async () => {
+    const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
+    const { createClient } = await import("@supabase/supabase-js");
+    const admin = mockAdminClient();
+    vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
+    vi.mocked(createClient).mockReturnValue(admin as never);
+
+    const request = new NextRequest("http://localhost/api/auth/demo-request", {
+      method: "POST",
+      headers: { origin: "https://app.test" },
+      body: JSON.stringify({ email: "visitor@example.com" }),
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(200);
+    expect(admin.auth.admin.generateLink).toHaveBeenCalledWith({
+      type: "magiclink",
+      email: "visitor@example.com",
+      options: {
+        redirectTo:
+          "https://app.test/auth/complete?next=%2Fveta-app%2Fdashboard&demo=1",
+      },
+    });
+  });
+
   it("sends visitor email in English when lang is en", async () => {
     const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
     const { createClient } = await import("@supabase/supabase-js");

@@ -36,6 +36,7 @@ import { useOnboardingStatus } from "@/lib/use-onboarding-status";
 import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
+import { visibleProjectsOrFilter } from "@/lib/example-project";
 import { reportError } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 import { toast } from "sonner";
@@ -123,6 +124,12 @@ export default function DashboardPage() {
   const supabase = getSupabaseClient();
 
   const fetchDashboardStats = useCallback(async () => {
+    const userId = user?.id;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    const visibility = visibleProjectsOrFilter(userId);
     try {
       setLoading(true);
 
@@ -132,22 +139,26 @@ export default function DashboardPage() {
       const { data: activeProjects, error: activeError } = await supabase
         .from("projects")
         .select("id, created_at")
-        .eq("status", "active");
+        .eq("status", "active")
+        .eq("is_example", false);
 
       const { data: activeProjectsLastMonth, error: activeLastMonthError } =
         await supabase
           .from("projects")
           .select("id")
           .eq("status", "active")
+          .eq("is_example", false)
           .lt("created_at", firstDayThisMonth.toISOString());
 
       const { data: clients, error: clientsError } = await supabase
         .from("clients")
-        .select("id, created_at");
+        .select("id, created_at")
+        .eq("user_id", userId);
 
       const { data: newClients, error: newClientsError } = await supabase
         .from("clients")
         .select("id")
+        .eq("user_id", userId)
         .gte("created_at", firstDayThisMonth.toISOString());
 
       const { data: additionalCosts, error: additionalCostsError } =
@@ -199,6 +210,7 @@ export default function DashboardPage() {
         .from("projects")
         .select("*, client:clients(full_name)")
         .eq("status", "active")
+        .or(visibility)
         .order("created_at", { ascending: false })
         .limit(5);
 
@@ -268,7 +280,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [supabase, t]);
+  }, [supabase, t, user?.id]);
 
   useEffect(() => {
     void fetchDashboardStats();

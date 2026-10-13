@@ -120,14 +120,17 @@ export function ProductDialog({
 
   useEffect(() => {
     async function loadSuppliers() {
-      const { data } = await supabase
-        .from("suppliers")
-        .select("*")
-        .order("name");
+      const { data } = user?.id
+        ? await supabase
+            .from("suppliers")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("name")
+        : { data: [] };
       setSuppliers(data || []);
     }
     if (open) loadSuppliers();
-  }, [open, supabase]);
+  }, [open, supabase, user?.id]);
 
   // Sincronizar el valor del proveedor cuando la lista se actualiza y hay un proveedor pendiente
   useEffect(() => {
@@ -145,7 +148,13 @@ export function ProductDialog({
 
   const handleSupplierCreated = async (newSupplierId: string) => {
     // Recargar la lista de proveedores
-    const { data } = await supabase.from("suppliers").select("*").order("name");
+    const { data } = user?.id
+      ? await supabase
+          .from("suppliers")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("name")
+      : { data: [] };
     if (data) {
       setSuppliers(data);
       // Establecer el proveedor pendiente para que se seleccione cuando la lista se actualice

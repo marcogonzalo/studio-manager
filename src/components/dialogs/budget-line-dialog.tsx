@@ -160,14 +160,17 @@ export function BudgetLineDialog({
 
   useEffect(() => {
     async function loadSuppliers() {
-      const { data } = await supabase
-        .from("suppliers")
-        .select("*")
-        .order("name");
+      const { data } = user?.id
+        ? await supabase
+            .from("suppliers")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("name")
+        : { data: [] };
       setSuppliers(data || []);
     }
     if (open) void loadSuppliers();
-  }, [open, supabase]);
+  }, [open, supabase, user?.id]);
 
   useEffect(() => {
     if (pendingSupplierId && suppliers.length > 0) {
@@ -183,7 +186,13 @@ export function BudgetLineDialog({
   }, [suppliers, pendingSupplierId, form]);
 
   const handleSupplierCreated = async (newSupplierId: string) => {
-    const { data } = await supabase.from("suppliers").select("*").order("name");
+    const { data } = user?.id
+      ? await supabase
+          .from("suppliers")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("name")
+      : { data: [] };
     if (data) {
       setSuppliers(data);
       setPendingSupplierId(newSupplierId);

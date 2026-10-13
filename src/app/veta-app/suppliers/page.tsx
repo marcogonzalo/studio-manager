@@ -4,6 +4,7 @@ import type { Locale } from "@/i18n/config";
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
+import { useAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -46,6 +47,7 @@ function getWebsiteHostname(website: string): string {
 export default function SuppliersPage() {
   const t = useTranslations("SuppliersPage");
   const locale = useLocale() as Locale;
+  const { user } = useAuth();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchInput, searchDebounced, setSearchInput] = useDebouncedState(
@@ -59,8 +61,17 @@ export default function SuppliersPage() {
   const supabase = getSupabaseClient();
 
   const fetchSuppliers = async () => {
+    if (!user?.id) {
+      setSuppliers([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    let query = supabase.from("suppliers").select("*").order("name");
+    let query = supabase
+      .from("suppliers")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("name");
     if (searchDebounced) query = query.ilike("name", `%${searchDebounced}%`);
     const { data, error } = await query;
     if (!error) setSuppliers(data || []);
@@ -69,8 +80,8 @@ export default function SuppliersPage() {
 
   useEffect(() => {
     fetchSuppliers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when searchDebounced changes only
-  }, [searchDebounced]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch when search or signed-in user changes
+  }, [searchDebounced, user?.id]);
 
   const handleDeleteClick = (s: Supplier) => setDeleteTarget(s);
   const handleEdit = (supplier: Supplier) => {

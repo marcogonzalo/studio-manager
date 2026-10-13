@@ -190,15 +190,21 @@ export function AddItemDialog({
         : loadedProjectTax;
       setProjectTaxRate(safeProjectTax);
       setProjectMultitax(projectData?.multitax === true);
-      const { data: pData } = await supabase
-        .from("products")
-        .select("*, supplier:suppliers(name)")
-        .order("name");
+      const { data: pData } = user?.id
+        ? await supabase
+            .from("products")
+            .select("*, supplier:suppliers(name)")
+            .eq("user_id", user.id)
+            .order("name")
+        : { data: [] };
       setProducts(pData || []);
-      const { data: sData } = await supabase
-        .from("suppliers")
-        .select("*")
-        .order("name");
+      const { data: sData } = user?.id
+        ? await supabase
+            .from("suppliers")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("name")
+        : { data: [] };
       setSuppliers(sData || []);
 
       // Load item data if editing (after products are loaded)
@@ -291,7 +297,7 @@ export function AddItemDialog({
       }
     }
     if (open) loadData();
-  }, [open, projectId, item, spaceId, form, supabase]);
+  }, [open, projectId, item, spaceId, form, supabase, user?.id]);
 
   const handleProductSelect = (productId: string) => {
     const prod = products.find((p) => p.id === productId);
@@ -585,7 +591,13 @@ export function AddItemDialog({
 
   const handleSupplierCreated = async (newSupplierId: string) => {
     // Recargar la lista de proveedores
-    const { data } = await supabase.from("suppliers").select("*").order("name");
+    const { data } = user?.id
+      ? await supabase
+          .from("suppliers")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("name")
+      : { data: [] };
     if (data) {
       setSuppliers(data);
       // Establecer el proveedor pendiente para que se seleccione cuando la lista se actualice
