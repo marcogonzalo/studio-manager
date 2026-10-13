@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { reportError } from "@/lib/utils";
 
 /**
  * Track session start with deduplication (max 1 per user per 30 minutes).
@@ -39,6 +40,6 @@ export async function trackSessionStart(): Promise<void> {
     });
   } catch (error) {
     // Silent fail - don't break user experience if tracking fails
-    console.error("[trackSessionStart]", error);
+    reportError(error, "[trackSessionStart]");
   }
 }

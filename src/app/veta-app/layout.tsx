@@ -18,6 +18,7 @@ import {
 } from "@/lib/formatting";
 import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
 import { createClient } from "@/lib/supabase/server";
+import { trackSessionStart } from "@/lib/track-session";
 import { montserratBrand } from "@/lib/fonts/montserrat-brand";
 import "@/styles/app-overlays.css";
 
@@ -57,6 +58,9 @@ export default async function AppLayout({
   if (!user) {
     redirect("/sign-in?redirect=" + encodeURIComponent(appPath("/dashboard")));
   }
+
+  // Fire-and-forget session tracking (deduped server-side to once per day)
+  void trackSessionStart();
 
   const { data: settings } = await supabase
     .from("account_settings")

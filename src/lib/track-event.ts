@@ -4,6 +4,7 @@
  */
 
 import { createClient } from "@/lib/supabase/server";
+import { reportError } from "@/lib/utils";
 
 export type UserEvent =
   | "signup"
@@ -42,13 +43,13 @@ export async function trackEvent(
     });
 
     if (error) {
-      console.error("[trackEvent]", event, error);
+      reportError(error, `[trackEvent] ${event}`);
       return false;
     }
 
     return true;
   } catch (err) {
-    console.error("[trackEvent]", event, err);
+    reportError(err, `[trackEvent] ${event}`);
     return false;
   }
 }
