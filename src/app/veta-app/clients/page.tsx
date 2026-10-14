@@ -4,7 +4,6 @@ import type { Locale } from "@/i18n/config";
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
-import { useAuth } from "@/components/auth-provider";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,7 +34,6 @@ import type { Client } from "@/types";
 export default function ClientsPage() {
   const t = useTranslations("ClientsPage");
   const locale = useLocale() as Locale;
-  const { user } = useAuth();
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   useOnboardingHighlight("client", !loading);
@@ -50,16 +48,10 @@ export default function ClientsPage() {
   const supabase = getSupabaseClient();
 
   const fetchClients = async () => {
-    if (!user?.id) {
-      setClients([]);
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     let query = supabase
       .from("clients")
       .select("*")
-      .eq("user_id", user.id)
       .order("full_name", { ascending: true });
 
     if (searchDebounced) {
@@ -77,8 +69,8 @@ export default function ClientsPage() {
 
   useEffect(() => {
     fetchClients();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch when search or signed-in user changes
-  }, [searchDebounced, user?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when searchDebounced changes only
+  }, [searchDebounced]);
 
   const handleDeleteClick = (client: Client) => {
     setDeleteTarget(client);

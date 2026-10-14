@@ -45,27 +45,11 @@ vi.mock("@/lib/rate-limit", async (importOriginal) => {
   };
 });
 
-function mockAdminClient(options?: {
-  profileId?: string | null;
-  userEmail?: string;
-  createUser?: ReturnType<typeof vi.fn>;
-}) {
-  const userEmail = options?.userEmail ?? "visitor@example.com";
-  const createUser =
-    options?.createUser ??
-    vi.fn().mockResolvedValue({
-      data: { user: { id: "new-user-id", email: userEmail } },
-      error: null,
-    });
-  const maybeSingle = vi.fn().mockResolvedValue({
-    data: options?.profileId ? { id: options.profileId } : null,
-    error: null,
-  });
-
+function mockAdminClient() {
   return {
     auth: {
       admin: {
-        createUser,
+        createUser: vi.fn(),
         generateLink: vi.fn().mockResolvedValue({
           data: {
             properties: { action_link: "https://example.com/demo-magic" },
@@ -74,22 +58,11 @@ function mockAdminClient(options?: {
         }),
       },
     },
-    from: vi.fn((table: string) => {
-      if (table === "profiles") {
-        return {
-          select: vi.fn().mockReturnValue({
-            ilike: vi.fn().mockReturnValue({
-              maybeSingle,
-            }),
-          }),
-        };
-      }
-      return {
-        upsert: vi.fn(() => ({
-          then: vi.fn((cb) => cb({ error: null })),
-        })),
-      };
-    }),
+    from: vi.fn(() => ({
+      upsert: vi.fn(() => ({
+        then: vi.fn((cb) => cb({ error: null })),
+      })),
+    })),
   };
 }
 
@@ -181,7 +154,7 @@ describe("POST /api/auth/demo-request", () => {
     expect(data.error).toBeDefined();
   });
 
-  it("new demo user magic link lands on the dashboard that lists the example project", async () => {
+  it("links shared demo@veta.pro session with lead token in redirect", async () => {
     const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
     const { createClient } = await import("@supabase/supabase-js");
     const admin = mockAdminClient();
@@ -196,14 +169,19 @@ describe("POST /api/auth/demo-request", () => {
 
     const response = await POST(request);
     expect(response.status).toBe(200);
-    expect(admin.auth.admin.generateLink).toHaveBeenCalledWith({
-      type: "magiclink",
-      email: "visitor@example.com",
-      options: {
-        redirectTo:
-          "https://app.test/auth/complete?next=%2Fveta-app%2Fdashboard&demo=1",
-      },
-    });
+    expect(admin.auth.admin.createUser).not.toHaveBeenCalled();
+    expect(admin.auth.admin.generateLink).toHaveBeenCalledTimes(1);
+    const call = vi.mocked(admin.auth.admin.generateLink).mock.calls[0]?.[0];
+    expect(call?.type).toBe("magiclink");
+    expect(call?.email).toBe("demo@veta.pro");
+    const redirectTo = call?.options?.redirectTo ?? "";
+    expect(redirectTo).toContain(
+      "https://app.test/auth/complete?next=%2Fveta-app%2Fdashboard&demo=1&lead="
+    );
+    const lead = new URL(redirectTo).searchParams.get("lead");
+    expect(lead).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    );
   });
 
   it("sends visitor email in English when lang is en", async () => {
@@ -231,26 +209,6 @@ describe("POST /api/auth/demo-request", () => {
     expect(internal?.subject).toContain("Solicitud de demo");
     expect(internal?.html).toContain("Idioma (locale): en");
     expect(internal?.html).not.toContain("Visitor");
-  });
-
-  it("reuses existing profile id and skips createUser", async () => {
-    const { getSupabaseServiceRoleKey } = await import("@/lib/supabase/keys");
-    const { createClient } = await import("@supabase/supabase-js");
-    const createUser = vi.fn();
-    vi.mocked(getSupabaseServiceRoleKey).mockReturnValue("test-service-role");
-    vi.mocked(createClient).mockReturnValue(
-      mockAdminClient({ profileId: "existing-id", createUser }) as never
-    );
-
-    const request = new NextRequest("http://localhost/api/auth/demo-request", {
-      method: "POST",
-      headers: { origin: "https://app.test" },
-      body: JSON.stringify({ email: "Visitor@Example.com" }),
-    });
-
-    const response = await POST(request);
-    expect(response.status).toBe(200);
-    expect(createUser).not.toHaveBeenCalled();
   });
 
   it("rejects emails with HTML-special chars that fail Zod email validation", async () => {

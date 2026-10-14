@@ -1,7 +1,8 @@
 -- F4: Create funnel analytics views (service role only)
 -- Signup timestamp comes from auth.users.created_at (profiles has no created_at).
+-- Two-route activation: PRIMARY (project + budget/supplier within 7 days) OR
+-- SECONDARY (2+ sessions + 1+ project updates within 30 days of signup).
 
--- funnel_users: one row per user with activation status
 create or replace view funnel_users as
 select
   p.id as user_id,
@@ -13,11 +14,13 @@ select
     when latest_event.last_active_at is null then null
     else date_part('day', now() - latest_event.last_active_at)::int
   end as days_since_active,
+
   exists(select 1 from projects pr where pr.user_id = p.id limit 1) as has_project,
   (
     exists(select 1 from project_budget_lines pbl join projects pr on pr.id = pbl.project_id where pr.user_id = p.id limit 1)
     or exists(select 1 from suppliers s where s.user_id = p.id limit 1)
   ) as has_budget_or_supplier,
+
   (
     exists(select 1 from projects pr where pr.user_id = p.id limit 1)
     and (
@@ -25,6 +28,85 @@ select
       or exists(select 1 from suppliers s where s.user_id = p.id and s.created_at <= u.created_at + interval '7 days' limit 1)
     )
   ) as activated_7d,
+
+  (
+    select count(*)
+    from user_events ue
+    where ue.user_id = p.id
+      and ue.event = 'login'
+      and ue.created_at >= u.created_at
+      and ue.created_at <= u.created_at + interval '30 days'
+  ) as sessions_30d,
+
+  (
+    select count(*)
+    from user_events ue
+    where ue.user_id = p.id
+      and ue.event = 'project_updated'
+      and ue.created_at >= u.created_at
+      and ue.created_at <= u.created_at + interval '30 days'
+  ) as project_updates_30d,
+
+  (
+    (
+      exists(select 1 from projects pr where pr.user_id = p.id limit 1)
+      and (
+        exists(select 1 from project_budget_lines pbl join projects pr on pr.id = pbl.project_id where pr.user_id = p.id and pbl.created_at <= u.created_at + interval '7 days' limit 1)
+        or exists(select 1 from suppliers s where s.user_id = p.id and s.created_at <= u.created_at + interval '7 days' limit 1)
+      )
+    )
+    or
+    (
+      (
+        select count(*)
+        from user_events ue
+        where ue.user_id = p.id
+          and ue.event = 'login'
+          and ue.created_at >= u.created_at
+          and ue.created_at <= u.created_at + interval '30 days'
+      ) >= 2
+      and
+      (
+        select count(*)
+        from user_events ue
+        where ue.user_id = p.id
+          and ue.event = 'project_updated'
+          and ue.created_at >= u.created_at
+          and ue.created_at <= u.created_at + interval '30 days'
+      ) >= 1
+    )
+  ) as activated,
+
+  case
+    when (
+      exists(select 1 from projects pr where pr.user_id = p.id limit 1)
+      and (
+        exists(select 1 from project_budget_lines pbl join projects pr on pr.id = pbl.project_id where pr.user_id = p.id and pbl.created_at <= u.created_at + interval '7 days' limit 1)
+        or exists(select 1 from suppliers s where s.user_id = p.id and s.created_at <= u.created_at + interval '7 days' limit 1)
+      )
+    ) then 'primary'
+    when (
+      (
+        select count(*)
+        from user_events ue
+        where ue.user_id = p.id
+          and ue.event = 'login'
+          and ue.created_at >= u.created_at
+          and ue.created_at <= u.created_at + interval '30 days'
+      ) >= 2
+      and
+      (
+        select count(*)
+        from user_events ue
+        where ue.user_id = p.id
+          and ue.event = 'project_updated'
+          and ue.created_at >= u.created_at
+          and ue.created_at <= u.created_at + interval '30 days'
+      ) >= 1
+    ) then 'secondary'
+    else null
+  end as activation_route,
+
   case
     when not exists(select 1 from projects pr where pr.user_id = p.id limit 1) then 'signup'
     when (
@@ -33,6 +115,24 @@ select
         exists(select 1 from project_budget_lines pbl join projects pr on pr.id = pbl.project_id where pr.user_id = p.id and pbl.created_at <= u.created_at + interval '7 days' limit 1)
         or exists(select 1 from suppliers s where s.user_id = p.id and s.created_at <= u.created_at + interval '7 days' limit 1)
       )
+    ) or (
+      (
+        select count(*)
+        from user_events ue
+        where ue.user_id = p.id
+          and ue.event = 'login'
+          and ue.created_at >= u.created_at
+          and ue.created_at <= u.created_at + interval '30 days'
+      ) >= 2
+      and
+      (
+        select count(*)
+        from user_events ue
+        where ue.user_id = p.id
+          and ue.event = 'project_updated'
+          and ue.created_at >= u.created_at
+          and ue.created_at <= u.created_at + interval '30 days'
+      ) >= 1
     ) then 'activated'
     when latest_event.last_active_at is not null and date_part('day', now() - latest_event.last_active_at)::int <= 30 then 'habitual'
     when coalesce(pa_recent.plan_code, 'BASE') in ('PRO', 'STUDIO') then 'paid'
@@ -56,9 +156,8 @@ left join lateral (
   limit 1
 ) pa_recent on true;
 
-comment on view funnel_users is 'Funnel analytics: one row per user with plan, activation status, and stage. Service role only.';
+comment on view funnel_users is 'Funnel analytics with two-route activation: PRIMARY (first project + budget/supplier within 7 days) OR SECONDARY (2+ sessions + 1+ project updates within 30 days of signup). Sessions and project_updates counted from signup date. Service role only.';
 
--- leads_users: join leads to users by email to track demo-to-signup conversion
 create or replace view leads_users as
 select
   l.id as lead_id,
@@ -91,6 +190,5 @@ left join auth.users u on u.id = p.id;
 
 comment on view leads_users is 'Join leads to users by email to track demo-to-signup conversion. Service role only.';
 
--- Grant select on views to service role only (views inherit table RLS by default, but explicit grant for clarity)
 grant select on funnel_users to service_role;
 grant select on leads_users to service_role;

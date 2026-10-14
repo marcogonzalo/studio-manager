@@ -5,8 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
-import { useAuth } from "@/components/auth-provider";
-import { visibleProjectsOrFilter } from "@/lib/example-project";
 import { getDemoAccountMessage } from "@/lib/utils";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
@@ -75,7 +73,6 @@ type SortOption = "status" | "created_at" | "end_date";
 export default function ProjectsPage() {
   const t = useTranslations("ProjectsPage");
   const locale = useLocale() as Locale;
-  const { user } = useAuth();
   const projectStatusLabel = useProjectStatusLabel();
   const { formatDate } = useAppFormatting();
   const [projects, setProjects] = useState<Project[]>([]);
@@ -149,16 +146,10 @@ export default function ProjectsPage() {
   }, [projects, search, statusFilter, sortBy]);
 
   const fetchProjects = async () => {
-    if (!user?.id) {
-      setProjects([]);
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     const { data, error } = await supabase
       .from("projects")
-      .select("*, client:clients(full_name)")
-      .or(visibleProjectsOrFilter(user.id));
+      .select("*, client:clients(full_name)");
 
     if (error) {
       toast.error(t("toastLoadError"), { id: "projects-load" });
@@ -170,8 +161,8 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     fetchProjects();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch when the signed-in user is known
-  }, [user?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run on mount only
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -282,29 +273,27 @@ export default function ProjectsPage() {
                       {project.description}
                     </CardDescription>
                   </div>
-                  {project.is_example ? null : (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="shrink-0"
-                          aria-label={t("actionsAria")}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteClick(project)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          {t("delete")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0"
+                        aria-label={t("actionsAria")}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleDeleteClick(project)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {t("delete")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardHeader>
                 <CardContent>
                   <div className="text-muted-foreground space-y-2 text-sm">

@@ -17,7 +17,8 @@
 - **`user_events`:** Product engagement. Client components call `trackUserEvent` (server action); RSC/route handlers call `trackEvent`. Never import the server Supabase client in client components for tracking.
 - **Tracking never throws:** Failures go through `reportError` and must not block UX.
 - **Event props:** Pass `project_id` (or `supplier_id`) when the event is scoped; empty props weaken activation analysis.
-- **`leads`:** Service role only. Browser must not write leads; capture via `demo-request` / auth APIs. Demo conversion stamp via Bearer on `demo-accessed`.
+- **`leads`:** Service role only. Browser must not write leads; capture via `demo-request` / auth APIs. Demo access stamp via Bearer on `demo-accessed` plus `leads.demo_access_token` (shared `demo@veta.pro` session cannot match by visitor email).
+- **Sample project on signup:** `ensure_profile_and_account_settings_from_auth` calls `seed_sample_project` once for brand-new non-demo users with zero projects (ES/EN literals, no images). Counts toward Base active-project limit; no backfill; no re-seed after delete.
 - **Attribution:** Cookie `veta_attribution` (90d) only when analytics consent is present; demo-request and sign-up attach UTMs to leads.
 - **Signup timestamp:** Use `auth.users.created_at` in SQL views — never invent `profiles.created_at`.
 - **Views:** `funnel_users` / `leads_users` are service_role analytics surfaces (no end-user dashboard yet). Query them with the service role for activation/conversion.

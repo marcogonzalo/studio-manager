@@ -67,6 +67,7 @@ import { getDisplayName } from "@/lib/display-name";
 import { appPath } from "@/lib/app-paths";
 import { getReportBugUrl } from "@/lib/report-bug";
 import { AuthConfirmedTracker } from "@/components/gtm/auth-confirmed-tracker";
+import { DemoAccountBanner } from "@/components/demo-account-banner";
 
 function AppLayoutSkeleton() {
   return (
@@ -661,8 +662,10 @@ function SidebarContent({
 
 export default function AppLayoutClient({
   children,
+  isDemoAccount = false,
 }: {
   children: React.ReactNode;
+  isDemoAccount?: boolean;
 }) {
   const tLayout = useTranslations("AppLayout");
   const tCrumb = useTranslations("AppSettingsBreadcrumb");
@@ -745,112 +748,115 @@ export default function AppLayoutClient({
           onWelcomeComplete={handleOnboardingWelcomeComplete}
         />
       )}
-      <div className="bg-background text-foreground flex min-h-screen">
-        {/* Desktop Sidebar */}
-        <SidebarContent
-          collapsed={isCollapsed}
-          user={user}
-          profileFullName={profileFullName}
-          effectivePlan={effectivePlan}
-          signOut={signOut}
-          pathname={pathname}
-          setIsMobileOpen={setIsMobileOpen}
-          isCollapsed={isCollapsed}
-          setIsCollapsed={setIsCollapsed}
-          className={cn(
-            "z-50 hidden shadow-sm transition-all duration-300 md:fixed md:inset-y-0 md:flex md:flex-col print:hidden",
-            isCollapsed ? "md:w-16" : "md:w-64"
-          )}
-        />
-
-        {/* Mobile nav sheet */}
-        <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
-          <SheetContent
-            id="mobile-nav-sheet"
-            side="right"
-            className="border-border w-64 border-l p-0 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
-            closeLabel={tLayout("closeMenu")}
-          >
-            <SheetHeader className="sr-only">
-              <SheetTitle>{tLayout("navMenuTitle")}</SheetTitle>
-              <SheetDescription>
-                {tLayout("navMenuDescription")}
-              </SheetDescription>
-            </SheetHeader>
-            <SidebarContent
-              collapsed={false}
-              user={user}
-              profileFullName={profileFullName}
-              effectivePlan={effectivePlan}
-              signOut={signOut}
-              pathname={pathname}
-              setIsMobileOpen={setIsMobileOpen}
-              isCollapsed={isCollapsed}
-              setIsCollapsed={setIsCollapsed}
-            />
-          </SheetContent>
-        </Sheet>
-
-        <div
-          className={cn(
-            "flex w-full min-w-0 flex-1 flex-col transition-all duration-300 print:ml-0",
-            isCollapsed ? "md:ml-16" : "md:ml-64"
-          )}
-        >
-          <main
-            id="main-content"
-            tabIndex={-1}
-            className={cn(
-              "w-full min-w-0 flex-1 overflow-x-hidden px-4 pt-4 transition-all duration-300 md:p-5 print:p-0",
-              "pb-[calc(4rem+max(1rem,env(safe-area-inset-bottom,0px)))] md:pb-5",
-              "animate-in fade-in slide-in-from-bottom-4 duration-500"
-            )}
-          >
-            {(pathname.includes("/settings") ||
-              pathname === appPath("/settings/customization")) && (
-              <nav
-                aria-label={tLayout("breadcrumbAria")}
-                className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"
-              >
-                <ol className="flex flex-wrap items-center gap-1.5">
-                  {getSettingsBreadcrumbs(pathname, tCrumb).map((item, i) => (
-                    <li key={i} className="flex items-center gap-1.5">
-                      {i > 0 && (
-                        <ChevronRight
-                          className="h-4 w-4 shrink-0 opacity-60"
-                          aria-hidden
-                        />
-                      )}
-                      {item.href ? (
-                        <Link
-                          href={item.href}
-                          className="hover:text-foreground transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      ) : (
-                        <span
-                          className="text-foreground font-medium"
-                          aria-current="page"
-                        >
-                          {item.label}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              </nav>
-            )}
-            {children}
-          </main>
-
-          <MobileBottomNav
+      <div className="bg-background text-foreground flex min-h-screen flex-col">
+        {isDemoAccount ? <DemoAccountBanner /> : null}
+        <div className="flex min-h-0 flex-1">
+          {/* Desktop Sidebar */}
+          <SidebarContent
+            collapsed={isCollapsed}
+            user={user}
+            profileFullName={profileFullName}
+            effectivePlan={effectivePlan}
+            signOut={signOut}
             pathname={pathname}
-            isMenuOpen={isMobileOpen}
-            onMenuOpen={() => setIsMobileOpen(true)}
-            tNav={tNav}
-            tLayout={tLayout}
+            setIsMobileOpen={setIsMobileOpen}
+            isCollapsed={isCollapsed}
+            setIsCollapsed={setIsCollapsed}
+            className={cn(
+              "z-50 hidden shadow-sm transition-all duration-300 md:fixed md:inset-y-0 md:flex md:flex-col print:hidden",
+              isCollapsed ? "md:w-16" : "md:w-64"
+            )}
           />
+
+          {/* Mobile nav sheet */}
+          <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
+            <SheetContent
+              id="mobile-nav-sheet"
+              side="right"
+              className="border-border w-64 border-l p-0 pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
+              closeLabel={tLayout("closeMenu")}
+            >
+              <SheetHeader className="sr-only">
+                <SheetTitle>{tLayout("navMenuTitle")}</SheetTitle>
+                <SheetDescription>
+                  {tLayout("navMenuDescription")}
+                </SheetDescription>
+              </SheetHeader>
+              <SidebarContent
+                collapsed={false}
+                user={user}
+                profileFullName={profileFullName}
+                effectivePlan={effectivePlan}
+                signOut={signOut}
+                pathname={pathname}
+                setIsMobileOpen={setIsMobileOpen}
+                isCollapsed={isCollapsed}
+                setIsCollapsed={setIsCollapsed}
+              />
+            </SheetContent>
+          </Sheet>
+
+          <div
+            className={cn(
+              "flex w-full min-w-0 flex-1 flex-col transition-all duration-300 print:ml-0",
+              isCollapsed ? "md:ml-16" : "md:ml-64"
+            )}
+          >
+            <main
+              id="main-content"
+              tabIndex={-1}
+              className={cn(
+                "w-full min-w-0 flex-1 overflow-x-hidden px-4 pt-4 transition-all duration-300 md:p-5 print:p-0",
+                "pb-[calc(4rem+max(1rem,env(safe-area-inset-bottom,0px)))] md:pb-5",
+                "animate-in fade-in slide-in-from-bottom-4 duration-500"
+              )}
+            >
+              {(pathname.includes("/settings") ||
+                pathname === appPath("/settings/customization")) && (
+                <nav
+                  aria-label={tLayout("breadcrumbAria")}
+                  className="text-muted-foreground mb-4 flex items-center gap-1.5 text-sm md:mb-5"
+                >
+                  <ol className="flex flex-wrap items-center gap-1.5">
+                    {getSettingsBreadcrumbs(pathname, tCrumb).map((item, i) => (
+                      <li key={i} className="flex items-center gap-1.5">
+                        {i > 0 && (
+                          <ChevronRight
+                            className="h-4 w-4 shrink-0 opacity-60"
+                            aria-hidden
+                          />
+                        )}
+                        {item.href ? (
+                          <Link
+                            href={item.href}
+                            className="hover:text-foreground transition-colors"
+                          >
+                            {item.label}
+                          </Link>
+                        ) : (
+                          <span
+                            className="text-foreground font-medium"
+                            aria-current="page"
+                          >
+                            {item.label}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </nav>
+              )}
+              {children}
+            </main>
+
+            <MobileBottomNav
+              pathname={pathname}
+              isMenuOpen={isMobileOpen}
+              onMenuOpen={() => setIsMobileOpen(true)}
+              tNav={tNav}
+              tLayout={tLayout}
+            />
+          </div>
         </div>
       </div>
     </TooltipProvider>

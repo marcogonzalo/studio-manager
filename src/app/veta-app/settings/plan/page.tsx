@@ -140,8 +140,7 @@ export default function SettingsPlanPage() {
             .from("projects")
             .select("id")
             .eq("user_id", user.id)
-            .eq("status", "active")
-            .eq("is_example", false),
+            .eq("status", "active"),
           supabase.from("clients").select("id").eq("user_id", user.id),
           supabase.from("suppliers").select("id").eq("user_id", user.id),
           supabase.from("products").select("id").eq("user_id", user.id),

@@ -12,6 +12,7 @@ import {
   getCategoryOptions,
   isCostCategory,
   isDemoAccountError,
+  getProjectLimitMessage,
   isPlanLimitExceeded,
   isPlanFeatureUnavailable,
   getPlanErrorType,
@@ -149,6 +150,22 @@ describe("isPlanLimitExceeded", () => {
     expect(isPlanLimitExceeded(new Error("Other error"))).toBe(false);
     expect(isPlanLimitExceeded({ message: "Other" })).toBe(false);
     expect(isPlanLimitExceeded(null)).toBe(false);
+  });
+});
+
+describe("getProjectLimitMessage", () => {
+  it("returns English project-limit copy", () => {
+    const msg = getProjectLimitMessage("en");
+    expect(msg.title).toBe("Project limit");
+    expect(msg.description).toContain("active project limit");
+    expect(msg.viewPlans).toBe("View plans");
+  });
+
+  it("returns Spanish project-limit copy", () => {
+    const msg = getProjectLimitMessage("es");
+    expect(msg.title).toBe("Límite de proyectos");
+    expect(msg.description).toContain("proyectos activos");
+    expect(msg.viewPlans).toBe("Ver planes");
   });
 });
 

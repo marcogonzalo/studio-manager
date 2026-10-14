@@ -84,7 +84,11 @@ export default async function AppLayout({
       <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
         <AppFormattingProvider lang={locale} dateFormat={dateFormat}>
           <AuthProvider>
-            <AppLayoutClient>{children}</AppLayoutClient>
+            <AppLayoutClient
+              isDemoAccount={user.email?.toLowerCase() === "demo@veta.pro"}
+            >
+              {children}
+            </AppLayoutClient>
           </AuthProvider>
         </AppFormattingProvider>
       </NextIntlClientProvider>

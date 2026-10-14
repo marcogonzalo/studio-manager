@@ -19,6 +19,7 @@ function AuthCompleteContent() {
       searchParams.get("next")?.replace(/^\/+/, "") || appPath("/dashboard");
     const redirectPath = next.startsWith("/") ? next : `/${next}`;
     const isDemoAccess = searchParams.get("demo") === "1";
+    const leadToken = searchParams.get("lead");
     const pathname =
       typeof window !== "undefined" ? window.location.pathname : "";
     const localeMatch = pathname.match(/^\/(en|es)(?:\/|$)/);
@@ -54,7 +55,7 @@ function AuthCompleteContent() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${accessToken}`,
             },
-            body: "{}",
+            body: JSON.stringify(leadToken ? { lead: leadToken } : {}),
           }).catch(() => {});
         }
         const origin = window.location.origin;

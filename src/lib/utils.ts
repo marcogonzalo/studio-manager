@@ -113,6 +113,16 @@ export function getPlanErrorMessages(lang: Locale = defaultLocale) {
   } as const;
 }
 
+/** Precise copy when the active-projects plan limit is hit. */
+export function getProjectLimitMessage(lang: Locale = defaultLocale) {
+  const copy = getAppUiCopy(lang).errors;
+  return {
+    title: copy.projectLimitTitle,
+    description: copy.projectLimitDescription,
+    viewPlans: copy.viewPlans,
+  } as const;
+}
+
 /** @deprecated Use getPlanErrorMessages(lang). Kept for tests expecting Spanish. */
 export const PLAN_ERROR_MESSAGES = getPlanErrorMessages("es");
 

@@ -4,7 +4,6 @@ import type { Locale } from "@/i18n/config";
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
-import { useAuth } from "@/components/auth-provider";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -38,7 +37,6 @@ import type { Product } from "@/types";
 export default function CatalogPage() {
   const t = useTranslations("CatalogPage");
   const locale = useLocale() as Locale;
-  const { user } = useAuth();
   const { formatCurrency } = useAppFormatting();
   const profileDefaults = useProfileDefaults();
   const [products, setProducts] = useState<Product[]>([]);
@@ -56,16 +54,10 @@ export default function CatalogPage() {
   const supabase = getSupabaseClient();
 
   const fetchProducts = async () => {
-    if (!user?.id) {
-      setProducts([]);
-      setLoading(false);
-      return;
-    }
     setLoading(true);
     let query = supabase
       .from("products")
       .select("*, supplier:suppliers(name)")
-      .eq("user_id", user.id)
       .order("name");
     if (searchDebounced)
       query = query.or(
@@ -78,8 +70,8 @@ export default function CatalogPage() {
 
   useEffect(() => {
     fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch when search or signed-in user changes
-  }, [searchDebounced, user?.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run when searchDebounced changes only
+  }, [searchDebounced]);
 
   const handleDeleteClick = (product: Product) => setDeleteTarget(product);
 

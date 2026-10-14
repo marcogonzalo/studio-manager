@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import {
   checkRateLimit,
@@ -13,10 +14,15 @@ import {
 } from "@/lib/supabase/keys";
 import { reportError } from "@/lib/utils";
 
+const DEMO_EMAIL = "demo@veta.pro";
+
+const demoAccessedBodySchema = z.object({
+  lead: z.string().uuid(),
+});
+
 /**
- * Mark lead as demo-accessed for the authenticated user.
- * Requires Bearer access token (hash auth flow sets session client-side first).
- * Identity comes only from the token — never from a client-supplied email.
+ * Mark lead as demo-accessed for the shared demo session.
+ * Requires Bearer access token for demo@veta.pro plus a lead token from the redirect.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -52,6 +58,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (user.email.toLowerCase() !== DEMO_EMAIL) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const parsed = demoAccessedBodySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid lead token" },
+        { status: 400 }
+      );
+    }
+
     const serviceRoleKey = getSupabaseServiceRoleKey();
     if (!serviceRoleKey) {
       return NextResponse.json(
@@ -68,9 +87,9 @@ export async function POST(request: NextRequest) {
       .from("leads")
       .update({
         demo_accessed_at: new Date().toISOString(),
-        user_id: user.id,
       })
-      .eq("email", user.email);
+      .eq("demo_access_token", parsed.data.lead)
+      .is("demo_accessed_at", null);
 
     if (error) {
       reportError(error, "[demo-accessed] update error");

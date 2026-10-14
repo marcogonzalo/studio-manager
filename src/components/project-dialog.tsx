@@ -45,6 +45,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { trackUserEvent } from "@/app/actions/track-event";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { usePlanCapability } from "@/lib/use-plan-capability";
@@ -52,10 +53,13 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import type { Client, Project, ProjectStatus } from "@/types";
 import { ClientDialog } from "@/components/dialogs/client-dialog";
+import { appPath } from "@/lib/app-paths";
 import {
   CURRENCIES,
   getDemoAccountMessage,
   getPlanErrorMessage,
+  getProjectLimitMessage,
+  isPlanLimitExceeded,
 } from "@/lib/utils";
 
 function buildFormSchema(t: ReturnType<typeof useTranslations>) {
@@ -105,6 +109,7 @@ export function ProjectDialog({
 }: ProjectDialogProps) {
   const t = useTranslations("DialogProject");
   const locale = useLocale() as Locale;
+  const router = useRouter();
   const formSchema = buildFormSchema(t);
   const { user, effectivePlan } = useAuth();
   const profileDefaults = useProfileDefaults();
@@ -150,17 +155,14 @@ export function ProjectDialog({
 
   useEffect(() => {
     async function loadClients() {
-      const { data } = user?.id
-        ? await supabase
-            .from("clients")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("full_name")
-        : { data: [] };
+      const { data } = await supabase
+        .from("clients")
+        .select("*")
+        .order("full_name");
       setClients(data || []);
     }
     if (open) loadClients();
-  }, [open, supabase, user?.id]);
+  }, [open, supabase]);
 
   // Sincronizar el valor del cliente cuando la lista se actualiza y hay un cliente pendiente
   useEffect(() => {
@@ -384,6 +386,17 @@ export function ProjectDialog({
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,
+        });
+        return;
+      }
+      if (isPlanLimitExceeded(error)) {
+        const projectLimit = getProjectLimitMessage(locale);
+        toast.error(`${projectLimit.title}. ${projectLimit.description}`, {
+          duration: 8000,
+          action: {
+            label: projectLimit.viewPlans,
+            onClick: () => router.push(appPath("/settings/plan")),
+          },
         });
         return;
       }
@@ -794,13 +807,10 @@ export function ProjectDialog({
           onSuccess={async (clientId) => {
             if (clientId) {
               // Recargar la lista de clientes y seleccionar el nuevo
-              const { data } = user?.id
-                ? await supabase
-                    .from("clients")
-                    .select("*")
-                    .eq("user_id", user.id)
-                    .order("full_name")
-                : { data: [] };
+              const { data } = await supabase
+                .from("clients")
+                .select("*")
+                .order("full_name");
               if (data) {
                 setClients(data);
                 setPendingClientId(clientId);

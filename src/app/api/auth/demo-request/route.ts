@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
@@ -23,6 +24,8 @@ import { appPath } from "@/lib/app-paths";
 import { resolveMagicLinkAntiSpam } from "@/lib/anti-spam";
 import { getMagicLinkAntiSpamConfig } from "@/lib/auth/magic-link-anti-spam-config";
 import { reportError } from "@/lib/utils";
+
+const DEMO_EMAIL = "demo@veta.pro";
 
 /** RFC 5321 max length; caps input before Zod email check (ReDoS / abuse mitigation). */
 const DEMO_REQUEST_EMAIL_MAX = 254;
@@ -155,47 +158,15 @@ export async function POST(request: NextRequest) {
       auth: { persistSession: false },
     });
 
+    const demoAccessToken = randomUUID();
     const origin = request.headers.get("origin") || request.nextUrl.origin;
     const dashboardPath = appPath("/dashboard");
-    const redirectTo = `${origin}/auth/complete?next=${encodeURIComponent(dashboardPath)}&demo=1`;
-
-    // Narrow lookup via profiles (avoids paginated listUsers)
-    const { data: existingProfile } = await admin
-      .from("profiles")
-      .select("id")
-      .ilike("email", email)
-      .maybeSingle();
-
-    let userId: string;
-
-    if (existingProfile?.id) {
-      userId = existingProfile.id;
-    } else {
-      const { data: newUser, error: createError } =
-        await admin.auth.admin.createUser({
-          email,
-          email_confirm: true,
-          user_metadata: {
-            full_name: name,
-            demo_user: true,
-          },
-        });
-
-      if (createError || !newUser.user) {
-        reportError(createError, "[demo-request] createUser error");
-        return NextResponse.json(
-          { error: "No se pudo crear la cuenta de demo. Inténtalo más tarde." },
-          { status: 503 }
-        );
-      }
-
-      userId = newUser.user.id;
-    }
+    const redirectTo = `${origin}/auth/complete?next=${encodeURIComponent(dashboardPath)}&demo=1&lead=${encodeURIComponent(demoAccessToken)}`;
 
     const { data: linkData, error: linkError } =
       await admin.auth.admin.generateLink({
         type: "magiclink",
-        email,
+        email: DEMO_EMAIL,
         options: { redirectTo },
       });
 
@@ -262,7 +233,9 @@ export async function POST(request: NextRequest) {
           landing_path: landingPath,
           marketing_consent: marketingConsent,
           consent_at: marketingConsent ? new Date().toISOString() : null,
-          user_id: userId,
+          user_id: null,
+          demo_access_token: demoAccessToken,
+          demo_accessed_at: null,
         },
         { onConflict: "email" }
       )
