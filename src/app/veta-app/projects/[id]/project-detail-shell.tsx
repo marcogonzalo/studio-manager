@@ -30,6 +30,7 @@ import {
 import { toast } from "sonner";
 import { FileText, Eye, EyeOff } from "lucide-react";
 import { ProjectShareDialog } from "@/components/dialogs/project-share-dialog";
+import { SoftPill } from "@/components/ui/soft-pill";
 import { ProjectContext } from "./project-context";
 import { cn } from "@/lib/utils";
 
@@ -340,16 +341,14 @@ function ProjectDetailShellContent({
                 </SelectContent>
               </Select>
             </div>
-            <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize">
+            <SoftPill className="capitalize">
               {projectStatusLabel(project.status)}
-            </span>
+            </SoftPill>
             {isReadOnly && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="bg-muted text-muted-foreground inline-flex cursor-help items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-                      {t("readOnly")}
-                    </span>
+                    <SoftPill className="cursor-help">{t("readOnly")}</SoftPill>
                   </TooltipTrigger>
                   <TooltipContent variant="tertiary">
                     {t("readOnlyDescription")}
@@ -357,11 +356,7 @@ function ProjectDetailShellContent({
                 </Tooltip>
               </TooltipProvider>
             )}
-            {project.phase && (
-              <span className="bg-muted text-muted-foreground inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-                {phaseLabel(project.phase)}
-              </span>
-            )}
+            {project.phase && <SoftPill>{phaseLabel(project.phase)}</SoftPill>}
           </div>
           <div className="flex w-full shrink-0 justify-center gap-2 sm:w-auto sm:justify-end">
             <Button
