@@ -26,7 +26,6 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { pushSignUp } from "@/lib/gtm";
 import { loadAttributionCookie } from "@/lib/attribution";
 import { CaptchaGuard } from "@/lib/anti-spam/react";
 import { translateMagicLinkErrorCode } from "@/lib/auth/magic-link-error-i18n";
@@ -109,13 +108,7 @@ export function SignUpForm({
   }, [watchedEmail]);
 
   function applySuccessAfterMagicLink() {
-    const billingPeriod =
-      billingParam?.toLowerCase() === "annual" ? "annual" : "monthly";
-    pushSignUp({
-      method: "magic_link",
-      plan_code: selectedPlan,
-      billing_period: billingPeriod,
-    });
+    // Conversion GTM (sign_up) fires on confirmation click via AuthConfirmedTracker.
     setEmailSent(true);
     toast.success(t("toastSuccess"));
   }

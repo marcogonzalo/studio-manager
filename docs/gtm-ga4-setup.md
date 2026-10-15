@@ -44,8 +44,8 @@ Sustituye `GTM-XXXXXXX` por el ID de tu contenedor de Google Tag Manager (Admin 
 | `begin_checkout` | Se envía junto con `select_plan` (mismo clic). Incluye `plan_code`, `billing_period`, `currency`.                                                                 | Evento estándar GA4 para inicio de checkout.                                                                          |
 | `cta_click`      | Clic en CTAs principales: header (Iniciar sesión, Comenzar gratis), hero, beneficios, bloques CTA finales. Incluye `cta_location`, `cta_text`, `destination_url`. | User journey; ver qué CTAs generan más tráfico hacia auth/pricing.                                                    |
 | `contact`        | Envío correcto del formulario de contacto (`/contact`).                                                                                                           | Lead; conversión.                                                                                                     |
-| `sign_up`        | Usuario envía el formulario de registro y recibe magic link (`/sign-up`). Parámetros: `method`, `plan_code` (opcional).                                           | Conversión registro.                                                                                                  |
-| `login`          | Usuario solicita enlace de inicio de sesión (`/sign-in`). Parámetro: `method`.                                                                                    | Engagement; inicio de sesión.                                                                                         |
+| `sign_up` / `sign_up_confirmed` | Usuario **abre el enlace** de confirmación de registro (cuenta efectiva). Parámetros: `method`, `plan_code`, `billing_period`, `confirmed: true`. | Conversión registro (no al enviar el formulario). |
+| `login` / `login_confirmed`     | Usuario **abre el magic link** de inicio de sesión. Parámetro: `method`, `confirmed: true`.                                                       | Engagement; sesión iniciada.                      |
 | `demo_access`    | Usuario completa el acceso a la demo (entra tras hacer clic en el magic link de demo). Se envía en `/auth/complete` cuando la URL incluye `?demo=1`.              | Conversión; usuario que realmente entró a la demo.                                                                    |
 
 Nombres de evento y parámetros están pensados para usarse tanto en GA4 (eventos estándar y personalizados) como en disparadores y variables de GTM.
@@ -74,8 +74,10 @@ Nombres de evento y parámetros están pensados para usarse tanto en GA4 (evento
 El layout `(auth)` incluye GTM (mismo snippet y `GtmPageView`). Se envían:
 
 - **page_view** en cada vista de `/sign-in` y `/sign-up`.
-- **sign_up** cuando el usuario envía el formulario de registro y se envía correctamente el magic link (parámetros: `method: 'magic_link'`, `plan_code` si viene por URL).
-- **login** cuando el usuario envía el formulario de inicio de sesión y se envía correctamente el magic link (`method: 'magic_link'`).
+- **sign_up** + **sign_up_confirmed** cuando el usuario **confirma** el correo (callback → `?auth_confirmed=signup`). Un solo enlace activa la cuenta e inicia sesión; no hay evento `sign_up` al enviar el formulario.
+- **login** + **login_confirmed** cuando el usuario **abre** el magic link de acceso (callback → `?auth_confirmed=login`).
+
+Copy de registro: el correo de confirmación es también el acceso; se desaconseja pedir otro enlace en «Inicia sesión» antes de usar el primero.
 
 ## 6. Funnel demo (`/demo`)
 
@@ -100,7 +102,7 @@ Eventos específicos del funnel demo:
 
 En GA4: **Administración → Eventos → Marcar como conversión**:
 
-- `sign_up` — Registro completado (usuario creó cuenta)
+- `sign_up` — Registro confirmado (usuario abrió el enlace de confirmación)
 - `demo_access` — Usuario accedió a la demo
 - `begin_checkout` — Inicio de proceso de compra de plan
 - `contact` — Formulario de contacto enviado

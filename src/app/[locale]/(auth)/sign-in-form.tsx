@@ -27,7 +27,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { pushLogin } from "@/lib/gtm";
 import { CaptchaGuard } from "@/lib/anti-spam/react";
 import { translateMagicLinkErrorCode } from "@/lib/auth/magic-link-error-i18n";
 
@@ -92,7 +91,7 @@ export function SignInForm({
   }, [watchedEmail]);
 
   function applySuccessAfterMagicLink(isResend: boolean) {
-    pushLogin({ method: "magic_link" });
+    // Conversion GTM (login) fires on magic-link click via AuthConfirmedTracker.
     if (!isResend) {
       setEmailSent(true);
       toast.success(t("toastSuccess"));
