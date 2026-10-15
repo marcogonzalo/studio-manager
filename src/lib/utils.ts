@@ -211,10 +211,11 @@ export function getDemoAccountMessage(
 /**
  * Centraliza el reporte de errores (log; opcionalmente Sentry en el futuro).
  * Usar en lugar de console.error en rutas críticas.
+ * Fixed format string ("%s") so context cannot inject util.format specifiers (CWE-134).
  */
 export function reportError(error: unknown, context?: string): void {
   if (context) {
-    console.error(context, error);
+    console.error("%s", context, error);
   } else {
     console.error(error);
   }
@@ -224,7 +225,7 @@ export function reportError(error: unknown, context?: string): void {
  * Centraliza avisos (log; opcionalmente monitoreo en el futuro).
  */
 export function reportWarn(message: string): void {
-  console.warn(message);
+  console.warn("%s", message);
 }
 
 export function getPhaseLabel(phase?: ProjectPhase): string {
