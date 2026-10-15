@@ -7,6 +7,7 @@ import {
 } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { AuthProvider } from "@/components/auth-provider";
+import { CookieConsentBanner } from "@/components/consent";
 import AppLayoutClient from "@/components/layouts/app-layout";
 import { DemoAccountBanner } from "@/components/demo-account-banner";
 import { AppFormattingProvider } from "@/components/providers/app-formatting-provider";
@@ -83,6 +84,7 @@ export default async function AppLayout({
   return (
     <div className={montserratBrand.variable}>
       <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
+        <CookieConsentBanner />
         <AppFormattingProvider lang={locale} dateFormat={dateFormat}>
           <AuthProvider>
             <AppLayoutClient

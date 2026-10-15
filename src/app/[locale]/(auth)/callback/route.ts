@@ -98,12 +98,13 @@ export async function GET(request: NextRequest) {
         if (plan) redirectUrl.searchParams.set("plan_code", plan);
         redirectUrl.searchParams.set("billing_period", billing);
 
-        await trackEvent("signup", {
+        // Fire-and-forget: never delay or fail the auth redirect for analytics.
+        void trackEvent("signup", {
           plan_code: plan ?? "BASE",
           billing_period: billing,
         });
       } else {
-        await trackEvent("login");
+        void trackEvent("login");
       }
 
       const response = NextResponse.redirect(redirectUrl.toString());

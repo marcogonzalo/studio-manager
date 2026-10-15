@@ -6,7 +6,6 @@ import { VetaLogo } from "@/components/veta-logo";
 import { MarketingHeader } from "@/components/layouts/marketing-header";
 import { RedirectAuthenticatedToDashboard } from "@/components/redirect-authenticated-to-dashboard";
 import { AnchorToHash } from "@/components/smooth-scroll-link";
-import { CookieConsentBanner } from "@/components/consent";
 import { AttributionCapture } from "@/components/attribution-capture";
 import { GtmPageView } from "@/components/gtm";
 
@@ -209,7 +208,6 @@ export default async function MarketingLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <CookieConsentBanner />
       <AttributionCapture />
       <GtmPageView />
       <a href="#main-content" className="skip-link">
