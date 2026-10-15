@@ -23,6 +23,7 @@ import { escapeHtml } from "@/lib/escape-html";
 import { appPath } from "@/lib/app-paths";
 import { resolveMagicLinkAntiSpam } from "@/lib/anti-spam";
 import { getMagicLinkAntiSpamConfig } from "@/lib/auth/magic-link-anti-spam-config";
+import { getPublicRequestOrigin } from "@/lib/request-origin";
 import { reportError } from "@/lib/utils";
 
 const DEMO_EMAIL = "demo@veta.pro";
@@ -159,7 +160,11 @@ export async function POST(request: NextRequest) {
     });
 
     const demoAccessToken = randomUUID();
-    const origin = request.headers.get("origin") || request.nextUrl.origin;
+    const headerOrigin = request.headers.get("origin");
+    const origin =
+      headerOrigin && !/0\.0\.0\.0|\[::\]/.test(headerOrigin)
+        ? headerOrigin
+        : getPublicRequestOrigin(request);
     const dashboardPath = appPath("/dashboard");
     const redirectTo = `${origin}/auth/complete?next=${encodeURIComponent(dashboardPath)}&demo=1&lead=${encodeURIComponent(demoAccessToken)}`;
 

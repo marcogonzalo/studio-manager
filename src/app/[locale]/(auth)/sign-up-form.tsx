@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { loadAttributionCookie } from "@/lib/attribution";
 import { CaptchaGuard } from "@/lib/anti-spam/react";
 import { translateMagicLinkErrorCode } from "@/lib/auth/magic-link-error-i18n";
+import { getBrowserAppOrigin } from "@/lib/request-origin";
 
 const VALID_PLAN_CODES = ["BASE", "PRO", "STUDIO"] as const;
 type PlanCode = (typeof VALID_PLAN_CODES)[number];
@@ -118,7 +119,7 @@ export function SignUpForm({
     captchaToken?: string
   ): Promise<{ sent: boolean }> {
     const finalRedirect = redirectTo || appPath("/dashboard");
-    const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
+    const callbackUrl = `${getBrowserAppOrigin()}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=signup`;
 
     const attribution = loadAttributionCookie();
 

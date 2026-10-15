@@ -6,6 +6,7 @@ import {
   getRouteGroup,
   RATE_LIMIT_MESSAGE,
 } from "@/lib/rate-limit";
+import { isNonPublicHostname } from "@/lib/request-origin";
 import { isWwwVetaHost } from "@/lib/site-url";
 import { updateSession } from "@/lib/supabase/middleware";
 import { routing } from "@/i18n/routing";
@@ -14,6 +15,18 @@ const handleI18nRouting = createMiddleware(routing);
 
 export default async function proxy(request: NextRequest) {
   const host = request.headers.get("host");
+  const hostnameOnly = host?.split(":")[0] ?? "";
+
+  // Docker binds Next on 0.0.0.0; browsing that host breaks PKCE/session cookies
+  // (cookies for 0.0.0.0 are not sent to localhost after auth redirect).
+  if (isNonPublicHostname(hostnameOnly)) {
+    const url = request.nextUrl.clone();
+    const port = host?.includes(":") ? host.slice(host.indexOf(":") + 1) : "";
+    url.hostname = "localhost";
+    url.port = port || "3000";
+    url.protocol = "http:";
+    return NextResponse.redirect(url, 308);
+  }
 
   // Canonical host: apex HTTPS (www and http variants redirect here).
   if (isWwwVetaHost(host)) {

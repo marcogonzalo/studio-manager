@@ -57,8 +57,17 @@ describe("getFriendlyAuthErrorMessage", () => {
     expect(getFriendlyAuthErrorMessage("Auth code expired")).toBe(expected);
     expect(getFriendlyAuthErrorMessage("invalid code provided")).toBe(expected);
     expect(
+      getFriendlyAuthErrorMessage(
+        "Email link is invalid or has expired",
+        "otp_expired"
+      )
+    ).toBe(expected);
+    expect(
       getFriendlyAuthErrorMessage("Auth code expired", undefined, "en")
     ).toBe(
+      "The link has expired or is invalid. Please request a new access link."
+    );
+    expect(getFriendlyAuthErrorMessage(undefined, "otp_expired", "en")).toBe(
       "The link has expired or is invalid. Please request a new access link."
     );
   });

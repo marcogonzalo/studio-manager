@@ -5,6 +5,7 @@ import { getFriendlyAuthErrorMessage } from "@/lib/auth-error-messages";
 import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
 import { appPath } from "@/lib/app-paths";
 import { getAppUiCopy } from "@/lib/app-ui-copy";
+import { getPublicRequestOrigin } from "@/lib/request-origin";
 import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
 import { trackEvent } from "@/lib/track-event";
 import type { Locale } from "@/i18n/config";
@@ -24,7 +25,10 @@ function localeFromAuthPath(pathname: string): Locale {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  // Never use request.url origin: Next `dev --hostname 0.0.0.0` makes
+  // redirects to http://0.0.0.0:3000 which browsers cannot open.
+  const origin = getPublicRequestOrigin(request);
   const code = searchParams.get("code");
   const nextParam = searchParams.get("next");
   const typeParam = searchParams.get("type");

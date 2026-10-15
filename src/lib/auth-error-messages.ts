@@ -29,7 +29,9 @@ export function getFriendlyAuthErrorMessage(
     return copy.authPkce;
   }
   if (
+    code === "otp_expired" ||
     lower.includes("expired") ||
+    lower.includes("email link is invalid") ||
     (lower.includes("invalid") && lower.includes("code"))
   ) {
     return copy.authExpired;
