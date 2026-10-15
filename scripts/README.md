@@ -43,6 +43,24 @@ SUPABASE_URL=<url> SUPABASE_SERVICE_ROLE_KEY=<key> pnpm exec tsx scripts/seed-de
 
 The script is idempotent: it deletes existing demo data then re-seeds. It creates the demo user via Auth Admin if it does not exist.
 
+## seed-base-limits-account.ts
+
+Seed or reset `base-limits@veta.pro` on **BASE** plan with limits already hit (visual QA for plan-limit messaging UX #218).
+
+|          |                                            |
+| -------- | ------------------------------------------ |
+| Email    | `base-limits@veta.pro`                     |
+| Password | `BaseLimitsQA1!` (local password login)    |
+| Projects | 1 active + 1 completed                     |
+| Storage  | ~85% of 500 MB by default; `--full` → 100% |
+
+```bash
+pnpm run seed:base-limits
+pnpm run seed:base-limits -- --full
+```
+
+Does **not** modify `demo@veta.pro`. Same Supabase credential resolution as `seed:demo`.
+
 ## verify-demo-account.ts
 
 Checks that the demo account has exactly the row counts produced by `seed-demo-account.ts` (no missing or extra rows).

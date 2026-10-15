@@ -193,5 +193,31 @@
     "lead": "This is a demo account.",
     "cta": "Start your own Veta account",
     "tail": "and make your project management simpler."
+  },
+  "PlanLimitUx": {
+    "projectModalTitle": "Active project limit",
+    "projectModalWhy": "Base includes one active project so you can finish work before opening another. Your sample project counts toward this slot.",
+    "baseIncludes": "Base includes",
+    "proAdds": "Pro adds",
+    "stayOnBase": "Stay on Base: complete or archive a project to free the active slot.",
+    "goToProjects": "Go to projects",
+    "notNow": "Not now",
+    "waitlistCta": "Tell me when Pro is available",
+    "upgradeCta": "Upgrade plan",
+    "waitlistSuccess": "Thanks — we will let you know when Pro is available.",
+    "waitlistError": "Could not save your interest. Try again later.",
+    "storageAlmostFullTitle": "Storage almost full",
+    "storageFullTitle": "Storage full",
+    "storageUsage": "{used} / {limit}",
+    "storageFreeSpaceHint": "Free space by deleting files you no longer need.",
+    "storageFullHint": "Delete files to free space before uploading more.",
+    "dismissBanner": "Dismiss",
+    "compareTitle": "Compare plans",
+    "planBase": "Base",
+    "planPro": "Pro",
+    "planStudio": "Studio",
+    "featureLockedHint": "This is not included in your current plan.",
+    "viewPlanDetails": "View your plan",
+    "rendersExplain": "Renders let you attach visualization images to spaces so clients can review design options."
   }
 }

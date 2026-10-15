@@ -193,5 +193,31 @@
     "lead": "Esta es una cuenta de demostración.",
     "cta": "Crea tu propia cuenta de Veta",
     "tail": "y simplifica la gestión de tus proyectos."
+  },
+  "PlanLimitUx": {
+    "projectModalTitle": "Límite de proyectos activos",
+    "projectModalWhy": "Base incluye un proyecto activo para que puedas terminarlo antes de abrir otro. El proyecto de ejemplo cuenta para este cupo.",
+    "baseIncludes": "Base incluye",
+    "proAdds": "Pro añade",
+    "stayOnBase": "Seguir en Base: completa o archiva un proyecto para liberar el cupo activo.",
+    "goToProjects": "Ir a proyectos",
+    "notNow": "Ahora no",
+    "waitlistCta": "Avísame cuando Pro esté disponible",
+    "upgradeCta": "Mejorar plan",
+    "waitlistSuccess": "Gracias — te avisaremos cuando Pro esté disponible.",
+    "waitlistError": "No se pudo guardar tu interés. Inténtalo más tarde.",
+    "storageAlmostFullTitle": "Almacenamiento casi lleno",
+    "storageFullTitle": "Almacenamiento lleno",
+    "storageUsage": "{used} / {limit}",
+    "storageFreeSpaceHint": "Libera espacio borrando archivos que ya no necesites.",
+    "storageFullHint": "Borra archivos para liberar espacio antes de subir más.",
+    "dismissBanner": "Cerrar",
+    "compareTitle": "Comparar planes",
+    "planBase": "Base",
+    "planPro": "Pro",
+    "planStudio": "Studio",
+    "featureLockedHint": "Esto no está incluido en tu plan actual.",
+    "viewPlanDetails": "Ver tu plan",
+    "rendersExplain": "Los renders te permiten adjuntar imágenes de visualización a los espacios para que el cliente revise opciones de diseño."
   }
 }

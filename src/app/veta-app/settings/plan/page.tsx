@@ -8,9 +8,15 @@ import { useAppFormatting } from "@/components/providers/app-formatting-provider
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Rocket, FolderKanban, Users, Truck, ShoppingBag } from "lucide-react";
+import {
+  FolderKanban,
+  Users,
+  Truck,
+  ShoppingBag,
+  HardDrive,
+  Rocket,
+} from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
-import { appPath } from "@/lib/app-paths";
 import {
   consumableUsageBarPercent,
   getCurrentAssignment,
@@ -23,6 +29,15 @@ import {
   storageUsageBarPercent,
 } from "@/lib/settings-plan-logic";
 import { reportError } from "@/lib/utils";
+import { PlanLimitCta } from "@/components/plan/plan-limit-cta";
+import { isPaymentsEnabled } from "@/lib/payments-flag";
+import { appPath } from "@/lib/app-paths";
+import {
+  COMPACT_FEATURE_KEYS,
+  STATIC_PLAN_CONFIGS,
+  getCommercialFeatures,
+  translatePlanCopyItem,
+} from "@/lib/plan-copy";
 
 interface PlanAssignmentRow {
   id: string;
@@ -49,7 +64,7 @@ const CONSUMABLE_ICONS: Record<
   clients: Users,
   suppliers: Truck,
   products: ShoppingBag,
-  storage: ShoppingBag, // TODO: use a better icon for storage
+  storage: HardDrive,
 };
 
 function formatBytes(bytes: number): string {
@@ -64,6 +79,9 @@ function formatBytes(bytes: number): string {
 
 export default function SettingsPlanPage() {
   const t = useTranslations("SettingsPlan");
+  const tLimit = useTranslations("PlanLimitUx");
+  const tPlanCopy = useTranslations("PlanCopy");
+  const paymentsOn = isPaymentsEnabled();
   const planDisplayNames: Record<string, string> = {
     BASE: t("planBase"),
     PRO: t("planPro"),
@@ -217,12 +235,18 @@ export default function SettingsPlanPage() {
               </span>
             )}
           </div>
-          <Button asChild className="ml-auto shrink-0 gap-2">
-            <Link href={appPath("/settings/plan/change")}>
-              <Rocket className="h-4 w-4" />
-              {t("upgradePlan")}
-            </Link>
-          </Button>
+          {paymentsOn ? (
+            <Button asChild className="ml-auto shrink-0 gap-2">
+              <Link href={appPath("/settings/plan/change")}>
+                <Rocket className="h-4 w-4" />
+                {t("upgradePlan")}
+              </Link>
+            </Button>
+          ) : (
+            <div className="ml-auto shrink-0">
+              <PlanLimitCta limitType="projects" />
+            </div>
+          )}
         </CardHeader>
         <CardContent className="flex flex-col gap-0">
           <div className="border-border border-t pt-6">
@@ -309,6 +333,43 @@ export default function SettingsPlanPage() {
           </div>
         </CardContent>
       </Card>
+
+      <div>
+        <h2 className="text-foreground mb-3 text-lg font-semibold">
+          {tLimit("compareTitle")}
+        </h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          {(
+            [
+              ["BASE", tLimit("planBase")],
+              ["PRO", tLimit("planPro")],
+              ["STUDIO", tLimit("planStudio")],
+            ] as const
+          ).map(([code, label]) => {
+            const features = getCommercialFeatures(STATIC_PLAN_CONFIGS[code], {
+              include: COMPACT_FEATURE_KEYS,
+            }).map((item) => translatePlanCopyItem(item, tPlanCopy));
+            const isCurrent = currentPlanCode === code;
+            return (
+              <Card
+                key={code}
+                className={isCurrent ? "border-primary border-2" : undefined}
+              >
+                <CardHeader className="pb-2">
+                  <h3 className="text-base font-semibold">{label}</h3>
+                </CardHeader>
+                <CardContent>
+                  <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
+                    {features.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
 
       <div>
         <h2 className="text-foreground mb-3 text-lg font-semibold">
