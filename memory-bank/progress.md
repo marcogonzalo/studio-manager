@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama fix/analytics-signup-consent-banner-220 (issue #220):** Consent-gated fix so signup confirmation can reach GTM/GA4. `CookieConsentBanner` mounted once in `[locale]/layout` (auth + marketing) and `veta-app/layout` (removed marketing duplicate). `pushSignUpConfirmed` / `pushLoginConfirmed` no longer dual-push `sign_up`/`login`. Callback `trackEvent` fire-and-forget. Docs + `NEXT_PUBLIC_GTM_ID` in `.env.example`. Vitest for banner, gate, gtm helpers, mount points. Full verify: Docker test profile lint + tests + build. GTM container wiring still manual (#181).
+
 - **Rama cursor/funnel-data-foundations-7010 (PR #212):** Demo restored to shared `demo@veta.pro` magic link (Zod/anti-spam kept; lead stamped via `demo_access_token`). Removed shared `is_example` model. Every brand-new real account gets one editable sample project on first profile creation (`seed_sample_project` ES/EN, no images; counts toward Base limit). Full-width `DemoAccountBanner` on all `/veta-app` views for demo. Precise active-project limit toast + link to `/veta-app/settings/plan`. Branch migrations consolidated (4 files); local `db:reset` verified.
 
 - **Rama feat/budget-notes-203 (issue #203):** Notas de presupuesto a nivel de proyecto (`projects.budget_notes`). Botón + modal en Presupuesto; texto plano con saltos de línea (`<br>` / soft breaks). Vista pública costes a 9px con `px-4`; PDF tras totales a 8px con `paddingHorizontal: 16`. RPC `get_project_public_currency` expone `budget_notes`. Helpers `budget-notes.ts` + tests diálogo. Lint OK; suite 529/530 (1 timeout flaky `add-item-dialog`, pasa aislado); build OK (Docker test profile).

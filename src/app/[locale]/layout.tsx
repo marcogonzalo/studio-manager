@@ -1,6 +1,7 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { CookieConsentBanner } from "@/components/consent";
 import { routing } from "@/i18n/routing";
 import { montserratBrand } from "@/lib/fonts/montserrat-brand";
 
@@ -28,6 +29,7 @@ export default async function LocaleLayout({
   return (
     <div className={montserratBrand.variable}>
       <NextIntlClientProvider key={locale} locale={locale} messages={messages}>
+        <CookieConsentBanner />
         {children}
       </NextIntlClientProvider>
     </div>

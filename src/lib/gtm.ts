@@ -305,17 +305,11 @@ export function pushSignUpConfirmed(params?: {
   const method = params?.method ?? "magic_link";
   const location =
     typeof window !== "undefined" ? window.location.href : undefined;
+  // Only sign_up_confirmed — do not also push sign_up (avoids double-count if GTM maps sign_up → GA4).
   pushToDataLayer({
     event: GTM_EVENTS.SIGN_UP_CONFIRMED,
     method,
     page_location: location,
-    ...(params?.plan_code && { plan_code: params.plan_code }),
-    ...(params?.billing_period && { billing_period: params.billing_period }),
-  });
-  pushToDataLayer({
-    event: GTM_EVENTS.SIGN_UP,
-    method,
-    confirmed: true,
     ...(params?.plan_code && { plan_code: params.plan_code }),
     ...(params?.billing_period && { billing_period: params.billing_period }),
   });
@@ -328,11 +322,6 @@ export function pushLoginConfirmed(): void {
     method: "magic_link",
     page_location:
       typeof window !== "undefined" ? window.location.href : undefined,
-  });
-  pushToDataLayer({
-    event: GTM_EVENTS.LOGIN,
-    method: "magic_link",
-    confirmed: true,
   });
 }
 
