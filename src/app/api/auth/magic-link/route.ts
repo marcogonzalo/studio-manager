@@ -20,6 +20,7 @@ import {
   MAGIC_LINK_CAPTCHA_BYPASS_COOKIE,
   verifyMagicLinkCaptchaBypassValue,
 } from "@/lib/auth/magic-link-captcha-bypass";
+import { toPublicAppUrl } from "@/lib/request-origin";
 
 /** RFC 5321 max length; caps input before Zod email check (ReDoS / abuse mitigation). */
 const MAGIC_LINK_EMAIL_MAX = 254;
@@ -153,10 +154,15 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
+    const safeRedirectTo =
+      typeof emailRedirectTo === "string" && emailRedirectTo.length > 0
+        ? toPublicAppUrl(emailRedirectTo)
+        : emailRedirectTo;
+
     const { error } = await supabase.auth.signInWithOtp({
       email: normalizedEmail,
       options: {
-        emailRedirectTo,
+        emailRedirectTo: safeRedirectTo,
         data: mergedWithAntiSpam,
       },
     });

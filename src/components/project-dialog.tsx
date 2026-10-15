@@ -43,7 +43,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { trackUserEvent } from "@/app/actions/track-event";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { usePlanCapability } from "@/lib/use-plan-capability";
@@ -51,10 +53,13 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import type { Client, Project, ProjectStatus } from "@/types";
 import { ClientDialog } from "@/components/dialogs/client-dialog";
+import { appPath } from "@/lib/app-paths";
 import {
   CURRENCIES,
   getDemoAccountMessage,
   getPlanErrorMessage,
+  getProjectLimitMessage,
+  isPlanLimitExceeded,
 } from "@/lib/utils";
 
 function buildFormSchema(t: ReturnType<typeof useTranslations>) {
@@ -104,6 +109,7 @@ export function ProjectDialog({
 }: ProjectDialogProps) {
   const t = useTranslations("DialogProject");
   const locale = useLocale() as Locale;
+  const router = useRouter();
   const formSchema = buildFormSchema(t);
   const { user, effectivePlan } = useAuth();
   const profileDefaults = useProfileDefaults();
@@ -349,14 +355,22 @@ export function ProjectDialog({
 
         toast.success(t("toastUpdated"));
       } else {
-        const { error } = await supabase.from("projects").insert([
-          {
-            ...updateData,
-            user_id: user?.id,
-          },
-        ]);
+        const { data: created, error } = await supabase
+          .from("projects")
+          .insert([
+            {
+              ...updateData,
+              user_id: user?.id,
+            },
+          ])
+          .select("id")
+          .single();
 
         if (error) throw error;
+
+        void trackUserEvent("project_created", {
+          project_id: created.id,
+        });
 
         toast.success(t("toastCreated"));
         form.reset();
@@ -372,6 +386,17 @@ export function ProjectDialog({
       if (demoMsg) {
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,
+        });
+        return;
+      }
+      if (isPlanLimitExceeded(error)) {
+        const projectLimit = getProjectLimitMessage(locale);
+        toast.error(`${projectLimit.title}. ${projectLimit.description}`, {
+          duration: 8000,
+          action: {
+            label: projectLimit.viewPlans,
+            onClick: () => router.push(appPath("/settings/plan")),
+          },
         });
         return;
       }

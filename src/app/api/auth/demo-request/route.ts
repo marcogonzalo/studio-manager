@@ -1,4 +1,6 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import {
   checkRateLimit,
@@ -21,8 +23,44 @@ import { escapeHtml } from "@/lib/escape-html";
 import { appPath } from "@/lib/app-paths";
 import { resolveMagicLinkAntiSpam } from "@/lib/anti-spam";
 import { getMagicLinkAntiSpamConfig } from "@/lib/auth/magic-link-anti-spam-config";
+import { getPublicRequestOrigin } from "@/lib/request-origin";
+import { reportError } from "@/lib/utils";
 
 const DEMO_EMAIL = "demo@veta.pro";
+
+/** RFC 5321 max length; caps input before Zod email check (ReDoS / abuse mitigation). */
+const DEMO_REQUEST_EMAIL_MAX = 254;
+const ATTR_MAX = 200;
+
+const optionalAttr = z
+  .string()
+  .trim()
+  .max(ATTR_MAX)
+  .optional()
+  .transform((v) => (v === "" ? undefined : v));
+
+const demoRequestBodySchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1)
+    .max(DEMO_REQUEST_EMAIL_MAX)
+    .email()
+    .transform((v) => v.toLowerCase()),
+  lang: z.string().trim().max(16).optional(),
+  captchaToken: z.string().trim().max(2048).optional(),
+  name: optionalAttr,
+  studio: optionalAttr,
+  role: optionalAttr,
+  marketingConsent: z.boolean().optional().default(false),
+  utm_source: optionalAttr,
+  utm_medium: optionalAttr,
+  utm_campaign: optionalAttr,
+  utm_term: optionalAttr,
+  utm_content: optionalAttr,
+  referrer: z.string().trim().max(2000).optional(),
+  landing_path: z.string().trim().max(500).optional(),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,26 +80,47 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
+    const langHint =
+      typeof body === "object" &&
+      body !== null &&
+      "lang" in body &&
+      typeof (body as { lang?: unknown }).lang === "string"
+        ? (body as { lang: string }).lang
+        : undefined;
     const lang = resolveEmailLocale(
-      body.lang,
+      langHint,
       request.headers.get("accept-language")
     );
-    const captchaToken =
-      typeof body.captchaToken === "string" ? body.captchaToken : undefined;
-    const email = typeof body.email === "string" ? body.email.trim() : "";
-    if (!email) {
-      return NextResponse.json(
-        { error: getAppUiCopy(lang).validation.emailRequired },
-        { status: 400 }
-      );
+
+    const parsed = demoRequestBodySchema.safeParse(body);
+    if (!parsed.success) {
+      const emailIssue = parsed.error.issues.find((i) => i.path[0] === "email");
+      const copy = getAppUiCopy(lang).validation;
+      if (emailIssue) {
+        const message =
+          emailIssue.code === "too_small" || emailIssue.code === "invalid_type"
+            ? copy.emailRequired
+            : copy.emailInvalid;
+        return NextResponse.json({ error: message }, { status: 400 });
+      }
+      return NextResponse.json({ error: copy.emailInvalid }, { status: 400 });
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: getAppUiCopy(lang).validation.emailInvalid },
-        { status: 400 }
-      );
-    }
+
+    const {
+      email,
+      captchaToken,
+      name,
+      studio,
+      role,
+      marketingConsent,
+      utm_source: utmSource,
+      utm_medium: utmMedium,
+      utm_campaign: utmCampaign,
+      utm_term: utmTerm,
+      utm_content: utmContent,
+      referrer,
+      landing_path: landingPath,
+    } = parsed.data;
 
     const antiSpam = await resolveMagicLinkAntiSpam({
       email,
@@ -100,9 +159,14 @@ export async function POST(request: NextRequest) {
       auth: { persistSession: false },
     });
 
-    const origin = request.headers.get("origin") || request.nextUrl.origin;
+    const demoAccessToken = randomUUID();
+    const headerOrigin = request.headers.get("origin");
+    const origin =
+      headerOrigin && !/0\.0\.0\.0|\[::\]/.test(headerOrigin)
+        ? headerOrigin
+        : getPublicRequestOrigin(request);
     const dashboardPath = appPath("/dashboard");
-    const redirectTo = `${origin}/auth/complete?next=${encodeURIComponent(dashboardPath)}&demo=1`;
+    const redirectTo = `${origin}/auth/complete?next=${encodeURIComponent(dashboardPath)}&demo=1&lead=${encodeURIComponent(demoAccessToken)}`;
 
     const { data: linkData, error: linkError } =
       await admin.auth.admin.generateLink({
@@ -115,7 +179,7 @@ export async function POST(request: NextRequest) {
       linkData?.properties?.action_link ??
       (linkData as { action_link?: string })?.action_link;
     if (linkError || !actionLink) {
-      console.error("[demo-request] generateLink error", linkError);
+      reportError(linkError, "[demo-request] generateLink error");
       return NextResponse.json(
         { error: "No se pudo generar el enlace de demo. Inténtalo más tarde." },
         { status: 503 }
@@ -155,9 +219,40 @@ export async function POST(request: NextRequest) {
       text: `Solicitud de demo.\nCorreo: ${email}\nIdioma (locale): ${lang}\nFecha: ${notifiedAt}`,
     });
 
+    await admin
+      .from("leads")
+      .upsert(
+        {
+          email,
+          name,
+          studio,
+          role,
+          locale: lang,
+          source: "demo_request",
+          utm_source: utmSource,
+          utm_medium: utmMedium,
+          utm_campaign: utmCampaign,
+          utm_term: utmTerm,
+          utm_content: utmContent,
+          referrer,
+          landing_path: landingPath,
+          marketing_consent: marketingConsent,
+          consent_at: marketingConsent ? new Date().toISOString() : null,
+          user_id: null,
+          demo_access_token: demoAccessToken,
+          demo_accessed_at: null,
+        },
+        { onConflict: "email" }
+      )
+      .then(({ error: leadError }) => {
+        if (leadError) {
+          reportError(leadError, "[demo-request] lead insert error");
+        }
+      });
+
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error("[demo-request]", err);
+    reportError(err, "[demo-request]");
     return NextResponse.json(
       { error: "Error interno. Inténtalo más tarde." },
       { status: 500 }

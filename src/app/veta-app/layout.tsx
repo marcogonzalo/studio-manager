@@ -8,6 +8,7 @@ import {
 import { redirect } from "next/navigation";
 import { AuthProvider } from "@/components/auth-provider";
 import AppLayoutClient from "@/components/layouts/app-layout";
+import { DemoAccountBanner } from "@/components/demo-account-banner";
 import { AppFormattingProvider } from "@/components/providers/app-formatting-provider";
 import { defaultLocale, type Locale } from "@/i18n/config";
 import { appPath } from "@/lib/app-paths";
@@ -18,6 +19,7 @@ import {
 } from "@/lib/formatting";
 import { isAppLocale } from "@/lib/resolve-locale-from-accept-language";
 import { createClient } from "@/lib/supabase/server";
+import { trackSessionStart } from "@/lib/track-session";
 import { montserratBrand } from "@/lib/fonts/montserrat-brand";
 import "@/styles/app-overlays.css";
 
@@ -58,6 +60,9 @@ export default async function AppLayout({
     redirect("/sign-in?redirect=" + encodeURIComponent(appPath("/dashboard")));
   }
 
+  // Fire-and-forget session tracking (deduped server-side to once per day)
+  void trackSessionStart();
+
   const { data: settings } = await supabase
     .from("account_settings")
     .select("lang, date_format")
@@ -80,7 +85,15 @@ export default async function AppLayout({
       <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
         <AppFormattingProvider lang={locale} dateFormat={dateFormat}>
           <AuthProvider>
-            <AppLayoutClient>{children}</AppLayoutClient>
+            <AppLayoutClient
+              announcement={
+                user.email?.toLowerCase() === "demo@veta.pro" ? (
+                  <DemoAccountBanner />
+                ) : null
+              }
+            >
+              {children}
+            </AppLayoutClient>
           </AuthProvider>
         </AppFormattingProvider>
       </NextIntlClientProvider>

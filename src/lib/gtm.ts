@@ -268,7 +268,10 @@ export function pushContact(params?: {
   });
 }
 
-/** Push sign_up when user submits registration form (magic link requested). */
+/**
+ * Push sign_up (email-sent funnel step). Prefer {@link pushSignUpConfirmed} for
+ * conversion — forms no longer call this on submit.
+ */
 export function pushSignUp(params?: {
   method?: string;
   plan_code?: PlanCode;
@@ -282,7 +285,10 @@ export function pushSignUp(params?: {
   });
 }
 
-/** Push login when user requests magic link (sign-in form submit). */
+/**
+ * Push login (email-sent funnel step). Prefer {@link pushLoginConfirmed} for
+ * conversion — forms no longer call this on submit.
+ */
 export function pushLogin(params?: { method?: string }): void {
   pushToDataLayer({
     event: GTM_EVENTS.LOGIN,

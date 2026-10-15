@@ -279,7 +279,7 @@
   },
   "DemoRequestForm": {
     "title": "Try the demo",
-    "subtitle": "Enter your email and we'll send you the link to access the demo.",
+    "subtitle": "Enter your email and we'll send you the link to access your trial account with an example project.",
     "emailLabel": "Email",
     "emailPlaceholder": "you@email.com",
     "submit": "Get demo link",
@@ -293,9 +293,10 @@
     "emailNotAllowed": "We cannot use this email address. Please try another one.",
     "captchaLoading": "Loading verification…",
     "captchaLoadFailed": "Could not load verification (network, ad blocker, or widget hostname).",
-    "successToast": "Check your email. We've sent you a link to access the demo.",
-    "sentTitle": "Check your email. We've sent you a link to access the Veta demo. The link is valid for up to 1 hour.",
-    "privacyNote": "By submitting your email you agree to receive a message from our team to learn about your experience with the application."
+    "successToast": "Check your email. We've sent you a link to access your trial account.",
+    "sentTitle": "Check your email. We've sent you a link to access your Veta trial account. The link is valid for up to 1 hour.",
+    "marketingConsentLabel": "I agree to receive communications about Veta news and resources (optional)",
+    "privacyNote": "We only use your email to send the demo link and manage your trial access. See our privacy policy for details."
   },
   "Pricing": {
     "metaTitle": "Pricing and Base, Pro and Studio plans",

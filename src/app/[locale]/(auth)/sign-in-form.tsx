@@ -27,9 +27,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
-import { pushLogin } from "@/lib/gtm";
 import { CaptchaGuard } from "@/lib/anti-spam/react";
+import { getFriendlyAuthErrorMessage } from "@/lib/auth-error-messages";
 import { translateMagicLinkErrorCode } from "@/lib/auth/magic-link-error-i18n";
+import { getBrowserAppOrigin } from "@/lib/request-origin";
+import type { Locale } from "@/i18n/config";
 
 type SignInValues = { email: string };
 
@@ -57,10 +59,31 @@ export function SignInForm({
   });
 
   useEffect(() => {
+    // Supabase puts otp_expired on the hash (server callback cannot see it).
+    // Prefer that over the misleading "no access code" query from callback.
+    const hash = window.location.hash.replace(/^#/, "");
+    const hashParams = hash ? new URLSearchParams(hash) : null;
+    const hashCode = hashParams?.get("error_code") ?? undefined;
+    const hashDesc = hashParams?.get("error_description") ?? undefined;
+
+    if (
+      hashCode === "otp_expired" ||
+      (hashDesc && /expired|invalid/i.test(hashDesc))
+    ) {
+      toast.error(
+        getFriendlyAuthErrorMessage(hashDesc, hashCode, locale as Locale)
+      );
+      const url = new URL(window.location.href);
+      url.hash = "";
+      url.searchParams.delete("error");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}`);
+      return;
+    }
+
     if (errorParam) {
       toast.error(decodeURIComponent(errorParam));
     }
-  }, [errorParam]);
+  }, [errorParam, locale]);
 
   useEffect(() => {
     if (emailUpdated !== "1") return;
@@ -92,7 +115,7 @@ export function SignInForm({
   }, [watchedEmail]);
 
   function applySuccessAfterMagicLink(isResend: boolean) {
-    pushLogin({ method: "magic_link" });
+    // Conversion GTM (login) fires on magic-link click via AuthConfirmedTracker.
     if (!isResend) {
       setEmailSent(true);
       toast.success(t("toastSuccess"));
@@ -106,7 +129,7 @@ export function SignInForm({
     captchaToken?: string
   ): Promise<{ sent: boolean }> {
     const finalRedirect = redirectTo || appPath("/dashboard");
-    const callbackUrl = `${window.location.origin}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=login`;
+    const callbackUrl = `${getBrowserAppOrigin()}/${locale}/callback?next=${encodeURIComponent(finalRedirect)}&type=login`;
 
     const response = await fetch("/api/auth/magic-link", {
       method: "POST",

@@ -19,6 +19,7 @@ function AuthCompleteContent() {
       searchParams.get("next")?.replace(/^\/+/, "") || appPath("/dashboard");
     const redirectPath = next.startsWith("/") ? next : `/${next}`;
     const isDemoAccess = searchParams.get("demo") === "1";
+    const leadToken = searchParams.get("lead");
     const pathname =
       typeof window !== "undefined" ? window.location.pathname : "";
     const localeMatch = pathname.match(/^\/(en|es)(?:\/|$)/);
@@ -45,8 +46,18 @@ function AuthCompleteContent() {
     const supabase = getSupabaseClient();
     supabase.auth
       .setSession({ access_token: accessToken, refresh_token: refreshToken })
-      .then(() => {
-        if (isDemoAccess) pushDemoAccess();
+      .then(async () => {
+        if (isDemoAccess) {
+          pushDemoAccess();
+          await fetch("/api/auth/demo-accessed", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(leadToken ? { lead: leadToken } : {}),
+          }).catch(() => {});
+        }
         const origin = window.location.origin;
         window.location.replace(`${origin}${redirectPath}`);
       })

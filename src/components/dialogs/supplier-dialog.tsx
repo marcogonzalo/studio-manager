@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { toast } from "sonner";
+import { trackUserEvent } from "@/app/actions/track-event";
 import type { Supplier } from "@/types";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
@@ -88,6 +89,7 @@ export function SupplierDialog({
       const data = { ...values, user_id: user?.id };
       if (supplier) {
         await supabase.from("suppliers").update(data).eq("id", supplier.id);
+
         toast.success(t("toastUpdated"));
         onSuccess();
       } else {
@@ -98,6 +100,11 @@ export function SupplierDialog({
           .single();
 
         if (error) throw error;
+
+        void trackUserEvent("supplier_created", {
+          supplier_id: newSupplier.id,
+        });
+
         toast.success(t("toastCreated"));
         onSuccess(newSupplier.id);
       }

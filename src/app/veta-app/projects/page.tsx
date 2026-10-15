@@ -43,6 +43,7 @@ import {
 import { ProjectDialog } from "@/components/project-dialog";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SoftPill } from "@/components/ui/soft-pill";
 import { toast } from "sonner";
 import { appPath } from "@/lib/app-paths";
 import { useProjectStatusLabel } from "@/lib/use-project-labels";
@@ -269,7 +270,7 @@ export default function ProjectsPage() {
                     >
                       {project.name}
                     </CardTitle>
-                    <CardDescription className="line-clamp-2">
+                    <CardDescription className="text-muted-foreground/65 dark:text-muted-foreground/55 line-clamp-2 text-xs leading-relaxed">
                       {project.description}
                     </CardDescription>
                   </div>
@@ -307,26 +308,17 @@ export default function ProjectsPage() {
                         ? formatDate(project.start_date)
                         : t("noDate")}
                     </div>
-                    <div className="capitalize">
-                      {t("statusLabel")}{" "}
-                      <span
-                        className={
-                          isMuted
-                            ? "text-muted-foreground font-medium"
-                            : "text-foreground font-medium"
-                        }
-                      >
-                        {projectStatusLabel(project.status)}
-                      </span>
-                    </div>
+                    <SoftPill
+                      className={
+                        isMuted ? "bg-muted/60 capitalize" : "capitalize"
+                      }
+                    >
+                      {projectStatusLabel(project.status)}
+                    </SoftPill>
                   </div>
                 </CardContent>
-                <CardFooter>
-                  <Button
-                    asChild
-                    className="w-full sm:w-auto"
-                    variant="outline"
-                  >
+                <CardFooter className="justify-end">
+                  <Button asChild className="w-auto" variant="outline">
                     <Link href={appPath(`/projects/${project.id}`)}>
                       {t("viewDetails")}
                     </Link>

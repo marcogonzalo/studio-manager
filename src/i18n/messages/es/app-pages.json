@@ -50,7 +50,7 @@
     "noClient": "Sin cliente",
     "noDate": "Sin fecha",
     "statusLabel": "Estado:",
-    "viewDetails": "Ver Detalles",
+    "viewDetails": "Abrir",
     "emptyNoProjects": "No tienes proyectos activos",
     "emptyNoResults": "No hay resultados para la búsqueda",
     "emptyNoProjectsDescription": "Crea un proyecto para gestionar clientes, espacios y presupuestos.",

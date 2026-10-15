@@ -12,6 +12,7 @@ import {
   getCategoryOptions,
   isCostCategory,
   isDemoAccountError,
+  getProjectLimitMessage,
   isPlanLimitExceeded,
   isPlanFeatureUnavailable,
   getPlanErrorType,
@@ -149,6 +150,22 @@ describe("isPlanLimitExceeded", () => {
     expect(isPlanLimitExceeded(new Error("Other error"))).toBe(false);
     expect(isPlanLimitExceeded({ message: "Other" })).toBe(false);
     expect(isPlanLimitExceeded(null)).toBe(false);
+  });
+});
+
+describe("getProjectLimitMessage", () => {
+  it("returns English project-limit copy", () => {
+    const msg = getProjectLimitMessage("en");
+    expect(msg.title).toBe("Project limit");
+    expect(msg.description).toContain("active project limit");
+    expect(msg.viewPlans).toBe("View plans");
+  });
+
+  it("returns Spanish project-limit copy", () => {
+    const msg = getProjectLimitMessage("es");
+    expect(msg.title).toBe("Límite de proyectos");
+    expect(msg.description).toContain("proyectos activos");
+    expect(msg.viewPlans).toBe("Ver planes");
   });
 });
 
@@ -354,10 +371,18 @@ describe("isCostCategory", () => {
 });
 
 describe("reportError", () => {
-  it("should call console.error with context and error when context provided", () => {
+  it("should call console.error with fixed format string, context, and error", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     reportError(new Error("test"), "Context:");
-    expect(spy).toHaveBeenCalledWith("Context:", expect.any(Error));
+    expect(spy).toHaveBeenCalledWith("%s", "Context:", expect.any(Error));
+    spy.mockRestore();
+  });
+
+  it("should not treat context as a format string when it contains %d", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const err = new Error("boom");
+    reportError(err, "user %d inject");
+    expect(spy).toHaveBeenCalledWith("%s", "user %d inject", err);
     spy.mockRestore();
   });
 
@@ -370,10 +395,10 @@ describe("reportError", () => {
 });
 
 describe("reportWarn", () => {
-  it("should call console.warn with message", () => {
+  it("should call console.warn with fixed format string and message", () => {
     const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
     reportWarn("Warning message");
-    expect(spy).toHaveBeenCalledWith("Warning message");
+    expect(spy).toHaveBeenCalledWith("%s", "Warning message");
     spy.mockRestore();
   });
 });

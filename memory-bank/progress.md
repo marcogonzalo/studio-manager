@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama cursor/funnel-data-foundations-7010 (PR #212):** Demo restored to shared `demo@veta.pro` magic link (Zod/anti-spam kept; lead stamped via `demo_access_token`). Removed shared `is_example` model. Every brand-new real account gets one editable sample project on first profile creation (`seed_sample_project` ES/EN, no images; counts toward Base limit). Full-width `DemoAccountBanner` on all `/veta-app` views for demo. Precise active-project limit toast + link to `/veta-app/settings/plan`. Branch migrations consolidated (4 files); local `db:reset` verified.
+
 - **Rama feat/budget-notes-203 (issue #203):** Notas de presupuesto a nivel de proyecto (`projects.budget_notes`). Botón + modal en Presupuesto; texto plano con saltos de línea (`<br>` / soft breaks). Vista pública costes a 9px con `px-4`; PDF tras totales a 8px con `paddingHorizontal: 16`. RPC `get_project_public_currency` expone `budget_notes`. Helpers `budget-notes.ts` + tests diálogo. Lint OK; suite 529/530 (1 timeout flaky `add-item-dialog`, pasa aislado); build OK (Docker test profile).
 
 - **Rama fix/memory-cleanup:** Cleanup de timers/rAF, fetches stale y store in-memory de rate-limit. `checkRateLimit` poda IPs caducadas en cada check (ya no 1% aleatorio). `useProjectBudgetLines` ignora respuestas viejas al cambiar de proyecto o unmount. Auth/customization/profile-defaults no hacen `setState` tras unmount; highlight de onboarding y `AnimatedSection` limpian timers/rAF. Lint + tests targeted OK (Docker test profile: rate-limit, budget-lines, auth-provider). Coverage helpers `rate-limit` ~96%, `use-project-budget-lines` 100% lines.

@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
+import { SoftPill } from "@/components/ui/soft-pill";
 import { isItemPriceTbd } from "@/lib/project-item-price";
 
 export function PriceTbdPill({ label }: { label: string }) {
   return (
-    <span className="bg-muted text-muted-foreground inline-flex shrink-0 rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap">
+    <SoftPill className="shrink-0 px-2 py-1 whitespace-nowrap">
       {label}
-    </span>
+    </SoftPill>
   );
 }
 

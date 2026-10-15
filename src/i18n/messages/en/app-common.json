@@ -158,6 +158,9 @@
     "demoDescription": "Create, edit, and delete actions are disabled on this account.",
     "planLimitTitle": "Limit exceeded",
     "planLimitDescription": "You have reached your plan limit. Upgrade your plan to increase quotas and continue.",
+    "projectLimitTitle": "Project limit",
+    "projectLimitDescription": "You have reached your plan's active project limit. Complete, cancel, or delete the current one — or upgrade for more capacity.",
+    "viewPlans": "View plans",
     "planUnavailableTitle": "Action not available on your plan",
     "planUnavailableDescription": "This feature is not included in your current plan. Upgrade your plan to access it.",
     "rateLimit": "You have exceeded the request limit. Please wait 30 seconds and try again.",
@@ -185,5 +188,10 @@
     "fileTooLarge5mb": "File cannot exceed 5MB",
     "documentType": "Type not allowed. Use PDFs, docs, spreadsheets, presentations, text, or other related documents.",
     "documentSize": "Files larger than 10MB cannot be uploaded. If it is in Drive, OneDrive or iCloud, add it as a URL."
+  },
+  "DemoAccountBanner": {
+    "lead": "This is a demo account.",
+    "cta": "Start your own Veta account",
+    "tail": "and make your project management simpler."
   }
 }
