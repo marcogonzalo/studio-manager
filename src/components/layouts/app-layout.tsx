@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth-provider";
@@ -67,7 +67,7 @@ import { getDisplayName } from "@/lib/display-name";
 import { appPath } from "@/lib/app-paths";
 import { getReportBugUrl } from "@/lib/report-bug";
 import { AuthConfirmedTracker } from "@/components/gtm/auth-confirmed-tracker";
-import { DemoAccountBanner } from "@/components/demo-account-banner";
+import { APP_ANNOUNCEMENT_SIDEBAR_OFFSET } from "@/components/app-announcement-banner";
 
 function AppLayoutSkeleton() {
   return (
@@ -662,11 +662,13 @@ function SidebarContent({
 
 export default function AppLayoutClient({
   children,
-  isDemoAccount = false,
+  announcement = null,
 }: {
   children: React.ReactNode;
-  isDemoAccount?: boolean;
+  /** Optional top announcement (system / product / company). Not for transactional toasts. */
+  announcement?: ReactNode;
 }) {
+  const hasAnnouncement = announcement != null;
   const tLayout = useTranslations("AppLayout");
   const tCrumb = useTranslations("AppSettingsBreadcrumb");
   const tNav = useTranslations("AppNav");
@@ -749,7 +751,7 @@ export default function AppLayoutClient({
         />
       )}
       <div className="bg-background text-foreground flex min-h-screen flex-col">
-        {isDemoAccount ? <DemoAccountBanner /> : null}
+        {announcement}
         <div className="flex min-h-0 flex-1">
           {/* Desktop Sidebar */}
           <SidebarContent
@@ -763,7 +765,11 @@ export default function AppLayoutClient({
             isCollapsed={isCollapsed}
             setIsCollapsed={setIsCollapsed}
             className={cn(
-              "z-50 hidden shadow-sm transition-all duration-300 md:fixed md:inset-y-0 md:flex md:flex-col print:hidden",
+              "z-50 hidden shadow-sm transition-all duration-300 md:fixed md:flex md:flex-col print:hidden",
+              // Announcement bar ~2.375rem; plain h-full would clip the sidebar footer.
+              hasAnnouncement
+                ? APP_ANNOUNCEMENT_SIDEBAR_OFFSET
+                : "md:inset-y-0",
               isCollapsed ? "md:w-16" : "md:w-64"
             )}
           />

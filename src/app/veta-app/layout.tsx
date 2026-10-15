@@ -8,6 +8,7 @@ import {
 import { redirect } from "next/navigation";
 import { AuthProvider } from "@/components/auth-provider";
 import AppLayoutClient from "@/components/layouts/app-layout";
+import { DemoAccountBanner } from "@/components/demo-account-banner";
 import { AppFormattingProvider } from "@/components/providers/app-formatting-provider";
 import { defaultLocale, type Locale } from "@/i18n/config";
 import { appPath } from "@/lib/app-paths";
@@ -85,7 +86,11 @@ export default async function AppLayout({
         <AppFormattingProvider lang={locale} dateFormat={dateFormat}>
           <AuthProvider>
             <AppLayoutClient
-              isDemoAccount={user.email?.toLowerCase() === "demo@veta.pro"}
+              announcement={
+                user.email?.toLowerCase() === "demo@veta.pro" ? (
+                  <DemoAccountBanner />
+                ) : null
+              }
             >
               {children}
             </AppLayoutClient>

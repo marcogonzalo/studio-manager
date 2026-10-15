@@ -3,21 +3,20 @@
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import type { Locale } from "@/i18n/config";
+import { AppAnnouncementBanner } from "@/components/app-announcement-banner";
 
 export function demoSignUpHref(locale: Locale | string): string {
   return locale === "en" ? "/en/sign-up" : "/sign-up";
 }
 
+/** Demo-session notice rendered inside the shared app announcement bar. */
 export function DemoAccountBanner() {
   const t = useTranslations("DemoAccountBanner");
   const locale = useLocale();
   const href = demoSignUpHref(locale);
 
   return (
-    <div
-      role="status"
-      className="border-border bg-primary/10 text-foreground w-full border-b px-4 py-2 text-center text-sm"
-    >
+    <AppAnnouncementBanner>
       <span>{t("lead")} </span>
       <Link
         href={href}
@@ -26,6 +25,6 @@ export function DemoAccountBanner() {
         {t("cta")}
       </Link>
       <span> {t("tail")}</span>
-    </div>
+    </AppAnnouncementBanner>
   );
 }

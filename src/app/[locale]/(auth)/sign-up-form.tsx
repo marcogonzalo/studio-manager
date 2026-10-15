@@ -422,14 +422,18 @@ export function SignUpForm({
                 </div>
               )
             ) : null}
-            <Button
-              type="submit"
-              size="lg"
-              className="w-full sm:w-auto"
-              disabled={loading || !isEmailValid || !form.watch("acceptTerms")}
-            >
-              {loading ? t("submitting") : t("submit")}
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                type="submit"
+                size="lg"
+                className="w-full sm:w-auto"
+                disabled={
+                  loading || !isEmailValid || !form.watch("acceptTerms")
+                }
+              >
+                {loading ? t("submitting") : t("submit")}
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
