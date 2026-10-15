@@ -295,7 +295,8 @@
     "captchaLoadFailed": "Could not load verification (network, ad blocker, or widget hostname).",
     "successToast": "Check your email. We've sent you a link to access your trial account.",
     "sentTitle": "Check your email. We've sent you a link to access your Veta trial account. The link is valid for up to 1 hour.",
-    "marketingConsentLabel": "I agree to receive communications about Veta news and resources (optional)"
+    "marketingConsentLabel": "I agree to receive communications about Veta news and resources (optional)",
+    "privacyNote": "We only use your email to send the demo link and manage your trial access. See our privacy policy for details."
   },
   "Pricing": {
     "metaTitle": "Pricing and Base, Pro and Studio plans",
