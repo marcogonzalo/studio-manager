@@ -126,6 +126,13 @@ export function resolveNumericConsumableLimit(
   key: SettingsPlanNumericConsumableKey,
   config: PlanConfig | null | undefined
 ): number {
+  if (key === "projects") {
+    return (
+      config?.effective_active_projects_limit ??
+      config?.projects_limit ??
+      getFallbackNumericConsumableLimit(key)
+    );
+  }
   const raw = config?.[SETTINGS_PLAN_CONFIG_LIMIT_KEYS[key]];
   return raw ?? getFallbackNumericConsumableLimit(key);
 }
@@ -135,7 +142,11 @@ export const DEFAULT_SETTINGS_PLAN_STORAGE_LIMIT_MB = 500;
 export function resolveStorageLimitMb(
   config: PlanConfig | null | undefined
 ): number {
-  return config?.storage_limit_mb ?? DEFAULT_SETTINGS_PLAN_STORAGE_LIMIT_MB;
+  return (
+    config?.effective_storage_limit_mb ??
+    config?.storage_limit_mb ??
+    DEFAULT_SETTINGS_PLAN_STORAGE_LIMIT_MB
+  );
 }
 
 export function consumableUsageBarPercent(used: number, limit: number): number {

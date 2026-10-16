@@ -41,12 +41,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ProjectDialog } from "@/components/project-dialog";
+import { PlanLimitModal } from "@/components/plan/plan-limit-modal";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SoftPill } from "@/components/ui/soft-pill";
 import { toast } from "sonner";
 import { appPath } from "@/lib/app-paths";
 import { useProjectStatusLabel } from "@/lib/use-project-labels";
+import { useAuth } from "@/components/auth-provider";
+import { isAtActiveProjectLimit } from "@/lib/plan-limit-ux";
 
 import type { Project } from "@/types";
 
@@ -83,9 +86,24 @@ export default function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("status");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPlanLimitOpen, setIsPlanLimitOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const supabase = getSupabaseClient();
+  const { effectivePlan } = useAuth();
+
+  const activeProjectCount = useMemo(
+    () => projects.filter((p) => p.status === "active").length,
+    [projects]
+  );
+
+  function handleNewProjectClick() {
+    if (isAtActiveProjectLimit(activeProjectCount, effectivePlan?.config)) {
+      setIsPlanLimitOpen(true);
+      return;
+    }
+    setIsDialogOpen(true);
+  }
 
   const handleDeleteClick = (project: Project) => {
     setDeleteTarget(project);
@@ -174,7 +192,7 @@ export default function ProjectsPage() {
             <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           </div>
           <Button
-            onClick={() => setIsDialogOpen(true)}
+            onClick={handleNewProjectClick}
             className="w-full sm:w-auto"
             {...(projects.length > 0 && {
               "data-onboarding-target": "project",
@@ -349,10 +367,7 @@ export default function ProjectsPage() {
                     : t("emptyNoResultsDescription")}
                 </p>
                 {projects.length === 0 && (
-                  <Button
-                    onClick={() => setIsDialogOpen(true)}
-                    className="mt-4"
-                  >
+                  <Button onClick={handleNewProjectClick} className="mt-4">
                     <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
                   </Button>
                 )}
@@ -378,6 +393,15 @@ export default function ProjectsPage() {
           setIsDialogOpen(false);
           fetchProjects();
         }}
+        onPlanLimitExceeded={() => {
+          setIsDialogOpen(false);
+          setIsPlanLimitOpen(true);
+        }}
+      />
+
+      <PlanLimitModal
+        open={isPlanLimitOpen}
+        onOpenChange={setIsPlanLimitOpen}
       />
 
       <ConfirmDeleteDialog

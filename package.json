@@ -12,6 +12,7 @@
     "db:push": "supabase db push --local",
     "db:reset": "supabase db reset --local",
     "seed:demo": "node scripts/run-seed-demo-local.mjs",
+    "seed:base-limits": "node scripts/run-seed-base-limits-local.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest",

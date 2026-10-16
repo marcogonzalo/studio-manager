@@ -13,6 +13,7 @@ import {
 } from "@/lib/assets";
 import { validateImageFile } from "@/lib/image-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
+import { buildStorageLimitErrorBody } from "@/lib/plan-limit-ux";
 import { getAppUiCopy, localeFromRequest } from "@/lib/app-ui-copy";
 import {
   getSupabaseUrl,
@@ -309,9 +310,7 @@ export async function POST(request: Request) {
     );
     if (!storage.allowed) {
       return NextResponse.json(
-        {
-          error: `Límite de almacenamiento alcanzado (${Math.round(storage.currentUsed / 1024 / 1024)} MB / ${storage.limitMb} MB). Mejora tu plan para que puedas subir más archivos.`,
-        },
+        buildStorageLimitErrorBody(storage.currentUsed, storage.limitMb),
         { status: 413 }
       );
     }

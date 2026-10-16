@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import Link from "next/link";
 import { Plus, Image as ImageIcon, Package } from "lucide-react";
+import { appPath } from "@/lib/app-paths";
 import { SpaceDialog } from "@/components/dialogs/space-dialog";
 import { SpaceImagesDialog } from "@/components/dialogs/space-images-dialog";
 import { SpaceProductsDialog } from "@/components/dialogs/space-products-dialog";
@@ -170,13 +171,12 @@ export function ProjectSpaces({
                           <p>
                             {t("rendersNotAvailable")}{" "}
                             <Link
-                              href="/pricing"
+                              href={appPath("/settings/plan")}
                               className="underline"
                               onClick={(e) => e.stopPropagation()}
                             >
                               {t("upgradePlan")}
-                            </Link>{" "}
-                            {t("upgradeRendersSuffix")}
+                            </Link>
                           </p>
                         ) : (
                           t("spaceRendersTooltip")

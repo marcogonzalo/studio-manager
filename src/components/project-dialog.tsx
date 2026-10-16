@@ -99,6 +99,8 @@ interface ProjectDialogProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
   project?: Project | null;
+  /** When create hits PLAN_LIMIT_EXCEEDED, parent can open PlanLimitModal. */
+  onPlanLimitExceeded?: () => void;
 }
 
 export function ProjectDialog({
@@ -106,6 +108,7 @@ export function ProjectDialog({
   onOpenChange,
   onSuccess,
   project,
+  onPlanLimitExceeded,
 }: ProjectDialogProps) {
   const t = useTranslations("DialogProject");
   const locale = useLocale() as Locale;
@@ -390,6 +393,10 @@ export function ProjectDialog({
         return;
       }
       if (isPlanLimitExceeded(error)) {
+        if (onPlanLimitExceeded) {
+          onPlanLimitExceeded();
+          return;
+        }
         const projectLimit = getProjectLimitMessage(locale);
         toast.error(`${projectLimit.title}. ${projectLimit.description}`, {
           duration: 8000,

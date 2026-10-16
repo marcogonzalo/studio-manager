@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/dialog";
 import { SpaceImageUpload } from "@/components/space-image-upload";
 import Image from "next/image";
-import Link from "next/link";
 import { toast } from "sonner";
 import type { Space } from "@/types";
 import { Plus, Trash2 } from "lucide-react";
 import { deleteSpaceImage } from "@/lib/delete-space-image";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
+import { PlanFeatureLockedHint } from "@/components/plan/plan-feature-locked-hint";
 
 interface Image {
   id: string;
@@ -40,6 +40,7 @@ export function SpaceImagesDialog({
   canAddRenders?: boolean;
 }) {
   const t = useTranslations("DialogSpaceImages");
+  const tLimit = useTranslations("PlanLimitUx");
   const locale = useLocale() as Locale;
   const supabase = getSupabaseClient();
   const [images, setImages] = useState<Image[]>([]);
@@ -115,13 +116,11 @@ export function SpaceImagesDialog({
               {t("addImages")}
             </Button>
           ) : (
-            <p className="text-muted-foreground self-center text-right text-xs sm:max-w-xs sm:self-start">
-              {t("notAvailable")}{" "}
-              <Link href="/pricing" className="underline">
-                {t("upgradePlan")}
-              </Link>{" "}
-              {t("upgradeSuffix")}
-            </p>
+            <PlanFeatureLockedHint
+              featureKey="renders"
+              explanation={tLimit("rendersExplain")}
+              className="self-center text-right text-xs sm:max-w-xs sm:self-start"
+            />
           )}
         </DialogHeader>
 

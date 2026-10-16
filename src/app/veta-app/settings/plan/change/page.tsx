@@ -205,7 +205,7 @@ export default function ChangePlanPage() {
               <CardHeader className="pb-2 text-center">
                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
                 <CardDescription className="mt-1">
-                  {t("limitedOffer")}
+                  {plan.description}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col">

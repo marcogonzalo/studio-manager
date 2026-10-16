@@ -6,6 +6,13 @@ import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateImageFile } from "@/lib/image-validation";
 import type { Locale } from "@/i18n/config";
+import { useStorageUsage } from "@/hooks/use-storage-usage";
+import { StorageWarningBanner } from "@/components/plan/storage-warning-banner";
+import { StorageLimitInlineError } from "@/components/plan/storage-limit-inline-error";
+import {
+  isStorageLimitErrorBody,
+  type StorageLimitErrorBody,
+} from "@/lib/plan-limit-ux";
 
 interface SpaceImageUploadProps {
   projectId: string;
@@ -44,13 +51,17 @@ export function SpaceImageUpload({
 }: SpaceImageUploadProps) {
   const t = useTranslations("SpaceImageUpload");
   const locale = useLocale() as Locale;
+  const { usedBytes, limitMb } = useStorageUsage();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [storageLimitError, setStorageLimitError] =
+    useState<StorageLimitErrorBody | null>(null);
 
   const uploadFile = useCallback(
     async (file: File, imageIdOverride?: string) => {
       setError(null);
+      setStorageLimitError(null);
       const validation = validateImageFile(file, locale);
       if (!validation.valid) {
         setError(validation.error);
@@ -89,9 +100,17 @@ export function SpaceImageUpload({
           error?: string;
           fileSizeBytes?: number;
           assetId?: string;
+          code?: string;
+          currentUsed?: number;
+          limitMb?: number;
         };
 
         if (!res.ok) {
+          if (isStorageLimitErrorBody(data)) {
+            setStorageLimitError(data);
+            onUploadError?.(data.error);
+            return;
+          }
           const msg = data.error || t("uploadError");
           setError(msg);
           onUploadError?.(msg);
@@ -178,6 +197,7 @@ export function SpaceImageUpload({
 
   return (
     <div className={cn("space-y-2", className)}>
+      <StorageWarningBanner usedBytes={usedBytes} limitMb={limitMb} />
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -223,7 +243,10 @@ export function SpaceImageUpload({
           </div>
         )}
       </div>
-      {error && (
+      {storageLimitError && (
+        <StorageLimitInlineError body={storageLimitError} />
+      )}
+      {error && !storageLimitError && (
         <div className="bg-destructive/10 text-destructive flex items-center gap-2 rounded-md px-3 py-2 text-sm">
           <X className="h-4 w-4 shrink-0" />
           {error}
