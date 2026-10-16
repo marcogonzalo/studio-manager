@@ -17,11 +17,10 @@ import {
   localeFromRequest,
 } from "@/lib/app-ui-copy";
 import { checkRateLimit, getRateLimitMessage } from "@/lib/rate-limit";
-import { reportError } from "@/lib/utils";
 import { humanizeUploadError } from "@/lib/upload-user-error";
 import { getSupabaseUrl, getSupabaseServiceRoleKey } from "@/lib/supabase/keys";
 import { createClient } from "@/lib/supabase/server";
-import { isDemoAccountEmail } from "@/lib/utils";
+import { isDemoAccountEmail, reportError } from "@/lib/utils";
 
 const MAX_DIMENSION = 1200;
 
