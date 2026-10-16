@@ -120,10 +120,14 @@ describe("POST /api/plan/notify-interest", () => {
       }),
       { onConflict: "email" }
     );
-    expect(mockTrackEvent).toHaveBeenCalledWith("limit_cta_clicked", {
-      type: "storage",
-      source: "plan_limit_interest",
-    });
+    expect(mockTrackEvent).toHaveBeenCalledWith(
+      "limit_cta_clicked",
+      {
+        type: "storage",
+        source: "plan_limit_interest",
+      },
+      { userId: "u1" }
+    );
     expect(checkRateLimit).toHaveBeenCalledWith("user:u1", "plan");
   });
 

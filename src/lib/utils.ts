@@ -217,16 +217,46 @@ export function getDemoAccountMessage(
 }
 
 /**
+ * Normalize an unknown error to code/message only — no emails, tokens, or FormData.
+ */
+function normalizeErrorFields(error: unknown): {
+  code: string | null;
+  message: string;
+} {
+  if (error instanceof Error) {
+    const code =
+      "code" in error && typeof (error as { code?: unknown }).code === "string"
+        ? (error as { code: string }).code
+        : null;
+    return { code, message: error.message };
+  }
+  if (error && typeof error === "object") {
+    const obj = error as { code?: unknown; message?: unknown };
+    const code = typeof obj.code === "string" ? obj.code : null;
+    const message =
+      typeof obj.message === "string" ? obj.message : "Unknown error";
+    return { code, message };
+  }
+  if (typeof error === "string") {
+    return { code: null, message: error };
+  }
+  return { code: null, message: "Unknown error" };
+}
+
+/**
  * Centraliza el reporte de errores (log; opcionalmente Sentry en el futuro).
  * Usar en lugar de console.error en rutas críticas.
+ * Logs structured metadata (timestamp, context, code, message) without PII.
  * Fixed format string ("%s") so context cannot inject util.format specifiers (CWE-134).
  */
 export function reportError(error: unknown, context?: string): void {
-  if (context) {
-    console.error("%s", context, error);
-  } else {
-    console.error(error);
-  }
+  const { code, message } = normalizeErrorFields(error);
+  console.error("%s", {
+    timestamp: new Date().toISOString(),
+    context: context ?? null,
+    code,
+    message,
+  });
 }
 
 /**

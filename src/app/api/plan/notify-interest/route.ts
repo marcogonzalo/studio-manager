@@ -91,10 +91,14 @@ export async function POST(request: Request) {
       );
     }
 
-    await trackEvent("limit_cta_clicked", {
-      type: limitType ?? "projects",
-      source: LEAD_SOURCE,
-    });
+    await trackEvent(
+      "limit_cta_clicked",
+      {
+        type: limitType ?? "projects",
+        source: LEAD_SOURCE,
+      },
+      { userId: user.id }
+    );
 
     return NextResponse.json({ success: true });
   } catch (err) {

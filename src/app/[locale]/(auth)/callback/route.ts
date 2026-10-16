@@ -99,12 +99,18 @@ export async function GET(request: NextRequest) {
         redirectUrl.searchParams.set("billing_period", billing);
 
         // Fire-and-forget: never delay or fail the auth redirect for analytics.
-        void trackEvent("signup", {
-          plan_code: plan ?? "BASE",
-          billing_period: billing,
-        });
+        void trackEvent(
+          "signup",
+          {
+            plan_code: plan ?? "BASE",
+            billing_period: billing,
+          },
+          { userId: result.data.user?.id ?? result.data.session.user.id }
+        );
       } else {
-        void trackEvent("login");
+        void trackEvent("login", undefined, {
+          userId: result.data.user?.id ?? result.data.session.user.id,
+        });
       }
 
       const response = NextResponse.redirect(redirectUrl.toString());

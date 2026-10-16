@@ -32,11 +32,30 @@ describe("trackEvent", () => {
     const result = await trackEvent("signup", { plan_code: "PRO" });
 
     expect(result).toBe(true);
+    expect(mockGetUser).toHaveBeenCalled();
     expect(mockFrom).toHaveBeenCalledWith("user_events");
     expect(mockInsert).toHaveBeenCalledWith({
       user_id: "user-123",
       event: "signup",
       props: { plan_code: "PRO" },
+    });
+  });
+
+  it("uses options.userId and skips getUser", async () => {
+    mockInsert.mockResolvedValue({ error: null });
+
+    const result = await trackEvent(
+      "limit_cta_clicked",
+      { type: "storage" },
+      { userId: "trusted-user-id" }
+    );
+
+    expect(result).toBe(true);
+    expect(mockGetUser).not.toHaveBeenCalled();
+    expect(mockInsert).toHaveBeenCalledWith({
+      user_id: "trusted-user-id",
+      event: "limit_cta_clicked",
+      props: { type: "storage" },
     });
   });
 

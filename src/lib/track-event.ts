@@ -21,28 +21,43 @@ export type UserEvent =
   | "limit_cta_clicked"
   | "help_clicked";
 
+export type TrackEventOptions = {
+  userId: string;
+};
+
 /**
  * Track a user event in the user_events table.
- * Uses the current authenticated user from the Supabase server client.
+ *
+ * When `options.userId` is provided, inserts with that id and skips `getUser()`.
+ * Use only from server-only trusted callers after they have already authenticated
+ * the user (route handlers, auth callback). Do not expose `options` through
+ * client-callable server actions.
+ *
+ * When omitted, resolves the current user via `getUser()` (existing behavior).
  * Returns true if event was tracked successfully, false otherwise.
  * Errors are logged but not thrown - tracking failures should not break user flows.
  */
 export async function trackEvent(
   event: UserEvent,
-  props?: Record<string, unknown>
+  props?: Record<string, unknown>,
+  options?: TrackEventOptions
 ): Promise<boolean> {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
 
-    if (!user) {
-      return false;
+    let userId = options?.userId;
+    if (!userId) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        return false;
+      }
+      userId = user.id;
     }
 
     const { error } = await supabase.from("user_events").insert({
-      user_id: user.id,
+      user_id: userId,
       event,
       props: props ?? {},
     });
