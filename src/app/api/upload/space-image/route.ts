@@ -10,6 +10,7 @@ import { validateImageFile } from "@/lib/image-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
 import { buildStorageLimitErrorBody } from "@/lib/plan-limit-ux";
 import { getAppUiCopy, localeFromRequest } from "@/lib/app-ui-copy";
+import { checkRateLimit, getRateLimitMessage } from "@/lib/rate-limit";
 import {
   getSupabaseUrl,
   getSupabaseServerKey,
@@ -51,6 +52,21 @@ export async function POST(request: Request) {
 
     if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { allowed, resetAt } = checkRateLimit(`user:${user.id}`, "upload");
+    if (!allowed) {
+      return NextResponse.json(
+        { error: getRateLimitMessage(localeFromRequest(request)) },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))
+            ),
+          },
+        }
+      );
     }
 
     if (user.email?.toLowerCase() === "demo@veta.pro") {

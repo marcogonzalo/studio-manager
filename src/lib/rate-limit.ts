@@ -16,6 +16,7 @@ type RouteGroup =
   | "upload"
   | "account-delete"
   | "contact"
+  | "plan"
   | "view-project";
 
 const LIMITS: Record<RouteGroup, number> = {
@@ -23,6 +24,7 @@ const LIMITS: Record<RouteGroup, number> = {
   upload: 20,
   "account-delete": 5,
   contact: 5,
+  plan: 10,
   "view-project": 120,
 };
 
@@ -83,6 +85,7 @@ export function getRouteGroup(
 ): RouteGroup | null {
   if (pathname.startsWith("/api/auth")) return "auth";
   if (pathname.startsWith("/api/upload")) return "upload";
+  if (pathname.startsWith("/api/plan")) return "plan";
   if (pathname === "/api/account/delete") return "account-delete";
   if (pathname === "/contact" && method === "POST") return "contact";
   if (pathname.startsWith("/view-project/")) return "view-project";

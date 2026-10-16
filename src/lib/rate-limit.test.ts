@@ -20,6 +20,9 @@ describe("getRouteGroup", () => {
   it("returns upload for /api/upload/product-image", () => {
     expect(getRouteGroup("/api/upload/product-image")).toBe("upload");
   });
+  it("returns plan for /api/plan/notify-interest", () => {
+    expect(getRouteGroup("/api/plan/notify-interest")).toBe("plan");
+  });
   it("returns account-delete for /api/account/delete", () => {
     expect(getRouteGroup("/api/account/delete")).toBe("account-delete");
   });

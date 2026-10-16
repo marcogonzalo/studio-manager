@@ -314,8 +314,9 @@ function isTrustedBackblazeB2FileHostname(hostname: string): boolean {
 
 /**
  * Comprueba si una URL es de nuestro bucket B2.
+ * Exported for SSRF guards (e.g. storage backfill HEAD).
  */
-function isOurB2Url(imageUrl: string): boolean {
+export function isOurB2Url(imageUrl: string): boolean {
   const bucketName = process.env.B2_BUCKET_NAME;
   if (!bucketName || !imageUrl?.trim()) return false;
   try {

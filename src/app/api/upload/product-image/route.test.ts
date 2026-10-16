@@ -65,6 +65,18 @@ vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseServiceRoleKey: () => mockGetServiceRoleKey(),
 }));
 
+vi.mock("@/lib/rate-limit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/rate-limit")>();
+  return {
+    ...actual,
+    checkRateLimit: vi.fn(() => ({
+      allowed: true,
+      remaining: 20,
+      resetAt: Date.now() + 60_000,
+    })),
+  };
+});
+
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({})),
 }));

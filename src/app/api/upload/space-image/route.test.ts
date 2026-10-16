@@ -61,6 +61,18 @@ vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseServiceRoleKey: () => undefined,
 }));
 
+vi.mock("@/lib/rate-limit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/rate-limit")>();
+  return {
+    ...actual,
+    checkRateLimit: vi.fn(() => ({
+      allowed: true,
+      remaining: 20,
+      resetAt: Date.now() + 60_000,
+    })),
+  };
+});
+
 function createMockChain(data: unknown, error: unknown = null) {
   const chain = {
     select: vi.fn().mockReturnThis(),
