@@ -63,7 +63,7 @@ import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
+import { cn, isDemoAccountEmail } from "@/lib/utils";
 import { getDisplayName } from "@/lib/display-name";
 import { appPath } from "@/lib/app-paths";
 import { AuthConfirmedTracker } from "@/components/gtm/auth-confirmed-tracker";
@@ -72,8 +72,6 @@ import { SupportFormDialog } from "@/components/support/support-form-dialog";
 import { isWithinNewUserHelpWindow } from "@/lib/support/help-window";
 import type { SupportReason } from "@/lib/support/reasons";
 import { trackUserEvent } from "@/app/actions/track-event";
-
-const DEMO_EMAIL = "demo@veta.pro";
 
 function AppLayoutSkeleton() {
   return (
@@ -724,7 +722,7 @@ export default function AppLayoutClient({
   const [supportReason, setSupportReason] =
     useState<SupportReason>("need_help");
 
-  const isDemoAccount = user?.email?.toLowerCase() === DEMO_EMAIL;
+  const isDemoAccount = isDemoAccountEmail(user?.email);
   const showProminentHelp =
     !isDemoAccount && isWithinNewUserHelpWindow(user?.confirmed_at ?? null);
 
