@@ -32,10 +32,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { getDemoAccountMessage, reportError, CURRENCIES } from "@/lib/utils";
-import type { Product, Supplier } from "@/types";
+import type { Product } from "@/types";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
+import { useSuppliers } from "@/hooks/use-suppliers";
 import { SupplierDialog } from "./supplier-dialog";
 import { ProductImageUpload } from "@/components/product-image-upload";
 import { Plus } from "lucide-react";
@@ -77,7 +78,9 @@ export function ProductDialog({
   const isBasePlan = effectivePlan?.plan_code === "BASE";
   const currencyDisabled = isBasePlan;
   const defaultCurrency = profileDefaults?.default_currency ?? "EUR";
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const { suppliers, refetch: refetchSuppliers } = useSuppliers({
+    enabled: open,
+  });
   const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
   const [pendingSupplierId, setPendingSupplierId] = useState<string | null>(
     null
@@ -118,18 +121,7 @@ export function ProductDialog({
     },
   });
 
-  useEffect(() => {
-    async function loadSuppliers() {
-      const { data } = await supabase
-        .from("suppliers")
-        .select("*")
-        .order("name");
-      setSuppliers(data || []);
-    }
-    if (open) loadSuppliers();
-  }, [open, supabase]);
-
-  // Sincronizar el valor del proveedor cuando la lista se actualiza y hay un proveedor pendiente
+  // Sync supplier select when list updates and a pending supplier exists
   useEffect(() => {
     if (pendingSupplierId && suppliers.length > 0) {
       const supplierExists = suppliers.some((s) => s.id === pendingSupplierId);
@@ -144,13 +136,8 @@ export function ProductDialog({
   }, [suppliers, pendingSupplierId, form]);
 
   const handleSupplierCreated = async (newSupplierId: string) => {
-    // Recargar la lista de proveedores
-    const { data } = await supabase.from("suppliers").select("*").order("name");
-    if (data) {
-      setSuppliers(data);
-      // Establecer el proveedor pendiente para que se seleccione cuando la lista se actualice
-      setPendingSupplierId(newSupplierId);
-    }
+    await refetchSuppliers();
+    setPendingSupplierId(newSupplierId);
     setIsSupplierDialogOpen(false);
   };
 
