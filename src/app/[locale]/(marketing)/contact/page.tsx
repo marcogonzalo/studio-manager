@@ -55,10 +55,13 @@ export async function generateMetadata({
 
 export default async function ContactPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ reason?: string }>;
 }) {
   const { locale } = await params;
+  const { reason: reasonParam } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations("Contact");
 
@@ -152,7 +155,7 @@ export default async function ContactPage({
 
             <AnimatedSection>
               <Card className="border-none shadow-lg transition-shadow duration-300 hover:shadow-xl">
-                <ContactForm />
+                <ContactForm reasonParam={reasonParam} />
               </Card>
             </AnimatedSection>
           </div>
