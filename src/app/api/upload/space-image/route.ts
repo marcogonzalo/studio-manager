@@ -9,14 +9,8 @@ import { createAsset, getAssetIdByOwner } from "@/lib/assets";
 import { MAX_IMAGE_FILE_SIZE, validateImageFile } from "@/lib/image-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
 import { buildStorageLimitErrorBody } from "@/lib/plan-limit-ux";
-import {
-  getAppUiCopy,
-  interpolateAppCopy,
-  localeFromRequest,
-} from "@/lib/app-ui-copy";
+import { getAppUiCopy, localeFromRequest } from "@/lib/app-ui-copy";
 import { checkRateLimit, getRateLimitMessage } from "@/lib/rate-limit";
-import { reportError } from "@/lib/utils";
-import { humanizeUploadError } from "@/lib/upload-user-error";
 import {
   getSupabaseUrl,
   getSupabaseServerKey,
