@@ -41,6 +41,7 @@ import {
   Bug,
   ChevronRight,
   MoreHorizontal,
+  LifeBuoy,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { VetaLogo } from "@/components/veta-logo";
@@ -57,7 +58,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import { PageLoading } from "@/components/loaders/page-loading";
@@ -65,9 +66,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { getDisplayName } from "@/lib/display-name";
 import { appPath } from "@/lib/app-paths";
-import { getReportBugUrl } from "@/lib/report-bug";
 import { AuthConfirmedTracker } from "@/components/gtm/auth-confirmed-tracker";
 import { APP_ANNOUNCEMENT_SIDEBAR_OFFSET } from "@/components/app-announcement-banner";
+import { SupportFormDialog } from "@/components/support/support-form-dialog";
+import { isWithinNewUserHelpWindow } from "@/lib/support/help-window";
+import type { SupportReason } from "@/lib/support/reasons";
+import { trackUserEvent } from "@/app/actions/track-event";
+
+const DEMO_EMAIL = "demo@veta.pro";
 
 function AppLayoutSkeleton() {
   return (
@@ -224,6 +230,9 @@ function SidebarContent({
   isCollapsed,
   setIsCollapsed,
   className,
+  showProminentHelp,
+  showSupportMenu,
+  onOpenSupport,
 }: {
   collapsed?: boolean;
   user: ReturnType<typeof useAuth>["user"];
@@ -236,6 +245,9 @@ function SidebarContent({
   setIsCollapsed: (collapsed: boolean) => void;
   /** Clases adicionales para el contenedor raíz (ej. en desktop: md:fixed md:w-64) */
   className?: string;
+  showProminentHelp: boolean;
+  showSupportMenu: boolean;
+  onOpenSupport: (reason: SupportReason) => void;
 }) {
   const tNav = useTranslations("AppNav");
   const navItems = useMemo(
@@ -473,6 +485,36 @@ function SidebarContent({
           collapsed ? "p-2" : "space-y-3 p-4"
         )}
       >
+        {showProminentHelp &&
+          (collapsed ? (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => onOpenSupport("need_help")}
+                  className="border-border text-foreground hover:bg-secondary mb-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium"
+                  aria-label={tNav("needHelpAria")}
+                >
+                  <LifeBuoy className="h-4 w-4 shrink-0" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right" variant="tertiary">
+                {tNav("needHelp")}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenSupport("need_help")}
+              className="border-border text-foreground hover:bg-secondary mb-2 flex h-auto w-full cursor-pointer items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium whitespace-normal"
+              aria-label={tNav("needHelpAria")}
+            >
+              <LifeBuoy className="h-4 w-4 shrink-0" />
+              <span className="text-left leading-snug">{tNav("needHelp")}</span>
+            </Button>
+          ))}
         {effectivePlan?.plan_code === "BASE" &&
           (collapsed ? (
             <Tooltip delayDuration={0}>
@@ -541,23 +583,24 @@ function SidebarContent({
                       {tNav("settings")}
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      const url = getReportBugUrl({
-                        viewTitle:
-                          typeof document !== "undefined" ? document.title : "",
-                        viewUrl:
-                          typeof window !== "undefined"
-                            ? window.location.href
-                            : "",
-                      });
-                      window.open(url, "_blank", "noopener,noreferrer");
-                    }}
-                    className="cursor-pointer"
-                  >
-                    <Bug className="mr-2 h-4 w-4" />
-                    {tNav("reportBug")}
-                  </DropdownMenuItem>
+                  {showSupportMenu && !showProminentHelp && (
+                    <DropdownMenuItem
+                      onClick={() => onOpenSupport("need_help")}
+                      className="cursor-pointer"
+                    >
+                      <LifeBuoy className="mr-2 h-4 w-4" />
+                      {tNav("contactSupport")}
+                    </DropdownMenuItem>
+                  )}
+                  {showSupportMenu && (
+                    <DropdownMenuItem
+                      onClick={() => onOpenSupport("report_error")}
+                      className="cursor-pointer"
+                    >
+                      <Bug className="mr-2 h-4 w-4" />
+                      {tNav("reportBug")}
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={signOut}
@@ -626,23 +669,24 @@ function SidebarContent({
                     {tNav("settings")}
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    const url = getReportBugUrl({
-                      viewTitle:
-                        typeof document !== "undefined" ? document.title : "",
-                      viewUrl:
-                        typeof window !== "undefined"
-                          ? window.location.href
-                          : "",
-                    });
-                    window.open(url, "_blank", "noopener,noreferrer");
-                  }}
-                  className="cursor-pointer"
-                >
-                  <Bug className="mr-2 h-4 w-4" />
-                  {tNav("reportBug")}
-                </DropdownMenuItem>
+                {showSupportMenu && !showProminentHelp && (
+                  <DropdownMenuItem
+                    onClick={() => onOpenSupport("need_help")}
+                    className="cursor-pointer"
+                  >
+                    <LifeBuoy className="mr-2 h-4 w-4" />
+                    {tNav("contactSupport")}
+                  </DropdownMenuItem>
+                )}
+                {showSupportMenu && (
+                  <DropdownMenuItem
+                    onClick={() => onOpenSupport("report_error")}
+                    className="cursor-pointer"
+                  >
+                    <Bug className="mr-2 h-4 w-4" />
+                    {tNav("reportBug")}
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={signOut}
@@ -676,6 +720,35 @@ export default function AppLayoutClient({
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [supportReason, setSupportReason] =
+    useState<SupportReason>("need_help");
+
+  const isDemoAccount = user?.email?.toLowerCase() === DEMO_EMAIL;
+  const showProminentHelp =
+    !isDemoAccount && isWithinNewUserHelpWindow(user?.confirmed_at ?? null);
+
+  const supportDefaultName =
+    profileFullName?.trim() ||
+    (typeof user?.user_metadata?.full_name === "string"
+      ? user.user_metadata.full_name.trim()
+      : "") ||
+    "";
+  const supportDefaultEmail = user?.email ?? "";
+
+  const openSupport = useCallback(
+    (reason: SupportReason) => {
+      if (isDemoAccount) return;
+      setSupportReason(reason);
+      setSupportOpen(true);
+      void trackUserEvent("help_clicked", {
+        reason,
+        path: pathname,
+        plan_code: effectivePlan?.plan_code ?? null,
+      });
+    },
+    [isDemoAccount, pathname, effectivePlan?.plan_code]
+  );
   const [skippedOnboardingThisSession, setSkippedOnboardingThisSession] =
     useState(
       () =>
@@ -750,6 +823,17 @@ export default function AppLayoutClient({
           onWelcomeComplete={handleOnboardingWelcomeComplete}
         />
       )}
+      {!isDemoAccount && (
+        <SupportFormDialog
+          open={supportOpen}
+          onOpenChange={setSupportOpen}
+          defaultReason={supportReason}
+          defaultName={supportDefaultName}
+          defaultEmail={supportDefaultEmail}
+          contextPath={pathname}
+          contextPlanCode={effectivePlan?.plan_code ?? ""}
+        />
+      )}
       <div className="bg-background text-foreground flex min-h-screen flex-col">
         {announcement}
         <div className="flex min-h-0 flex-1">
@@ -764,6 +848,9 @@ export default function AppLayoutClient({
             setIsMobileOpen={setIsMobileOpen}
             isCollapsed={isCollapsed}
             setIsCollapsed={setIsCollapsed}
+            showProminentHelp={showProminentHelp}
+            showSupportMenu={!isDemoAccount}
+            onOpenSupport={openSupport}
             className={cn(
               "z-50 hidden shadow-sm transition-all duration-300 md:fixed md:flex md:flex-col print:hidden",
               // Announcement bar ~2.375rem; plain h-full would clip the sidebar footer.
@@ -798,6 +885,9 @@ export default function AppLayoutClient({
                 setIsMobileOpen={setIsMobileOpen}
                 isCollapsed={isCollapsed}
                 setIsCollapsed={setIsCollapsed}
+                showProminentHelp={showProminentHelp}
+                showSupportMenu={!isDemoAccount}
+                onOpenSupport={openSupport}
               />
             </SheetContent>
           </Sheet>

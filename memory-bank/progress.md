@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama feat/in-app-help-support-form-217 (issue #217):** Shared `SupportForm` (reason, subject, name, email, message) + `submitSupportForm` via MailerSend. In-app help CTA first 14 days from `user.confirmed_at`; after that user-menu only. Report bug opens form with `report_error`. Demo hidden. Marketing `/contact` uses same form (`?reason=`). Event `help_clicked`. Full verify: Docker lint + tests + build.
+
 - **Rama fix/analytics-signup-consent-banner-220 (issue #220):** Consent-gated fix so signup confirmation can reach GTM/GA4. `CookieConsentBanner` mounted once in `[locale]/layout` (auth + marketing) and `veta-app/layout` (removed marketing duplicate). `pushSignUpConfirmed` / `pushLoginConfirmed` no longer dual-push `sign_up`/`login`. Callback `trackEvent` fire-and-forget. Docs + `NEXT_PUBLIC_GTM_ID` in `.env.example`. Vitest for banner, gate, gtm helpers, mount points. Full verify: Docker test profile lint + tests + build. GTM container wiring still manual (#181).
 
 - **Rama cursor/funnel-data-foundations-7010 (PR #212):** Demo restored to shared `demo@veta.pro` magic link (Zod/anti-spam kept; lead stamped via `demo_access_token`). Removed shared `is_example` model. Every brand-new real account gets one editable sample project on first profile creation (`seed_sample_project` ES/EN, no images; counts toward Base limit). Full-width `DemoAccountBanner` on all `/veta-app` views for demo. Precise active-project limit toast + link to `/veta-app/settings/plan`. Branch migrations consolidated (4 files); local `db:reset` verified.

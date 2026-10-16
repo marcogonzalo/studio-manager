@@ -20,6 +20,9 @@
     "switchToDark": "Cambiar a modo oscuro",
     "settings": "Configuración",
     "reportBug": "Reportar fallo",
+    "needHelp": "¿Te ayudamos? Escríbenos",
+    "needHelpAria": "Abrir formulario de ayuda y contacto",
+    "contactSupport": "Contactar soporte",
     "signOut": "Cerrar sesión",
     "accountMenuAria": "Cuenta y personalización",
     "more": "Más"

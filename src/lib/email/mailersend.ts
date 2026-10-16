@@ -85,7 +85,7 @@ export function getContactFormToEmail(): string {
  */
 export function getDefaultFrom(): { email: string; name: string } {
   const raw =
-    process.env.CONTACT_EMAIL_FROM?.trim() ?? "Veta Web <noreply@veta.pro>";
+    process.env.CONTACT_EMAIL_FROM?.trim() ?? "Veta Web <hey@veta.pro>";
   const match = raw.match(/^(.+?)\s*<([^>]+)>$/);
   if (match) {
     return { name: match[1].trim(), email: match[2].trim() };

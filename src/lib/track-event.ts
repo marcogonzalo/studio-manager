@@ -18,7 +18,8 @@ export type UserEvent =
   | "plan_selected"
   | "project_updated"
   | "limit_hit"
-  | "limit_cta_clicked";
+  | "limit_cta_clicked"
+  | "help_clicked";
 
 /**
  * Track a user event in the user_events table.
