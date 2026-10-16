@@ -2,7 +2,9 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
-- **Rama fix/docker-dev-turbopack-memory:** Dev container `mem_limit` 4GB → 6GB. V8 heap 3072 → 2048 so Turbopack native memory fits in the cgroup. `watchOptions.pollIntervalMs: 1000` because Turbopack ignores `CHOKIDAR_USEPOLLING`. One page compile peaked ~3.8GB RSS and SIGKILL'd the worker; parent then exited 0 and `docker-dev.sh` relaunched. Short verify: Prettier, `docker compose config`. Full lint/test/build skipped — live dev container was ~4GB of 6GB and the Docker VM is ~8GB, so a second test container would OOM. CI runs the suite.
+- **Rama fix/docker-dev-turbopack-memory:** Dev container `mem_limit` 4GB → 6GB. V8 heap 3072 → 2048 so Turbopack native memory fits in the cgroup. `watchOptions.pollIntervalMs: 1000` because Turbopack ignores `CHOKIDAR_USEPOLLING`. One page compile peaked ~3.8GB RSS and SIGKILL'd the worker; parent then exited 0 and `docker-dev.sh` relaunched. Short verify: Prettier, `docker compose config`. Full lint/test/build skipped — live dev container was ~4GB of 6GB and the Docker VM is ~8GB, so a second test container would OOM. CI runs the suite
+
+- **Rama feat/atomic-purchase-order-rpc:** Atomic create/update of purchase orders + `project_items` link/status via Postgres RPC `save_purchase_order_with_items` (SECURITY INVOKER, RLS). `PurchaseOrderDialog` submit calls single `supabase.rpc`; status helper extracted to `purchase-order-item-status.ts`. Migration applied local (`db:push`). Full verify: Docker lint + tests + build.
 
 - **Rama feat/in-app-help-support-form-217 (issue #217):** Shared `SupportForm` (reason, subject, name, email, message) + `submitSupportForm` via MailerSend. In-app help CTA first 14 days from `user.confirmed_at`; after that user-menu only. Report bug opens form with `report_error`. Demo hidden. Marketing `/contact` uses same form (`?reason=`). Event `help_clicked`. Full verify: Docker lint + tests + build.
 

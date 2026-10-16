@@ -93,14 +93,6 @@ const PREDEFINED_DEADLINE_VALUES = new Set([
   "tbd",
 ]);
 
-/** Item status from PO status: draft/sent → pending, confirmed → ordered, received → received. */
-function getItemStatusForPO(poStatus: string): string {
-  const s = poStatus?.toLowerCase();
-  if (s === "confirmed") return "ordered";
-  if (s === "received") return "received";
-  return "pending"; // draft, sent
-}
-
 export function PurchaseOrderDialog({
   open,
   onOpenChange,
@@ -473,192 +465,25 @@ export function PurchaseOrderDialog({
     }
 
     try {
-      if (isEditing && order) {
-        const wasCancelled = order.status === "cancelled";
-        const isNowCancelled = values.status === "cancelled";
-        const wasNotCancelled = order.status !== "cancelled";
-
-        // Update existing order
-        const { error: updateError } = await supabase
-          .from("purchase_orders")
-          .update({
-            supplier_id: values.supplier_id,
-            order_number: values.order_number,
-            order_date: values.order_date,
-            status: values.status,
-            notes: values.notes || null,
-            delivery_deadline: values.delivery_deadline || null,
-            delivery_date: values.delivery_date || null,
-          })
-          .eq("id", order.id);
-
-        if (updateError) throw updateError;
-
-        // Get current items in this order
-        const { data: currentItems } = await supabase
-          .from("project_items")
-          .select("id")
-          .eq("purchase_order_id", order.id);
-
-        const currentItemIds = new Set(
-          (currentItems || []).map((item: { id: string }) => item.id)
-        );
-        const newItemIds = selectedItemIds;
-
-        // If order is being cancelled, handle item status updates
-        if (isNowCancelled && wasNotCancelled) {
-          // Get all non-cancelled orders (excluding this one)
-          const { data: activeOrders } = await supabase
-            .from("purchase_orders")
-            .select("id")
-            .eq("project_id", projectId)
-            .neq("id", order.id)
-            .neq("status", "cancelled");
-
-          const activeOrderIds =
-            activeOrders?.map((po: { id: string }) => po.id) || [];
-
-          // For each item in this order, check if it's in another non-cancelled order
-          for (const itemId of currentItemIds) {
-            let hasOtherActiveOrder = false;
-
-            if (activeOrderIds.length > 0) {
-              // Check if this item is in any active order
-              const { data: itemInOtherOrder, error: checkError } =
-                await supabase
-                  .from("project_items")
-                  .select("id")
-                  .eq("id", itemId)
-                  .in("purchase_order_id", activeOrderIds)
-                  .limit(1)
-                  .maybeSingle();
-
-              hasOtherActiveOrder = !checkError && !!itemInOtherOrder;
-            }
-
-            if (!hasOtherActiveOrder) {
-              // No other active order, set to pending
-              await supabase
-                .from("project_items")
-                .update({ status: "pending" })
-                .eq("id", itemId);
-            }
-          }
-        } else if (!isNowCancelled && wasCancelled) {
-          // Order is being reactivated, set items to status derived from PO status
-          await supabase
-            .from("project_items")
-            .update({ status: getItemStatusForPO(values.status) })
-            .in("id", Array.from(currentItemIds));
+      const { error: rpcError } = await supabase.rpc(
+        "save_purchase_order_with_items",
+        {
+          p_project_id: projectId,
+          p_purchase_order_id: isEditing && order ? order.id : null,
+          p_supplier_id: values.supplier_id,
+          p_order_number: values.order_number,
+          p_order_date: values.order_date,
+          p_status: values.status,
+          p_notes: values.notes || null,
+          p_delivery_deadline: values.delivery_deadline || null,
+          p_delivery_date: values.delivery_date || null,
+          p_item_ids: Array.from(selectedItemIds),
         }
+      );
 
-        // Remove items no longer selected
-        const toRemove = (Array.from(currentItemIds) as string[]).filter(
-          (id) => !newItemIds.has(id)
-        );
-        if (toRemove.length > 0) {
-          // Get all non-cancelled orders (excluding this one)
-          const { data: activeOrders } = await supabase
-            .from("purchase_orders")
-            .select("id")
-            .eq("project_id", projectId)
-            .neq("id", order.id)
-            .neq("status", "cancelled");
+      if (rpcError) throw rpcError;
 
-          const activeOrderIds =
-            activeOrders?.map((po: { id: string }) => po.id) || [];
-
-          // Check if items are in other non-cancelled orders before setting to pending
-          for (const itemId of toRemove) {
-            let hasOtherActiveOrder = false;
-
-            if (activeOrderIds.length > 0) {
-              const { data: itemInOtherOrder, error: checkError } =
-                await supabase
-                  .from("project_items")
-                  .select("id")
-                  .eq("id", itemId)
-                  .in("purchase_order_id", activeOrderIds)
-                  .limit(1)
-                  .maybeSingle();
-
-              hasOtherActiveOrder = !checkError && !!itemInOtherOrder;
-            }
-
-            if (!hasOtherActiveOrder) {
-              await supabase
-                .from("project_items")
-                .update({ purchase_order_id: null, status: "pending" })
-                .eq("id", itemId);
-            } else {
-              // Just unlink from this order, keep status as ordered
-              await supabase
-                .from("project_items")
-                .update({ purchase_order_id: null })
-                .eq("id", itemId);
-            }
-          }
-        }
-
-        // Add newly selected items
-        const toAdd = Array.from(newItemIds).filter(
-          (id) => !currentItemIds.has(id)
-        );
-        if (toAdd.length > 0) {
-          await supabase
-            .from("project_items")
-            .update({
-              purchase_order_id: order.id,
-              status: isNowCancelled
-                ? "pending"
-                : getItemStatusForPO(values.status),
-            })
-            .in("id", toAdd);
-        }
-
-        // Sync status of all items in this order to PO status (draft/sent → pending, confirmed → ordered, received → received)
-        if (!isNowCancelled) {
-          await supabase
-            .from("project_items")
-            .update({ status: getItemStatusForPO(values.status) })
-            .eq("purchase_order_id", order.id);
-        }
-
-        toast.success(t("toastUpdated"));
-      } else {
-        // Create new order
-        const { data: newOrder, error: createError } = await supabase
-          .from("purchase_orders")
-          .insert([
-            {
-              project_id: projectId,
-              supplier_id: values.supplier_id,
-              order_number: values.order_number,
-              order_date: values.order_date,
-              status: values.status,
-              notes: values.notes || null,
-              delivery_deadline: values.delivery_deadline || null,
-              delivery_date: values.delivery_date || null,
-              user_id: user.id,
-            },
-          ])
-          .select()
-          .single();
-
-        if (createError) throw createError;
-
-        // Link selected items to the order; item status follows PO status (draft/sent → pending, confirmed → ordered, received → received)
-        await supabase
-          .from("project_items")
-          .update({
-            purchase_order_id: newOrder.id,
-            status: getItemStatusForPO(values.status),
-          })
-          .in("id", Array.from(selectedItemIds));
-
-        toast.success(t("toastCreated"));
-      }
-
+      toast.success(isEditing ? t("toastUpdated") : t("toastCreated"));
       onSuccess();
       onOpenChange(false);
     } catch (error: unknown) {
