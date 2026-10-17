@@ -35,14 +35,11 @@ import type {
 } from "@/types";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
-
-interface PurchaseOrderCoverage {
-  id: string;
-  order_number: string;
-  total_amount: number;
-  covered_amount: number;
-  status: "covered" | "partial" | "pending";
-}
+import {
+  buildPurchaseOrderCoverage,
+  type PoWithItems,
+  type PurchaseOrderCoverage,
+} from "./purchase-order-coverage";
 
 interface DashboardKPIs {
   coverage: number;
@@ -92,27 +89,45 @@ export function ProjectDashboard({
   const fetchData = async () => {
     setLoading(true);
 
-    // Fetch project
-    const { data: projectData } = await supabase
-      .from("projects")
-      .select("*")
-      .eq("id", projectId)
-      .single();
-    if (projectData) setProject(projectData);
+    const [projectRes, paymentsRes, budgetLinesRes, posRes, itemsRes] =
+      await Promise.all([
+        supabase
+          .from("projects")
+          .select(
+            "id, name, phase, currency, status, description, start_date, end_date, completed_date, client_id"
+          )
+          .eq("id", projectId)
+          .single(),
+        supabase
+          .from("payments")
+          .select(
+            "id, project_id, user_id, amount, payment_date, payment_type, purchase_order_id, created_at"
+          )
+          .eq("project_id", projectId),
+        supabase
+          .from("project_budget_lines")
+          .select(
+            "id, project_id, category, subcategory, estimated_amount, actual_amount, is_internal_cost, user_id, created_at"
+          )
+          .eq("project_id", projectId),
+        supabase
+          .from("purchase_orders")
+          .select("id, order_number, project_items(id, quantity, unit_cost)")
+          .eq("project_id", projectId),
+        supabase
+          .from("project_items")
+          .select(
+            "id, quantity, unit_cost, unit_price, is_excluded, is_price_tbd"
+          )
+          .eq("project_id", projectId),
+      ]);
 
-    // Fetch payments
-    const { data: paymentsData } = await supabase
-      .from("payments")
-      .select("*")
-      .eq("project_id", projectId);
-    if (paymentsData) setPayments(paymentsData || []);
+    if (projectRes.data) setProject(projectRes.data as Project);
 
-    // Fetch budget lines
-    const { data: budgetLinesData, error: budgetLinesError } = await supabase
-      .from("project_budget_lines")
-      .select("*")
-      .eq("project_id", projectId);
+    const paymentsData = (paymentsRes.data || []) as Payment[];
+    setPayments(paymentsData);
 
+    const { data: budgetLinesData, error: budgetLinesError } = budgetLinesRes;
     if (budgetLinesError) {
       // Table might not exist yet - silently handle it
       if (
@@ -128,67 +143,13 @@ export function ProjectDashboard({
         setBudgetLines([]);
       }
     } else {
-      setBudgetLines(budgetLinesData || []);
+      setBudgetLines((budgetLinesData || []) as ProjectBudgetLine[]);
     }
 
-    // Fetch purchase orders with coverage
-    const { data: posData } = await supabase
-      .from("purchase_orders")
-      .select("id, order_number, project_items(id, quantity, unit_cost)")
-      .eq("project_id", projectId);
+    const posData = (posRes.data || []) as PoWithItems[];
+    setPoCoverage(buildPurchaseOrderCoverage(posData, paymentsData));
 
-    if (posData) {
-      const coveragePromises = posData.map(
-        async (po: {
-          id: string;
-          order_number?: string | null;
-          project_items?: Array<{
-            id: string;
-            quantity: number;
-            unit_cost: number;
-          }>;
-        }) => {
-          type PoItem = { id: string; quantity: number; unit_cost: number };
-          const totalAmount = (po.project_items || []).reduce(
-            (sum: number, item: PoItem) => sum + item.unit_cost * item.quantity,
-            0
-          );
-
-          const { data: paymentsForPO } = await supabase
-            .from("payments")
-            .select("amount")
-            .eq("purchase_order_id", po.id);
-
-          const coveredAmount = (paymentsForPO || []).reduce(
-            (sum: number, p: { amount?: number | null }) =>
-              sum + Number(p.amount),
-            0
-          );
-
-          let status: "covered" | "partial" | "pending" = "pending";
-          if (coveredAmount >= totalAmount) status = "covered";
-          else if (coveredAmount > 0) status = "partial";
-
-          return {
-            id: po.id,
-            order_number: po.order_number || `PO-${po.id.slice(0, 8)}`,
-            total_amount: totalAmount,
-            covered_amount: coveredAmount,
-            status,
-          };
-        }
-      );
-
-      const coverage = await Promise.all(coveragePromises);
-      setPoCoverage(coverage);
-    }
-
-    // Fetch items
-    const { data: itemsData } = await supabase
-      .from("project_items")
-      .select("id, quantity, unit_cost, unit_price, is_excluded, is_price_tbd")
-      .eq("project_id", projectId);
-    if (itemsData) setItems(itemsData || []);
+    if (itemsRes.data) setItems(itemsRes.data || []);
 
     setLoading(false);
   };
