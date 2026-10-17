@@ -33,6 +33,7 @@ vi.mock("@/lib/backblaze", async () => {
 });
 
 vi.mock("@/lib/image-validation", () => ({
+  MAX_IMAGE_FILE_SIZE: 5 * 1024 * 1024,
   validateImageFile: vi.fn(() => ({ valid: true })),
 }));
 
