@@ -299,6 +299,12 @@ const nextConfig: NextConfig = {
     },
   },
 
+  // Turbopack ignores CHOKIDAR_USEPOLLING / WATCHPACK_POLLING.
+  // Poll so Docker Desktop bind mounts do not use native notify.
+  watchOptions: {
+    pollIntervalMs: 1000,
+  },
+
   // Enable experimental features if needed
   experimental: {
     // Enable server actions
