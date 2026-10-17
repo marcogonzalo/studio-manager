@@ -11,8 +11,27 @@ import {
   isAllowedImageType,
   validateImageFile,
 } from "./image-validation";
+import { messageFromStorageProviderFailure } from "@/lib/upload-user-error";
+import { reportWarn } from "@/lib/utils";
 
 export { validateImageFile };
+
+function throwB2HttpError(
+  res: Response,
+  body: { message?: string },
+  fallbackLabel: string
+): never {
+  const friendly = messageFromStorageProviderFailure(
+    res.status,
+    body.message,
+    `${fallbackLabel}: ${res.status} ${res.statusText}`
+  );
+  // Keep opaque provider detail in server logs; never return it to clients.
+  if (body.message && body.message !== friendly) {
+    reportWarn(`[B2] ${fallbackLabel}: ${body.message} (HTTP ${res.status})`);
+  }
+  throw new Error(friendly);
+}
 
 const BUCKET_ASSETS_PREFIX =
   process.env.NODE_ENV === "production" ? "assets" : "test-assets";
@@ -58,10 +77,8 @@ async function b2Authorize(): Promise<B2AuthResponse> {
   );
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(
-      err.message || `B2 authorize failed: ${res.status} ${res.statusText}`
-    );
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throwB2HttpError(res, err, "B2 authorize failed");
   }
 
   return res.json();
@@ -96,10 +113,8 @@ async function getUploadUrl(
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(
-      err.message || `B2 get upload URL failed: ${res.status} ${res.statusText}`
-    );
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throwB2HttpError(res, err, "B2 get upload URL failed");
   }
 
   return res.json();
@@ -156,10 +171,8 @@ export async function uploadProductImage(params: {
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(
-      err.message || `B2 upload failed: ${res.status} ${res.statusText}`
-    );
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throwB2HttpError(res, err, "B2 upload failed");
   }
 
   const data = (await res.json()) as B2UploadFileResponse;
@@ -220,10 +233,8 @@ export async function uploadSpaceImage(params: {
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(
-      err.message || `B2 upload failed: ${res.status} ${res.statusText}`
-    );
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throwB2HttpError(res, err, "B2 upload failed");
   }
 
   const data = (await res.json()) as B2UploadFileResponse;
@@ -280,10 +291,8 @@ export async function uploadDocument(params: {
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(
-      err.message || `B2 upload failed: ${res.status} ${res.statusText}`
-    );
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throwB2HttpError(res, err, "B2 upload failed");
   }
 
   const data = (await res.json()) as B2UploadFileResponse;
@@ -407,11 +416,10 @@ export async function deleteProductImage(imageUrl: string): Promise<void> {
   });
 
   if (!deleteRes.ok) {
-    const err = await deleteRes.json().catch(() => ({}));
-    throw new Error(
-      (err as { message?: string }).message ||
-        `B2 delete failed: ${deleteRes.status} ${deleteRes.statusText}`
-    );
+    const err = (await deleteRes.json().catch(() => ({}))) as {
+      message?: string;
+    };
+    throwB2HttpError(deleteRes, err, "B2 delete failed");
   }
 }
 
@@ -446,11 +454,8 @@ async function b2ListFileNames(
   });
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(
-      (err as { message?: string }).message ||
-        `B2 list file names failed: ${res.status} ${res.statusText}`
-    );
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throwB2HttpError(res, err, "B2 list file names failed");
   }
 
   const data = (await res.json()) as {
@@ -502,11 +507,10 @@ export async function deleteAllFilesForUser(userId: string): Promise<void> {
         }
       );
       if (!deleteRes.ok) {
-        const err = await deleteRes.json().catch(() => ({}));
-        throw new Error(
-          (err as { message?: string }).message ||
-            `B2 delete file failed: ${deleteRes.status} ${deleteRes.statusText}`
-        );
+        const err = (await deleteRes.json().catch(() => ({}))) as {
+          message?: string;
+        };
+        throwB2HttpError(deleteRes, err, "B2 delete file failed");
       }
     }
 

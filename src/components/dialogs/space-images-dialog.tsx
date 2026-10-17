@@ -16,8 +16,13 @@ import { toast } from "sonner";
 import type { Space } from "@/types";
 import { Plus, Trash2 } from "lucide-react";
 import { deleteSpaceImage } from "@/lib/delete-space-image";
-import { getDemoAccountMessage, reportError } from "@/lib/utils";
+import {
+  getDemoAccountMessage,
+  getErrorMessageString,
+  reportError,
+} from "@/lib/utils";
 import { PlanFeatureLockedHint } from "@/components/plan/plan-feature-locked-hint";
+import { isRateLimitStatus } from "@/lib/upload-rate-limit";
 
 interface Image {
   id: string;
@@ -72,6 +77,18 @@ export function SpaceImagesDialog({
         toast.error(`${demoMsg.title}. ${demoMsg.description}`, {
           duration: 5000,
         });
+        return;
+      }
+      const apiMessage = getErrorMessageString(result.error);
+      const status = (result.error as { status?: number } | null)?.status;
+      const rateLimited =
+        isRateLimitStatus(status ?? 0) ||
+        /request limit|l[ií]mite de solicitudes/i.test(apiMessage);
+      if (apiMessage) {
+        if (!rateLimited) {
+          reportError(result.error, "Error deleting space image:");
+        }
+        toast.error(apiMessage, rateLimited ? { duration: 5000 } : undefined);
         return;
       }
       reportError(result.error, "Error deleting space image:");

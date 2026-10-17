@@ -1,18 +1,30 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { FileIcon, Loader2, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FileIcon, Loader2 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateDocumentFile } from "@/lib/document-validation";
 import type { Locale } from "@/i18n/config";
 import { useStorageUsage } from "@/hooks/use-storage-usage";
+import { useRateLimitAutoResume } from "@/hooks/use-rate-limit-auto-resume";
 import { StorageWarningBanner } from "@/components/plan/storage-warning-banner";
 import { StorageLimitInlineError } from "@/components/plan/storage-limit-inline-error";
+import { RateLimitResumeBanner } from "@/components/plan/rate-limit-resume-banner";
+import { UploadErrorList } from "@/components/plan/upload-error-list";
 import {
   isStorageLimitErrorBody,
   type StorageLimitErrorBody,
 } from "@/lib/plan-limit-ux";
+import {
+  isRateLimitStatus,
+  parseRetryAfterSeconds,
+} from "@/lib/upload-rate-limit";
+import {
+  formatUploadFileError,
+  humanizeUploadError,
+  type UploadFailureItem,
+} from "@/lib/upload-user-error";
 
 interface DocumentFileUploadProps {
   documentId: string;
@@ -46,26 +58,58 @@ export function DocumentFileUpload({
   const { usedBytes, limitMb } = useStorageUsage();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [failures, setFailures] = useState<UploadFailureItem[]>([]);
   const [storageLimitError, setStorageLimitError] =
     useState<StorageLimitErrorBody | null>(null);
+  const cancelRequestedRef = useRef(false);
+
+  const pendingUploadRef = useRef<File | null>(null);
+  const uploadFileRef = useRef<(file: File) => Promise<void>>(
+    async () => undefined
+  );
+
+  const handleAutoResume = useCallback(() => {
+    const file = pendingUploadRef.current;
+    if (!file) return;
+    void uploadFileRef.current(file);
+  }, []);
+
+  const {
+    isPaused,
+    secondsLeft,
+    pendingCount,
+    startPause,
+    cancel: cancelPause,
+  } = useRateLimitAutoResume(handleAutoResume);
+
+  const handleCancelPending = useCallback(() => {
+    cancelRequestedRef.current = true;
+    pendingUploadRef.current = null;
+    cancelPause();
+    setIsUploading(false);
+  }, [cancelPause]);
 
   const uploadFile = useCallback(
     async (file: File) => {
-      setError(null);
+      cancelRequestedRef.current = false;
+      setFailures([]);
       const validation = validateDocumentFile(file, locale);
       if (!validation.valid) {
-        setError(validation.error);
-        onUploadError?.(validation.error);
+        const msg = formatUploadFileError(validation.error, file.name, locale);
+        setFailures([{ message: msg, fileName: file.name }]);
+        onUploadError?.(msg);
         return;
       }
 
-      if (onBeforeUpload) {
+      if (onBeforeUpload && !pendingUploadRef.current) {
         try {
           await onBeforeUpload();
         } catch (err) {
-          const msg = err instanceof Error ? err.message : t("createError");
-          setError(msg);
+          const msg = humanizeUploadError(
+            err instanceof Error ? err.message : t("createError"),
+            locale
+          );
+          setFailures([{ message: msg, fileName: file.name }]);
           onUploadError?.(msg);
           return;
         }
@@ -84,6 +128,8 @@ export function DocumentFileUpload({
           body: formData,
         });
 
+        if (cancelRequestedRef.current) return;
+
         const data = (await res.json()) as {
           url?: string;
           error?: string;
@@ -94,18 +140,32 @@ export function DocumentFileUpload({
           limitMb?: number;
         };
 
+        if (cancelRequestedRef.current) return;
+
+        if (isRateLimitStatus(res.status)) {
+          pendingUploadRef.current = file;
+          startPause(parseRetryAfterSeconds(res), 1);
+          return;
+        }
+
         if (!res.ok) {
+          pendingUploadRef.current = null;
           if (isStorageLimitErrorBody(data)) {
             setStorageLimitError(data);
             onUploadError?.(data.error);
             return;
           }
-          const msg = data.error || t("uploadError");
-          setError(msg);
+          const msg = formatUploadFileError(
+            humanizeUploadError(data.error || t("uploadError"), locale),
+            file.name,
+            locale
+          );
+          setFailures([{ message: msg, fileName: file.name }]);
           onUploadError?.(msg);
           return;
         }
 
+        pendingUploadRef.current = null;
         if (data.url) {
           onUploadSuccess(
             data.url,
@@ -115,8 +175,17 @@ export function DocumentFileUpload({
           );
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : t("uploadError");
-        setError(msg);
+        if (cancelRequestedRef.current) return;
+        pendingUploadRef.current = null;
+        const msg = formatUploadFileError(
+          humanizeUploadError(
+            err instanceof Error ? err.message : t("uploadError"),
+            locale
+          ),
+          file.name,
+          locale
+        );
+        setFailures([{ message: msg, fileName: file.name }]);
         onUploadError?.(msg);
       } finally {
         setIsUploading(false);
@@ -130,18 +199,25 @@ export function DocumentFileUpload({
       onUploadError,
       t,
       locale,
+      startPause,
     ]
   );
+
+  useEffect(() => {
+    uploadFileRef.current = uploadFile;
+  }, [uploadFile]);
+
+  const busy = disabled || isUploading || isPaused;
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
-      if (disabled || isUploading) return;
+      if (busy) return;
       const file = e.dataTransfer.files[0];
-      if (file) uploadFile(file);
+      if (file) void uploadFile(file);
     },
-    [disabled, isUploading, uploadFile]
+    [busy, uploadFile]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -159,10 +235,10 @@ export function DocumentFileUpload({
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) uploadFile(file);
+      if (file && !busy) void uploadFile(file);
       e.target.value = "";
     },
-    [uploadFile]
+    [uploadFile, busy]
   );
 
   return (
@@ -176,15 +252,15 @@ export function DocumentFileUpload({
           "relative flex min-h-[100px] flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors",
           "bg-muted/30 border-muted-foreground/25",
           isDragging && "border-primary bg-primary/5",
-          (disabled || isUploading) && "pointer-events-none opacity-60",
-          !disabled && !isUploading && "hover:border-primary/50 cursor-pointer"
+          busy && "pointer-events-none opacity-60",
+          !busy && "hover:border-primary/50 cursor-pointer"
         )}
       >
         <input
           type="file"
           accept=".pdf,.txt,.csv,.doc,.docx,.xls,.xlsx,.numbers,.ppt,.pptx,.key,.rtf,.odt,.ods,.odp,application/pdf,text/plain,text/csv,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.apple.numbers,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.apple.keynote,application/rtf,text/rtf,application/vnd.oasis.opendocument.text,application/vnd.oasis.opendocument.spreadsheet,application/vnd.oasis.opendocument.presentation"
           onChange={handleFileInput}
-          disabled={disabled || isUploading}
+          disabled={busy}
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
           aria-label={t("selectDocumentAria")}
         />
@@ -208,14 +284,19 @@ export function DocumentFileUpload({
           </div>
         )}
       </div>
+      {(isUploading || isPaused) && (
+        <RateLimitResumeBanner
+          isPaused={isPaused}
+          secondsLeft={secondsLeft}
+          pendingCount={isPaused ? pendingCount : 1}
+          onCancel={handleCancelPending}
+        />
+      )}
       {storageLimitError && (
         <StorageLimitInlineError body={storageLimitError} />
       )}
-      {error && !storageLimitError && (
-        <div className="bg-destructive/10 text-destructive flex items-center gap-2 rounded-md px-3 py-2 text-sm">
-          <X className="h-4 w-4 shrink-0" />
-          {error}
-        </div>
+      {!storageLimitError && failures.length > 0 && (
+        <UploadErrorList items={failures} />
       )}
     </div>
   );

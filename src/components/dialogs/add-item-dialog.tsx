@@ -342,7 +342,9 @@ export function AddItemDialog({
         pendingImageFile &&
         pendingImageFile.size > MAX_PRODUCT_IMAGE_SIZE_BYTES
       ) {
-        throw new Error(t("imageTooLarge"));
+        throw new Error(
+          t("imageTooLarge", { fileName: pendingImageFile.name })
+        );
       }
 
       // Validar que el proveedor sea obligatorio cuando se crea un nuevo producto

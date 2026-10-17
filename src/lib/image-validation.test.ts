@@ -47,4 +47,18 @@ describe("validateImageFile", () => {
       expect(result.error).toContain("AVIF");
     }
   });
+
+  it("rejects oversized files with message then filename", () => {
+    const big = new Uint8Array(5 * 1024 * 1024 + 1);
+    const file = new File([big], "huge-living-room.jpg", {
+      type: "image/jpeg",
+    });
+    const result = validateImageFile(file, "en");
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.error).toMatch(
+        /^Cannot exceed 5MB — huge-living-room\.jpg$/
+      );
+    }
+  });
 });

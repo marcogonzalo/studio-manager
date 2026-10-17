@@ -58,7 +58,37 @@ describe("deleteSpaceImage", () => {
     if (!result.ok) {
       expect(result.error).toEqual({
         code: "DEMO_ACCOUNT_READ_ONLY",
+        status: 403,
         message: "Demo blocked",
+      });
+    }
+  });
+
+  it("returns 429 status and rate-limit message from API", async () => {
+    const supabase = createSupabase();
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 429,
+      json: async () => ({
+        error:
+          "You have exceeded the request limit. Please wait 30 seconds and try again.",
+      }),
+    });
+
+    const result = await deleteSpaceImage({
+      id: "img-1",
+      url: "https://b2.example.com/render.webp",
+      supabase,
+      fetchImpl,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toEqual({
+        code: undefined,
+        status: 429,
+        message:
+          "You have exceeded the request limit. Please wait 30 seconds and try again.",
       });
     }
   });

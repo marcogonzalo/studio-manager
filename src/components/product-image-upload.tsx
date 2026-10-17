@@ -1,18 +1,30 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ImageIcon, Loader2, Pencil, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ImageIcon, Loader2, Pencil } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { validateImageFile } from "@/lib/image-validation";
 import type { Locale } from "@/i18n/config";
 import { useStorageUsage } from "@/hooks/use-storage-usage";
+import { useRateLimitAutoResume } from "@/hooks/use-rate-limit-auto-resume";
 import { StorageWarningBanner } from "@/components/plan/storage-warning-banner";
 import { StorageLimitInlineError } from "@/components/plan/storage-limit-inline-error";
+import { RateLimitResumeBanner } from "@/components/plan/rate-limit-resume-banner";
+import { UploadErrorList } from "@/components/plan/upload-error-list";
 import {
   isStorageLimitErrorBody,
   type StorageLimitErrorBody,
 } from "@/lib/plan-limit-ux";
+import {
+  isRateLimitStatus,
+  parseRetryAfterSeconds,
+} from "@/lib/upload-rate-limit";
+import {
+  formatUploadFileError,
+  humanizeUploadError,
+  type UploadFailureItem,
+} from "@/lib/upload-user-error";
 
 interface ProductImageUploadProps {
   productId: string;
@@ -50,12 +62,39 @@ export function ProductImageUpload({
   const { usedBytes, limitMb } = useStorageUsage();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [failures, setFailures] = useState<UploadFailureItem[]>([]);
   const [storageLimitError, setStorageLimitError] =
     useState<StorageLimitErrorBody | null>(null);
+  const cancelRequestedRef = useRef(false);
   const [pendingPreviewUrl, setPendingPreviewUrl] = useState<string | null>(
     null
   );
+
+  const pendingUploadRef = useRef<File | null>(null);
+  const uploadFileRef = useRef<(file: File) => Promise<void>>(
+    async () => undefined
+  );
+
+  const handleAutoResume = useCallback(() => {
+    const file = pendingUploadRef.current;
+    if (!file) return;
+    void uploadFileRef.current(file);
+  }, []);
+
+  const {
+    isPaused,
+    secondsLeft,
+    pendingCount,
+    startPause,
+    cancel: cancelPause,
+  } = useRateLimitAutoResume(handleAutoResume);
+
+  const handleCancelPending = useCallback(() => {
+    cancelRequestedRef.current = true;
+    pendingUploadRef.current = null;
+    cancelPause();
+    setIsUploading(false);
+  }, [cancelPause]);
 
   useEffect(() => {
     if (!pendingFile) {
@@ -69,9 +108,10 @@ export function ProductImageUpload({
 
   const uploadFile = useCallback(
     async (file: File) => {
+      cancelRequestedRef.current = false;
       setIsUploading(true);
       setStorageLimitError(null);
-      setError(null);
+      setFailures([]);
       try {
         const formData = new FormData();
         formData.append("file", file);
@@ -83,6 +123,8 @@ export function ProductImageUpload({
           body: formData,
         });
 
+        if (cancelRequestedRef.current) return;
+
         const data = (await res.json()) as {
           url?: string;
           error?: string;
@@ -93,59 +135,97 @@ export function ProductImageUpload({
           limitMb?: number;
         };
 
+        if (cancelRequestedRef.current) return;
+
+        if (isRateLimitStatus(res.status)) {
+          pendingUploadRef.current = file;
+          startPause(parseRetryAfterSeconds(res), 1);
+          return;
+        }
+
         if (!res.ok) {
+          pendingUploadRef.current = null;
           if (isStorageLimitErrorBody(data)) {
             setStorageLimitError(data);
             onUploadError?.(data.error);
             return;
           }
-          const msg = data.error || t("uploadError");
-          setError(msg);
+          const msg = formatUploadFileError(
+            humanizeUploadError(data.error || t("uploadError"), locale),
+            file.name,
+            locale
+          );
+          setFailures([{ message: msg, fileName: file.name }]);
           onUploadError?.(msg);
           return;
         }
 
+        pendingUploadRef.current = null;
         if (data.url) {
           onUploadSuccess(data.url, data.fileSizeBytes, data.assetId);
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : t("uploadError");
-        setError(msg);
+        if (cancelRequestedRef.current) return;
+        pendingUploadRef.current = null;
+        const msg = formatUploadFileError(
+          humanizeUploadError(
+            err instanceof Error ? err.message : t("uploadError"),
+            locale
+          ),
+          file.name,
+          locale
+        );
+        setFailures([{ message: msg, fileName: file.name }]);
         onUploadError?.(msg);
       } finally {
         setIsUploading(false);
       }
     },
-    [productId, projectId, onUploadSuccess, onUploadError, t]
+    [
+      productId,
+      projectId,
+      onUploadSuccess,
+      onUploadError,
+      t,
+      startPause,
+      locale,
+    ]
   );
+
+  useEffect(() => {
+    uploadFileRef.current = uploadFile;
+  }, [uploadFile]);
 
   const handleFile = useCallback(
     (file: File) => {
-      setError(null);
+      setFailures([]);
       const validation = validateImageFile(file, locale);
       if (!validation.valid) {
-        setError(validation.error);
-        onUploadError?.(validation.error);
+        const msg = formatUploadFileError(validation.error, file.name, locale);
+        setFailures([{ message: msg, fileName: file.name }]);
+        onUploadError?.(msg);
         return;
       }
       if (deferUpload) {
         onFileSelect?.(file);
         return;
       }
-      uploadFile(file);
+      void uploadFile(file);
     },
     [deferUpload, onFileSelect, onUploadError, uploadFile, locale]
   );
+
+  const busy = disabled || isUploading || isPaused;
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setIsDragging(false);
-      if (disabled || isUploading) return;
+      if (busy) return;
       const file = e.dataTransfer.files[0];
       if (file) handleFile(file);
     },
-    [disabled, isUploading, handleFile]
+    [busy, handleFile]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -163,10 +243,10 @@ export function ProductImageUpload({
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
-      if (file) handleFile(file);
+      if (file && !busy) handleFile(file);
       e.target.value = "";
     },
-    [handleFile]
+    [handleFile, busy]
   );
 
   const previewUrl = currentImageUrl || pendingPreviewUrl;
@@ -185,15 +265,15 @@ export function ProductImageUpload({
           "bg-muted/30 border-muted-foreground/25",
           hasExistingImage && "group",
           isDragging && "border-primary bg-primary/5",
-          (disabled || isUploading) && "pointer-events-none opacity-60",
-          !disabled && !isUploading && "hover:border-primary/50 cursor-pointer"
+          busy && "pointer-events-none opacity-60",
+          !busy && "hover:border-primary/50 cursor-pointer"
         )}
       >
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif"
           onChange={handleFileInput}
-          disabled={disabled || isUploading}
+          disabled={busy}
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
           aria-label={
             hasExistingImage ? t("replaceImageAria") : t("selectImageAria")
@@ -259,14 +339,19 @@ export function ProductImageUpload({
           </div>
         )}
       </div>
+      {(isUploading || isPaused) && (
+        <RateLimitResumeBanner
+          isPaused={isPaused}
+          secondsLeft={secondsLeft}
+          pendingCount={isPaused ? pendingCount : 1}
+          onCancel={handleCancelPending}
+        />
+      )}
       {storageLimitError && (
         <StorageLimitInlineError body={storageLimitError} />
       )}
-      {error && !storageLimitError && (
-        <div className="bg-destructive/10 text-destructive flex items-center gap-2 rounded-md px-3 py-2 text-sm">
-          <X className="h-4 w-4 shrink-0" />
-          {error}
-        </div>
+      {!storageLimitError && failures.length > 0 && (
+        <UploadErrorList items={failures} />
       )}
     </div>
   );

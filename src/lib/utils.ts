@@ -126,7 +126,7 @@ export function getProjectLimitMessage(lang: Locale = defaultLocale) {
 /** @deprecated Use getPlanErrorMessages(lang). Kept for tests expecting Spanish. */
 export const PLAN_ERROR_MESSAGES = getPlanErrorMessages("es");
 
-function getErrorMessageString(error: unknown): string {
+export function getErrorMessageString(error: unknown): string {
   return error instanceof Error
     ? error.message
     : typeof (error as { message?: string })?.message === "string"
