@@ -152,7 +152,9 @@ describe("PurchaseOrderDialog", () => {
     expect(screen.queryByText("titleEdit")).not.toBeInTheDocument();
   });
 
-  async function selectSupplierAndItem(user: ReturnType<typeof userEvent.setup>) {
+  async function selectSupplierAndItem(
+    user: ReturnType<typeof userEvent.setup>
+  ) {
     await waitFor(() => {
       expect(mockFrom).toHaveBeenCalledWith("project_items");
     });
