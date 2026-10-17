@@ -382,25 +382,66 @@ describe("isCostCategory", () => {
 });
 
 describe("reportError", () => {
-  it("should call console.error with fixed format string, context, and error", () => {
+  it("should call console.error with structured metadata and fixed format string", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     reportError(new Error("test"), "Context:");
-    expect(spy).toHaveBeenCalledWith("%s", "Context:", expect.any(Error));
+    expect(spy).toHaveBeenCalledWith(
+      "%s",
+      expect.objectContaining({
+        timestamp: expect.any(String),
+        context: "Context:",
+        code: null,
+        message: "test",
+      })
+    );
+    const payload = spy.mock.calls[0][1] as { timestamp: string };
+    expect(() => new Date(payload.timestamp).toISOString()).not.toThrow();
     spy.mockRestore();
   });
 
   it("should not treat context as a format string when it contains %d", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
-    const err = new Error("boom");
-    reportError(err, "user %d inject");
-    expect(spy).toHaveBeenCalledWith("%s", "user %d inject", err);
+    reportError(new Error("boom"), "user %d inject");
+    expect(spy).toHaveBeenCalledWith(
+      "%s",
+      expect.objectContaining({
+        context: "user %d inject",
+        message: "boom",
+      })
+    );
     spy.mockRestore();
   });
 
-  it("should call console.error with only error when no context", () => {
+  it("should log structured metadata with null context when omitted", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     reportError(new Error("test"));
-    expect(spy).toHaveBeenCalledWith(expect.any(Error));
+    expect(spy).toHaveBeenCalledWith(
+      "%s",
+      expect.objectContaining({
+        context: null,
+        code: null,
+        message: "test",
+      })
+    );
+    spy.mockRestore();
+  });
+
+  it("should normalize object errors to code and message only", () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    reportError(
+      { code: "23505", message: "duplicate key", email: "leak@example.com" },
+      "[db]"
+    );
+    expect(spy).toHaveBeenCalledWith(
+      "%s",
+      expect.objectContaining({
+        context: "[db]",
+        code: "23505",
+        message: "duplicate key",
+      })
+    );
+    const payload = spy.mock.calls[0][1] as Record<string, unknown>;
+    expect(payload).not.toHaveProperty("email");
     spy.mockRestore();
   });
 });
