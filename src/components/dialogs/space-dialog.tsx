@@ -1,4 +1,5 @@
 import type { Locale } from "@/i18n/config";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -26,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { getDemoAccountMessage } from "@/lib/utils";
 import { trackUserEvent } from "@/app/actions/track-event";
+import type { Space } from "@/types";
 
 function buildFormSchema(t: ReturnType<typeof useTranslations>) {
   return z.object({
@@ -39,6 +41,7 @@ interface SpaceDialogProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   onSuccess: () => void;
+  space?: Space | null;
 }
 
 export function SpaceDialog({
@@ -46,11 +49,13 @@ export function SpaceDialog({
   onOpenChange,
   projectId,
   onSuccess,
+  space = null,
 }: SpaceDialogProps) {
   const t = useTranslations("DialogSpace");
   const locale = useLocale() as Locale;
   const supabase = getSupabaseClient();
   const formSchema = buildFormSchema(t);
+  const isEditing = !!space;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,20 +64,39 @@ export function SpaceDialog({
     },
   });
 
+  useEffect(() => {
+    if (!open) return;
+    form.reset({
+      name: space?.name ?? "",
+      description: space?.description ?? "",
+    });
+  }, [open, space, form]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const { error } = await supabase.from("spaces").insert([
-        {
-          ...values,
-          project_id: projectId,
-        },
-      ]);
+      if (isEditing && space) {
+        const { error } = await supabase
+          .from("spaces")
+          .update({
+            name: values.name,
+            description: values.description || null,
+          })
+          .eq("id", space.id);
+        if (error) throw error;
+        void trackUserEvent("project_updated", { project_id: projectId });
+        toast.success(t("toastUpdated"));
+      } else {
+        const { error } = await supabase.from("spaces").insert([
+          {
+            ...values,
+            project_id: projectId,
+          },
+        ]);
+        if (error) throw error;
+        void trackUserEvent("project_updated", { project_id: projectId });
+        toast.success(t("toastCreated"));
+      }
 
-      if (error) throw error;
-
-      void trackUserEvent("project_updated", { project_id: projectId });
-
-      toast.success(t("toastCreated"));
       form.reset();
       onSuccess();
     } catch (error: unknown) {
@@ -84,7 +108,11 @@ export function SpaceDialog({
         return;
       }
       toast.error(
-        error instanceof Error ? error.message : t("toastCreateError")
+        error instanceof Error
+          ? error.message
+          : isEditing
+            ? t("toastUpdateError")
+            : t("toastCreateError")
       );
     }
   }
@@ -93,8 +121,10 @@ export function SpaceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
+          <DialogTitle>{isEditing ? t("titleEdit") : t("title")}</DialogTitle>
+          <DialogDescription>
+            {isEditing ? t("descriptionEdit") : t("description")}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -133,7 +163,9 @@ export function SpaceDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit">{t("save")}</Button>
+              <Button type="submit">
+                {isEditing ? t("saveChanges") : t("save")}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

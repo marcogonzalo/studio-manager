@@ -58,6 +58,16 @@ import {
   buildAddItemFormSchema,
   shouldBlockNumericKey,
 } from "@/lib/add-item-form-schema";
+import {
+  ADD_ITEM_REPEAT_KEEP_KEYS,
+  buildRepeatDefaults,
+  resolveNextCreateOrigin,
+  resolveSubmitOrigin,
+  type BudgetCreatedOrigin,
+} from "@/lib/budget-entry-repeat";
+import type { AddItemInitialValues } from "@/lib/budget-entry-duplicate";
+
+export type { AddItemInitialValues };
 
 const MAX_PRODUCT_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -66,8 +76,14 @@ interface AddItemDialogProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   onSuccess: () => void;
+  /** Refresh list without closing (add-and-create-another). */
+  onCreated?: () => void;
   item?: ProjectItem | null;
   spaceId?: string;
+  /** Tracking origin when dialog opened (form | space_add | duplicate). */
+  origin?: BudgetCreatedOrigin;
+  /** Duplicate / external prefill for create mode. */
+  initialValues?: AddItemInitialValues | null;
 }
 
 export function AddItemDialog({
@@ -75,8 +91,11 @@ export function AddItemDialog({
   onOpenChange,
   projectId,
   onSuccess,
+  onCreated,
   item,
   spaceId,
+  origin = "form",
+  initialValues = null,
 }: AddItemDialogProps) {
   const t = useTranslations("DialogAddItem");
   const locale = useLocale() as Locale;
@@ -112,34 +131,39 @@ export function AddItemDialog({
   const uploadedImageSizeBytesRef = useRef<number | null>(null);
   /** Asset id from last upload; linked in products.asset_id */
   const uploadedAssetIdRef = useRef<string | null>(null);
+  const addAnotherIntentRef = useRef(false);
+  const [createOrigin, setCreateOrigin] = useState<BudgetCreatedOrigin>(origin);
   const isEditing = !!item;
 
   const productIdForUpload = item?.product_id ?? "";
   const formSchema = buildAddItemFormSchema(t);
 
   type FormValues = z.input<typeof formSchema>;
+
+  const emptyFormDefaults = (taxRate = ""): FormValues => ({
+    product_id: "",
+    space_id: "none",
+    supplier_id: "none",
+    name: "",
+    description: "",
+    reference_code: "",
+    reference_url: "",
+    category: "",
+    internal_reference: "",
+    internal_notes: "",
+    quantity: "1",
+    unit_cost: "",
+    markup: "20",
+    unit_price: "",
+    image_url: "",
+    is_excluded: false,
+    is_price_tbd: false,
+    tax_rate: taxRate,
+  });
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema) as unknown as Resolver<FormValues>,
-    defaultValues: {
-      product_id: "",
-      space_id: "none",
-      supplier_id: "none",
-      name: "",
-      description: "",
-      reference_code: "",
-      reference_url: "",
-      category: "",
-      internal_reference: "",
-      internal_notes: "",
-      quantity: "1",
-      unit_cost: "",
-      markup: "20",
-      unit_price: "",
-      image_url: "",
-      is_excluded: false,
-      is_price_tbd: false,
-      tax_rate: "",
-    },
+    defaultValues: emptyFormDefaults(),
   });
 
   const lineTaxEditable = costsManagementAtLeastPlus && projectMultitax;
@@ -263,33 +287,61 @@ export function AddItemDialog({
         }
       } else if (open && !item) {
         setPendingImageFile(null);
-        form.reset({
-          product_id: "",
+        setCreateOrigin(origin);
+        const base = emptyFormDefaults(safeProjectTax.toString());
+        const prefill: FormValues = {
+          ...base,
           space_id: spaceId || "none",
-          supplier_id: "none",
-          name: "",
-          description: "",
-          reference_code: "",
-          reference_url: "",
-          category: "",
-          internal_reference: "",
-          internal_notes: "",
-          quantity: "1",
-          unit_cost: "",
-          markup: "20",
-          unit_price: "",
-          image_url: "",
-          is_excluded: false,
-          is_price_tbd: false,
-          tax_rate: safeProjectTax.toString(),
-        });
-        setSelectedProduct(null);
-        setActiveTab("catalog");
+          ...(initialValues
+            ? {
+                product_id: initialValues.product_id ?? base.product_id,
+                space_id: initialValues.space_id ?? spaceId ?? base.space_id,
+                supplier_id: initialValues.supplier_id ?? base.supplier_id,
+                name: initialValues.name ?? "",
+                description: initialValues.description ?? "",
+                reference_code: initialValues.reference_code ?? "",
+                reference_url: initialValues.reference_url ?? "",
+                category: initialValues.category ?? "",
+                internal_reference: initialValues.internal_reference ?? "",
+                internal_notes: initialValues.internal_notes ?? "",
+                quantity: initialValues.quantity ?? "1",
+                unit_cost: initialValues.unit_cost ?? "",
+                markup: initialValues.markup ?? "20",
+                unit_price: initialValues.unit_price ?? "",
+                image_url: initialValues.image_url ?? "",
+                is_excluded: initialValues.is_excluded ?? false,
+                is_price_tbd: initialValues.is_price_tbd ?? false,
+                tax_rate: initialValues.tax_rate ?? safeProjectTax.toString(),
+              }
+            : {}),
+        };
+        form.reset(prefill);
+        if (
+          initialValues?.product_id &&
+          initialValues.product_id !== "custom"
+        ) {
+          const prod = (pData || []).find(
+            (p: Product) => p.id === initialValues.product_id
+          );
+          setSelectedProduct(prod ?? null);
+          setActiveTab(prod ? "catalog" : "new");
+        } else if (initialValues) {
+          setSelectedProduct(null);
+          setActiveTab(
+            initialValues.product_id === "custom" || !initialValues.product_id
+              ? "new"
+              : "catalog"
+          );
+        } else {
+          setSelectedProduct(null);
+          setActiveTab("catalog");
+        }
         setSearchQuery("");
       }
     }
     if (open) loadData();
-  }, [open, projectId, item, spaceId, form, supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- emptyFormDefaults is stable shape
+  }, [open, projectId, item, spaceId, origin, initialValues, form, supabase]);
 
   const handleProductSelect = (productId: string) => {
     const prod = products.find((p) => p.id === productId);
@@ -334,7 +386,11 @@ export function AddItemDialog({
     }
   };
 
-  async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
+  async function onSubmit(
+    values: z.infer<typeof formSchema> | FormValues,
+    options?: { addAnother?: boolean }
+  ) {
+    const addAnother = options?.addAnother === true && !isEditing;
     try {
       if (
         pendingImageFile &&
@@ -546,24 +602,65 @@ export function AddItemDialog({
         void trackUserEvent("project_updated", { project_id: projectId });
 
         toast.success(t("toastUpdated"));
+        form.reset();
+        onSuccess();
       } else {
         const { error } = await supabase.from("project_items").insert([data]);
         if (error) throw error;
 
-        if (activeTab === "catalog" && values.product_id !== "custom") {
-          void trackUserEvent("budget_created", {
-            project_id: projectId,
-            source: "catalog",
+        const source =
+          activeTab === "catalog" &&
+          values.product_id &&
+          values.product_id !== "custom"
+            ? ("catalog" as const)
+            : ("manual" as const);
+        const submitOrigin = resolveSubmitOrigin(createOrigin, addAnother);
+        void trackUserEvent("budget_created", {
+          project_id: projectId,
+          source,
+          origin: submitOrigin,
+        });
+
+        if (addAnother) {
+          toast.success(t("toastLineAdded"));
+          const kept = buildRepeatDefaults(
+            {
+              space_id: values.space_id || "none",
+              supplier_id: values.supplier_id || "none",
+              category: values.category || "",
+            } as FormValues,
+            emptyFormDefaults(
+              projectTaxRate != null ? String(projectTaxRate) : ""
+            ),
+            ADD_ITEM_REPEAT_KEEP_KEYS
+          );
+          // Preserve string form fields after zod transform narrowed numbers
+          const nextDefaults: FormValues = {
+            ...emptyFormDefaults(
+              projectTaxRate != null ? String(projectTaxRate) : ""
+            ),
+            space_id: String(kept.space_id ?? "none"),
+            supplier_id: String(kept.supplier_id ?? "none"),
+            category: String(kept.category ?? ""),
+            quantity: "1",
+            markup: "20",
+          };
+          form.reset(nextDefaults);
+          setCreateOrigin(resolveNextCreateOrigin(createOrigin, true));
+          setPendingImageFile(null);
+          setSelectedProduct(null);
+          setActiveTab("new");
+          setSearchQuery("");
+          onCreated?.();
+          requestAnimationFrame(() => {
+            form.setFocus("name");
           });
         } else {
-          void trackUserEvent("project_updated", { project_id: projectId });
+          toast.success(t("toastCreated"));
+          form.reset();
+          onSuccess();
         }
-
-        toast.success(t("toastCreated"));
       }
-
-      form.reset();
-      onSuccess();
     } catch (error: unknown) {
       const demoMsg = getDemoAccountMessage(error, locale);
       if (demoMsg) {
@@ -573,6 +670,8 @@ export function AddItemDialog({
         return;
       }
       toast.error(error instanceof Error ? error.message : t("toastSaveError"));
+    } finally {
+      addAnotherIntentRef.current = false;
     }
   }
 
@@ -596,10 +695,20 @@ export function AddItemDialog({
     setIsSupplierDialogOpen(false);
   };
 
+  const submitWithIntent = (addAnother: boolean) => {
+    addAnotherIntentRef.current = addAnother;
+    void form.handleSubmit((vals) =>
+      onSubmit(vals, { addAnother: addAnotherIntentRef.current })
+    )();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
-        <DialogHeader>
+      <DialogContent
+        fullScreenMobile
+        className="max-h-[90vh] overflow-y-auto max-sm:overflow-hidden sm:max-w-4xl"
+      >
+        <DialogHeader className="max-sm:shrink-0 max-sm:p-6 max-sm:pb-2">
           <DialogTitle>
             {isEditing ? t("titleEdit") : t("titleNew")}
           </DialogTitle>
@@ -610,145 +719,169 @@ export function AddItemDialog({
         <Form {...form}>
           <form
             onSubmit={(e) => {
-              void form.handleSubmit(onSubmit)(e);
+              e.preventDefault();
+              // Enter / primary submit: add-another when creating
+              submitWithIntent(!isEditing);
             }}
-            className="space-y-4"
+            className="max-sm:flex max-sm:min-h-0 max-sm:flex-1 max-sm:flex-col max-sm:overflow-hidden"
           >
-            {/* Tabs para seleccionar producto */}
-            <Tabs
-              value={activeTab}
-              onValueChange={handleTabChange}
-              className="w-full"
-            >
-              <TabsList className="grid w-full grid-cols-2 rounded-b-none">
-                <TabsTrigger value="catalog">{t("tabCatalog")}</TabsTrigger>
-                <TabsTrigger value="new">{t("tabNewProduct")}</TabsTrigger>
-              </TabsList>
+            <div className="space-y-4 max-sm:min-h-0 max-sm:flex-1 max-sm:overflow-y-auto max-sm:px-6">
+              {/* Tabs para seleccionar producto */}
+              <Tabs
+                value={activeTab}
+                onValueChange={handleTabChange}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-2 rounded-b-none">
+                  <TabsTrigger value="catalog">{t("tabCatalog")}</TabsTrigger>
+                  <TabsTrigger value="new">{t("tabNewProduct")}</TabsTrigger>
+                </TabsList>
 
-              {/* Pestaña: Seleccionar del catálogo */}
-              <TabsContent value="catalog" className="mt-0">
-                <div className="bg-muted space-y-4 rounded-t-none rounded-b-lg p-1">
-                  <FormField
-                    control={form.control}
-                    name="product_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="space-y-3">
-                          <div className="relative">
-                            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-                            <Input
-                              placeholder={t("searchPlaceholder")}
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              className="bg-background pl-9"
-                            />
-                          </div>
-
-                          {filteredProducts.length > 0 ? (
-                            <div className="bg-background grid max-h-[300px] grid-cols-1 gap-3 overflow-y-auto rounded-md border p-2 sm:grid-cols-2 lg:grid-cols-3">
-                              {filteredProducts.map((product) => (
-                                <CatalogProductSelectCard
-                                  key={product.id}
-                                  product={product}
-                                  selected={field.value === product.id}
-                                  onSelect={() => {
-                                    field.onChange(product.id);
-                                    handleProductSelect(product.id);
-                                  }}
-                                  onPreview={() => {
-                                    setPreviewProduct(product);
-                                    setIsProductModalOpen(true);
-                                  }}
-                                  viewDetailsLabel={t("viewDetails")}
-                                  noImageLabel={t("noImage")}
-                                  noSupplierLabel={t("noSupplier")}
-                                />
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="bg-background rounded-md border border-dashed py-8 text-center">
-                              <p className="text-muted-foreground text-sm">
-                                {searchQuery
-                                  ? t("emptySearch")
-                                  : t("emptyCatalog")}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </TabsContent>
-
-              {/* Pestaña: Nuevo Producto */}
-              <TabsContent value="new" className="mt-0">
-                <div className="bg-muted space-y-4 rounded-t-none rounded-b-lg p-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel required>{t("productNameLabel")}</FormLabel>
-                        <FormControl>
-                          <Input {...field} className="bg-background" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Pestaña: Seleccionar del catálogo */}
+                <TabsContent value="catalog" className="mt-0">
+                  <div className="bg-muted space-y-4 rounded-t-none rounded-b-lg p-1">
                     <FormField
                       control={form.control}
-                      name="supplier_id"
+                      name="product_id"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel required>{t("supplierLabel")}</FormLabel>
-                          <div className="flex gap-2">
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger className="bg-background">
-                                  <SelectValue
-                                    placeholder={t("supplierPlaceholder")}
+                          <div className="space-y-3">
+                            <div className="relative">
+                              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                              <Input
+                                placeholder={t("searchPlaceholder")}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="bg-background pl-9"
+                              />
+                            </div>
+
+                            {filteredProducts.length > 0 ? (
+                              <div className="bg-background grid max-h-[300px] grid-cols-1 gap-3 overflow-y-auto rounded-md border p-2 sm:grid-cols-2 lg:grid-cols-3">
+                                {filteredProducts.map((product) => (
+                                  <CatalogProductSelectCard
+                                    key={product.id}
+                                    product={product}
+                                    selected={field.value === product.id}
+                                    onSelect={() => {
+                                      field.onChange(product.id);
+                                      handleProductSelect(product.id);
+                                    }}
+                                    onPreview={() => {
+                                      setPreviewProduct(product);
+                                      setIsProductModalOpen(true);
+                                    }}
+                                    viewDetailsLabel={t("viewDetails")}
+                                    noImageLabel={t("noImage")}
+                                    noSupplierLabel={t("noSupplier")}
                                   />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {suppliers.map((s) => (
-                                  <SelectItem key={s.id} value={s.id}>
-                                    {s.name}
-                                  </SelectItem>
                                 ))}
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              onClick={() => setIsSupplierDialogOpen(true)}
-                              title={t("addSupplierAria")}
-                              aria-label={t("addSupplierAria")}
-                            >
-                              <Plus className="h-4 w-4" />
-                            </Button>
+                              </div>
+                            ) : (
+                              <div className="bg-background rounded-md border border-dashed py-8 text-center">
+                                <p className="text-muted-foreground text-sm">
+                                  {searchQuery
+                                    ? t("emptySearch")
+                                    : t("emptyCatalog")}
+                                </p>
+                              </div>
+                            )}
                           </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </TabsContent>
+
+                {/* Pestaña: Nuevo Producto */}
+                <TabsContent value="new" className="mt-0">
+                  <div className="bg-muted space-y-4 rounded-t-none rounded-b-lg p-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel required>
+                            {t("productNameLabel")}
+                          </FormLabel>
+                          <FormControl>
+                            <Input {...field} className="bg-background" />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="supplier_id"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel required>{t("supplierLabel")}</FormLabel>
+                            <div className="flex gap-2">
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="bg-background">
+                                    <SelectValue
+                                      placeholder={t("supplierPlaceholder")}
+                                    />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {suppliers.map((s) => (
+                                    <SelectItem key={s.id} value={s.id}>
+                                      {s.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setIsSupplierDialogOpen(true)}
+                                title={t("addSupplierAria")}
+                                aria-label={t("addSupplierAria")}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="reference_code"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t("referenceLabel")}</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder={t("referencePlaceholder")}
+                                {...field}
+                                className="bg-background"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
                     <FormField
                       control={form.control}
-                      name="reference_code"
+                      name="reference_url"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>{t("referenceLabel")}</FormLabel>
+                          <FormLabel>{t("referenceUrlLabel")}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder={t("referencePlaceholder")}
+                              type="url"
+                              placeholder={t("referenceUrlPlaceholder")}
                               {...field}
                               className="bg-background"
                             />
@@ -756,297 +889,168 @@ export function AddItemDialog({
                         </FormItem>
                       )}
                     />
-                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="reference_url"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("referenceUrlLabel")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="url"
-                            placeholder={t("referenceUrlPlaceholder")}
-                            {...field}
-                            className="bg-background"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("categoryLabel")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t("categoryPlaceholder")}
-                            {...field}
-                            className="bg-background"
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="image_url"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("imageLabel")}</FormLabel>
-                        {user?.id ? (
-                          activeTab === "new" && !isEditing ? (
-                            <ProductImageUpload
-                              productId=""
-                              projectId={projectId}
-                              currentImageUrl={field.value || undefined}
-                              deferUpload
-                              onFileSelect={setPendingImageFile}
-                              pendingFile={pendingImageFile}
-                              onUploadSuccess={(url) => field.onChange(url)}
-                              onUploadError={(msg) => toast.error(msg)}
-                              className="mt-2"
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("categoryLabel")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder={t("categoryPlaceholder")}
+                              {...field}
+                              className="bg-background"
                             />
-                          ) : productIdForUpload ||
-                            (form.watch("product_id") &&
-                              form.watch("product_id") !== "custom") ? (
-                            <ProductImageUpload
-                              productId={
-                                productIdForUpload ||
-                                form.watch("product_id") ||
-                                ""
-                              }
-                              projectId={projectId}
-                              currentImageUrl={field.value || undefined}
-                              onUploadSuccess={(
-                                url,
-                                fileSizeBytes,
-                                assetId
-                              ) => {
-                                field.onChange(url);
-                                uploadedImageSizeBytesRef.current =
-                                  fileSizeBytes ?? null;
-                                uploadedAssetIdRef.current = assetId ?? null;
-                                toast.success(t("toastImageUploaded"));
-                              }}
-                              onUploadError={(msg) => toast.error(msg)}
-                              className="mt-2"
-                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="image_url"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("imageLabel")}</FormLabel>
+                          {user?.id ? (
+                            activeTab === "new" && !isEditing ? (
+                              <ProductImageUpload
+                                productId=""
+                                projectId={projectId}
+                                currentImageUrl={field.value || undefined}
+                                deferUpload
+                                onFileSelect={setPendingImageFile}
+                                pendingFile={pendingImageFile}
+                                onUploadSuccess={(url) => field.onChange(url)}
+                                onUploadError={(msg) => toast.error(msg)}
+                                className="mt-2"
+                              />
+                            ) : productIdForUpload ||
+                              (form.watch("product_id") &&
+                                form.watch("product_id") !== "custom") ? (
+                              <ProductImageUpload
+                                productId={
+                                  productIdForUpload ||
+                                  form.watch("product_id") ||
+                                  ""
+                                }
+                                projectId={projectId}
+                                currentImageUrl={field.value || undefined}
+                                onUploadSuccess={(
+                                  url,
+                                  fileSizeBytes,
+                                  assetId
+                                ) => {
+                                  field.onChange(url);
+                                  uploadedImageSizeBytesRef.current =
+                                    fileSizeBytes ?? null;
+                                  uploadedAssetIdRef.current = assetId ?? null;
+                                  toast.success(t("toastImageUploaded"));
+                                }}
+                                onUploadError={(msg) => toast.error(msg)}
+                                className="mt-2"
+                              />
+                            ) : (
+                              <p className="text-muted-foreground mt-2 text-sm">
+                                {t("selectOrCreateForImage")}
+                              </p>
+                            )
                           ) : (
-                            <p className="text-muted-foreground mt-2 text-sm">
-                              {t("selectOrCreateForImage")}
-                            </p>
-                          )
-                        ) : (
-                          <div className="mt-2 space-y-2">
-                            <Skeleton className="h-4 w-full" />
-                            <Skeleton className="h-4 w-2/3" />
-                          </div>
-                        )}
+                            <div className="mt-2 space-y-2">
+                              <Skeleton className="h-4 w-full" />
+                              <Skeleton className="h-4 w-2/3" />
+                            </div>
+                          )}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              {/* Campos de project_item - siempre visibles */}
+              <div className="space-y-4 border-t pt-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="space_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("locationLabel")}</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="bg-background">
+                              <SelectValue
+                                placeholder={t("spacePlaceholder")}
+                              />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">
+                              {t("spaceGeneralNone")}
+                            </SelectItem>
+                            {spaces.map((s) => (
+                              <SelectItem key={s.id} value={s.id}>
+                                {s.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="internal_reference"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("codeLabel")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={t("codePlaceholder")}
+                            {...field}
+                            className="bg-background"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-              </TabsContent>
-            </Tabs>
 
-            {/* Campos de project_item - siempre visibles */}
-            <div className="space-y-4 border-t pt-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="space_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("locationLabel")}</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-background">
-                            <SelectValue placeholder={t("spacePlaceholder")} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">
-                            {t("spaceGeneralNone")}
-                          </SelectItem>
-                          {spaces.map((s) => (
-                            <SelectItem key={s.id} value={s.id}>
-                              {s.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="internal_reference"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("codeLabel")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={t("codePlaceholder")}
-                          {...field}
-                          className="bg-background"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div
-                className={
-                  lineTaxEditable
-                    ? "grid grid-cols-2 gap-3 sm:grid-cols-[minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.7fr)]"
-                    : "grid grid-cols-2 gap-4 lg:grid-cols-4"
-                }
-              >
-                <FormField
-                  control={form.control}
-                  name="quantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("quantityLabel")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          inputMode="numeric"
-                          min={1}
-                          step={1}
-                          {...field}
-                          onKeyDown={(e) => {
-                            if (
-                              shouldBlockNumericKey(e.key, "positive-integer")
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                          className="bg-background"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="unit_cost"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {appendCurrencyToLabel(
-                          t("unitCostLabel"),
-                          getCurrencySymbol(projectCurrency)
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          min="0.01"
-                          step="0.01"
-                          disabled={isPriceTbd}
-                          placeholder={
-                            isPriceTbd ? t("priceTbdLabel") : undefined
-                          }
-                          {...field}
-                          onKeyDown={(e) => {
-                            if (
-                              shouldBlockNumericKey(e.key, "positive-float")
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                          className="bg-background"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="markup"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("markupLabel")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          disabled={isPriceTbd}
-                          {...field}
-                          className="bg-background"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="unit_price"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {appendCurrencyToLabel(
-                          t("unitPriceLabel"),
-                          getCurrencySymbol(projectCurrency)
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          min="0.01"
-                          step="0.01"
-                          disabled={isPriceTbd}
-                          placeholder={
-                            isPriceTbd ? t("priceTbdLabel") : undefined
-                          }
-                          {...field}
-                          onKeyDown={(e) => {
-                            if (
-                              shouldBlockNumericKey(e.key, "positive-float")
-                            ) {
-                              e.preventDefault();
-                            }
-                          }}
-                          className="bg-background"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {lineTaxEditable && (
+                <div
+                  className={
+                    lineTaxEditable
+                      ? "grid grid-cols-2 gap-3 sm:grid-cols-[minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.55fr)_minmax(0,1.15fr)_minmax(0,0.7fr)]"
+                      : "grid grid-cols-2 gap-4 lg:grid-cols-4"
+                  }
+                >
                   <FormField
                     control={form.control}
-                    name="tax_rate"
+                    name="quantity"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("taxLabel")}</FormLabel>
+                        <FormLabel>{t("quantityLabel")}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
-                            min="0"
-                            step="0.01"
-                            placeholder={t("taxPlaceholder")}
+                            inputMode="numeric"
+                            min={1}
+                            step={1}
                             {...field}
-                            value={field.value ?? ""}
+                            onKeyDown={(e) => {
+                              if (
+                                shouldBlockNumericKey(e.key, "positive-integer")
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
                             className="bg-background"
                           />
                         </FormControl>
@@ -1054,145 +1058,274 @@ export function AddItemDialog({
                       </FormItem>
                     )}
                   />
-                )}
-              </div>
-
-              <FormField
-                control={form.control}
-                name="is_price_tbd"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value === true}
-                        onCheckedChange={(checked) => {
-                          field.onChange(checked === true);
-                          void form.clearErrors(["unit_cost", "unit_price"]);
-                        }}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="cursor-pointer">
-                        {t("priceTbdLabel")}
-                      </FormLabel>
-                      <p className="text-muted-foreground text-xs">
-                        {t("priceTbdDescription")}
-                      </p>
-                    </div>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("descriptionForProjectLabel")}</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder={t("descriptionForProjectPlaceholder")}
-                        {...field}
-                        className="bg-background"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="internal_notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("internalNotesLabel")}</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder={t("internalNotesPlaceholder")}
-                        {...field}
-                        className="bg-background"
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      {t("internalNotesDescription")}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="is_excluded"
-                render={({ field }) => (
-                  <FormItem
-                    className={`flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
-                      !excludeFromBudgetOptionEnabled ? "opacity-60" : ""
-                    }`}
-                  >
-                    <FormControl>
-                      <Checkbox
-                        checked={
-                          excludeFromBudgetOptionEnabled ? field.value : false
-                        }
-                        onCheckedChange={(checked) => {
-                          if (!excludeFromBudgetOptionEnabled) return;
-                          field.onChange(checked);
-                          // Validar si está asociado a PO no cancelada
-                          if (checked && item?.purchase_order_id) {
-                            supabase
-                              .from("purchase_orders")
-                              .select("status")
-                              .eq("id", item.purchase_order_id)
-                              .single()
-                              .then(
-                                (res: { data: { status: string } | null }) => {
-                                  const poData = res.data;
-                                  if (poData && poData.status !== "cancelled") {
-                                    toast.error(
-                                      t("toastCannotExcludeWithActivePo")
-                                    );
-                                    field.onChange(false);
-                                  }
-                                }
-                              );
-                          }
-                        }}
-                        disabled={!excludeFromBudgetOptionEnabled}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="cursor-pointer">
-                        {t("excludeLabel")}
-                      </FormLabel>
-                      <p className="text-muted-foreground text-xs">
-                        {t("excludeDescription")}
-                      </p>
-                      {!excludeFromBudgetOptionEnabled && (
-                        <p className="text-muted-foreground mt-1 text-xs">
-                          <Link href="/pricing" className="underline">
-                            {t("upgradePlan")}
-                          </Link>{" "}
-                          {t("upgradeSuffix")}
-                        </p>
+                  <FormField
+                    control={form.control}
+                    name="unit_cost"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {appendCurrencyToLabel(
+                            t("unitCostLabel"),
+                            getCurrencySymbol(projectCurrency)
+                          )}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            inputMode="decimal"
+                            min="0.01"
+                            step="0.01"
+                            disabled={isPriceTbd}
+                            placeholder={
+                              isPriceTbd ? t("priceTbdLabel") : undefined
+                            }
+                            {...field}
+                            onKeyDown={(e) => {
+                              if (
+                                shouldBlockNumericKey(e.key, "positive-float")
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
+                            className="bg-background"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="markup"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("markupLabel")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.1"
+                            disabled={isPriceTbd}
+                            {...field}
+                            className="bg-background"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="unit_price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          {appendCurrencyToLabel(
+                            t("unitPriceLabel"),
+                            getCurrencySymbol(projectCurrency)
+                          )}
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            inputMode="decimal"
+                            min="0.01"
+                            step="0.01"
+                            disabled={isPriceTbd}
+                            placeholder={
+                              isPriceTbd ? t("priceTbdLabel") : undefined
+                            }
+                            {...field}
+                            onKeyDown={(e) => {
+                              if (
+                                shouldBlockNumericKey(e.key, "positive-float")
+                              ) {
+                                e.preventDefault();
+                              }
+                            }}
+                            className="bg-background"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  {lineTaxEditable && (
+                    <FormField
+                      control={form.control}
+                      name="tax_rate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t("taxLabel")}</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder={t("taxPlaceholder")}
+                              {...field}
+                              value={field.value ?? ""}
+                              className="bg-background"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                      {item?.purchase_order_id &&
-                        excludeFromBudgetOptionEnabled && (
-                          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                            {t("activePoWarning")}
+                    />
+                  )}
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="is_price_tbd"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value === true}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked === true);
+                            void form.clearErrors(["unit_cost", "unit_price"]);
+                          }}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="cursor-pointer">
+                          {t("priceTbdLabel")}
+                        </FormLabel>
+                        <p className="text-muted-foreground text-xs">
+                          {t("priceTbdDescription")}
+                        </p>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("descriptionForProjectLabel")}</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder={t("descriptionForProjectPlaceholder")}
+                          {...field}
+                          className="bg-background"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="internal_notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("internalNotesLabel")}</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder={t("internalNotesPlaceholder")}
+                          {...field}
+                          className="bg-background"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {t("internalNotesDescription")}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="is_excluded"
+                  render={({ field }) => (
+                    <FormItem
+                      className={`flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
+                        !excludeFromBudgetOptionEnabled ? "opacity-60" : ""
+                      }`}
+                    >
+                      <FormControl>
+                        <Checkbox
+                          checked={
+                            excludeFromBudgetOptionEnabled ? field.value : false
+                          }
+                          onCheckedChange={(checked) => {
+                            if (!excludeFromBudgetOptionEnabled) return;
+                            field.onChange(checked);
+                            // Validar si está asociado a PO no cancelada
+                            if (checked && item?.purchase_order_id) {
+                              supabase
+                                .from("purchase_orders")
+                                .select("status")
+                                .eq("id", item.purchase_order_id)
+                                .single()
+                                .then(
+                                  (res: {
+                                    data: { status: string } | null;
+                                  }) => {
+                                    const poData = res.data;
+                                    if (
+                                      poData &&
+                                      poData.status !== "cancelled"
+                                    ) {
+                                      toast.error(
+                                        t("toastCannotExcludeWithActivePo")
+                                      );
+                                      field.onChange(false);
+                                    }
+                                  }
+                                );
+                            }
+                          }}
+                          disabled={!excludeFromBudgetOptionEnabled}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="cursor-pointer">
+                          {t("excludeLabel")}
+                        </FormLabel>
+                        <p className="text-muted-foreground text-xs">
+                          {t("excludeDescription")}
+                        </p>
+                        {!excludeFromBudgetOptionEnabled && (
+                          <p className="text-muted-foreground mt-1 text-xs">
+                            <Link href="/pricing" className="underline">
+                              {t("upgradePlan")}
+                            </Link>{" "}
+                            {t("upgradeSuffix")}
                           </p>
                         )}
-                    </div>
-                  </FormItem>
-                )}
-              />
+                        {item?.purchase_order_id &&
+                          excludeFromBudgetOptionEnabled && (
+                            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                              {t("activePoWarning")}
+                            </p>
+                          )}
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
-            <DialogFooter>
-              <Button type="submit">
-                {isEditing ? t("saveChanges") : t("addToBudget")}
-              </Button>
+            <DialogFooter stickyMobile className="max-sm:flex-wrap">
+              {isEditing ? (
+                <Button type="submit">{t("saveChanges")}</Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => submitWithIntent(false)}
+                  >
+                    {t("addToBudget")}
+                  </Button>
+                  <Button type="submit">{t("addAndCreateAnother")}</Button>
+                </>
+              )}
             </DialogFooter>
           </form>
         </Form>

@@ -31,10 +31,17 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+type DialogContentProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> & {
+  /** Full-viewport on small screens; sticky footer-friendly flex column. */
+  fullScreenMobile?: boolean;
+};
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  DialogContentProps
+>(({ className, children, fullScreenMobile = false, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -47,12 +54,14 @@ const DialogContent = React.forwardRef<
         "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]",
         "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
         "duration-300 ease-[cubic-bezier(0.25,0.4,0.25,1)]",
+        fullScreenMobile &&
+          "max-sm:top-0 max-sm:left-0 max-sm:flex max-sm:h-dvh max-sm:max-h-dvh max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 max-sm:flex-col max-sm:gap-0 max-sm:rounded-none max-sm:border-0 max-sm:p-0",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="ring-offset-background focus-visible:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none">
+      <DialogPrimitive.Close className="ring-offset-background focus-visible:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 z-10 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none">
         <X className="h-4 w-4" />
         <span className="sr-only">Cerrar</span>
       </DialogPrimitive.Close>
@@ -75,13 +84,21 @@ const DialogHeader = ({
 );
 DialogHeader.displayName = "DialogHeader";
 
+type DialogFooterProps = React.HTMLAttributes<HTMLDivElement> & {
+  /** Stick to bottom on mobile (use with DialogContent fullScreenMobile). */
+  stickyMobile?: boolean;
+};
+
 const DialogFooter = ({
   className,
+  stickyMobile = false,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
+}: DialogFooterProps) => (
   <div
     className={cn(
       "flex flex-row flex-nowrap items-center justify-end gap-2 [&>*]:w-auto",
+      stickyMobile &&
+        "bg-background max-sm:sticky max-sm:bottom-0 max-sm:z-10 max-sm:mt-auto max-sm:border-t max-sm:p-4",
       className
     )}
     {...props}

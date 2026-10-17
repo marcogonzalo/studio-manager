@@ -784,6 +784,9 @@ export function ProjectCostControl({
         }}
         projectId={projectId}
         budgetLine={editingBudgetLine}
+        onCreated={() => {
+          refetchBudgetLines();
+        }}
         onSuccess={() => {
           setIsBudgetLineDialogOpen(false);
           setEditingBudgetLine(null);

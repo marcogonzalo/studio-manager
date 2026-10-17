@@ -113,6 +113,7 @@ describe("trackEvent", () => {
     await trackEvent("budget_created", {
       project_id: "proj-1",
       source: "catalog",
+      origin: "form",
     });
 
     expect(mockInsert).toHaveBeenCalledWith({
@@ -123,7 +124,47 @@ describe("trackEvent", () => {
     expect(mockInsert).toHaveBeenCalledWith({
       user_id: "user-789",
       event: "budget_created",
-      props: { project_id: "proj-1", source: "catalog" },
+      props: { project_id: "proj-1", source: "catalog", origin: "form" },
+    });
+  });
+
+  it("tracks budget_created with origin variants", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-789" } },
+      error: null,
+    });
+    mockInsert.mockResolvedValue({ error: null });
+
+    await trackEvent("budget_created", {
+      project_id: "proj-1",
+      source: "manual",
+      origin: "repeat",
+    });
+    await trackEvent("budget_created", {
+      project_id: "proj-1",
+      source: "manual",
+      origin: "space_add",
+    });
+    await trackEvent("budget_created", {
+      project_id: "proj-1",
+      source: "manual",
+      origin: "duplicate",
+    });
+
+    expect(mockInsert).toHaveBeenCalledWith({
+      user_id: "user-789",
+      event: "budget_created",
+      props: { project_id: "proj-1", source: "manual", origin: "repeat" },
+    });
+    expect(mockInsert).toHaveBeenCalledWith({
+      user_id: "user-789",
+      event: "budget_created",
+      props: { project_id: "proj-1", source: "manual", origin: "space_add" },
+    });
+    expect(mockInsert).toHaveBeenCalledWith({
+      user_id: "user-789",
+      event: "budget_created",
+      props: { project_id: "proj-1", source: "manual", origin: "duplicate" },
     });
   });
 

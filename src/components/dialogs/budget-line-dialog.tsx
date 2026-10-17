@@ -1,5 +1,5 @@
 import type { Locale } from "@/i18n/config";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +14,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  BUDGET_LINE_REPEAT_KEEP_KEYS,
+  buildRepeatDefaults,
+  resolveNextCreateOrigin,
+  resolveSubmitOrigin,
+  type BudgetCreatedOrigin,
+} from "@/lib/budget-entry-repeat";
+import type { BudgetLineInitialValues } from "@/lib/budget-entry-duplicate";
+
+export type { BudgetLineInitialValues };
 import {
   Form,
   FormControl,
@@ -78,7 +88,11 @@ interface BudgetLineDialogProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   onSuccess: () => void;
+  /** Refresh list without closing (add-and-create-another). */
+  onCreated?: () => void;
   budgetLine?: ProjectBudgetLine | null;
+  origin?: BudgetCreatedOrigin;
+  initialValues?: BudgetLineInitialValues | null;
 }
 
 const PROJECT_PHASES: ProjectPhase[] = [
@@ -95,7 +109,10 @@ export function BudgetLineDialog({
   onOpenChange,
   projectId,
   onSuccess,
+  onCreated,
   budgetLine,
+  origin = "form",
+  initialValues = null,
 }: BudgetLineDialogProps) {
   const t = useTranslations("DialogBudgetLine");
   const locale = useLocale() as Locale;
@@ -108,6 +125,8 @@ export function BudgetLineDialog({
   });
   const supabase = getSupabaseClient();
   const isEditing = !!budgetLine;
+  const addAnotherIntentRef = useRef(false);
+  const [createOrigin, setCreateOrigin] = useState<BudgetCreatedOrigin>(origin);
   const { suppliers, refetch: refetchSuppliers } = useSuppliers({
     enabled: open,
   });
@@ -175,6 +194,20 @@ export function BudgetLineDialog({
     setIsSupplierDialogOpen(false);
   };
 
+  const emptyBudgetLineDefaults = (): FormValues => ({
+    category: "",
+    subcategory: "",
+    description: "",
+    estimated_amount: "0",
+    actual_amount: "0",
+    is_internal_cost: false,
+    is_price_tbd: false,
+    tax_rate: projectTaxRate.toString(),
+    phase: undefined,
+    supplier_id: undefined,
+    notes: "",
+  });
+
   // Reset form when dialog opens/closes or budgetLine changes
   useEffect(() => {
     if (open) {
@@ -204,24 +237,30 @@ export function BudgetLineDialog({
           notes: budgetLine.notes || "",
         });
       } else {
-        setSelectedCategory("");
-        form.reset({
-          category: "",
-          subcategory: "",
-          description: "",
-          estimated_amount: "0",
-          actual_amount: "0",
-          is_internal_cost: false,
-          is_price_tbd: false,
-          tax_rate: projectTaxRate.toString(),
-          phase: undefined,
-          supplier_id: undefined,
-          notes: "",
-        });
+        setCreateOrigin(origin);
+        const base = emptyBudgetLineDefaults();
+        const prefill: FormValues = initialValues
+          ? {
+              ...base,
+              category: initialValues.category ?? "",
+              subcategory: initialValues.subcategory ?? "",
+              description: initialValues.description ?? "",
+              estimated_amount: initialValues.estimated_amount ?? "0",
+              actual_amount: initialValues.actual_amount ?? "0",
+              is_internal_cost: initialValues.is_internal_cost ?? false,
+              is_price_tbd: initialValues.is_price_tbd ?? false,
+              tax_rate: initialValues.tax_rate ?? projectTaxRate.toString(),
+              phase: initialValues.phase || undefined,
+              supplier_id: initialValues.supplier_id || undefined,
+              notes: initialValues.notes ?? "",
+            }
+          : base;
+        setSelectedCategory((prefill.category as BudgetCategory) || "");
+        form.reset(prefill);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, budgetLine, projectTaxRate]);
+  }, [open, budgetLine, projectTaxRate, origin, initialValues]);
 
   // Update subcategory options when category changes
   const handleCategoryChange = (value: string) => {
@@ -240,7 +279,11 @@ export function BudgetLineDialog({
     }
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema> | FormValues) => {
+  const onSubmit = async (
+    values: z.infer<typeof formSchema> | FormValues,
+    options?: { addAnother?: boolean }
+  ) => {
+    const addAnother = options?.addAnother === true && !isEditing;
     try {
       if (!user?.id) {
         toast.error(t("toastUserError"));
@@ -331,14 +374,45 @@ export function BudgetLineDialog({
           return;
         }
 
+        const submitOrigin = resolveSubmitOrigin(createOrigin, addAnother);
         void trackUserEvent("budget_created", {
           project_id: projectId,
           source: "manual",
+          origin: submitOrigin,
         });
 
-        toast.success(t("toastCreated"));
-        onSuccess();
-        onOpenChange(false);
+        if (addAnother) {
+          toast.success(t("toastLineAdded"));
+          const previous: FormValues = {
+            category: values.category,
+            subcategory: values.subcategory,
+            description: "",
+            estimated_amount: "0",
+            actual_amount: "0",
+            is_internal_cost: false,
+            is_price_tbd: false,
+            tax_rate: projectTaxRate.toString(),
+            phase: values.phase || undefined,
+            supplier_id: values.supplier_id || undefined,
+            notes: "",
+          };
+          const next = buildRepeatDefaults(
+            previous,
+            emptyBudgetLineDefaults(),
+            BUDGET_LINE_REPEAT_KEEP_KEYS
+          );
+          setSelectedCategory((next.category as BudgetCategory) || "");
+          form.reset(next);
+          setCreateOrigin(resolveNextCreateOrigin(createOrigin, true));
+          onCreated?.();
+          requestAnimationFrame(() => {
+            form.setFocus("description");
+          });
+        } else {
+          toast.success(t("toastCreated"));
+          onSuccess();
+          onOpenChange(false);
+        }
       }
     } catch (error: unknown) {
       const demoMsg = getDemoAccountMessage(error, locale);
@@ -352,7 +426,16 @@ export function BudgetLineDialog({
       toast.error(
         `${t("toastUnexpectedErrorPrefix")}${getErrorMessage(error, locale)}`
       );
+    } finally {
+      addAnotherIntentRef.current = false;
     }
+  };
+
+  const submitWithIntent = (addAnother: boolean) => {
+    addAnotherIntentRef.current = addAnother;
+    void form.handleSubmit((vals) =>
+      onSubmit(vals, { addAnother: addAnotherIntentRef.current })
+    )();
   };
 
   if (!open) {
@@ -361,8 +444,11 @@ export function BudgetLineDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
+      <DialogContent
+        fullScreenMobile
+        className="max-w-lg max-sm:overflow-hidden"
+      >
+        <DialogHeader className="max-sm:shrink-0 max-sm:p-6 max-sm:pb-2">
           <DialogTitle>
             {isEditing ? t("titleEdit") : t("titleNew")}
           </DialogTitle>
@@ -370,370 +456,383 @@ export function BudgetLineDialog({
         <Form {...form}>
           <form
             onSubmit={(e) => {
-              void form.handleSubmit(onSubmit)(e);
+              e.preventDefault();
+              submitWithIntent(!isEditing);
             }}
-            className="space-y-4"
+            className="max-sm:flex max-sm:min-h-0 max-sm:flex-1 max-sm:flex-col max-sm:overflow-hidden"
           >
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel required>{t("categoryLabel")}</FormLabel>
-                    <Select
-                      onValueChange={handleCategoryChange}
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("categoryPlaceholder")} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categoryOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="subcategory"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel required>{t("subcategoryLabel")}</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={!selectedCategory}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={t("subcategoryPlaceholder")}
-                          />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {subcategoryOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("descriptionLabel")}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t("descriptionPlaceholder")}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div
-              className={
-                lineTaxEditable
-                  ? "grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,0.7fr)]"
-                  : "grid grid-cols-1 gap-4 sm:grid-cols-2"
-              }
-            >
-              <FormField
-                control={form.control}
-                name="estimated_amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("estimatedAmountLabel")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder={
-                          isPriceTbd
-                            ? t("priceTbdLabel")
-                            : t("amountPlaceholder")
-                        }
-                        disabled={isPriceTbd}
-                        {...field}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          field.onChange(v);
-                          if (selectedCategory === "own_fees" && !isPriceTbd) {
-                            form.setValue("actual_amount", v);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    {selectedCategory === "own_fees" && (
-                      <p className="text-muted-foreground text-xs">
-                        {t("feesHint")}
-                      </p>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="actual_amount"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("actualAmountLabel")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder={
-                          isPriceTbd
-                            ? t("priceTbdLabel")
-                            : t("amountPlaceholder")
-                        }
-                        {...field}
-                        disabled={
-                          isPriceTbd ||
-                          !selectedCategory ||
-                          !advancedCostLineOptionsEnabled ||
-                          selectedCategory === "own_fees"
-                        }
-                      />
-                    </FormControl>
-                    {!advancedCostLineOptionsEnabled && (
-                      <p className="text-muted-foreground text-xs">
-                        <Link href="/pricing" className="underline">
-                          {t("upgradePlan")}
-                        </Link>{" "}
-                        {t("upgradeCostsSuffix")}
-                      </p>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {lineTaxEditable && (
+            <div className="space-y-4 max-sm:min-h-0 max-sm:flex-1 max-sm:overflow-y-auto max-sm:px-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="tax_rate"
+                  name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("taxLabel")}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          placeholder={t("taxPlaceholder")}
-                          {...field}
-                          value={field.value ?? ""}
-                        />
-                      </FormControl>
+                      <FormLabel required>{t("categoryLabel")}</FormLabel>
+                      <Select
+                        onValueChange={handleCategoryChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={t("categoryPlaceholder")}
+                            />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categoryOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              )}
-            </div>
 
-            <FormField
-              control={form.control}
-              name="is_price_tbd"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value === true}
-                      onCheckedChange={(checked) => {
-                        field.onChange(checked === true);
-                      }}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel className="cursor-pointer">
-                      {t("priceTbdLabel")}
-                    </FormLabel>
-                    <p className="text-muted-foreground text-xs">
-                      {t("priceTbdDescription")}
-                    </p>
-                  </div>
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <FormField
-                control={form.control}
-                name="phase"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-1">
-                    <FormLabel className="flex items-center gap-1.5">
-                      <span>{t("phaseLabel")}</span>
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              className="text-muted-foreground hover:text-foreground inline-flex items-center"
-                              aria-label={t("phaseHelp")}
-                            >
-                              <CircleHelp className="h-3.5 w-3.5" />
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            variant="tertiary"
-                            className="max-w-56"
-                          >
-                            {t("phaseHelp")}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </FormLabel>
-                    <Select
-                      onValueChange={(value) =>
-                        field.onChange(value || undefined)
-                      }
-                      value={field.value || undefined}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t("phasePlaceholder")} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {PROJECT_PHASES.map((phase) => (
-                          <SelectItem key={phase} value={phase}>
-                            {phaseLabel(phase)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="supplier_id"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2">
-                    <FormLabel>{t("supplierLabel")}</FormLabel>
-                    <div className="flex gap-2">
-                      <div className="min-w-0 flex-1">
-                        <Select
-                          onValueChange={(value) =>
-                            field.onChange(value || undefined)
-                          }
-                          value={field.value || undefined}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue
-                                placeholder={t("supplierPlaceholder")}
-                              />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {suppliers.map((supplier) => (
-                              <SelectItem key={supplier.id} value={supplier.id}>
-                                {supplier.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setIsSupplierDialogOpen(true)}
-                        title={t("addSupplier")}
-                        aria-label={t("addSupplier")}
+                <FormField
+                  control={form.control}
+                  name="subcategory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel required>{t("subcategoryLabel")}</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        disabled={!selectedCategory}
                       >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={t("subcategoryPlaceholder")}
+                            />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {subcategoryOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("descriptionLabel")}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t("descriptionPlaceholder")}
+                        {...field}
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("notesLabel")}</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder={t("notesPlaceholder")} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div
+                className={
+                  lineTaxEditable
+                    ? "grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_minmax(0,0.7fr)]"
+                    : "grid grid-cols-1 gap-4 sm:grid-cols-2"
+                }
+              >
+                <FormField
+                  control={form.control}
+                  name="estimated_amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("estimatedAmountLabel")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder={
+                            isPriceTbd
+                              ? t("priceTbdLabel")
+                              : t("amountPlaceholder")
+                          }
+                          disabled={isPriceTbd}
+                          {...field}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            field.onChange(v);
+                            if (
+                              selectedCategory === "own_fees" &&
+                              !isPriceTbd
+                            ) {
+                              form.setValue("actual_amount", v);
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      {selectedCategory === "own_fees" && (
+                        <p className="text-muted-foreground text-xs">
+                          {t("feesHint")}
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="is_internal_cost"
-              render={({ field }) => (
-                <FormItem
-                  className={`flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
-                    !advancedCostLineOptionsEnabled ? "opacity-60" : ""
-                  }`}
-                >
-                  <FormControl>
-                    <Checkbox
-                      checked={
-                        advancedCostLineOptionsEnabled ? field.value : false
-                      }
-                      onCheckedChange={(checked) =>
-                        advancedCostLineOptionsEnabled &&
-                        field.onChange(checked === true)
-                      }
-                      disabled={!advancedCostLineOptionsEnabled}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>{t("internalCostLabel")}</FormLabel>
-                    <p className="text-muted-foreground text-sm">
-                      {t("internalCostDescription")}
-                    </p>
-                    {!advancedCostLineOptionsEnabled && (
-                      <p className="text-muted-foreground mt-1 text-xs">
-                        <Link href="/pricing" className="underline">
-                          {t("upgradePlan")}
-                        </Link>{" "}
-                        {t("upgradeInternalCostsSuffix")}
-                      </p>
+                <FormField
+                  control={form.control}
+                  name="actual_amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("actualAmountLabel")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder={
+                            isPriceTbd
+                              ? t("priceTbdLabel")
+                              : t("amountPlaceholder")
+                          }
+                          {...field}
+                          disabled={
+                            isPriceTbd ||
+                            !selectedCategory ||
+                            !advancedCostLineOptionsEnabled ||
+                            selectedCategory === "own_fees"
+                          }
+                        />
+                      </FormControl>
+                      {!advancedCostLineOptionsEnabled && (
+                        <p className="text-muted-foreground text-xs">
+                          <Link href="/pricing" className="underline">
+                            {t("upgradePlan")}
+                          </Link>{" "}
+                          {t("upgradeCostsSuffix")}
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {lineTaxEditable && (
+                  <FormField
+                    control={form.control}
+                    name="tax_rate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t("taxLabel")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder={t("taxPlaceholder")}
+                            {...field}
+                            value={field.value ?? ""}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )}
-                  </div>
-                </FormItem>
-              )}
-            />
+                  />
+                )}
+              </div>
 
-            <DialogFooter>
+              <FormField
+                control={form.control}
+                name="is_price_tbd"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value === true}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked === true);
+                        }}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="cursor-pointer">
+                        {t("priceTbdLabel")}
+                      </FormLabel>
+                      <p className="text-muted-foreground text-xs">
+                        {t("priceTbdDescription")}
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="phase"
+                  render={({ field }) => (
+                    <FormItem className="sm:col-span-1">
+                      <FormLabel className="flex items-center gap-1.5">
+                        <span>{t("phaseLabel")}</span>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="text-muted-foreground hover:text-foreground inline-flex items-center"
+                                aria-label={t("phaseHelp")}
+                              >
+                                <CircleHelp className="h-3.5 w-3.5" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              variant="tertiary"
+                              className="max-w-56"
+                            >
+                              {t("phaseHelp")}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </FormLabel>
+                      <Select
+                        onValueChange={(value) =>
+                          field.onChange(value || undefined)
+                        }
+                        value={field.value || undefined}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t("phasePlaceholder")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {PROJECT_PHASES.map((phase) => (
+                            <SelectItem key={phase} value={phase}>
+                              {phaseLabel(phase)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="supplier_id"
+                  render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>{t("supplierLabel")}</FormLabel>
+                      <div className="flex gap-2">
+                        <div className="min-w-0 flex-1">
+                          <Select
+                            onValueChange={(value) =>
+                              field.onChange(value || undefined)
+                            }
+                            value={field.value || undefined}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue
+                                  placeholder={t("supplierPlaceholder")}
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {suppliers.map((supplier) => (
+                                <SelectItem
+                                  key={supplier.id}
+                                  value={supplier.id}
+                                >
+                                  {supplier.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setIsSupplierDialogOpen(true)}
+                          title={t("addSupplier")}
+                          aria-label={t("addSupplier")}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("notesLabel")}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder={t("notesPlaceholder")}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="is_internal_cost"
+                render={({ field }) => (
+                  <FormItem
+                    className={`flex flex-row items-start space-y-0 space-x-3 rounded-md border p-4 ${
+                      !advancedCostLineOptionsEnabled ? "opacity-60" : ""
+                    }`}
+                  >
+                    <FormControl>
+                      <Checkbox
+                        checked={
+                          advancedCostLineOptionsEnabled ? field.value : false
+                        }
+                        onCheckedChange={(checked) =>
+                          advancedCostLineOptionsEnabled &&
+                          field.onChange(checked === true)
+                        }
+                        disabled={!advancedCostLineOptionsEnabled}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>{t("internalCostLabel")}</FormLabel>
+                      <p className="text-muted-foreground text-sm">
+                        {t("internalCostDescription")}
+                      </p>
+                      {!advancedCostLineOptionsEnabled && (
+                        <p className="text-muted-foreground mt-1 text-xs">
+                          <Link href="/pricing" className="underline">
+                            {t("upgradePlan")}
+                          </Link>{" "}
+                          {t("upgradeInternalCostsSuffix")}
+                        </p>
+                      )}
+                    </div>
+                  </FormItem>
+                )}
+              />
+            </div>
+            <DialogFooter stickyMobile className="max-sm:flex-wrap">
               <Button
                 type="button"
                 variant="outline"
@@ -741,9 +840,20 @@ export function BudgetLineDialog({
               >
                 {t("cancel")}
               </Button>
-              <Button type="submit">
-                {isEditing ? t("update") : t("add")}
-              </Button>
+              {isEditing ? (
+                <Button type="submit">{t("update")}</Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => submitWithIntent(false)}
+                  >
+                    {t("add")}
+                  </Button>
+                  <Button type="submit">{t("addAndCreateAnother")}</Button>
+                </>
+              )}
             </DialogFooter>
           </form>
         </Form>

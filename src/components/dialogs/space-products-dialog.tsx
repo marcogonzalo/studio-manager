@@ -15,6 +15,7 @@ import {
   Image as ImageIcon,
   Plus,
   Pencil,
+  Copy,
   Trash2,
   MoreVertical,
 } from "lucide-react";
@@ -33,6 +34,11 @@ import type { ProjectItem } from "@/types";
 import { ItemPriceOrTbd, PriceTbdPill } from "@/components/price-tbd-pill";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { isItemPriceTbd } from "@/lib/project-item-price";
+import {
+  projectItemToDuplicateValues,
+  type AddItemInitialValues,
+} from "@/lib/budget-entry-duplicate";
+import type { BudgetCreatedOrigin } from "@/lib/budget-entry-repeat";
 
 interface SpaceProductsDialogProps {
   open: boolean;
@@ -57,6 +63,10 @@ export function SpaceProductsDialog({
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
+  const [itemInitialValues, setItemInitialValues] =
+    useState<AddItemInitialValues | null>(null);
+  const [itemDialogOrigin, setItemDialogOrigin] =
+    useState<BudgetCreatedOrigin>("space_add");
   const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -98,20 +108,37 @@ export function SpaceProductsDialog({
     }
   };
 
+  const resetCreateState = () => {
+    setEditingItem(null);
+    setItemInitialValues(null);
+    setItemDialogOrigin("space_add");
+  };
+
   const handleEdit = (item: ProjectItem) => {
+    resetCreateState();
     setEditingItem(item);
+    setItemDialogOrigin("form");
+    setIsAddDialogOpen(true);
+  };
+
+  const handleDuplicate = (item: ProjectItem) => {
+    resetCreateState();
+    setItemInitialValues(
+      projectItemToDuplicateValues(item, item.product ?? null)
+    );
+    setItemDialogOrigin("duplicate");
     setIsAddDialogOpen(true);
   };
 
   const handleAddNew = () => {
-    setEditingItem(null);
+    resetCreateState();
     setIsAddDialogOpen(true);
   };
 
   const handleDialogClose = (open: boolean) => {
     setIsAddDialogOpen(open);
     if (!open) {
-      setEditingItem(null);
+      resetCreateState();
     }
   };
 
@@ -233,6 +260,12 @@ export function SpaceProductsDialog({
                                   {t("edit")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
+                                  onClick={() => handleDuplicate(item)}
+                                >
+                                  <Copy className="mr-2 h-4 w-4" />
+                                  {t("duplicate")}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
                                   onClick={() => setDeleteTargetId(item.id)}
                                   className="text-destructive"
                                 >
@@ -267,10 +300,15 @@ export function SpaceProductsDialog({
         projectId={projectId}
         item={editingItem}
         spaceId={space.id}
+        origin={itemDialogOrigin}
+        initialValues={itemInitialValues}
+        onCreated={() => {
+          void fetchItems();
+        }}
         onSuccess={() => {
           setIsAddDialogOpen(false);
-          setEditingItem(null);
-          fetchItems();
+          resetCreateState();
+          void fetchItems();
         }}
       />
 

@@ -45,6 +45,7 @@ import {
   Trash2,
   Printer,
   Pencil,
+  Copy,
   ChevronDown,
   Clock,
   Truck,
@@ -62,6 +63,13 @@ import {
 } from "@/components/ui/tooltip";
 import { AddItemDialog } from "@/components/dialogs/add-item-dialog";
 import { BudgetLineDialog } from "@/components/dialogs/budget-line-dialog";
+import {
+  budgetLineToDuplicateValues,
+  projectItemToDuplicateValues,
+  type AddItemInitialValues,
+  type BudgetLineInitialValues,
+} from "@/lib/budget-entry-duplicate";
+import type { BudgetCreatedOrigin } from "@/lib/budget-entry-repeat";
 import {
   BudgetPrintOptionsDialog,
   type BudgetPrintOption,
@@ -163,6 +171,17 @@ export function ProjectBudget({
   const [editingItem, setEditingItem] = useState<ProjectItem | null>(null);
   const [editingBudgetLine, setEditingBudgetLine] =
     useState<ProjectBudgetLine | null>(null);
+  const [itemDialogSpaceId, setItemDialogSpaceId] = useState<
+    string | undefined
+  >(undefined);
+  const [itemDialogOrigin, setItemDialogOrigin] =
+    useState<BudgetCreatedOrigin>("form");
+  const [itemInitialValues, setItemInitialValues] =
+    useState<AddItemInitialValues | null>(null);
+  const [budgetLineDialogOrigin, setBudgetLineDialogOrigin] =
+    useState<BudgetCreatedOrigin>("form");
+  const [budgetLineInitialValues, setBudgetLineInitialValues] =
+    useState<BudgetLineInitialValues | null>(null);
   const [selectedItem, setSelectedItem] = useState<ProjectItem | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
@@ -285,23 +304,63 @@ export function ProjectBudget({
     }
   };
 
+  const resetItemDialogCreateState = () => {
+    setEditingItem(null);
+    setItemInitialValues(null);
+    setItemDialogSpaceId(undefined);
+    setItemDialogOrigin("form");
+  };
+
+  const resetBudgetLineDialogCreateState = () => {
+    setEditingBudgetLine(null);
+    setBudgetLineInitialValues(null);
+    setBudgetLineDialogOrigin("form");
+  };
+
   const handleEditItem = (item: ProjectItem) => {
+    resetItemDialogCreateState();
     setEditingItem(item);
     setIsItemDialogOpen(true);
   };
 
   const handleEditBudgetLine = (line: ProjectBudgetLine) => {
+    resetBudgetLineDialogCreateState();
     setEditingBudgetLine(line);
     setIsBudgetLineDialogOpen(true);
   };
 
   const handleAddItem = () => {
-    setEditingItem(null);
+    resetItemDialogCreateState();
+    setItemDialogOrigin("form");
+    setIsItemDialogOpen(true);
+  };
+
+  const handleAddItemToSpace = (spaceId: string | null) => {
+    resetItemDialogCreateState();
+    setItemDialogSpaceId(spaceId ?? undefined);
+    setItemDialogOrigin("space_add");
+    setIsItemDialogOpen(true);
+  };
+
+  const handleDuplicateItem = (item: ProjectItem) => {
+    resetItemDialogCreateState();
+    setItemInitialValues(
+      projectItemToDuplicateValues(item, item.product ?? null)
+    );
+    setItemDialogOrigin("duplicate");
     setIsItemDialogOpen(true);
   };
 
   const handleAddBudgetLine = () => {
-    setEditingBudgetLine(null);
+    resetBudgetLineDialogCreateState();
+    setBudgetLineDialogOrigin("form");
+    setIsBudgetLineDialogOpen(true);
+  };
+
+  const handleDuplicateBudgetLine = (line: ProjectBudgetLine) => {
+    resetBudgetLineDialogCreateState();
+    setBudgetLineInitialValues(budgetLineToDuplicateValues(line));
+    setBudgetLineDialogOrigin("duplicate");
     setIsBudgetLineDialogOpen(true);
   };
 
@@ -829,22 +888,45 @@ export function ProjectBudget({
                             onOpenChange={() => toggleSection(spaceSectionKey)}
                           >
                             <Card>
-                              <CollapsibleTrigger asChild>
-                                <CardHeader className="hover:bg-accent/30 cursor-pointer py-3">
-                                  <div className="flex items-center justify-between">
-                                    <CardTitle className="flex items-center gap-2 text-sm">
-                                      <ChevronDown
-                                        className={`h-3 w-3 transition-transform ${openSections[spaceSectionKey] !== false ? "" : "-rotate-90"}`}
-                                      />
-                                      {spaceName}
-                                    </CardTitle>
-                                    <span className="text-foreground text-sm font-semibold">
-                                      {formatCurrency(spaceTotal)}
-                                      {spaceHasTbd ? "*" : ""}
-                                    </span>
-                                  </div>
-                                </CardHeader>
-                              </CollapsibleTrigger>
+                              <CardHeader className="py-3">
+                                <div className="flex items-center justify-between gap-2">
+                                  <CollapsibleTrigger asChild>
+                                    <button
+                                      type="button"
+                                      className="hover:bg-accent/30 flex min-w-0 flex-1 items-center justify-between rounded-md py-1 text-left"
+                                    >
+                                      <CardTitle className="flex items-center gap-2 text-sm">
+                                        <ChevronDown
+                                          className={`h-3 w-3 shrink-0 transition-transform ${openSections[spaceSectionKey] !== false ? "" : "-rotate-90"}`}
+                                        />
+                                        {spaceName}
+                                      </CardTitle>
+                                      <span className="text-foreground text-sm font-semibold">
+                                        {formatCurrency(spaceTotal)}
+                                        {spaceHasTbd ? "*" : ""}
+                                      </span>
+                                    </button>
+                                  </CollapsibleTrigger>
+                                  {!readOnly && (
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      className="shrink-0 print:hidden"
+                                      aria-label={t("addToSpaceAria")}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddItemToSpace(
+                                          spaceKey === "none" ? null : spaceKey
+                                        );
+                                      }}
+                                    >
+                                      <Plus className="mr-1 h-3.5 w-3.5" />
+                                      {t("addToSpace")}
+                                    </Button>
+                                  )}
+                                </div>
+                              </CardHeader>
                               <CollapsibleContent>
                                 <CardContent className="pt-0">
                                   <Table>
@@ -888,6 +970,13 @@ export function ProjectBudget({
                                                   icon: Pencil,
                                                   onClick: () =>
                                                     handleEditItem(item),
+                                                },
+                                                {
+                                                  id: "duplicate",
+                                                  label: ts("duplicate"),
+                                                  icon: Copy,
+                                                  onClick: () =>
+                                                    handleDuplicateItem(item),
                                                 },
                                                 {
                                                   id: "delete",
@@ -1243,6 +1332,15 @@ export function ProjectBudget({
                                                         ),
                                                     },
                                                     {
+                                                      id: "duplicate",
+                                                      label: ts("duplicate"),
+                                                      icon: Copy,
+                                                      onClick: () =>
+                                                        handleDuplicateBudgetLine(
+                                                          line
+                                                        ),
+                                                    },
+                                                    {
                                                       id: "delete",
                                                       label: ts("delete"),
                                                       icon: Trash2,
@@ -1362,14 +1460,20 @@ export function ProjectBudget({
             open={isItemDialogOpen}
             onOpenChange={(open) => {
               setIsItemDialogOpen(open);
-              if (!open) setEditingItem(null);
+              if (!open) resetItemDialogCreateState();
             }}
             projectId={projectId}
             item={editingItem}
+            spaceId={itemDialogSpaceId}
+            origin={itemDialogOrigin}
+            initialValues={itemInitialValues}
+            onCreated={() => {
+              void fetchData();
+            }}
             onSuccess={() => {
               setIsItemDialogOpen(false);
-              setEditingItem(null);
-              fetchData();
+              resetItemDialogCreateState();
+              void fetchData();
             }}
           />
 
@@ -1377,14 +1481,19 @@ export function ProjectBudget({
             open={isBudgetLineDialogOpen}
             onOpenChange={(open) => {
               setIsBudgetLineDialogOpen(open);
-              if (!open) setEditingBudgetLine(null);
+              if (!open) resetBudgetLineDialogCreateState();
             }}
             projectId={projectId}
             budgetLine={editingBudgetLine}
+            origin={budgetLineDialogOrigin}
+            initialValues={budgetLineInitialValues}
+            onCreated={() => {
+              refetchBudgetLines();
+            }}
             onSuccess={() => {
               setIsBudgetLineDialogOpen(false);
-              setEditingBudgetLine(null);
-              fetchData();
+              resetBudgetLineDialogCreateState();
+              refetchBudgetLines();
             }}
           />
 
@@ -1399,8 +1508,7 @@ export function ProjectBudget({
                 ? undefined
                 : () => {
                     setIsProductModalOpen(false);
-                    setEditingItem(selectedItem);
-                    setIsItemDialogOpen(true);
+                    if (selectedItem) handleEditItem(selectedItem);
                   }
             }
           />
