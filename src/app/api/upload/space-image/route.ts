@@ -6,11 +6,16 @@ import { createAsset, getAssetIdByOwner } from "@/lib/assets";
 import { MAX_IMAGE_FILE_SIZE, validateImageFile } from "@/lib/image-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
 import { buildStorageLimitErrorBody } from "@/lib/plan-limit-ux";
-import { getAppUiCopy, localeFromRequest } from "@/lib/app-ui-copy";
+import {
+  getAppUiCopy,
+  interpolateAppCopy,
+  localeFromRequest,
+} from "@/lib/app-ui-copy";
 import { checkRateLimit, getRateLimitMessage } from "@/lib/rate-limit";
+import { humanizeUploadError } from "@/lib/upload-user-error";
 import { getSupabaseUrl, getSupabaseServiceRoleKey } from "@/lib/supabase/keys";
 import { createClient } from "@/lib/supabase/server";
-import { isDemoAccountEmail } from "@/lib/utils";
+import { isDemoAccountEmail, reportError } from "@/lib/utils";
 
 const MAX_DIMENSION = 1200;
 

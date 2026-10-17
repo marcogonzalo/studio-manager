@@ -331,8 +331,10 @@
     "captchaLoadFailed": "No se pudo cargar la verificación (red, bloqueador de anuncios o dominio del widget).",
     "successToast": "Revisa tu correo. Te hemos enviado un enlace para acceder a tu cuenta de prueba.",
     "sentTitle": "Revisa tu correo electrónico. Te hemos enviado un enlace para acceder a tu cuenta de prueba de Veta. El enlace es válido durante un máximo de 1 hora.",
-    "marketingConsentLabel": "Acepto recibir comunicaciones sobre novedades y recursos de Veta (opcional)",
-    "privacyNote": "Solo usamos tu correo para enviarte el enlace de la demo y gestionar el acceso a tu cuenta de prueba. Consulta nuestra política de privacidad para más detalles."
+    "acceptTermsPrefix": "He leído y estoy conforme con los",
+    "termsLink": "términos de uso y privacidad",
+    "acceptTermsError": "Debes aceptar los términos de uso y privacidad",
+    "marketingConsentLabel": "Acepto recibir comunicaciones sobre novedades y recursos de Veta (opcional)"
   },
   "Pricing": {
     "metaTitle": "Precios y planes Base, Pro y Studio",
