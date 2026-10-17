@@ -42,9 +42,11 @@ export type BudgetLineInitialValues = {
  */
 export function projectItemToDuplicateValues(
   item: ProjectItem,
-  product?: Pick<
-    Product,
-    "description" | "reference_code" | "reference_url" | "category"
+  product?: Partial<
+    Pick<
+      Product,
+      "description" | "reference_code" | "reference_url" | "category"
+    >
   > | null
 ): AddItemInitialValues {
   return {
