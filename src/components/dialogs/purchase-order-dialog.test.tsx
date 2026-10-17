@@ -210,6 +210,58 @@ describe("PurchaseOrderDialog", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
+  it("locks the supplier when editing an existing order", async () => {
+    const user = userEvent.setup();
+    const onSuccess = vi.fn();
+
+    render(
+      <PurchaseOrderDialog
+        open
+        onOpenChange={vi.fn()}
+        projectId={projectId}
+        onSuccess={onSuccess}
+        order={{
+          id: "po-1",
+          supplier_id: supplierId,
+          order_number: "PO-100",
+          order_date: "2026-01-01",
+          status: "draft",
+          notes: null,
+          project_items: [{ id: itemId }],
+        }}
+      />
+    );
+
+    const supplierTrigger = await screen.findByRole("combobox", {
+      name: /supplierLabel/i,
+    });
+    expect(supplierTrigger).toBeDisabled();
+    expect(
+      screen.getByRole("textbox", { name: /^orderNumberLabel/ })
+    ).toBeDisabled();
+    expect(screen.getByLabelText(/^dateLabel/)).toBeDisabled();
+    expect(screen.getByText("lockedFieldsHint")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText("Chair")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole("button", { name: "updateOrder" }));
+
+    await waitFor(() => {
+      expect(mockRpc).toHaveBeenCalledWith(
+        "save_purchase_order_with_items",
+        expect.objectContaining({
+          p_purchase_order_id: "po-1",
+          p_supplier_id: supplierId,
+          p_order_number: "PO-100",
+          p_order_date: "2026-01-01",
+          p_item_ids: [itemId],
+        })
+      );
+    });
+  });
+
   it("does not toast success when rpc returns an error", async () => {
     const user = userEvent.setup();
     mockRpc.mockResolvedValue({

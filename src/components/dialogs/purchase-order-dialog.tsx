@@ -470,9 +470,14 @@ export function PurchaseOrderDialog({
         {
           p_project_id: projectId,
           p_purchase_order_id: isEditing && order ? order.id : null,
-          p_supplier_id: values.supplier_id,
-          p_order_number: values.order_number,
-          p_order_date: values.order_date,
+          p_supplier_id:
+            isEditing && order ? order.supplier_id : values.supplier_id,
+          p_order_number:
+            isEditing && order ? order.order_number : values.order_number,
+          p_order_date:
+            isEditing && order
+              ? order.order_date.split("T")[0]
+              : values.order_date,
           p_status: values.status,
           p_notes: values.notes || null,
           p_delivery_deadline: values.delivery_deadline || null,
@@ -515,6 +520,11 @@ export function PurchaseOrderDialog({
               }}
               className="space-y-6"
             >
+              {isEditing ? (
+                <p className="text-muted-foreground text-sm">
+                  {t("lockedFieldsHint")}
+                </p>
+              ) : null}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -523,7 +533,11 @@ export function PurchaseOrderDialog({
                     <FormItem>
                       <FormLabel required>{t("orderNumberLabel")}</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="PO-001" />
+                        <Input
+                          {...field}
+                          disabled={isEditing}
+                          placeholder="PO-001"
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -537,7 +551,7 @@ export function PurchaseOrderDialog({
                     <FormItem>
                       <FormLabel required>{t("dateLabel")}</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input type="date" {...field} disabled={isEditing} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -553,6 +567,7 @@ export function PurchaseOrderDialog({
                     <FormItem>
                       <FormLabel required>{t("supplierLabel")}</FormLabel>
                       <Select
+                        disabled={isEditing}
                         onValueChange={field.onChange}
                         value={field.value}
                       >
