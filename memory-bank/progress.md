@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama fix/docker-dev-turbopack-memory:** Dev container `mem_limit` 4GB → 6GB. V8 heap 3072 → 2048 so Turbopack native memory fits in the cgroup. `watchOptions.pollIntervalMs: 1000` because Turbopack ignores `CHOKIDAR_USEPOLLING`. One page compile peaked ~3.8GB RSS and SIGKILL'd the worker; parent then exited 0 and `docker-dev.sh` relaunched. Short verify: Prettier, `docker compose config`. Full lint/test/build skipped — live dev container was ~4GB of 6GB and the Docker VM is ~8GB, so a second test container would OOM. CI runs the suite.
+
 - **Rama feat/in-app-help-support-form-217 (issue #217):** Shared `SupportForm` (reason, subject, name, email, message) + `submitSupportForm` via MailerSend. In-app help CTA first 14 days from `user.confirmed_at`; after that user-menu only. Report bug opens form with `report_error`. Demo hidden. Marketing `/contact` uses same form (`?reason=`). Event `help_clicked`. Full verify: Docker lint + tests + build.
 
 - **Rama fix/analytics-signup-consent-banner-220 (issue #220):** Consent-gated fix so signup confirmation can reach GTM/GA4. `CookieConsentBanner` mounted once in `[locale]/layout` (auth + marketing) and `veta-app/layout` (removed marketing duplicate). `pushSignUpConfirmed` / `pushLoginConfirmed` no longer dual-push `sign_up`/`login`. Callback `trackEvent` fire-and-forget. Docs + `NEXT_PUBLIC_GTM_ID` in `.env.example`. Vitest for banner, gate, gtm helpers, mount points. Full verify: Docker test profile lint + tests + build. GTM container wiring still manual (#181).

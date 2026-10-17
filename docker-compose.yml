@@ -19,7 +19,8 @@ services:
     tty: false
     command: ["sh", "/app/scripts/docker-dev.sh"]
     environment:
-      NODE_OPTIONS: --max-old-space-size=3072 --require /app/scripts/next-ignore-restart-exit.cjs
+      # V8 heap stays 2048. Turbopack native memory sits outside it.
+      NODE_OPTIONS: --max-old-space-size=2048 --require /app/scripts/next-ignore-restart-exit.cjs
       NEXT_DISABLE_MEM_OVERRIDE: "1"
       # Skip Watchpack auto-restart on next.config.ts (bind-mount false positives).
       __NEXT_DISABLE_MEMORY_WATCHER: "1"
@@ -28,8 +29,10 @@ services:
       WATCHPACK_POLLING: ${DOCKER_DEV_POLLING:-true}
       NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH}
-    mem_limit: 4096m
-    memswap_limit: 4096m
+    # One Turbopack page compile peaked near 4GB RSS and SIGKILL'd the
+    # worker. Parent then exited 0, and docker-dev.sh relaunched it.
+    mem_limit: 6g
+    memswap_limit: 6g
     init: true
     restart: unless-stopped
     healthcheck:
