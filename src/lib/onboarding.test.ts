@@ -92,4 +92,21 @@ describe("getOnboardingStepsStatus", () => {
     expect(allComplete).toBe(true);
     expect(firstPendingStepId).toBe(null);
   });
+
+  it("does not mark project step complete when projectsCount is 0 (sample excluded upstream)", () => {
+    const data = {
+      ...baseData,
+      welcomeSeen: true,
+      fullName: "J",
+      defaultCurrency: "EUR",
+      defaultTaxRate: 0,
+      clientsCount: 1,
+      projectsCount: 0,
+      planCode: "BASE" as const,
+    };
+    const { steps, firstPendingStepId } = getOnboardingStepsStatus(data);
+    const projectStep = steps.find((s) => s.id === "project");
+    expect(projectStep?.completed).toBe(false);
+    expect(firstPendingStepId).toBe("project");
+  });
 });

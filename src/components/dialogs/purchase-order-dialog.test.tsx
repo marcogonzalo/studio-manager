@@ -264,17 +264,19 @@ describe("PurchaseOrderDialog", () => {
 
   it("does not toast success when rpc returns an error", async () => {
     const user = userEvent.setup();
+    const onSuccess = vi.fn();
+    const onOpenChange = vi.fn();
     mockRpc.mockResolvedValue({
       data: null,
-      error: { message: "rpc failed" },
+      error: new Error("rpc failed"),
     });
 
     render(
       <PurchaseOrderDialog
         open
-        onOpenChange={vi.fn()}
+        onOpenChange={onOpenChange}
         projectId={projectId}
-        onSuccess={vi.fn()}
+        onSuccess={onSuccess}
       />
     );
 
@@ -283,9 +285,11 @@ describe("PurchaseOrderDialog", () => {
 
     await waitFor(() => {
       expect(mockRpc).toHaveBeenCalled();
+      expect(toast.error).toHaveBeenCalledWith("rpc failed");
     });
 
     expect(toast.success).not.toHaveBeenCalled();
-    expect(toast.error).toHaveBeenCalled();
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });

@@ -21,6 +21,7 @@ import { appPath } from "@/lib/app-paths";
 import { usePhaseLabel, useProjectStatusLabel } from "@/lib/use-project-labels";
 import { ProjectDialog } from "@/components/project-dialog";
 import { ProjectDetailModal } from "@/components/project-detail-modal";
+import { PlanLimitModal } from "@/components/plan/plan-limit-modal";
 import {
   Tooltip,
   TooltipContent,
@@ -33,6 +34,9 @@ import { ProjectShareDialog } from "@/components/dialogs/project-share-dialog";
 import { SoftPill } from "@/components/ui/soft-pill";
 import { ProjectContext } from "./project-context";
 import { cn } from "@/lib/utils";
+import { trackUserEvent } from "@/app/actions/track-event";
+
+const SAMPLE_VIEWED_SESSION_PREFIX = "veta_sample_viewed_";
 
 function ProjectDetailShellContent({
   children,
@@ -55,6 +59,7 @@ function ProjectDetailShellContent({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isPlanLimitOpen, setIsPlanLimitOpen] = useState(false);
   const [shareViewEnabled, setShareViewEnabled] = useState<boolean | null>(
     null
   );
@@ -214,6 +219,15 @@ function ProjectDetailShellContent({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when id changes only
   }, [id]);
 
+  useEffect(() => {
+    if (!project?.is_sample || !project.id) return;
+    const key = SAMPLE_VIEWED_SESSION_PREFIX + project.id;
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem(key) === "1") return;
+    sessionStorage.setItem(key, "1");
+    void trackUserEvent("sample_viewed", { project_id: project.id });
+  }, [project?.id, project?.is_sample]);
+
   async function fetchActiveProjects() {
     const { data, error } = await supabase
       .from("projects")
@@ -304,6 +318,14 @@ function ProjectDetailShellContent({
   return (
     <ProjectContext.Provider value={{ project, isReadOnly, capabilities }}>
       <div className="space-y-6">
+        {project.is_sample && (
+          <div
+            className="bg-muted text-muted-foreground border-border rounded-lg border px-4 py-3 text-sm"
+            role="status"
+          >
+            {t("sampleBanner")}
+          </div>
+        )}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
             <div className="w-full min-w-0 self-start md:w-auto md:max-w-full">
@@ -451,7 +473,6 @@ function ProjectDetailShellContent({
           onOpenChange={setIsDetailModalOpen}
           project={project}
           onEdit={() => setIsEditDialogOpen(true)}
-          readOnly={isReadOnly}
         />
         <ProjectShareDialog
           open={isShareDialogOpen}
@@ -462,11 +483,19 @@ function ProjectDetailShellContent({
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
           project={project}
+          onPlanLimitExceeded={() => {
+            setIsEditDialogOpen(false);
+            setIsPlanLimitOpen(true);
+          }}
           onSuccess={() => {
             setIsEditDialogOpen(false);
             fetchProject();
             fetchActiveProjects();
           }}
+        />
+        <PlanLimitModal
+          open={isPlanLimitOpen}
+          onOpenChange={setIsPlanLimitOpen}
         />
       </div>
     </ProjectContext.Provider>

@@ -19,7 +19,11 @@ export type UserEvent =
   | "project_updated"
   | "limit_hit"
   | "limit_cta_clicked"
-  | "help_clicked";
+  | "help_clicked"
+  | "sample_viewed"
+  | "sample_reopened"
+  | "note_created"
+  | "note_archived";
 
 export type TrackEventOptions = {
   userId: string;

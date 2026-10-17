@@ -550,7 +550,14 @@ export function AddItemDialog({
         const { error } = await supabase.from("project_items").insert([data]);
         if (error) throw error;
 
-        void trackUserEvent("project_updated", { project_id: projectId });
+        if (activeTab === "catalog" && values.product_id !== "custom") {
+          void trackUserEvent("budget_created", {
+            project_id: projectId,
+            source: "catalog",
+          });
+        } else {
+          void trackUserEvent("project_updated", { project_id: projectId });
+        }
 
         toast.success(t("toastCreated"));
       }
