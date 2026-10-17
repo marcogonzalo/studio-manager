@@ -176,6 +176,14 @@ export function getPlanErrorMessage(
 /** Código de error cuando la cuenta es demo y las escrituras están bloqueadas. */
 export const DEMO_ACCOUNT_READ_ONLY = "DEMO_ACCOUNT_READ_ONLY" as const;
 
+/** Shared demo account email (read-only writes). */
+export const DEMO_ACCOUNT_EMAIL = "demo@veta.pro";
+
+/** True when email is the shared demo account (case-insensitive). */
+export function isDemoAccountEmail(email?: string | null): boolean {
+  return email?.toLowerCase() === DEMO_ACCOUNT_EMAIL;
+}
+
 /** Mensaje amable para cuenta demo (solo lectura en escrituras). */
 export function getDemoAccountCopy(lang: Locale = defaultLocale) {
   const copy = getAppUiCopy(lang).errors;

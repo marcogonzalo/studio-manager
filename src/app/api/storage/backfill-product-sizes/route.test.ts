@@ -5,20 +5,11 @@ const mockFrom = vi.fn();
 const mockIsOurB2Url = vi.fn();
 const mockReportError = vi.fn();
 
-vi.mock("@supabase/ssr", () => ({
-  createServerClient: vi.fn(() => ({
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(async () => ({
     auth: { getUser: mockGetUser },
     from: mockFrom,
   })),
-}));
-
-vi.mock("next/headers", () => ({
-  cookies: vi.fn(() => Promise.resolve({ getAll: () => [], set: vi.fn() })),
-}));
-
-vi.mock("@/lib/supabase/keys", () => ({
-  getSupabaseUrl: () => "https://test.supabase.co",
-  getSupabaseServerKey: () => "server-key",
 }));
 
 vi.mock("@/lib/backblaze", () => ({

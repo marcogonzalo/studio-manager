@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import {
   cn,
+  DEMO_ACCOUNT_EMAIL,
   DEMO_ACCOUNT_MESSAGE,
   DEMO_ACCOUNT_READ_ONLY,
   getDemoAccountMessage,
@@ -11,6 +12,7 @@ import {
   getSubcategoryOptions,
   getCategoryOptions,
   isCostCategory,
+  isDemoAccountEmail,
   isDemoAccountError,
   getProjectLimitMessage,
   isPlanLimitExceeded,
@@ -236,6 +238,15 @@ describe("getPlanErrorMessage", () => {
 });
 
 describe("demo account helpers", () => {
+  it("isDemoAccountEmail matches demo@veta.pro case-insensitively", () => {
+    expect(isDemoAccountEmail(DEMO_ACCOUNT_EMAIL)).toBe(true);
+    expect(isDemoAccountEmail("Demo@Veta.Pro")).toBe(true);
+    expect(isDemoAccountEmail("user@veta.pro")).toBe(false);
+    expect(isDemoAccountEmail(null)).toBe(false);
+    expect(isDemoAccountEmail(undefined)).toBe(false);
+    expect(isDemoAccountEmail("")).toBe(false);
+  });
+
   it("isDemoAccountError returns true when message contains DEMO_ACCOUNT_READ_ONLY", () => {
     expect(
       isDemoAccountError(

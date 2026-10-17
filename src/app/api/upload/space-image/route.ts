@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { createClient } from "@supabase/supabase-js";
-import { cookies } from "next/headers";
-import type { CookieOptions } from "@supabase/ssr";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import sharp from "sharp";
 import { uploadSpaceImage } from "@/lib/backblaze";
 import { createAsset, getAssetIdByOwner } from "@/lib/assets";
@@ -15,40 +12,16 @@ import {
   localeFromRequest,
 } from "@/lib/app-ui-copy";
 import { checkRateLimit, getRateLimitMessage } from "@/lib/rate-limit";
-import { reportError } from "@/lib/utils";
 import { humanizeUploadError } from "@/lib/upload-user-error";
-import {
-  getSupabaseUrl,
-  getSupabaseServerKey,
-  getSupabaseServiceRoleKey,
-} from "@/lib/supabase/keys";
+import { getSupabaseUrl, getSupabaseServiceRoleKey } from "@/lib/supabase/keys";
+import { createClient } from "@/lib/supabase/server";
+import { isDemoAccountEmail, reportError } from "@/lib/utils";
 
 const MAX_DIMENSION = 1200;
 
-interface CookieToSet {
-  name: string;
-  value: string;
-  options?: CookieOptions;
-}
-
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const supabaseUrl = getSupabaseUrl();
-    const supabaseServerKey = getSupabaseServerKey();
-
-    const supabase = createServerClient(supabaseUrl, supabaseServerKey, {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet: CookieToSet[]) {
-          cookiesToSet.forEach(({ name, value }) =>
-            cookieStore.set(name, value)
-          );
-        },
-      },
-    });
+    const supabase = await createClient();
 
     const {
       data: { user },
@@ -74,7 +47,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (user.email?.toLowerCase() === "demo@veta.pro") {
+    if (isDemoAccountEmail(user.email)) {
       return NextResponse.json(
         {
           code: "DEMO_ACCOUNT_READ_ONLY",
@@ -180,7 +153,7 @@ export async function POST(request: Request) {
     let currentUsedOverride: number | undefined;
     const serviceRoleKey = getSupabaseServiceRoleKey();
     const admin = serviceRoleKey
-      ? createClient(supabaseUrl, serviceRoleKey)
+      ? createServiceClient(getSupabaseUrl(), serviceRoleKey)
       : null;
     if (admin) {
       const { data: usageRow } = await admin

@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { pushDemoRequest } from "@/lib/gtm";
 import { loadAttributionCookie } from "@/lib/attribution";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,9 @@ export function DemoRequestForm({
 
   const formSchema = z.object({
     email: z.string().email(t("emailInvalid")),
+    acceptTerms: z.boolean().refine((val) => val === true, {
+      message: t("acceptTermsError"),
+    }),
     marketingConsent: z.boolean().optional(),
   });
 
@@ -46,11 +50,13 @@ export function DemoRequestForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
+      acceptTerms: false,
       marketingConsent: false,
     },
   });
 
   const watchedEmail = form.watch("email");
+  const acceptTerms = form.watch("acceptTerms");
   const emailTrimmed = watchedEmail?.trim() ?? "";
   const turnstileSiteKey =
     turnstileSiteKeyProp?.trim() ||
@@ -176,7 +182,7 @@ export function DemoRequestForm({
                     </FormControl>
                     <Button
                       type="submit"
-                      disabled={form.formState.isSubmitting}
+                      disabled={form.formState.isSubmitting || !acceptTerms}
                       className="shrink-0"
                     >
                       {form.formState.isSubmitting
@@ -185,6 +191,36 @@ export function DemoRequestForm({
                     </Button>
                   </div>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="acceptTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value === true}
+                      onCheckedChange={(checked) =>
+                        field.onChange(checked === true)
+                      }
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel className="font-normal">
+                      {t("acceptTermsPrefix")}{" "}
+                      <Link
+                        href="/legal"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary underline hover:no-underline"
+                      >
+                        {t("termsLink")}
+                      </Link>
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
                 </FormItem>
               )}
             />
@@ -244,7 +280,6 @@ export function DemoRequestForm({
             ) : null}
           </form>
         </Form>
-        <p className="text-muted-foreground mt-4 text-sm">{t("privacyNote")}</p>
       </CardContent>
     </Card>
   );

@@ -1,16 +1,7 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import type { CookieOptions } from "@supabase/ssr";
-import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
+import { createClient } from "@/lib/supabase/server";
 import { isOurB2Url } from "@/lib/backblaze";
 import { reportError } from "@/lib/utils";
-
-interface CookieToSet {
-  name: string;
-  value: string;
-  options?: CookieOptions;
-}
 
 const HEAD_CONCURRENCY = 5;
 
@@ -45,22 +36,7 @@ async function mapPool<T, R>(
  */
 export async function POST() {
   try {
-    const cookieStore = await cookies();
-    const supabaseUrl = getSupabaseUrl();
-    const supabaseServerKey = getSupabaseServerKey();
-
-    const supabase = createServerClient(supabaseUrl, supabaseServerKey, {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet: CookieToSet[]) {
-          cookiesToSet.forEach(({ name, value }) =>
-            cookieStore.set(name, value)
-          );
-        },
-      },
-    });
+    const supabase = await createClient();
 
     const {
       data: { user },

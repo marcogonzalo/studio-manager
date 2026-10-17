@@ -3,15 +3,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mockGetUser = vi.fn();
 const mockFrom = vi.fn();
 
-vi.mock("@supabase/ssr", () => ({
-  createServerClient: vi.fn(() => ({
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(async () => ({
     auth: { getUser: mockGetUser },
     from: mockFrom,
   })),
-}));
-
-vi.mock("next/headers", () => ({
-  cookies: vi.fn(() => Promise.resolve({ getAll: () => [], set: vi.fn() })),
 }));
 
 const mockDeleteProductImage = vi.fn(() => Promise.resolve());

@@ -23,6 +23,7 @@ import {
   buildSupportEmailSubject,
   buildSupportEmailText,
 } from "@/lib/support/build-support-email";
+import { isDemoAccountEmail } from "@/lib/utils";
 import enMarketing from "@/i18n/messages/en/marketing.json";
 import esMarketing from "@/i18n/messages/es/marketing.json";
 
@@ -30,8 +31,6 @@ import esMarketing from "@/i18n/messages/es/marketing.json";
 const MIN_SUBMIT_SECONDS = 10;
 /** Max age of form timestamp in ms (1 hour). */
 const MAX_FORM_AGE_MS = 60 * 60 * 1000;
-
-const DEMO_EMAIL = "demo@veta.pro";
 
 const SUPPORT_COPY = {
   en: enMarketing.SupportForm,
@@ -92,7 +91,7 @@ export async function submitSupportForm(
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user?.email?.toLowerCase() === DEMO_EMAIL) {
+  if (isDemoAccountEmail(user?.email)) {
     return { error: copy.demoBlocked };
   }
 
