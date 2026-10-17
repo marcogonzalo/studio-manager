@@ -34,6 +34,15 @@ describe("resolveActiveProjectsLimit / isAtActiveProjectLimit", () => {
   it("treats negative limit as unlimited", () => {
     expect(isAtActiveProjectLimit(100, { projects_limit: -1 })).toBe(false);
   });
+
+  it("allows first active when count is 0 (Completed sample does not count)", () => {
+    expect(
+      isAtActiveProjectLimit(0, { effective_active_projects_limit: 1 })
+    ).toBe(false);
+    expect(
+      isAtActiveProjectLimit(1, { effective_active_projects_limit: 1 })
+    ).toBe(true);
+  });
 });
 
 describe("storage ratios", () => {

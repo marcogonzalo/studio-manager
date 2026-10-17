@@ -18,7 +18,8 @@
 - **Tracking never throws:** Failures go through `reportError` and must not block UX.
 - **Event props:** Pass `project_id` (or `supplier_id`) when the event is scoped; empty props weaken activation analysis.
 - **`leads`:** Service role only. Browser must not write leads; capture via `demo-request` / auth APIs. Demo access stamp via Bearer on `demo-accessed` plus `leads.demo_access_token` (shared `demo@veta.pro` session cannot match by visitor email).
-- **Sample project on signup:** `ensure_profile_and_account_settings_from_auth` calls `seed_sample_project` once for brand-new non-demo users with zero projects (ES/EN literals, no images). Counts toward Base active-project limit; no backfill; no re-seed after delete.
+- **Sample project on signup (#233):** `ensure_profile_and_account_settings_from_auth` calls `seed_sample_project` once for brand-new non-demo users with zero projects (ES/EN literals, no images). Seed creates `status = completed`, `is_sample = true` — does **not** consume Base active-project slot until reopened. Emits no `user_events`. Onboarding “Create a project” ignores `is_sample`. Reopen goes through active-project limit. No re-seed after delete.
+- **Funnel primary activation:** Event-based — `project_created` (or `sample_reopened`) within 7d of signup plus `budget_created` or `supplier_created` in the same window. `funnel_users` excludes `demo@veta.pro`. `budget_created` props may include `source: catalog|manual`.
 - **Attribution:** Cookie `veta_attribution` (90d) only when analytics consent is present; demo-request and sign-up attach UTMs to leads.
 - **Signup timestamp:** Use `auth.users.created_at` in SQL views — never invent `profiles.created_at`.
 - **Views:** `funnel_users` / `leads_users` are service_role analytics surfaces (no end-user dashboard yet). Query them with the service role for activation/conversion.

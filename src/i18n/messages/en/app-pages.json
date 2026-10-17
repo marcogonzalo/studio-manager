@@ -124,6 +124,7 @@
     "notFound": "Project not found",
     "readOnly": "Read-only",
     "readOnlyDescription": "You cannot edit data or add content.",
+    "sampleBanner": "Sample project, read-only. Explore it, then create your own.",
     "publicView": "Public view",
     "detail": "Detail",
     "tabsSelectAria": "Project section",

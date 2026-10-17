@@ -61,6 +61,7 @@ import {
   getProjectLimitMessage,
   isPlanLimitExceeded,
 } from "@/lib/utils";
+import { isAtActiveProjectLimit } from "@/lib/plan-limit-ux";
 
 function buildFormSchema(t: ReturnType<typeof useTranslations>) {
   return z.object({
@@ -267,7 +268,40 @@ export function ProjectDialog({
       return;
     }
 
+    const isReopeningToActive =
+      !!project &&
+      project.status !== "active" &&
+      (values.status || "active") === "active";
+
     try {
+      // Pre-save Base/plan limit check when reopening to active (#233).
+      if (isReopeningToActive) {
+        const { count, error: countError } = await supabase
+          .from("projects")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "active")
+          .neq("id", project.id);
+        if (countError) throw countError;
+        if (
+          isAtActiveProjectLimit(count ?? 0, effectivePlan?.config) &&
+          onPlanLimitExceeded
+        ) {
+          onPlanLimitExceeded();
+          return;
+        }
+        if (isAtActiveProjectLimit(count ?? 0, effectivePlan?.config)) {
+          const projectLimit = getProjectLimitMessage(locale);
+          toast.error(`${projectLimit.title}. ${projectLimit.description}`, {
+            duration: 8000,
+            action: {
+              label: projectLimit.viewPlans,
+              onClick: () => router.push(appPath("/settings/plan")),
+            },
+          });
+          return;
+        }
+      }
+
       // Transform tax_rate from string to number
       const taxRateTransformed = values.tax_rate
         ? values.tax_rate.trim() === ""
@@ -355,6 +389,12 @@ export function ProjectDialog({
           .eq("id", project.id);
 
         if (error) throw error;
+
+        if (isReopeningToActive && project.is_sample) {
+          void trackUserEvent("sample_reopened", {
+            project_id: project.id,
+          });
+        }
 
         toast.success(t("toastUpdated"));
       } else {

@@ -21,8 +21,6 @@ export interface ProjectDetailModalProps {
   onOpenChange: (open: boolean) => void;
   project: (Project & { client?: { full_name: string } }) | null;
   onEdit: () => void;
-  /** Si true, el proyecto está en solo lectura (completado/cancelado) y no se muestra el botón Editar. */
-  readOnly?: boolean;
 }
 
 export function ProjectDetailModal({
@@ -30,7 +28,6 @@ export function ProjectDetailModal({
   onOpenChange,
   project,
   onEdit,
-  readOnly = false,
 }: ProjectDetailModalProps) {
   const { formatDate } = useAppFormatting();
   const tPhases = useTranslations("Phases");
@@ -130,12 +127,10 @@ export function ProjectDetailModal({
           </div>
         </dl>
         <DialogFooter>
-          {!readOnly && (
-            <Button type="button" onClick={handleEdit}>
-              <Pencil className="mr-2 h-4 w-4" />
-              {t("edit")}
-            </Button>
-          )}
+          <Button type="button" onClick={handleEdit}>
+            <Pencil className="mr-2 h-4 w-4" />
+            {t("edit")}
+          </Button>
           <Button
             type="button"
             variant="outline"

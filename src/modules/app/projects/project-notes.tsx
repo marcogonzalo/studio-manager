@@ -20,6 +20,7 @@ import {
 import { getDemoAccountMessage } from "@/lib/utils";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
+import { trackUserEvent } from "@/app/actions/track-event";
 import { ProjectTabContent, TabSectionHeader } from "./project-tab-content";
 
 interface Note {
@@ -97,6 +98,7 @@ export function ProjectNotes({
         toast.error(t("toastAddError"));
       }
     } else {
+      void trackUserEvent("note_created", { project_id: projectId });
       toast.success(t("toastAdded"));
       setNewNote("");
       fetchNotes();
@@ -148,6 +150,9 @@ export function ProjectNotes({
         toast.error(t("toastUpdateError"));
       }
     } else {
+      if (!currentArchived) {
+        void trackUserEvent("note_archived", { project_id: projectId });
+      }
       toast.success(
         currentArchived ? t("toastUnarchived") : t("toastArchived")
       );

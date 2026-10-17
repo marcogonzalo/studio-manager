@@ -13,6 +13,7 @@ import {
   type OnboardingStepId,
   type OnboardingStepStatus,
 } from "@/lib/onboarding";
+import { countNonSampleProjects } from "@/lib/sample-project";
 
 export interface UseOnboardingStatusResult {
   steps: OnboardingStepStatus[];
@@ -54,7 +55,10 @@ export function useOnboardingStatus(): UseOnboardingStatusResult {
             .from("clients")
             .select("id", { count: "exact", head: true })
             .eq("user_id", userId),
-          supabase.from("projects").select("id").eq("user_id", userId),
+          supabase
+            .from("projects")
+            .select("id, is_sample")
+            .eq("user_id", userId),
         ]);
 
       if (cancelled) return;
@@ -62,8 +66,11 @@ export function useOnboardingStatus(): UseOnboardingStatusResult {
       const planCode: PlanCode =
         (effectivePlan?.plan_code as PlanCode) ?? "BASE";
 
-      const projectRows = projectsRes.data as { id: string }[] | null;
-      const projectIds = projectRows?.map((p) => p.id) ?? [];
+      const projectRows = projectsRes.data as
+        | { id: string; is_sample?: boolean | null }[]
+        | null;
+      // Sample projects do not count toward "Create a project" (#233).
+      const realProjectsCount = countNonSampleProjects(projectRows);
 
       const profile = profileRes.data as { full_name?: string | null } | null;
       const settings = settingsRes.data as {
@@ -79,7 +86,7 @@ export function useOnboardingStatus(): UseOnboardingStatusResult {
         welcomeSeen: false,
         publicName: settings?.public_name ?? null,
         clientsCount: clientsRes.count ?? 0,
-        projectsCount: projectIds.length,
+        projectsCount: realProjectsCount,
         planCode,
       });
       setLoading(false);

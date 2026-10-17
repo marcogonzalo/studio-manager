@@ -100,6 +100,33 @@ describe("trackEvent", () => {
     });
   });
 
+  it("tracks sample and note funnel events with project_id", async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: "user-789" } },
+      error: null,
+    });
+    mockInsert.mockResolvedValue({ error: null });
+
+    await trackEvent("sample_viewed", { project_id: "proj-1" });
+    await trackEvent("sample_reopened", { project_id: "proj-1" });
+    await trackEvent("note_created", { project_id: "proj-1" });
+    await trackEvent("budget_created", {
+      project_id: "proj-1",
+      source: "catalog",
+    });
+
+    expect(mockInsert).toHaveBeenCalledWith({
+      user_id: "user-789",
+      event: "sample_viewed",
+      props: { project_id: "proj-1" },
+    });
+    expect(mockInsert).toHaveBeenCalledWith({
+      user_id: "user-789",
+      event: "budget_created",
+      props: { project_id: "proj-1", source: "catalog" },
+    });
+  });
+
   it("handles unexpected errors gracefully", async () => {
     mockGetUser.mockRejectedValue(new Error("Network error"));
 

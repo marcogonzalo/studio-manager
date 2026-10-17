@@ -331,7 +331,10 @@ export function BudgetLineDialog({
           return;
         }
 
-        void trackUserEvent("budget_created", { project_id: projectId });
+        void trackUserEvent("budget_created", {
+          project_id: projectId,
+          source: "manual",
+        });
 
         toast.success(t("toastCreated"));
         onSuccess();

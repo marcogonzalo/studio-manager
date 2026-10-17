@@ -98,6 +98,8 @@ export interface Project {
   /** When true, each line item can override tax_rate. */
   multitax?: boolean;
   currency?: string;
+  /** Internal signup-sample marker (#233). Not a permission flag. */
+  is_sample?: boolean;
   /** Client-facing notes after budget totals (public page + PDF). */
   budget_notes?: string | null;
   /** Client-facing budget presentation settings (public page + PDF). */
