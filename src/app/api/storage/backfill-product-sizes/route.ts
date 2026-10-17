@@ -3,11 +3,39 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { CookieOptions } from "@supabase/ssr";
 import { getSupabaseUrl, getSupabaseServerKey } from "@/lib/supabase/keys";
+import { isOurB2Url } from "@/lib/backblaze";
+import { reportError } from "@/lib/utils";
 
 interface CookieToSet {
   name: string;
   value: string;
   options?: CookieOptions;
+}
+
+const HEAD_CONCURRENCY = 5;
+
+async function mapPool<T, R>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  async function run(): Promise<void> {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await worker(items[index]);
+    }
+  }
+
+  const runners = Array.from(
+    { length: Math.min(concurrency, items.length) },
+    () => run()
+  );
+  await Promise.all(runners);
+  return results;
 }
 
 /**
@@ -61,31 +89,53 @@ export async function POST() {
       return NextResponse.json({ updated: 0 });
     }
 
-    let updated = 0;
-    for (const product of products) {
-      const url = (product.image_url ?? "").trim();
-      if (!url) continue;
-      try {
-        const res = await fetch(url, { method: "HEAD" });
-        const contentLength = res.headers.get("content-length");
-        if (contentLength != null) {
-          const bytes = parseInt(contentLength, 10);
-          if (!Number.isNaN(bytes) && bytes >= 0) {
-            const { error: updateError } = await supabase
-              .from("products")
-              .update({ image_size_bytes: bytes })
-              .eq("id", product.id)
-              .eq("user_id", user.id);
-            if (!updateError) updated += 1;
-          }
-        }
-      } catch {
-        // Skip this product if HEAD fails (CORS, network, etc.)
-      }
-    }
+    const outcomes = await mapPool(
+      products,
+      HEAD_CONCURRENCY,
+      async (product) => {
+        const url = (product.image_url ?? "").trim();
+        if (!url) return false;
 
+        if (!isOurB2Url(url)) {
+          reportError(
+            new Error("Rejected non-B2 image URL for backfill"),
+            `[backfill-product-sizes] product=${product.id}`
+          );
+          return false;
+        }
+
+        try {
+          const res = await fetch(url, { method: "HEAD" });
+          const contentLength = res.headers.get("content-length");
+          if (contentLength == null) return false;
+          const bytes = parseInt(contentLength, 10);
+          if (Number.isNaN(bytes) || bytes < 0) return false;
+
+          const { error: updateError } = await supabase
+            .from("products")
+            .update({ image_size_bytes: bytes })
+            .eq("id", product.id)
+            .eq("user_id", user.id);
+
+          if (updateError) {
+            reportError(
+              updateError,
+              `[backfill-product-sizes] update ${product.id}`
+            );
+            return false;
+          }
+          return true;
+        } catch (err) {
+          reportError(err, `[backfill-product-sizes] HEAD ${product.id}`);
+          return false;
+        }
+      }
+    );
+
+    const updated = outcomes.filter(Boolean).length;
     return NextResponse.json({ updated });
   } catch (err) {
+    reportError(err, "[backfill-product-sizes]");
     const message =
       err instanceof Error
         ? err.message

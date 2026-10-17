@@ -192,7 +192,9 @@ export function ProductDialog({
         pendingImageFile &&
         pendingImageFile.size > MAX_PRODUCT_IMAGE_SIZE_BYTES
       ) {
-        throw new Error(t("imageTooLarge"));
+        throw new Error(
+          t("imageTooLarge", { fileName: pendingImageFile.name })
+        );
       }
 
       // Convert empty strings to null for optional fields to avoid overwriting existing data

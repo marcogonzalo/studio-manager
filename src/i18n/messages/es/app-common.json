@@ -167,6 +167,9 @@
     "planUnavailableTitle": "Acción no disponible en tu plan",
     "planUnavailableDescription": "Esta funcionalidad no está incluida en tu plan actual. Mejora tu plan para acceder.",
     "rateLimit": "Has excedido el límite de solicitudes. Por favor, espera 30 segundos e intenta de nuevo.",
+    "uploadFailed": "No se pudo subir este archivo. Inténtalo de nuevo.",
+    "uploadTransient": "Servicio temporalmente no disponible. Inténtalo de nuevo en un momento.",
+    "uploadErrorWithFile": "{message} — {fileName}",
     "authPkce": "Intenta iniciar sesión con el mismo navegador en el que solicitaste tu enlace de ingreso.",
     "authExpired": "El enlace ha caducado o no es válido. Por favor, solicita un nuevo enlace de acceso.",
     "authGeneric": "No se pudo completar el acceso. Por favor, intenta iniciar sesión de nuevo.",
@@ -188,9 +191,9 @@
     "phoneInvalidWithExample": "Introduce un teléfono válido (ej. {example})",
     "taxMin": "Debe ser mayor o igual a 0",
     "imageType": "Solo se permiten imágenes JPG, PNG, WebP o AVIF",
-    "fileTooLarge5mb": "El archivo no puede superar 5MB",
+    "fileTooLarge5mb": "No puede superar 5MB — {fileName}",
     "documentType": "Tipo no permitido. Use PDFs, docs, hojas de cálculo, presentaciones, texto u otros documentos relacionados.",
-    "documentSize": "No se pueden subir archivos de más de 10Mb. Si lo tienes en Drive, OneDrive o iCloud, añádelo como URL."
+    "documentSize": "Supera 10MB — {fileName}. Si lo tienes en Drive, OneDrive o iCloud, añádelo como URL."
   },
   "DemoAccountBanner": {
     "lead": "Esta es una cuenta de demostración.",
@@ -222,5 +225,11 @@
     "featureLockedHint": "Esto no está incluido en tu plan actual.",
     "viewPlanDetails": "Ver tu plan",
     "rendersExplain": "Los renders te permiten adjuntar imágenes de visualización a los espacios para que el cliente revise opciones de diseño."
+  },
+  "UploadRateLimit": {
+    "pausing": "{count, plural, one {Subida en pausa. # archivo en espera — se reanuda en {seconds}s.} other {Subida en pausa. # archivos en espera — se reanuda en {seconds}s.}}",
+    "uploading": "{count, plural, one {Subiendo… # archivo restante.} other {Subiendo… # archivos restantes.}}",
+    "cancel": "Cancelar",
+    "cancelAria": "Cancelar subidas pendientes"
   }
 }

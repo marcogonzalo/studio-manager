@@ -1,6 +1,6 @@
 import type { Locale } from "@/i18n/config";
 import { defaultLocale } from "@/i18n/config";
-import { getAppUiCopy } from "@/lib/app-ui-copy";
+import { getAppUiCopy, interpolateAppCopy } from "@/lib/app-ui-copy";
 
 const ALLOWED_MIMES = [
   "application/pdf",
@@ -78,7 +78,9 @@ export function validateDocumentFile(
   if (file.size > MAX_SIZE) {
     return {
       valid: false,
-      error: getAppUiCopy(lang).validation.documentSize,
+      error: interpolateAppCopy(getAppUiCopy(lang).validation.documentSize, {
+        fileName: file.name,
+      }),
     };
   }
   return { valid: true };

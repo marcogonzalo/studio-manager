@@ -40,6 +40,7 @@ export async function deleteSpaceImage({
         ok: false,
         error: {
           code: data.code,
+          status: res.status,
           message: data.error ?? data.message ?? `HTTP ${res.status}`,
         },
       };

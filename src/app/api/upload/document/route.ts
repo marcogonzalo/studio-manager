@@ -12,7 +12,14 @@ import {
 } from "@/lib/document-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
 import { buildStorageLimitErrorBody } from "@/lib/plan-limit-ux";
-import { localeFromRequest } from "@/lib/app-ui-copy";
+import {
+  getAppUiCopy,
+  interpolateAppCopy,
+  localeFromRequest,
+} from "@/lib/app-ui-copy";
+import { checkRateLimit, getRateLimitMessage } from "@/lib/rate-limit";
+import { reportError } from "@/lib/utils";
+import { humanizeUploadError } from "@/lib/upload-user-error";
 import {
   getSupabaseUrl,
   getSupabaseServerKey,
@@ -53,6 +60,21 @@ export async function DELETE(request: Request) {
 
     if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { allowed, resetAt } = checkRateLimit(`user:${user.id}`, "upload");
+    if (!allowed) {
+      return NextResponse.json(
+        { error: getRateLimitMessage(localeFromRequest(request)) },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))
+            ),
+          },
+        }
+      );
     }
 
     if (user.email?.toLowerCase() === "demo@veta.pro") {
@@ -155,6 +177,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const { allowed, resetAt } = checkRateLimit(`user:${user.id}`, "upload");
+    if (!allowed) {
+      return NextResponse.json(
+        { error: getRateLimitMessage(localeFromRequest(request)) },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))
+            ),
+          },
+        }
+      );
+    }
+
     if (user.email?.toLowerCase() === "demo@veta.pro") {
       return NextResponse.json(
         {
@@ -217,10 +254,13 @@ export async function POST(request: Request) {
     }
 
     if (file.size > MAX_FILE_SIZE) {
+      const lang = localeFromRequest(request);
       return NextResponse.json(
         {
-          error:
-            "No se pueden subir archivos de más de 10Mb. Si lo tienes en Drive, OneDrive o iCloud, añádelo como URL.",
+          error: interpolateAppCopy(
+            getAppUiCopy(lang).validation.documentSize,
+            { fileName: file.name }
+          ),
         },
         { status: 400 }
       );
@@ -304,8 +344,14 @@ export async function POST(request: Request) {
       assetId: assetId ?? undefined,
     });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Error al subir el documento";
-    return NextResponse.json({ error: message }, { status: 500 });
+    reportError(err, "[upload/document]");
+    const lang = localeFromRequest(request);
+    const raw = err instanceof Error ? err.message : null;
+    const message = humanizeUploadError(raw, lang);
+    const transient = message === getAppUiCopy(lang).errors.uploadTransient;
+    return NextResponse.json(
+      { error: message },
+      { status: transient ? 503 : 500 }
+    );
   }
 }

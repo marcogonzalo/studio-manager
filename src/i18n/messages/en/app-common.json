@@ -167,6 +167,9 @@
     "planUnavailableTitle": "Action not available on your plan",
     "planUnavailableDescription": "This feature is not included in your current plan. Upgrade your plan to access it.",
     "rateLimit": "You have exceeded the request limit. Please wait 30 seconds and try again.",
+    "uploadFailed": "Could not upload this file. Please try again.",
+    "uploadTransient": "Service temporarily unavailable. Please try again in a moment.",
+    "uploadErrorWithFile": "{message} — {fileName}",
     "authPkce": "Try signing in with the same browser where you requested your access link.",
     "authExpired": "The link has expired or is invalid. Please request a new access link.",
     "authGeneric": "Could not complete sign-in. Please try signing in again.",
@@ -188,9 +191,9 @@
     "phoneInvalidWithExample": "Enter a valid phone number (e.g. {example})",
     "taxMin": "Must be greater than or equal to 0",
     "imageType": "Only JPG, PNG, WebP or AVIF images are allowed",
-    "fileTooLarge5mb": "File cannot exceed 5MB",
+    "fileTooLarge5mb": "Cannot exceed 5MB — {fileName}",
     "documentType": "Type not allowed. Use PDFs, docs, spreadsheets, presentations, text, or other related documents.",
-    "documentSize": "Files larger than 10MB cannot be uploaded. If it is in Drive, OneDrive or iCloud, add it as a URL."
+    "documentSize": "Larger than 10MB — {fileName}. If it is in Drive, OneDrive or iCloud, add it as a URL."
   },
   "DemoAccountBanner": {
     "lead": "This is a demo account.",
@@ -222,5 +225,11 @@
     "featureLockedHint": "This is not included in your current plan.",
     "viewPlanDetails": "View your plan",
     "rendersExplain": "Renders let you attach visualization images to spaces so clients can review design options."
+  },
+  "UploadRateLimit": {
+    "pausing": "{count, plural, one {Upload paused. # file waiting — resuming in {seconds}s.} other {Upload paused. # files waiting — resuming in {seconds}s.}}",
+    "uploading": "{count, plural, one {Uploading… # file remaining.} other {Uploading… # files remaining.}}",
+    "cancel": "Cancel",
+    "cancelAria": "Cancel pending uploads"
   }
 }

@@ -33,6 +33,7 @@ vi.mock("@/lib/backblaze", async () => {
 });
 
 vi.mock("@/lib/image-validation", () => ({
+  MAX_IMAGE_FILE_SIZE: 5 * 1024 * 1024,
   validateImageFile: vi.fn(() => ({ valid: true })),
 }));
 
@@ -64,6 +65,18 @@ vi.mock("@/lib/supabase/keys", () => ({
   getSupabaseServerKey: () => mockGetServerKey(),
   getSupabaseServiceRoleKey: () => mockGetServiceRoleKey(),
 }));
+
+vi.mock("@/lib/rate-limit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/rate-limit")>();
+  return {
+    ...actual,
+    checkRateLimit: vi.fn(() => ({
+      allowed: true,
+      remaining: 20,
+      resetAt: Date.now() + 60_000,
+    })),
+  };
+});
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({})),

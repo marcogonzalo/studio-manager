@@ -5,7 +5,7 @@
 
 import type { Locale } from "@/i18n/config";
 import { defaultLocale } from "@/i18n/config";
-import { getAppUiCopy } from "@/lib/app-ui-copy";
+import { getAppUiCopy, interpolateAppCopy } from "@/lib/app-ui-copy";
 
 const ALLOWED_TYPES = [
   "image/jpeg",
@@ -13,6 +13,8 @@ const ALLOWED_TYPES = [
   "image/webp",
   "image/avif",
 ] as const;
+
+export const MAX_IMAGE_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export function isAllowedImageType(mimeType: string): boolean {
   return ALLOWED_TYPES.includes(mimeType as (typeof ALLOWED_TYPES)[number]);
@@ -36,6 +38,14 @@ export function validateImageFile(
     return {
       valid: false,
       error: getAppUiCopy(lang).validation.imageType,
+    };
+  }
+  if (file.size > MAX_IMAGE_FILE_SIZE) {
+    return {
+      valid: false,
+      error: interpolateAppCopy(getAppUiCopy(lang).validation.fileTooLarge5mb, {
+        fileName: file.name,
+      }),
     };
   }
   return { valid: true };

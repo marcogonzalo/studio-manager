@@ -11,17 +11,23 @@ import {
   getAssetIdByOwner,
   getAssetIdByUrl,
 } from "@/lib/assets";
-import { validateImageFile } from "@/lib/image-validation";
+import { MAX_IMAGE_FILE_SIZE, validateImageFile } from "@/lib/image-validation";
 import { checkStorageLimit } from "@/lib/storage-limit";
 import { buildStorageLimitErrorBody } from "@/lib/plan-limit-ux";
-import { getAppUiCopy, localeFromRequest } from "@/lib/app-ui-copy";
+import {
+  getAppUiCopy,
+  interpolateAppCopy,
+  localeFromRequest,
+} from "@/lib/app-ui-copy";
+import { checkRateLimit, getRateLimitMessage } from "@/lib/rate-limit";
+import { reportError } from "@/lib/utils";
+import { humanizeUploadError } from "@/lib/upload-user-error";
 import {
   getSupabaseUrl,
   getSupabaseServerKey,
   getSupabaseServiceRoleKey,
 } from "@/lib/supabase/keys";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_DIMENSION = 1200;
 
 export async function DELETE(request: Request) {
@@ -50,6 +56,21 @@ export async function DELETE(request: Request) {
 
     if (authError || !user) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { allowed, resetAt } = checkRateLimit(`user:${user.id}`, "upload");
+    if (!allowed) {
+      return NextResponse.json(
+        { error: getRateLimitMessage(localeFromRequest(request)) },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))
+            ),
+          },
+        }
+      );
     }
 
     if (user.email?.toLowerCase() === "demo@veta.pro") {
@@ -201,6 +222,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const { allowed, resetAt } = checkRateLimit(`user:${user.id}`, "upload");
+    if (!allowed) {
+      return NextResponse.json(
+        { error: getRateLimitMessage(localeFromRequest(request)) },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))
+            ),
+          },
+        }
+      );
+    }
+
     if (user.email?.toLowerCase() === "demo@veta.pro") {
       return NextResponse.json(
         {
@@ -268,9 +304,14 @@ export async function POST(request: Request) {
     }
 
     const lang = localeFromRequest(request);
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > MAX_IMAGE_FILE_SIZE) {
       return NextResponse.json(
-        { error: getAppUiCopy(lang).validation.fileTooLarge5mb },
+        {
+          error: interpolateAppCopy(
+            getAppUiCopy(lang).validation.fileTooLarge5mb,
+            { fileName: file.name }
+          ),
+        },
         { status: 400 }
       );
     }
@@ -353,8 +394,14 @@ export async function POST(request: Request) {
       assetId: assetId ?? undefined,
     });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Error al subir la imagen";
-    return NextResponse.json({ error: message }, { status: 500 });
+    reportError(err, "[upload/product-image]");
+    const lang = localeFromRequest(request);
+    const raw = err instanceof Error ? err.message : null;
+    const message = humanizeUploadError(raw, lang);
+    const transient = message === getAppUiCopy(lang).errors.uploadTransient;
+    return NextResponse.json(
+      { error: message },
+      { status: transient ? 503 : 500 }
+    );
   }
 }
