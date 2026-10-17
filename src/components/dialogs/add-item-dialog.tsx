@@ -39,7 +39,7 @@ import { Plus, Search } from "lucide-react";
 import { CatalogProductSelectCard } from "@/components/catalog-product-select-card";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ProductImageUpload } from "@/components/product-image-upload";
-import type { Product, ProjectItem, Space, Supplier } from "@/types";
+import type { Product, ProjectItem, Space } from "@/types";
 import Link from "next/link";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
 import { appendCurrencyToLabel } from "@/lib/formatting";
@@ -48,6 +48,7 @@ import {
   buildCatalogProductUpdateFromProject,
 } from "@/lib/catalog-product-from-project";
 import { useAuth } from "@/components/auth-provider";
+import { useSuppliers } from "@/hooks/use-suppliers";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { trackUserEvent } from "@/app/actions/track-event";
@@ -93,7 +94,9 @@ export function AddItemDialog({
   const [projectTaxRate, setProjectTaxRate] = useState(0);
   const [projectMultitax, setProjectMultitax] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const { suppliers, refetch: refetchSuppliers } = useSuppliers({
+    enabled: open,
+  });
   const [, setSelectedProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("catalog");
@@ -195,11 +198,6 @@ export function AddItemDialog({
         .select("*, supplier:suppliers(name)")
         .order("name");
       setProducts(pData || []);
-      const { data: sData } = await supabase
-        .from("suppliers")
-        .select("*")
-        .order("name");
-      setSuppliers(sData || []);
 
       // Load item data if editing (after products are loaded)
       if (item && open) {
@@ -586,13 +584,8 @@ export function AddItemDialog({
   }, [suppliers, pendingSupplierId, form]);
 
   const handleSupplierCreated = async (newSupplierId: string) => {
-    // Recargar la lista de proveedores
-    const { data } = await supabase.from("suppliers").select("*").order("name");
-    if (data) {
-      setSuppliers(data);
-      // Establecer el proveedor pendiente para que se seleccione cuando la lista se actualice
-      setPendingSupplierId(newSupplierId);
-    }
+    await refetchSuppliers();
+    setPendingSupplierId(newSupplierId);
     setIsSupplierDialogOpen(false);
   };
 

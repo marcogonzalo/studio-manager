@@ -56,12 +56,8 @@ import {
   useSubcategoryOptions,
 } from "@/lib/use-project-labels";
 import { buildBudgetLineFormSchema } from "@/lib/budget-line-form-schema";
-import type {
-  ProjectBudgetLine,
-  BudgetCategory,
-  ProjectPhase,
-  Supplier,
-} from "@/types";
+import type { ProjectBudgetLine, BudgetCategory, ProjectPhase } from "@/types";
+import { useSuppliers } from "@/hooks/use-suppliers";
 
 type FormValues = {
   category: string;
@@ -112,7 +108,9 @@ export function BudgetLineDialog({
   });
   const supabase = getSupabaseClient();
   const isEditing = !!budgetLine;
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const { suppliers, refetch: refetchSuppliers } = useSuppliers({
+    enabled: open,
+  });
   const [projectTaxRate, setProjectTaxRate] = useState(0);
   const [projectMultitax, setProjectMultitax] = useState(false);
   const [isSupplierDialogOpen, setIsSupplierDialogOpen] = useState(false);
@@ -159,17 +157,6 @@ export function BudgetLineDialog({
   }, [open, projectId, supabase]);
 
   useEffect(() => {
-    async function loadSuppliers() {
-      const { data } = await supabase
-        .from("suppliers")
-        .select("*")
-        .order("name");
-      setSuppliers(data || []);
-    }
-    if (open) void loadSuppliers();
-  }, [open, supabase]);
-
-  useEffect(() => {
     if (pendingSupplierId && suppliers.length > 0) {
       const supplierExists = suppliers.some((s) => s.id === pendingSupplierId);
       if (supplierExists) {
@@ -183,11 +170,8 @@ export function BudgetLineDialog({
   }, [suppliers, pendingSupplierId, form]);
 
   const handleSupplierCreated = async (newSupplierId: string) => {
-    const { data } = await supabase.from("suppliers").select("*").order("name");
-    if (data) {
-      setSuppliers(data);
-      setPendingSupplierId(newSupplierId);
-    }
+    await refetchSuppliers();
+    setPendingSupplierId(newSupplierId);
     setIsSupplierDialogOpen(false);
   };
 
