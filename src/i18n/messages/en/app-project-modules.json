@@ -2,7 +2,7 @@
   "ProjectModuleShared": {
     "edit": "Edit",
     "delete": "Delete",
-    "duplicate": "Duplicate",
+    "duplicate": "Create a copy",
     "rename": "Rename",
     "actions": "Actions",
     "expandRow": "Expand row",
