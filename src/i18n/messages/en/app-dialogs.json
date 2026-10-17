@@ -306,6 +306,7 @@
     "dateLabel": "Date",
     "supplierLabel": "Supplier",
     "supplierPlaceholder": "Select a supplier",
+    "lockedFieldsHint": "Some fields cannot be changed after the order is created.",
     "statusLabel": "Status",
     "statusDraft": "Draft",
     "statusSent": "Sent",

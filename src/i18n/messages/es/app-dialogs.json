@@ -306,6 +306,7 @@
     "dateLabel": "Fecha",
     "supplierLabel": "Proveedor",
     "supplierPlaceholder": "Selecciona un proveedor",
+    "lockedFieldsHint": "Algunos campos no se pueden cambiar después de crear el pedido.",
     "statusLabel": "Estado",
     "statusDraft": "Borrador",
     "statusSent": "Enviada",
