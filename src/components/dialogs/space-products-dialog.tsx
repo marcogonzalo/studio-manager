@@ -267,10 +267,14 @@ export function SpaceProductsDialog({
         projectId={projectId}
         item={editingItem}
         spaceId={space.id}
+        origin={editingItem ? "form" : "space_add"}
+        onCreated={() => {
+          void fetchItems();
+        }}
         onSuccess={() => {
           setIsAddDialogOpen(false);
           setEditingItem(null);
-          fetchItems();
+          void fetchItems();
         }}
       />
 
