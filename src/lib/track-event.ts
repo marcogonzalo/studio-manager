@@ -3,10 +3,18 @@
  * Emit product engagement events for the first-party funnel.
  * Prefer props.project_id (or supplier_id) when the event is scoped to a resource.
  * invite_sent / plan_selected are reserved for future wiring.
+ *
+ * budget_created props: { project_id, source: "manual"|"catalog", origin: BudgetCreatedOrigin }
  */
 
 import { createClient } from "@/lib/supabase/server";
 import { reportError } from "@/lib/utils";
+import type {
+  BudgetCreatedOrigin,
+  BudgetCreatedSource,
+} from "@/lib/budget-entry-repeat";
+
+export type { BudgetCreatedOrigin, BudgetCreatedSource };
 
 export type UserEvent =
   | "signup"
@@ -27,6 +35,12 @@ export type UserEvent =
 
 export type TrackEventOptions = {
   userId: string;
+};
+
+export type BudgetCreatedProps = {
+  project_id: string;
+  source: BudgetCreatedSource;
+  origin: BudgetCreatedOrigin;
 };
 
 /**

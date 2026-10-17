@@ -88,6 +88,11 @@ vi.mock("./supplier-dialog", () => ({
   SupplierDialog: () => null,
 }));
 
+const mockTrackUserEvent = vi.hoisted(() => vi.fn());
+vi.mock("@/app/actions/track-event", () => ({
+  trackUserEvent: (...args: unknown[]) => mockTrackUserEvent(...args),
+}));
+
 describe("AddItemDialog", () => {
   beforeAll(() => {
     class ResizeObserverMock {
@@ -196,5 +201,134 @@ describe("AddItemDialog", () => {
       user_id: "user-1",
     });
     expect(onSuccess).toHaveBeenCalledOnce();
+    expect(mockTrackUserEvent).toHaveBeenCalledWith("budget_created", {
+      project_id: projectId,
+      source: "manual",
+      origin: "form",
+    });
+  });
+
+  it("add-and-create-another keeps space/supplier/category and calls onCreated", async () => {
+    const user = userEvent.setup();
+    const onSuccess = vi.fn();
+    const onCreated = vi.fn();
+
+    mockFrom.mockImplementation((table: string) => {
+      switch (table) {
+        case "spaces":
+          return createQueryBuilder({
+            data: [{ id: "space-1", name: "Living" }],
+            error: null,
+          });
+        case "projects":
+          return createQueryBuilder({
+            data: { currency: "USD", tax_rate: 21, multitax: false },
+            error: null,
+          });
+        case "products": {
+          const builder = createQueryBuilder({ data: [], error: null });
+          builder.single = vi.fn(async () => ({
+            data: { id: "new-product-id" },
+            error: null,
+          }));
+          return builder;
+        }
+        case "suppliers":
+          return createQueryBuilder({
+            data: [{ id: supplierId, name: "Acme Studio" }],
+            error: null,
+          });
+        case "project_items":
+          return createQueryBuilder({ data: null, error: null });
+        default:
+          return createQueryBuilder({ data: null, error: null });
+      }
+    });
+
+    render(
+      <AddItemDialog
+        open
+        onOpenChange={vi.fn()}
+        projectId={projectId}
+        onSuccess={onSuccess}
+        onCreated={onCreated}
+        spaceId="space-1"
+        origin="space_add"
+      />
+    );
+
+    await user.click(screen.getByRole("tab", { name: "tabNewProduct" }));
+
+    const nameInput = await screen.findByRole("textbox", {
+      name: /productNameLabel/i,
+    });
+    await user.type(nameInput, "First chair");
+
+    await user.click(screen.getByRole("combobox", { name: /supplierLabel/i }));
+    await user.click(
+      await screen.findByRole("option", { name: "Acme Studio" })
+    );
+
+    const categoryInput = screen.getByRole("textbox", {
+      name: /categoryLabel/i,
+    });
+    await user.type(categoryInput, "furniture");
+
+    const unitCostInput = screen.getByRole("spinbutton", {
+      name: /unitCostLabel/i,
+    });
+    await user.clear(unitCostInput);
+    await user.type(unitCostInput, "100");
+
+    await user.click(
+      screen.getByRole("button", { name: "addAndCreateAnother" })
+    );
+
+    await waitFor(() => {
+      expect(insertedProjectItems.length).toBeGreaterThanOrEqual(1);
+    });
+
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onCreated).toHaveBeenCalledOnce();
+    expect(mockTrackUserEvent).toHaveBeenCalledWith("budget_created", {
+      project_id: projectId,
+      source: "manual",
+      origin: "repeat",
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("textbox", { name: /productNameLabel/i })
+      ).toHaveValue("");
+    });
+    expect(screen.getByRole("textbox", { name: /categoryLabel/i })).toHaveValue(
+      "furniture"
+    );
+  });
+
+  it("duplicate initialValues prefills without saving until submit", async () => {
+    render(
+      <AddItemDialog
+        open
+        onOpenChange={vi.fn()}
+        projectId={projectId}
+        onSuccess={vi.fn()}
+        origin="duplicate"
+        initialValues={{
+          name: "Dup chair",
+          space_id: "space-1",
+          supplier_id: supplierId,
+          category: "seating",
+          quantity: "3",
+          unit_cost: "50",
+          unit_price: "60",
+          product_id: "custom",
+        }}
+      />
+    );
+
+    expect(await screen.findByDisplayValue("Dup chair")).toBeInTheDocument();
+    expect(insertedProjectItems).toHaveLength(0);
+    expect(mockTrackUserEvent).not.toHaveBeenCalled();
   });
 });
