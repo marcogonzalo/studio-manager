@@ -3,6 +3,7 @@
 import { FileText } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 
 interface DocumentRow {
   id: string;
@@ -20,11 +21,11 @@ export function ViewProjectDocumentsClient({
 
   if (documents.length === 0) {
     return (
-      <Card>
-        <CardContent className="text-muted-foreground py-12 text-center">
-          {t("noDocuments")}
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={FileText}
+        title={t("noDocuments")}
+        description={t("noDocumentsDescription")}
+      />
     );
   }
 

@@ -3,7 +3,9 @@
 import { Fragment } from "react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ExpandableText } from "@/components/ui/expandable-text";
+import { Wallet } from "lucide-react";
 import {
   MobileDetailField,
   TableCellMd,
@@ -68,11 +70,11 @@ export function ViewProjectPaymentsClient({
 
   if (payments.length === 0) {
     return (
-      <Card>
-        <CardContent className="text-muted-foreground py-12 text-center">
-          {t("noPayments")}
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={Wallet}
+        title={t("noPayments")}
+        description={t("noPaymentsDescription")}
+      />
     );
   }
 
