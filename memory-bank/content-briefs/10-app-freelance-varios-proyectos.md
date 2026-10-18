@@ -1,7 +1,7 @@
 # Brief: App para freelance de interiorismo con varios proyectos
 
 **Prioridad:** 10  
-**Persona primaria:** Lucía (freelance o estudio 1-3 personas, perfil similar a Elena pero más pequeño)
+**Persona primaria:** Lucía (freelancer / estudio 1-3 personas)
 
 ---
 

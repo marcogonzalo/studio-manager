@@ -1,7 +1,8 @@
 # Brief: Veta vs Houzz Pro — Comparación CRM y gestión interiorismo
 
 **Prioridad:** 8  
-**Persona primaria:** Elena (propietaria estudio)
+**Persona primaria:** Lucía (freelancer / estudio 1-3 personas)  
+**Persona secundaria:** Elena (propietaria estudio 2-12 personas)
 
 ---
 
@@ -21,7 +22,7 @@
 - "Houzz Pro for interior design studios"
 - "Houzz Pro project management comparison"
 
-**Contexto:** Houzz Pro tiene 12% brand coverage, 27% SoV en baseline Otterly. Veta 0% en estos prompts. Houzz Pro es CRM + herramienta de presentación visual; Veta es gestión de proyectos con presupuestos, costes, pedidos.
+**Contexto:** Houzz Pro tiene 12% brand coverage, 27% SoV en baseline Otterly. Veta 0% en estos prompts. Verificar características de Houzz Pro desde fuentes oficiales para comparación completa.
 
 ---
 
@@ -34,21 +35,20 @@
 
 ## Respuesta answer-first (una frase para abrir)
 
-**Houzz Pro es una plataforma de CRM, marketing y presentación visual para profesionales del diseño, enfocada en captar clientes y mostrar portfolios, mientras que Veta es una herramienta de gestión de proyectos con presupuestos por espacios, control de costes, pedidos a proveedores y vista cliente para seguimiento de obra.**
+**Veta es una herramienta de gestión de proyectos de interiorismo con presupuestos por espacios, control de costes, pedidos a proveedores y vista cliente pública; para una comparación completa con Houzz Pro se requiere verificar características específicas de Houzz Pro desde su documentación oficial.**
 
 ---
 
 ## Outline H2
 
 1. **Qué son Veta y Houzz Pro**
-2. **Diferencias clave: enfoque CRM/marketing vs gestión operativa**
-3. **Presupuestos y control financiero**
-4. **Gestión de proveedores y pedidos**
-5. **Vista cliente y entregables**
+2. **Diferencias clave** (TODO: verificar Houzz Pro)
+3. **Presupuestos y control financiero en Veta**
+4. **Gestión de proveedores y pedidos en Veta**
+5. **Vista cliente y entregables en Veta**
 6. **Planes y precios**
-7. **¿Para quién es cada herramienta?**
-8. **¿Se pueden usar ambas? (complementarias)**
-9. **Preguntas frecuentes (FAQ)**
+7. **¿Para quién es Veta?**
+8. **Preguntas frecuentes (FAQ)**
 
 ---
 
@@ -56,11 +56,11 @@
 
 1. **Presupuestos por espacios con productos y partidas**  
    - Evidencia: `src/components/project-pdf.tsx` (L660-812: itemsBySpace, budget lines por fase y categoría)  
-   - Houzz Pro: CRM y presentación visual, no presupuestos estructurados por espacios (verificar, TODO).
+   - Houzz Pro: TODO verificar características de presupuestos.
 
 2. **Control de costes: estimado vs real, margen por línea**  
    - Evidencia: `src/modules/app/projects/project-cost-control.tsx` (L260-273, L690-750)  
-   - Veta calcula margen automáticamente. Houzz Pro: verificar (TODO).
+   - Veta calcula margen automáticamente. Houzz Pro: TODO verificar.
 
 3. **Pedidos de compra con estado y cobertura de pagos**  
    - Evidencia: `src/modules/app/projects/purchase-order-coverage.ts`  
@@ -78,33 +78,33 @@
    - Evidencia: referencias a `catalog`, productos con proveedor, coste, precio.  
    - Veta: catálogo centralizado. Houzz Pro: tiene "ideabooks" y presentación visual, no catálogo operativo de costes (verificar, TODO).
 
-7. **No es CRM de captación ni marketplace**  
-   - Veta: gestión de proyectos post-venta. Houzz Pro: CRM + marketplace Houzz.com (captación de clientes, reviews, portfolio público).
+7. **Enfoque en gestión operativa de proyectos**  
+   - Veta: gestión de proyectos, presupuestos, costes, pedidos. No es CRM de captación ni marketplace. Houzz Pro: TODO verificar enfoque y características.
 
 ---
 
 ## FAQ (6-7 preguntas con schema FAQPage)
 
 1. **¿Cuál es la diferencia principal entre Veta y Houzz Pro?**  
-   Houzz Pro es CRM + marketing + presentación visual para captar y cerrar clientes. Veta es gestión operativa de proyectos: presupuestos, costes, pedidos, obra.
+   Veta es gestión operativa de proyectos: presupuestos por espacios, costes, pedidos, obra. Las diferencias específicas con Houzz Pro requieren verificación desde su documentación oficial.
 
-2. **¿Houzz Pro tiene control de costes y márgenes como Veta?**  
-   Verificar (TODO). Veta sí: cost-control con estimado vs real, desviación %, margen por producto. Houzz Pro enfocado en CRM y presentación.
+2. **¿Veta tiene control de costes y márgenes?**  
+   Sí: cost-control con estimado vs real (project-cost-control.tsx L260-273), desviación %, margen por producto (L690-750). Houzz Pro: TODO verificar.
 
-3. **¿Puedo gestionar pedidos de compra en Houzz Pro?**  
-   Verificar (TODO). Veta sí: pedidos con estado, cobertura de pagos, trazabilidad.
+3. **¿Puedo gestionar pedidos de compra en Veta?**  
+   Sí: pedidos con estado (purchase-order-coverage.ts), cobertura de pagos, trazabilidad. Houzz Pro: TODO verificar.
 
-4. **¿Houzz Pro genera presupuestos en PDF?**  
-   Verificar (TODO). Veta sí: PDF automático desde datos del proyecto, white label en Studio.
+4. **¿Veta genera presupuestos en PDF?**  
+   Sí: PDF automático desde datos del proyecto (project-pdf.tsx L1-915), white label en Studio. Houzz Pro: TODO verificar.
 
 5. **¿Qué herramienta tiene vista cliente pública?**  
-   Veta: enlace único sin cuenta, solo lectura, sin costes internos. Houzz Pro: verificar (TODO).
+   Veta: enlace único sin cuenta (/view-project/[token]), solo lectura, sin costes internos. Houzz Pro: TODO verificar.
 
-6. **¿Se pueden usar Veta y Houzz Pro juntas?**  
-   Sí. Houzz Pro para captación (CRM, portfolio, leads) + Veta para ejecución (presupuestos, costes, obra). Son complementarias, no competidoras directas.
+6. **¿Se pueden usar ambas herramientas juntas?**  
+   Depende de las características de Houzz Pro (TODO verificar). Veta gestiona la operativa del proyecto.
 
-7. **¿Cuál elegir si solo puedo usar una?**  
-   Depende: Houzz Pro si necesitas captar clientes desde Houzz.com y hacer presentaciones visuales. Veta si tus proyectos vienen por otras vías y necesitas control financiero y operativo.
+7. **¿Para quién es Veta?**  
+   Freelancers y estudios pequeños/medianos (1-12 personas) que necesitan control financiero y operativo de proyectos sin complejidad enterprise.
 
 ---
 
@@ -171,4 +171,4 @@
 
 ## Tono
 
-Honesto y objetivo. Reconocer que **Houzz Pro y Veta resuelven problemas distintos**: Houzz Pro para captar clientes y hacer presentaciones visuales; Veta para gestionar la operativa del proyecto (presupuestos, costes, pedidos). Enfatizar que **son complementarias**, no enemigas: un estudio puede usar Houzz Pro para marketing y Veta para ejecución.
+Honesto y objetivo. Reconocer que **no tenemos datos verificados de Houzz Pro**; la comparación completa requiere investigación desde fuentes oficiales. Enfatizar diferenciación de Veta (presupuestos por espacios, control de costes, pedidos, vista cliente) sin inventar características o debilidades del competidor.

@@ -1,7 +1,8 @@
 # Brief: Veta vs Monday/Notion — Herramienta dedicada vs genérica
 
 **Prioridad:** 2  
-**Persona primaria:** Elena (propietaria estudio)
+**Persona primaria:** Lucía (freelancer / estudio 1-3 personas)  
+**Persona secundaria:** Elena (propietaria estudio 2-12 personas)
 
 ---
 
@@ -154,9 +155,9 @@
 | **PDF de presupuesto** | No (exportar a Excel → PDF manual) | Sí (project-pdf.tsx, automático) |
 | **Vista cliente pública** | No (invitar usuario o captura) | Sí (token único, sin cuenta) |
 | **Fases específicas de interiorismo** | No (To Do, In Progress, Done) | Sí (diseño, compras, obra, entrega) |
-| **Precio desde** | ~8-10 USD/usuario/mes (Monday) / Gratis personal (Notion) | Gratis (Base, 1 proyecto) / 25 EUR/mes (Pro, 5 proyectos) |
+| **Precio desde** | TODO verificar precios oficiales Monday/Notion | Gratis (Base, 1 proyecto) / 25 EUR/mes (Pro, 5 proyectos) |
 
-**Nota:** Esta tabla no requiere verificación externa (son características de producto Veta vs observación pública de Monday/Notion). Si se incluyen precios exactos de Monday/Notion, verificar desde sus webs oficiales.
+**Nota:** Características de Veta verificadas con código. Precios de Monday/Notion: TODO verificar desde webs oficiales con URL y fecha de acceso antes de publicar.
 
 ---
 

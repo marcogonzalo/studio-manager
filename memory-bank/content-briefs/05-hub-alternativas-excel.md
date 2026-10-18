@@ -1,7 +1,7 @@
 # Brief: Hub — Alternativas a Excel para presupuestos de interiorismo
 
 **Prioridad:** 5  
-**Persona primaria:** Elena (propietaria estudio)
+**Persona primaria:** Lucía (freelancer / estudio 1-3 personas)
 
 ---
 
@@ -34,7 +34,7 @@
 
 ## Respuesta answer-first (una frase para abrir)
 
-**Las alternativas a Excel para presupuestos de interiorismo incluyen herramientas dedicadas como Veta, plataformas de gestión de proyectos con presupuestos integrados como Programa, y soluciones genéricas adaptables como Monday o Notion; la mejor opción depende de si necesitas control de costes, catálogo de productos, vista cliente y PDF profesional desde el primer día.**
+**Las alternativas a Excel para presupuestos de interiorismo incluyen herramientas dedicadas como Veta con presupuestos por espacios, control de costes, catálogo de productos, vista cliente pública y PDF profesional; la mejor opción depende de tus necesidades específicas de gestión de proyectos.**
 
 ---
 
@@ -42,12 +42,10 @@
 
 1. **Por qué buscar alternativas a Excel para presupuestos de interiorismo**
 2. **Veta: herramienta dedicada con presupuestos por espacios**
-3. **Programa: enfoque español con facturación integrada**
-4. **Monday y Notion: herramientas genéricas adaptables**
-5. **Houzz Pro: CRM con funciones de presupuesto**
-6. **Comparativa rápida: qué ofrece cada alternativa**
-7. **Cuándo quedarse con Excel (y cuándo no)**
-8. **Preguntas frecuentes (FAQ)**
+3. **Otras alternativas: Programa, Monday, Notion, Houzz Pro** (TODO: verificar características)
+4. **Comparativa rápida: qué ofrece Veta vs Excel**
+5. **Cuándo quedarse con Excel (y cuándo no)**
+6. **Preguntas frecuentes (FAQ)**
 
 ---
 
@@ -88,13 +86,13 @@
    Excel no estructura presupuestos por espacios, no calcula márgenes automáticamente, no genera PDF profesional, no ofrece vista cliente pública. Alternativas dedicadas sí.
 
 2. **¿Cuál es la mejor alternativa a Excel para interiorismo?**  
-   Depende: Veta si buscas herramienta internacional con control de costes, catálogo, PDF y vista cliente. Programa si necesitas facturación local española. Monday/Notion si prefieres genérico adaptable.
+   Veta ofrece gestión internacional con control de costes, catálogo, PDF y vista cliente. Planes desde gratuito (Base, 1 proyecto) hasta Pro/Studio (desde 25 EUR/mes).
 
 3. **¿Puedo seguir usando Excel y complementarlo con otra herramienta?**  
    Sí, pero duplicas trabajo. Mejor centralizar presupuesto, costes y pagos en una herramienta que ya estructure todo.
 
 4. **¿Las alternativas a Excel son más caras?**  
-   No necesariamente. Veta Base es gratis (1 proyecto). Pro desde 25 EUR/mes. Monday/Notion tienen planes gratuitos limitados. Programa: verificar precios (TODO).
+   Veta Base es gratis (1 proyecto). Pro desde 25 EUR/mes (5 proyectos). Otras herramientas: TODO verificar precios.
 
 5. **¿Qué alternativa genera PDF de presupuesto automáticamente?**  
    Veta sí (project-pdf.tsx). Monday/Notion no (tendrías que exportar a Excel → PDF). Programa: verificar (TODO).
@@ -147,18 +145,18 @@
 
 ## Tabla comparativa — Alternativas a Excel
 
-| Característica | Excel | Veta | Programa | Monday/Notion | Houzz Pro |
-|----------------|-------|------|----------|---------------|-----------|
-| **Propósito** | Hoja de cálculo genérica | Interiorismo dedicado | Interiorismo + facturación ES | Gestión genérica adaptable | CRM + presupuestos |
-| **Presupuestos por espacios** | Manual (hojas duplicadas) | Sí (nativo) | TODO verificar | No (template manual) | TODO verificar |
-| **Costes y márgenes automáticos** | Fórmulas manuales | Sí (cost-control) | TODO verificar | No | TODO verificar |
-| **PDF profesional** | Exportar manualmente | Sí (project-pdf.tsx) | TODO verificar | No | TODO verificar |
-| **Vista cliente pública** | Duplicar archivo | Sí (token único) | TODO verificar | No (invitar usuario) | TODO verificar |
-| **Catálogo de productos** | No | Sí (reutilizable) | TODO verificar | No | TODO verificar |
-| **Pedidos de compra** | No | Sí (con estado) | TODO verificar | No | TODO verificar |
-| **Precio desde** | Gratis (licencia Office) | Gratis (Base) / 25 EUR/mes (Pro) | TODO verificar | ~8 USD/mes (Monday) / Gratis (Notion) | TODO verificar |
+| Característica | Excel | Veta | Otras alternativas |
+|----------------|-------|------|--------------------|
+| **Propósito** | Hoja de cálculo genérica | Interiorismo dedicado | TODO verificar Programa, Monday, Notion, Houzz Pro |
+| **Presupuestos por espacios** | Manual (hojas duplicadas) | Sí (nativo, project-pdf.tsx L660-812) | TODO verificar |
+| **Costes y márgenes automáticos** | Fórmulas manuales | Sí (cost-control.tsx L260-273, L690-750) | TODO verificar |
+| **PDF profesional** | Exportar manualmente | Sí (project-pdf.tsx L1-915) | TODO verificar |
+| **Vista cliente pública** | Duplicar archivo | Sí (token único, /view-project) | TODO verificar |
+| **Catálogo de productos** | No | Sí (reutilizable) | TODO verificar |
+| **Pedidos de compra** | No | Sí (con estado, purchase-order-coverage.ts) | TODO verificar |
+| **Precio desde** | Gratis (licencia Office) | Gratis (Base) / 25 EUR/mes (Pro) | TODO verificar |
 
-**Nota TODO:** Verificar celdas de Programa y Houzz Pro desde sus webs oficiales antes de publicar. Registrar URL y fecha de acceso.
+**Nota:** Características de Veta verificadas con código. Para otras alternativas, verificar desde webs oficiales con URL y fecha de acceso antes de publicar.
 
 ---
 

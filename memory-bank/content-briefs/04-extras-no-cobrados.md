@@ -1,7 +1,7 @@
 # Brief: Extras no cobrados / Change orders en interiorismo
 
 **Prioridad:** 4  
-**Persona primaria:** Elena (propietaria estudio)  
+**Persona primaria:** Lucía (freelancer / estudio 1-3 personas)  
 **Persona secundaria:** Javi (PM / obra)
 
 ---
@@ -22,7 +22,7 @@
 - "bill extras to client interior design"
 - "prevent unbilled change orders"
 
-**Contexto:** Elena pierde dinero cuando olvida cobrar cambios del cliente. Javi (obra) registra cambios pero no siempre llegan al presupuesto. Necesitan sistema para capturar, aprobar y facturar extras sin perder el hilo.
+**Contexto:** Lucía y Elena pierden dinero cuando olvidan cobrar cambios del cliente. Javi (obra) registra cambios pero no siempre llegan al presupuesto. Necesitan sistema para capturar y registrar extras sin perder el hilo.
 
 ---
 
@@ -35,7 +35,7 @@
 
 ## Respuesta answer-first (una frase para abrir)
 
-**Los extras no cobrados (change orders) ocurren cuando un cliente solicita cambios durante la obra —materiales distintos, ampliación de alcance, modificaciones de diseño— y el estudio ejecuta el trabajo sin actualizar el presupuesto ni facturarlo; Veta ayuda a prevenirlos registrando cambios como partidas adicionales con estado, coste y aprobación, visibles tanto para el equipo como en la vista cliente.**
+**Los extras no cobrados (change orders) ocurren cuando un cliente solicita cambios durante la obra —materiales distintos, ampliación de alcance, modificaciones de diseño— y el estudio ejecuta el trabajo sin actualizar el presupuesto; Veta ayuda a prevenirlos registrando cambios como partidas adicionales con descripción, fase y coste, visibles tanto para el equipo como en la vista cliente.**
 
 ---
 
@@ -45,8 +45,8 @@
 2. **Por qué los estudios pierden dinero con extras no cobrados**
 3. **Errores comunes: confiar en la memoria o en WhatsApp**
 4. **Cómo registrar cambios en Veta sin perder trazabilidad**
-5. **Del cambio al presupuesto: flujo de aprobación**
-6. **Vista cliente: mostrar extras pendientes de aprobación**
+5. **Del cambio al presupuesto: actualizar líneas y costes**
+6. **Vista cliente: mostrar extras en el proyecto**
 7. **Control de costes adicionales vinculados a pedidos**
 8. **Preguntas frecuentes (FAQ)**
 
@@ -93,12 +93,12 @@
    Porque se olvidan (memoria, WhatsApp), no se actualizan en el presupuesto, o se registran en notas sueltas sin flujo de aprobación.
 
 3. **¿Cómo Veta ayuda a registrar extras?**  
-   Añadiendo líneas presupuestarias nuevas con descripción, fase, coste estimado y estado. Visibles para el equipo y, si se marca, para el cliente en PDF y vista pública.
+   Añadiendo líneas presupuestarias nuevas con descripción, fase, coste estimado y actual. Visibles para el equipo y, si se marca, para el cliente en PDF y vista pública.
 
-4. **¿Puedo mostrar un extra al cliente antes de aprobarlo?**  
-   Sí. Creas la línea presupuestaria con estimated_amount, la marcas visible al cliente (is_internal_cost = false), y aparece en vista pública y PDF como "pendiente de aprobación".
+4. **¿Puedo mostrar un extra al cliente?**  
+   Sí. Creas la línea presupuestaria con estimated_amount, la marcas visible al cliente (is_internal_cost = false), y aparece en vista pública y PDF. El cliente puede consultarlo pero no hay flujo de aprobación digital dentro de Veta.
 
-5. **¿Cómo sé si un extra ya está cobrado?**  
+5. **¿Cómo sé si un extra está registrado?**  
    Vinculando pagos a la línea presupuestaria o al coste adicional. Veta muestra cobertura de pagos (covered, partial, pending) igual que en pedidos de compra.
 
 6. **¿Puedo ocultar extras internos al cliente?**  
@@ -148,19 +148,21 @@
 
 ---
 
-## Ejemplos ilustrativos (no datos reales)
+## Ejemplos ilustrativos
 
-### Escenario 1: Extra aprobado
+**Nota:** Los siguientes son ejemplos ilustrativos, no datos reales de clientes.
+
+### Ejemplo 1: Extra registrado
 - **Cliente solicita:** cambiar encimera de granito a cuarzo (+800 €)
 - **Registro en Veta:** nueva línea presupuestaria "Encimera cuarzo (cambio)", categoría construcción, subcategoría "otro", fase obra, estimated_amount 800 €, visible al cliente.
-- **Resultado:** cliente ve extra en vista pública, aprueba, se factura, actual_amount 800 €.
+- **Resultado:** cliente ve extra en vista pública, se actualiza presupuesto y PDF, actual_amount 800 € cuando se ejecuta.
 
-### Escenario 2: Extra olvidado (sin Veta)
+### Ejemplo 2: Extra olvidado (sin Veta)
 - **Cliente solicita por WhatsApp:** añadir apliques en pasillo (+200 €)
 - **Sin registro:** obra se hace, no se actualiza presupuesto, no se cobra.
 - **Resultado:** estudio pierde 200 € de margen.
 
-### Escenario 3: Extra interno (no visible al cliente)
+### Ejemplo 3: Extra interno (no visible al cliente)
 - **Estudio añade:** coste de gestoría para trámite extra (+150 €)
 - **Registro:** is_internal_cost = true, no aparece en PDF ni vista cliente.
 - **Resultado:** equipo sabe que hay un coste adicional, cliente no lo ve, se absorbe en honorarios generales.

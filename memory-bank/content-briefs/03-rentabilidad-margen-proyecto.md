@@ -1,8 +1,8 @@
 # Brief: Rentabilidad y margen por proyecto de interiorismo
 
 **Prioridad:** 3  
-**Persona primaria:** Elena (propietaria estudio)  
-**Persona secundaria:** Beatriz (ops/admin)
+**Persona primaria:** Lucía (freelancer / estudio 1-3 personas)  
+**Persona secundaria:** Elena (propietaria estudio 2-12 personas)
 
 ---
 
@@ -22,7 +22,7 @@
 - "know if interior design project is profitable"
 - "gross margin architecture project"
 
-**Contexto:** Elena (propietaria) necesita saber si gana o pierde en cada proyecto sin esperar al cierre. Beatriz (ops) necesita cuadrar presupuesto inicial con gastos y cobros reales.
+**Contexto:** Lucía (freelancer / estudio pequeño) y Elena (propietaria estudio mediano) necesitan saber si ganan o pierden en cada proyecto sin esperar al cierre del mismo.
 
 ---
 
@@ -148,21 +148,23 @@
 
 ---
 
-## Ejemplos ilustrativos (no datos reales de clientes)
+## Ejemplos ilustrativos
 
-### Escenario 1: Proyecto con margen saludable
+**Nota:** Los siguientes son ejemplos ilustrativos, no datos reales de clientes.
+
+### Ejemplo 1: Proyecto con margen saludable
 - Precio de venta: 15.000 €
 - Coste total: 10.500 €
 - Margen bruto: 4.500 € (30%)
 - Estado: rentable
 
-### Escenario 2: Proyecto con desviación
+### Ejemplo 2: Proyecto con desviación
 - Presupuesto estimado: 12.000 €
 - Coste real: 13.200 €
 - Desviación: +10% (TrendingUp rojo)
 - Acción: revisar partidas con desviación >5%
 
-### Escenario 3: Producto individual
+### Ejemplo 3: Producto individual
 - Precio de venta: 1.200 €
 - Coste de compra: 800 €
 - Margen: 400 € (33.3%)
@@ -171,4 +173,4 @@
 
 ## Tono
 
-Práctico y educativo. Explicar conceptos financieros (rentabilidad, margen, desviación) de forma clara sin jerga contable. Enfatizar que **Veta automatiza estos cálculos** para que Elena y Beatriz no tengan que hacer fórmulas manuales en Excel.
+Práctico y educativo. Explicar conceptos financieros (rentabilidad, margen, desviación) de forma clara sin jerga contable. Enfatizar que **Veta automatiza estos cálculos** para que Lucía y Elena no tengan que hacer fórmulas manuales en Excel.

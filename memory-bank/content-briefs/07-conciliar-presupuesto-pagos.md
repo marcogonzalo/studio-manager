@@ -1,8 +1,8 @@
 # Brief: Conciliar presupuesto vs pagos reales en interiorismo
 
 **Prioridad:** 7  
-**Persona primaria:** Beatriz (ops / admin)  
-**Persona secundaria:** Elena (propietaria estudio)
+**Persona primaria:** Lucía (freelancer / estudio 1-3 personas)  
+**Persona secundaria:** Elena (propietaria estudio 2-12 personas)
 
 ---
 
@@ -22,7 +22,7 @@
 - "match budget with invoices interior design"
 - "align budget and payments project"
 
-**Contexto:** Beatriz (ops) necesita cuadrar presupuesto inicial con facturas y pagos a proveedores. Elena necesita saber si el proyecto va según lo previsto o hay desviaciones. Sin reconciliación, imposible saber rentabilidad real hasta el cierre (demasiado tarde).
+**Contexto:** Lucía y Elena necesitan cuadrar presupuesto inicial con facturas y pagos a proveedores, y saber si el proyecto va según lo previsto o hay desviaciones. Sin reconciliación, imposible saber rentabilidad real hasta el cierre (demasiado tarde).
 
 ---
 
@@ -100,7 +100,7 @@
 6. **¿Veta genera reporte de conciliación?**  
    No como PDF aparte, pero el dashboard de control de costes (project-cost-control) es el reporte en tiempo real: totales, desviaciones, cobertura de pagos.
 
-7. **¿Beatriz puede ver esto sin acceder al presupuesto del cliente?**  
+7. **¿El equipo puede ver esto sin que el cliente acceda?**  
    Sí. Control de costes es interno (admin/equipo). Vista cliente no muestra costes internos (is_internal_cost = true).
 
 ---
@@ -146,27 +146,29 @@
 
 ---
 
-## Ejemplos ilustrativos (no datos reales)
+## Ejemplos ilustrativos
 
-### Escenario 1: Proyecto sin desviaciones
+**Nota:** Los siguientes son ejemplos ilustrativos, no datos reales de clientes.
+
+### Ejemplo 1: Proyecto sin desviaciones
 - **Presupuesto inicial:** 20.000€
 - **Gastos reales:** 19.800€
 - **Desviación:** -1% (ahorro)
 - **Estado:** verde, proyecto rentable
 
-### Escenario 2: Proyecto con sobrecostes
+### Ejemplo 2: Proyecto con sobrecostes
 - **Presupuesto inicial:** 18.000€
 - **Gastos reales:** 20.500€
 - **Desviación:** +13.9% (sobrecosto)
 - **Estado:** rojo, revisar líneas con desviación >5%
 
-### Escenario 3: Partida específica
+### Ejemplo 3: Partida específica
 - **Línea presupuestaria:** Carpintería, estimado 3.000€
 - **Gasto real:** 3.600€
 - **Desviación:** +20% (TrendingUp rojo)
 - **Acción:** investigar por qué carpintería costó 600€ más
 
-### Escenario 4: Pedido de compra con pago parcial
+### Ejemplo 4: Pedido de compra con pago parcial
 - **Pedido:** Muebles salón, total 5.000€
 - **Pagos registrados:** 2.000€ (anticipo)
 - **Estado:** partial (40% cubierto)
@@ -186,4 +188,4 @@
 
 ## Tono
 
-Técnico pero accesible. Hablar desde la perspectiva de **Beatriz** (ops): necesita cuadrar números sin errores, sin duplicar datos, sin fórmulas frágiles. Enfatizar que **Veta automatiza la reconciliación** vinculando pagos a presupuesto en el mismo panel, con alertas visuales de desviaciones.
+Técnico pero accesible. Hablar desde la perspectiva de **Lucía y Elena**: necesitan cuadrar números sin errores, sin duplicar datos, sin fórmulas frágiles. Enfatizar que **Veta automatiza la reconciliación** vinculando pagos a presupuesto en el mismo panel, con alertas visuales de desviaciones.

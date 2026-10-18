@@ -1,7 +1,7 @@
 # Brief: Plantilla presupuesto PDF no Excel para interiorismo
 
 **Prioridad:** 9  
-**Persona primaria:** Elena (propietaria estudio)
+**Persona primaria:** Lucía (freelancer / estudio 1-3 personas)
 
 ---
 
@@ -21,7 +21,7 @@
 - "interior design budget format PDF"
 - "generate budget PDF interior design"
 
-**Contexto:** Elena (propietaria) necesita entregar presupuestos profesionales en PDF sin rehacer Excel manualmente cada vez. Busca plantilla o herramienta que genere PDF desde datos del proyecto.
+**Contexto:** Lucía y Elena necesitan entregar presupuestos profesionales en PDF sin rehacer Excel manualmente cada vez. Buscan herramienta que genere PDF desde datos del proyecto.
 
 ---
 
@@ -152,7 +152,9 @@
 
 ---
 
-## Ejemplo de estructura de presupuesto (ilustrativo)
+## Ejemplo de estructura de presupuesto
+
+**Nota:** El siguiente es un ejemplo ilustrativo, no un presupuesto real de cliente.
 
 ### Encabezado
 - Nombre del proyecto: "Reforma vivienda calle X"

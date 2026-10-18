@@ -2,7 +2,7 @@
 
 **Prioridad:** 6  
 **Persona primaria:** Javi (PM / obra)  
-**Persona secundaria:** Elena (propietaria estudio)
+**Persona secundaria:** Lucía (freelancer / estudio 1-3 personas)
 
 ---
 
@@ -22,7 +22,7 @@
 - "supplier order tracking construction"
 - "delays supplier deliveries interior design"
 
-**Contexto:** Javi (obra) necesita saber qué pedidos están confirmados, cuándo llegan, si hay retrasos. Elena (propietaria) necesita visibilidad de entregas para planificar fases y evitar sobrecostes por demoras.
+**Contexto:** Javi (obra) y Lucía (freelancer/estudio pequeño) necesitan saber qué pedidos están confirmados, cuándo llegan, si hay retrasos, para planificar fases y evitar sobrecostes por demoras.
 
 ---
 
@@ -145,9 +145,11 @@
 
 ---
 
-## Ejemplos ilustrativos (lead times típicos, no datos reales)
+## Ejemplos ilustrativos de lead times
 
-| Categoría | Lead time típico | Ejemplo |
+**Nota:** Los siguientes son rangos típicos ilustrativos, no datos verificados. Varían según proveedor, país y época del año.
+
+| Categoría | Lead time típico ilustrativo | Ejemplo |
 |-----------|------------------|---------|
 | **Muebles a medida** | 6-12 semanas | Sofá tapizado, mueble carpintería |
 | **Muebles catálogo** | 2-6 semanas | Silla de marca, mesa stock proveedor |
