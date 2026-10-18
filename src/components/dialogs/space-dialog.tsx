@@ -163,6 +163,13 @@ export function SpaceDialog({
               )}
             />
             <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                {t("cancel")}
+              </Button>
               <Button type="submit">
                 {isEditing ? t("saveChanges") : t("save")}
               </Button>

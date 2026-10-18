@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import type { Client } from "@/types";
 import { useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
+import { trackUserEvent } from "@/app/actions/track-event";
 import {
   getDemoAccountMessage,
   getErrorMessage,
@@ -135,6 +136,7 @@ export function ClientDialog({
           .select()
           .single();
         if (error) throw error;
+        void trackUserEvent("client_created", { client_id: newClient.id });
         toast.success(t("toastCreated"));
         onSuccess(newClient.id);
       }
@@ -222,6 +224,13 @@ export function ClientDialog({
               )}
             />
             <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                {t("cancel")}
+              </Button>
               <Button type="submit">{t("save")}</Button>
             </DialogFooter>
           </form>

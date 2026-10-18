@@ -72,11 +72,9 @@ export function ProductDialog({
 }: ProductDialogProps) {
   const t = useTranslations("DialogProduct");
   const locale = useLocale() as Locale;
-  const { user, effectivePlan } = useAuth();
+  const { user } = useAuth();
   const profileDefaults = useProfileDefaults();
   const supabase = getSupabaseClient();
-  const isBasePlan = effectivePlan?.plan_code === "BASE";
-  const currencyDisabled = isBasePlan;
   const defaultCurrency = profileDefaults?.default_currency ?? "EUR";
   const { suppliers, refetch: refetchSuppliers } = useSuppliers({
     enabled: open,
@@ -150,9 +148,7 @@ export function ProductDialog({
         reference_url: product.reference_url || "",
         description: product.description || "",
         cost_price: product.cost_price?.toString() ?? "0",
-        currency: currencyDisabled
-          ? defaultCurrency
-          : (product.currency ?? "EUR"),
+        currency: product.currency ?? "EUR",
         category: product.category || "",
         supplier_id: product.supplier_id || "",
         image_url: product.image_url || "",
@@ -171,7 +167,7 @@ export function ProductDialog({
         image_url: "",
       });
     }
-  }, [product, open, form, defaultCurrency, currencyDisabled]);
+  }, [product, open, form, defaultCurrency]);
 
   async function onSubmit(values: z.infer<typeof formSchema> | FormValues) {
     try {
@@ -457,12 +453,7 @@ export function ProductDialog({
                             <FormControl>
                               <Select
                                 onValueChange={currencyField.onChange}
-                                value={
-                                  currencyDisabled
-                                    ? defaultCurrency
-                                    : (currencyField.value ?? "EUR")
-                                }
-                                disabled={currencyDisabled}
+                                value={currencyField.value ?? "EUR"}
                               >
                                 <SelectTrigger className="bg-muted/30 h-full rounded-none border-0 focus:ring-0 focus:ring-offset-0">
                                   <SelectValue />
@@ -575,6 +566,13 @@ export function ProductDialog({
             />
 
             <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                {t("cancel")}
+              </Button>
               <Button type="submit">{t("save")}</Button>
             </DialogFooter>
           </form>
@@ -585,8 +583,14 @@ export function ProductDialog({
         open={isSupplierDialogOpen}
         onOpenChange={setIsSupplierDialogOpen}
         supplier={null}
-        onSuccess={async (supplierId) => {
-          if (supplierId) await handleSupplierCreated(supplierId);
+        onSuccess={async (supplierId, meta) => {
+          if (!supplierId) return;
+          if (meta?.addAnother) {
+            await refetchSuppliers();
+            setPendingSupplierId(supplierId);
+            return;
+          }
+          await handleSupplierCreated(supplierId);
         }}
       />
     </Dialog>

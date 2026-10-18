@@ -31,7 +31,18 @@ export type UserEvent =
   | "sample_viewed"
   | "sample_reopened"
   | "note_created"
-  | "note_archived";
+  | "note_archived"
+  /** Activation checklist (#213) */
+  | "client_created"
+  | "project_client_assigned"
+  | "client_view_published"
+  | "pdf_exported"
+  | "real_cost_recorded"
+  | "public_profile_configured"
+  | "defaults_configured"
+  | "account_profile_completed"
+  | "onboarding_dismissed"
+  | "onboarding_restored";
 
 export type TrackEventOptions = {
   userId: string;

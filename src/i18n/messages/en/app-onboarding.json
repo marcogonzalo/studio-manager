@@ -1,33 +1,54 @@
 {
   "Onboarding": {
-    "checklistTitle": "Complete your setup ({completed}/{total})",
-    "checklistDescription": "Follow these steps to get the most out of Veta.",
+    "checklistTitle": "First steps ({completed}/{total})",
+    "checklistDescription": "Keep projects, budgets, and suppliers in one place.",
+    "hideChecklist": "Hide checklist",
+    "seeExample": "See an example first",
+    "secondaryTitle": "Explore more & polish your setup",
+    "restoreChecklist": "Show first steps",
+    "restoreChecklistDone": "First steps restored",
     "steps": {
       "welcome": "Welcome",
-      "config": "Set up account and customization",
-      "client": "Add a client",
-      "project": "Create a project",
-      "public-profile": "Public name and public email"
+      "create-project": "Create your first project",
+      "add-supplier": "Add your first supplier",
+      "add-budget-items": "Add 3 budget items",
+      "add-client": "Add a client to the project",
+      "publish-client-view": "Publish a client view",
+      "export-pdf": "Export your budget as PDF",
+      "record-real-cost": "Record your first real cost",
+      "public-profile": "Public name and email on PDFs",
+      "config": "Set default currency and tax",
+      "account": "Complete profile and company"
+    },
+    "why": {
+      "create-project": "Everything in Veta starts with a project.",
+      "add-supplier": "Link products and costs to the people you buy from.",
+      "add-budget-items": "See instantly how much budget is left.",
+      "add-client": "Connect the project to the person you work for.",
+      "publish-client-view": "Share a live budget link with your client.",
+      "export-pdf": "Send a polished proposal in one click.",
+      "record-real-cost": "Compare estimated vs real spend.",
+      "public-profile": "Brand your PDFs with your studio name.",
+      "config": "Defaults speed up every new project.",
+      "account": "Your name and company on invoices and PDFs."
     },
     "welcome": {
-      "title": "Welcome!",
-      "line1": "Great to have you here!",
-      "line2": "Veta was built with care and dedication. I hope you enjoy it.",
-      "line3": "Now let's complete a few initial setup steps...",
-      "continue": "Continue"
+      "title": "Welcome to Veta",
+      "line1": "Keep your projects, budgets, and suppliers in one place.",
+      "line2": "Start by creating your first project; currency and tax are set inside each one.",
+      "continue": "Create project"
     },
     "later": "Later",
     "step": {
       "config": {
-        "title": "Set up account and customization",
-        "description": "Complete your profile, default currency, and tax rate to use Veta comfortably.",
-        "primaryLabel": "Go to Account",
-        "secondaryLabel": "Go to Customization"
+        "title": "Set default currency and tax",
+        "description": "Optional studio defaults for new projects.",
+        "primaryLabel": "Go to Customization"
       },
       "client": {
         "title": "Add a client",
-        "description": "Create your first client to link it to projects.",
-        "primaryLabel": "Go to Clients"
+        "description": "Link a client to your project when you are ready.",
+        "primaryLabel": "Go to Project"
       },
       "project": {
         "title": "Create a project",

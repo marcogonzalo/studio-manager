@@ -36,7 +36,7 @@ export default function ClientsPage() {
   const locale = useLocale() as Locale;
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
-  useOnboardingHighlight("client", !loading);
+  useOnboardingHighlight("add-client", !loading);
   const [searchInput, searchDebounced, setSearchInput] = useDebouncedState(
     "",
     500

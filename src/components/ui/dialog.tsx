@@ -96,9 +96,10 @@ const DialogFooter = ({
 }: DialogFooterProps) => (
   <div
     className={cn(
-      "flex flex-row flex-nowrap items-center justify-end gap-2 [&>*]:w-auto",
+      // mt-4: air between last field and actions (forms often nest footer inside <form>)
+      "mt-4 flex flex-row flex-nowrap items-center justify-end gap-2 [&>*]:w-auto",
       stickyMobile &&
-        "bg-background max-sm:sticky max-sm:bottom-0 max-sm:z-10 max-sm:mt-auto max-sm:border-t max-sm:p-4",
+        "bg-background max-sm:sticky max-sm:bottom-0 max-sm:z-10 max-sm:mt-auto max-sm:border-t max-sm:p-4 sm:mt-4",
       className
     )}
     {...props}

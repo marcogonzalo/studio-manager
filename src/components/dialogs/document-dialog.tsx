@@ -310,6 +310,14 @@ export function DocumentDialog({
             />
 
             <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={loading}
+              >
+                {t("cancel")}
+              </Button>
               <Button type="submit" disabled={loading}>
                 {t("add")}
               </Button>

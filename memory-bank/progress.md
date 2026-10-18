@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama feat/activation-checklist-213 (issue #213):** Value-oriented activation checklist (4 primary + secondary polish). Welcome modal benefit-first copy + dual CTAs; checklist on dashboard only. Optional `client_id`; currency/tax unlocked on all plans; per-user session keys; supplier step uses `supplier_created` events (not seed rows). Deep links auto-open dialogs and clear `?onboarding=` after open (incl. AddItemDialog on quotation). Dialog footers: Cancel + Save/Add (+ create another). Migration `account_settings` onboarding dismiss/complete flags. Full verify: Docker lint + tests + build.
+
 - **Rama feat/sample-project-completed-funnel-233 (issue #233):** Sample seeds as Completed + `is_sample`; backfill untouched samples; `funnel_users` event-based primary (excludes `demo@veta.pro`); checklist ignores sample; sample banner + edit always available for reopen; `sample_viewed`/`sample_reopened`/`note_*`; `budget_created` with `source` catalog/manual. Full verify: Docker lint + tests + build.
 
 - **Rama fix/docker-dev-turbopack-memory:** Dev container `mem_limit` 4GB → 6GB. V8 heap 3072 → 2048 so Turbopack native memory fits in the cgroup. `watchOptions.pollIntervalMs: 1000` because Turbopack ignores `CHOKIDAR_USEPOLLING`. One page compile peaked ~3.8GB RSS and SIGKILL'd the worker; parent then exited 0 and `docker-dev.sh` relaunched. Short verify: Prettier, `docker compose config`. Full lint/test/build skipped — live dev container was ~4GB of 6GB and the Docker VM is ~8GB, so a second test container would OOM. CI runs the suite
