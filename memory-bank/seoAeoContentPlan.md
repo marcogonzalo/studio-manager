@@ -8,15 +8,17 @@ Plan de contenido editorial alineado a buyer personas (Lucía, Elena, Javi) con 
 
 ## 1. Objetivos y KPIs
 
-| Objetivo                     | KPI primario                                     | Meta Q1 2027 (3 meses, 12 posts)                                   |
-| ---------------------------- | ------------------------------------------------ | ------------------------------------------------------------------ |
-| **Tráfico orgánico**         | Usuarios únicos desde búsqueda (Google + IA)    | +30% vs baseline (validar baseline en Google Search Console)       |
-| **Generación de leads**      | Evento `demo_access` desde blog                  | 50 clics/mes hacia demo o prueba gratuita desde artículos del blog |
-| **Registro**                 | Evento `sign_up` atribuido a contenido orgánico  | 15 registros/mes con fuente orgánica                               |
-| **Activación**               | Usuario crea proyecto + añade presupuesto/proveedor (7 días) | 60% de registros orgánicos alcanzan activación                     |
-| **Visibilidad GEO**          | Citas/menciones de Veta en respuestas de IA     | Medir con [Otterly.ai](https://otterly.ai/) o búsqueda manual mensual en ChatGPT/Perplexity para queries clave (ej. "software presupuestos interiorismo") |
+| Objetivo                     | KPI primario                                     | Hipótesis inicial (a calibrar tras 4 semanas de analítica real)                                   |
+| ---------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| **Tráfico orgánico**         | Usuarios únicos desde búsqueda (Google + IA)    | Hipótesis: +30% vs baseline; validar baseline actual en Google Search Console antes de fijar meta |
+| **Generación de leads**      | Evento `demo_access` desde blog                  | Hipótesis: 50 clics/mes hacia demo o prueba gratuita desde artículos del blog                     |
+| **Registro**                 | Evento `sign_up` atribuido a contenido orgánico  | Hipótesis: 15 registros/mes con fuente orgánica                                                    |
+| **Activación**               | Usuario crea proyecto + añade presupuesto/proveedor (7 días) | Hipótesis: 60% de registros orgánicos alcanzan activación                                          |
+| **Visibilidad GEO**          | Citas/menciones de Veta en respuestas de IA     | Medir mensualmente con búsqueda manual en ChatGPT/Perplexity para queries clave (ej. "software presupuestos interiorismo"). Herramienta a evaluar: [Otterly.ai](https://otterly.ai/) |
 
-**Fuente de datos:** Google Search Console, Google Analytics 4 (eventos `demo_access`, `sign_up`), tabla `user_events` (fuente: PR #212 funnel data foundations), Otterly.ai (GEO tracking).
+**Fuente de datos:** Google Search Console, Google Analytics 4 (eventos `demo_access`, `sign_up`), tabla `user_events` (fuente: PR #212 funnel data foundations).
+
+**Nota crítica:** Los números anteriores son **hipótesis de trabajo, no compromisos**. Tras las primeras 4 semanas de publicación (finales de noviembre 2026), revisar analítica real y ajustar metas según baseline y tendencia observada.
 
 ---
 
@@ -107,20 +109,21 @@ Plan de contenido editorial alineado a buyer personas (Lucía, Elena, Javi) con 
 
 **Pilar:** [Existente] "Por qué Veta supera a las hojas de cálculo..." (ya en blog)
 
-10. **Veta vs herramientas genéricas de gestión de proyectos (Monday, Notion, Trello)** (comparativa, transaccional)
+10. **Software para diseñadoras de interiores freelance: qué necesitas de verdad** (evergreen, funcional, orientado a Lucía)
+    - Persona: Lucía
+    - Funnel: MoFu
+    - Keywords ES: software interiorismo freelance, herramientas diseñadora interior independiente
+    - Keywords EN: interior design software for freelancers, tools for independent designers
+    - AEO queries: "¿Qué software necesita una interiorista freelance?", "What tools do freelance interior designers need?"
+    - Ángulo: funcionalidades críticas para freelance (presupuestos limpios, vista cliente profesional, móvil-friendly, simplicidad sin curva de aprendizaje, precio accesible). Enlace interno al artículo existente "Veta vs Excel" como comparativa relacionada.
+
+11. **Veta vs herramientas genéricas de gestión de proyectos (Monday, Notion, Trello)** (comparativa, transaccional)
     - Persona: Lucía, Elena
     - Funnel: BoFu
     - Keywords ES: Veta vs Monday interiorismo, software diseño interior vs Notion
     - Keywords EN: Veta vs Monday interior design, project management tools for designers
     - AEO queries: "¿Es Monday bueno para estudios de interiorismo?", "Can I use Notion for interior design projects?"
     - Ángulo: herramientas genéricas no entienden presupuestos, márgenes, órdenes de compra ni vista pública cliente
-
-11. **Software de gestión para estudios de interiorismo: cuándo necesitas más que Excel** (comparativa educacional)
-    - Persona: Lucía
-    - Funnel: MoFu/BoFu
-    - Keywords ES: software gestión interiorismo freelance, cuándo cambiar Excel por software
-    - Keywords EN: interior design software for freelancers, when to switch from spreadsheets
-    - AEO queries: "¿Cuándo un interiorista necesita software de gestión?", "Do I need project management software as a freelance designer?"
 
 12. **Comparativa: software vertical de interiorismo (Veta, Houzz Pro, Studio Designer, Programa)** (comparativa, transaccional)
     - Persona: Elena
@@ -132,26 +135,28 @@ Plan de contenido editorial alineado a buyer personas (Lucía, Elena, Javi) con 
 
 ---
 
-## 3. Calendario Editorial 12 Semanas (Q1 2027)
+## 3. Calendario Editorial 12 Semanas (Oct 26, 2026 – Ene 11, 2027)
 
 Publicación: **1 post/semana**, par ES+EN (mismo `entryId`), idioma primario ES. Orden priorizado por encaje con Lucía (early-adopter) y funcionalidades reales de Veta.
 
-| Semana | Artículo                                                                  | Persona   | Funnel     | Prioridad | Visual                                               |
-| ------ | ------------------------------------------------------------------------- | --------- | ---------- | --------- | ---------------------------------------------------- |
-| S1     | Cómo estructurar un presupuesto de diseño interior sin errores           | Lucía     | ToFu       | Alta      | Blog cover + Instagram carousel (5 slides) + LinkedIn single post |
-| S2     | Cómo gestionar pedidos y proveedores en proyectos de diseño interior     | Javi      | MoFu       | Alta      | Blog cover + Instagram single post + LinkedIn single post |
-| S3     | Software de gestión para estudios de interiorismo: cuándo necesitas más que Excel | Lucía | MoFu/BoFu | Alta      | Blog cover + Instagram carousel (4 slides) + LinkedIn single post |
-| S4     | Estados de pedido en obra: de "pendiente" a "instalado"                  | Javi, Lucía | MoFu/BoFu | Alta      | Blog cover + Instagram single post (infográfico) + LinkedIn single post |
-| S5     | Márgenes en diseño interior: cómo calcularlos y protegerlos              | Lucía, Elena | MoFu/BoFu | Alta      | Blog cover + Instagram carousel (6 slides) + LinkedIn carousel (PDF) |
-| S6     | Cómo comunicar cambios y extras al cliente sin perder confianza          | Elena, Lucía | ToFu      | Media     | Blog cover + Instagram single post + LinkedIn single post |
-| S7     | Presupuesto vs coste real: cómo evitar desviaciones en proyectos de diseño | Elena   | MoFu       | Media     | Blog cover + Instagram carousel (5 slides) + LinkedIn single post |
-| S8     | Órdenes de compra en diseño interior: qué son y cómo usarlas             | Elena, Beatriz | MoFu    | Media     | Blog cover + Instagram single post + LinkedIn single post |
-| S9     | Veta vs herramientas genéricas (Monday, Notion, Trello)                  | Lucía, Elena | BoFu     | Alta      | Blog cover + Instagram carousel (comparativa tabla 4 slides) + LinkedIn carousel (PDF) |
-| S10    | Guía completa para gestionar la fase de obra en proyectos de interiorismo | Elena, Javi | ToFu/MoFu | Media   | Blog cover + Instagram carousel (8 slides — pilar largo) + LinkedIn single post |
-| S11    | Qué esperan los clientes premium de un estudio de diseño interior en 2026 | Elena     | ToFu/MoFu | Media     | Blog cover + Instagram single post (aspiracional, foto premium) + LinkedIn single post |
-| S12    | Comparativa: software vertical de interiorismo (Veta, Houzz Pro, Studio Designer, Programa) | Elena | BoFu | Alta | Blog cover + Instagram carousel (comparativa 6 slides) + LinkedIn carousel (PDF) |
+| Fecha      | Artículo                                                                  | Persona   | Funnel     | Prioridad | Visual                                               |
+| ---------- | ------------------------------------------------------------------------- | --------- | ---------- | --------- | ---------------------------------------------------- |
+| **Oct 26** | Cómo estructurar un presupuesto de diseño interior sin errores           | Lucía     | ToFu       | Alta      | Blog cover + Instagram carousel (5 slides) + LinkedIn single post |
+| **Nov 2**  | Cómo gestionar pedidos y proveedores en proyectos de diseño interior     | Javi      | MoFu       | Alta      | Blog cover + Instagram single post + LinkedIn single post |
+| **Nov 9**  | Software para diseñadoras de interiores freelance: qué necesitas de verdad | Lucía | MoFu | Alta | Blog cover + Instagram carousel (5 slides) + LinkedIn single post |
+| **Nov 16** | Estados de pedido en obra: de "pendiente" a "instalado"                  | Javi, Lucía | MoFu/BoFu | Alta      | Blog cover + Instagram single post (infográfico) + LinkedIn single post |
+| **Nov 23** | Márgenes en diseño interior: cómo calcularlos y protegerlos              | Lucía, Elena | MoFu/BoFu | Alta      | Blog cover + Instagram carousel (6 slides) + LinkedIn carousel (PDF) |
+| **Nov 30** | Cómo comunicar cambios y extras al cliente sin perder confianza          | Elena, Lucía | ToFu      | Media     | Blog cover + Instagram single post + LinkedIn single post |
+| **Dec 7**  | Presupuesto vs coste real: cómo evitar desviaciones en proyectos de diseño | Elena   | MoFu       | Media     | Blog cover + Instagram carousel (5 slides) + LinkedIn single post |
+| **Dec 14** | Órdenes de compra en diseño interior: qué son y cómo usarlas             | Elena, Beatriz | MoFu    | Media     | Blog cover + Instagram single post + LinkedIn single post |
+| **Dec 21** | Veta vs herramientas genéricas (Monday, Notion, Trello)                  | Lucía, Elena | BoFu     | Alta      | Blog cover + Instagram carousel (comparativa tabla 4 slides) + LinkedIn carousel (PDF) |
+| **Dec 28** | Guía completa para gestionar la fase de obra en proyectos de interiorismo | Elena, Javi | ToFu/MoFu | Media   | Blog cover + Instagram carousel (8 slides — pilar largo) + LinkedIn single post |
+| **Ene 4, 2027**  | Qué esperan los clientes premium de un estudio de diseño interior en 2026 | Elena     | ToFu/MoFu | Media     | Blog cover + Instagram single post (aspiracional, foto premium) + LinkedIn single post |
+| **Ene 11, 2027** | Comparativa: software vertical de interiorismo (Veta, Houzz Pro, Studio Designer, Programa) | Elena | BoFu | Alta | Blog cover + Instagram carousel (comparativa 6 slides) + LinkedIn carousel (PDF) |
 
 **Nota Visual:** Blog cover = imagen cover del artículo (640x360 recomendado, se commitea en PR del artículo). Instagram carousel = múltiples slides (formato 1:1 o 4:5). LinkedIn carousel = PDF multi-página. Single post = imagen única.
+
+**Cambio respecto a plan inicial:** La semana del 9 de noviembre (originalmente "cuándo necesitas más que Excel") se reemplazó por "Software para diseñadoras freelance: qué necesitas de verdad" para evitar solapamiento con el artículo existente ["Veta vs Excel presupuestos"](https://veta.pro/blog/veta-vs-excel-presupuestos-interiorismo). Este nuevo artículo abordará funcionalidades críticas para freelance (presupuestos, vista cliente, móvil, simplicidad) y enlazará internamente al artículo de comparativa Excel existente.
 
 ---
 
@@ -285,9 +290,11 @@ Cuando se compara Veta con competidores (Monday, Notion, Houzz Pro, Programa, St
 | Eventos `demo_access` desde blog | GA4 + tabla `user_events`    | Semanal    |
 | Eventos `sign_up` orgánicos      | GA4 + tabla `leads`          | Semanal    |
 | Activación (7 días)              | Query sobre `user_events`    | Mensual    |
-| Citas en respuestas IA           | Otterly.ai o búsqueda manual | Mensual    |
+| Citas en respuestas IA           | Búsqueda manual en ChatGPT/Perplexity; herramienta a evaluar: [Otterly.ai](https://otterly.ai/) | Mensual    |
 
 ### Retrospectiva mensual (después de semanas 4, 8, 12)
+
+**IMPORTANTE:** Tras la semana 4 (23 de noviembre), realizar la **primera calibración de hipótesis KPI** contra analítica real. Ajustar metas y estrategia según baseline observado.
 
 1. **Top 3 artículos por tráfico:** ¿Qué tienen en común? (keywords, formato, persona)
 2. **Artículos con bajo CTR:** ¿Título poco claro? ¿Meta description débil? Iterar.
@@ -356,6 +363,6 @@ Después de las 12 semanas iniciales y retrospectiva:
   - Vista pública cliente interiorismo
 - **Herramientas AEO:**
   - [HubSpot AEO Grader](https://www.hubspot.com/ai-search-grader)
-  - [Otterly.ai](https://otterly.ai/) — visibilidad en respuestas generativas
+  - [Otterly.ai](https://otterly.ai/) — herramienta a evaluar para visibilidad en respuestas generativas
   - [AnswerThePublic](https://answerthepublic.com/) — preguntas reales de usuarios
   - [Google Rich Results Test](https://search.google.com/test/rich-results) — validar schema
