@@ -486,7 +486,10 @@
     "upgradeSuffix": "para subir renders.",
     "expandAria": "Ampliar {description}",
     "deleteImageAria": "Eliminar imagen",
-    "empty": "No hay imágenes.",
+    "empty": "Aún no hay renders",
+    "emptyDescription": "Aquí aparecerán las visualizaciones de este espacio.",
+    "emptyValue": "Comparte renders con el cliente sin salir del proyecto.",
+    "addFirstImage": "Añadir primera imagen",
     "toastDeleted": "Imagen eliminada",
     "toastDeleteError": "No se pudo eliminar la imagen",
     "toastAdded": "Imagen añadida"

@@ -31,6 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Collapsible,
@@ -52,6 +53,7 @@ import {
   ChevronDown,
   Clock,
   Truck,
+  Package,
   PackageCheck,
   Wrench,
   Check,
@@ -897,9 +899,22 @@ export function ProjectBudget({
               <CollapsibleContent>
                 <CardContent className="space-y-3 pt-0">
                   {items.length === 0 ? (
-                    <p className="text-muted-foreground py-8 text-center">
-                      {t("noProducts")}
-                    </p>
+                    <EmptyState
+                      variant="inline"
+                      icon={Package}
+                      title={t("noProducts")}
+                      description={t("noProductsDescription")}
+                      value={t("noProductsValue")}
+                      action={
+                        !readOnly
+                          ? {
+                              label: t("addFirstProduct"),
+                              onClick: handleAddItem,
+                              icon: Plus,
+                            }
+                          : undefined
+                      }
+                    />
                   ) : (
                     itemsBySpace.map(
                       ({ spaceKey, spaceName, items: spaceItems }) => {

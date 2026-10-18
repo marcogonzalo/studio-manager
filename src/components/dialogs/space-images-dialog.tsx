@@ -14,7 +14,8 @@ import { SpaceImageUpload } from "@/components/space-image-upload";
 import Image from "next/image";
 import { toast } from "sonner";
 import type { Space } from "@/types";
-import { Plus, Trash2 } from "lucide-react";
+import { ImageIcon, Plus, Trash2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { deleteSpaceImage } from "@/lib/delete-space-image";
 import {
   getDemoAccountMessage,
@@ -178,9 +179,23 @@ export function SpaceImagesDialog({
             </div>
           ))}
           {images.length === 0 && (
-            <div className="text-muted-foreground col-span-full py-10 text-center">
-              {t("empty")}
-            </div>
+            <EmptyState
+              variant="inline"
+              className="col-span-full"
+              icon={ImageIcon}
+              title={t("empty")}
+              description={t("emptyDescription")}
+              value={t("emptyValue")}
+              action={
+                canAddRenders
+                  ? {
+                      label: t("addFirstImage"),
+                      onClick: () => setAddModalOpen(true),
+                      icon: Plus,
+                    }
+                  : undefined
+              }
+            />
           )}
         </div>
       </DialogContent>
