@@ -116,10 +116,16 @@
 
 - **Budget entry speedups (issue #234):** Add-and-create-another (products + cost lines), + Add per space, Create a copy (budget rows + space products), space rename/delete with `delete_space` RPC (move vs delete_lines, PO guard), mobile full-screen sticky footer, `budget_created` with `origin`. Branch `feat/budget-entry-234`.
 
+## En curso / PRs abiertos
+
+- **Empty states (#214):** Stacked PRs [#239](https://github.com/marcogonzalo/studio-manager/pull/239) → [#240](https://github.com/marcogonzalo/studio-manager/pull/240) → [#241](https://github.com/marcogonzalo/studio-manager/pull/241) → [#242](https://github.com/marcogonzalo/studio-manager/pull/242). Shared `EmptyState`, value+CTA copy ES/EN, sample-only prompts, public view tone. Copy table: `docs/empty-states.md`.
+- **GTM (#181):** App/docs PR [#243](https://github.com/marcogonzalo/studio-manager/pull/243) (`docs/gtm-ga4-setup.md` §5 checklist + `gtm.test.ts` event-name contract). **Still manual:** publish container GTM-5F6QXRQS in Tag Manager Preview → Publish; confirm `NEXT_PUBLIC_GTM_ID` in Vercel.
+
 ## Pendiente
 
 - [ ] **Dashboard — Total de Ingresos este mes:** Calcular el KPI desde la tabla `payments` (filtro por `payment_date` en el mes actual). El registro de pagos por proyecto ya existe; solo falta conectar el dashboard. Ver issue #61.
 - [ ] **Notificaciones por email:** Avisos a clientes/proveedores (p. ej. vía Edge Functions).
+- [ ] **GTM container publish (#181):** Follow `docs/gtm-ga4-setup.md` §5 after merging #243.
 
 ---
 
