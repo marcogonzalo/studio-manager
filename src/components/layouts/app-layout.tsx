@@ -7,9 +7,9 @@ import { useAuth } from "@/components/auth-provider";
 import { useOnboardingStatus } from "@/lib/use-onboarding-status";
 import { OnboardingStepModal } from "@/components/onboarding/onboarding-step-modal";
 import {
-  ONBOARDING_SESSION_SKIP_KEY,
-  ONBOARDING_WELCOME_SEEN_SESSION_KEY,
-  isOnOnboardingStepTargetPage,
+  onboardingSessionSkipKey,
+  onboardingWelcomeSeenKey,
+  clearLegacyOnboardingSessionKeys,
 } from "@/lib/onboarding";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -748,42 +748,53 @@ export default function AppLayoutClient({
     [isDemoAccount, pathname, effectivePlan?.plan_code]
   );
   const [skippedOnboardingThisSession, setSkippedOnboardingThisSession] =
-    useState(
-      () =>
-        typeof window !== "undefined" &&
-        !!sessionStorage.getItem(ONBOARDING_SESSION_SKIP_KEY)
-    );
+    useState(false);
   const [onboardingModalOpen, setOnboardingModalOpen] = useState(true);
   const [, setWelcomeDismissedTrigger] = useState(0);
-  const { firstPendingStepId, loading: onboardingLoading } =
-    useOnboardingStatus();
+  const {
+    firstPendingStepId,
+    loading: onboardingLoading,
+    sampleProjectId,
+  } = useOnboardingStatus();
+
+  // Re-read skip flag when user changes — never inherit another account's "Later".
+  useEffect(() => {
+    clearLegacyOnboardingSessionKeys();
+    if (!user?.id || typeof window === "undefined") {
+      setSkippedOnboardingThisSession(false);
+      return;
+    }
+    setSkippedOnboardingThisSession(
+      sessionStorage.getItem(onboardingSessionSkipKey(user.id)) === "1"
+    );
+  }, [user?.id]);
+
+  // #213: modal only for welcome; checklist on dashboard drives activation steps
   const showOnboardingModal =
+    !isDemoAccount &&
     !onboardingLoading &&
-    firstPendingStepId !== null &&
+    firstPendingStepId === "welcome" &&
     !skippedOnboardingThisSession;
 
-  // Reabrir el modal al navegar a una página que no sea la del paso actual (oculto temporalmente para realizar la acción)
   useEffect(() => {
-    if (
-      showOnboardingModal &&
-      firstPendingStepId &&
-      !isOnOnboardingStepTargetPage(pathname, firstPendingStepId)
-    ) {
+    if (showOnboardingModal) {
       setOnboardingModalOpen(true);
     }
-  }, [showOnboardingModal, pathname, firstPendingStepId]);
+  }, [showOnboardingModal]);
 
   const handleOnboardingWelcomeComplete = () => {
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem(ONBOARDING_WELCOME_SEEN_SESSION_KEY, "1");
+    if (typeof window !== "undefined" && user?.id) {
+      clearLegacyOnboardingSessionKeys();
+      sessionStorage.setItem(onboardingWelcomeSeenKey(user.id), "1");
     }
     setWelcomeDismissedTrigger((n) => n + 1);
     return Promise.resolve();
   };
 
   const handleOnboardingOmitir = () => {
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem(ONBOARDING_SESSION_SKIP_KEY, "1");
+    if (typeof window !== "undefined" && user?.id) {
+      clearLegacyOnboardingSessionKeys();
+      sessionStorage.setItem(onboardingSessionSkipKey(user.id), "1");
     }
     setSkippedOnboardingThisSession(true);
     setOnboardingModalOpen(false);
@@ -819,6 +830,7 @@ export default function AppLayoutClient({
           onOpenChange={setOnboardingModalOpen}
           onOmitir={handleOnboardingOmitir}
           onWelcomeComplete={handleOnboardingWelcomeComplete}
+          sampleProjectId={sampleProjectId}
         />
       )}
       {!isDemoAccount && (

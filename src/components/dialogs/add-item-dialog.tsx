@@ -1312,13 +1312,20 @@ export function AddItemDialog({
             </div>
 
             <DialogFooter stickyMobile className="max-sm:flex-wrap">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                {t("cancel")}
+              </Button>
               {isEditing ? (
                 <Button type="submit">{t("saveChanges")}</Button>
               ) : (
                 <>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => submitWithIntent(false)}
                   >
                     {t("addToBudget")}
@@ -1341,8 +1348,14 @@ export function AddItemDialog({
         open={isSupplierDialogOpen}
         onOpenChange={setIsSupplierDialogOpen}
         supplier={null}
-        onSuccess={async (supplierId) => {
-          if (supplierId) await handleSupplierCreated(supplierId);
+        onSuccess={async (supplierId, meta) => {
+          if (!supplierId) return;
+          if (meta?.addAnother) {
+            await refetchSuppliers();
+            setPendingSupplierId(supplierId);
+            return;
+          }
+          await handleSupplierCreated(supplierId);
         }}
       />
     </Dialog>

@@ -2,8 +2,10 @@
 
 import type { Locale } from "@/i18n/config";
 import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
+import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -46,8 +48,12 @@ function getWebsiteHostname(website: string): string {
 export default function SuppliersPage() {
   const t = useTranslations("SuppliersPage");
   const locale = useLocale() as Locale;
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
+  useOnboardingHighlight("add-supplier", !loading);
   const [searchInput, searchDebounced, setSearchInput] = useDebouncedState(
     "",
     500
@@ -71,6 +77,14 @@ export default function SuppliersPage() {
     fetchSuppliers();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run when searchDebounced changes only
   }, [searchDebounced]);
+
+  useEffect(() => {
+    if (searchParams.get("onboarding") !== "add-supplier" || loading) return;
+    setEditingSupplier(null);
+    setIsDialogOpen(true);
+    // Drop query so refetch (loading flip) does not reopen the dialog.
+    router.replace(pathname, { scroll: false });
+  }, [searchParams, loading, router, pathname]);
 
   const handleDeleteClick = (s: Supplier) => setDeleteTarget(s);
   const handleEdit = (supplier: Supplier) => {
@@ -124,6 +138,7 @@ export default function SuppliersPage() {
               setIsDialogOpen(true);
             }}
             className="w-full sm:w-auto"
+            data-onboarding-target="add-supplier"
           >
             <Plus className="mr-2 h-4 w-4" /> {t("newSupplier")}
           </Button>
@@ -275,8 +290,8 @@ export default function SuppliersPage() {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         supplier={editingSupplier}
-        onSuccess={() => {
-          setIsDialogOpen(false);
+        onSuccess={(_supplierId, meta) => {
+          if (!meta?.addAnother) setIsDialogOpen(false);
           fetchSuppliers();
         }}
       />

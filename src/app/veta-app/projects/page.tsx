@@ -3,6 +3,7 @@
 import type { Locale } from "@/i18n/config";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getDemoAccountMessage } from "@/lib/utils";
@@ -81,7 +82,10 @@ export default function ProjectsPage() {
   const { formatDate } = useAppFormatting();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  useOnboardingHighlight("project", !loading);
+  useOnboardingHighlight("create-project", !loading);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("status");
@@ -104,6 +108,14 @@ export default function ProjectsPage() {
     }
     setIsDialogOpen(true);
   }
+
+  useEffect(() => {
+    if (searchParams.get("onboarding") !== "create-project" || loading) return;
+    handleNewProjectClick();
+    // Drop query so refetch (loading flip) does not reopen the dialog.
+    router.replace(pathname, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- open once when query present
+  }, [searchParams, loading, activeProjectCount, router, pathname]);
 
   const handleDeleteClick = (project: Project) => {
     setDeleteTarget(project);
@@ -195,7 +207,7 @@ export default function ProjectsPage() {
             onClick={handleNewProjectClick}
             className="w-full sm:w-auto"
             {...(projects.length > 0 && {
-              "data-onboarding-target": "project",
+              "data-onboarding-target": "create-project",
             })}
           >
             <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
@@ -349,7 +361,7 @@ export default function ProjectsPage() {
             <Card
               className="border-dashed md:col-span-2 lg:col-span-3"
               {...(projects.length === 0 && {
-                "data-onboarding-target": "project",
+                "data-onboarding-target": "create-project",
               })}
             >
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">

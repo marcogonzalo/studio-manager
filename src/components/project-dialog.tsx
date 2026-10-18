@@ -50,7 +50,6 @@ import { useAuth } from "@/components/auth-provider";
 import { useProfileDefaults } from "@/lib/use-profile-defaults";
 import { usePlanCapability } from "@/lib/use-plan-capability";
 import { Plus } from "lucide-react";
-import Link from "next/link";
 import type { Client, Project, ProjectStatus } from "@/types";
 import { ClientDialog } from "@/components/dialogs/client-dialog";
 import { appPath } from "@/lib/app-paths";
@@ -67,7 +66,7 @@ function buildFormSchema(t: ReturnType<typeof useTranslations>) {
   return z.object({
     name: z.string().min(2, t("validationNameRequired")),
     description: z.string().optional(),
-    client_id: z.string().min(1, t("validationClientRequired")),
+    client_id: z.string().optional(),
     status: z.enum(["active", "completed", "cancelled"]).default("active"),
     start_date: z.string().optional(),
     end_date: z.string().optional(),
@@ -129,9 +128,6 @@ export function ProjectDialog({
     typeof formSchema
   > | null>(null);
 
-  const isBasePlan = effectivePlan?.plan_code === "BASE";
-  const currencyDisabled = isBasePlan;
-  const taxRateDisabled = isBasePlan;
   const multitaxEnabled = usePlanCapability("costs_management", {
     minModality: "plus",
   });
@@ -332,9 +328,15 @@ export function ProjectDialog({
       }
 
       // Convert empty strings to null for optional fields to avoid overwriting existing data
+      const previousClientId = project?.client_id ?? null;
+      const nextClientId =
+        values.client_id && values.client_id.trim()
+          ? values.client_id.trim()
+          : null;
+
       const updateData: Record<string, unknown> = {
         name: values.name,
-        client_id: values.client_id,
+        client_id: nextClientId,
         status: values.status || "active",
         end_date: values.end_date || null,
         tax_rate: taxRateValue,
@@ -396,6 +398,13 @@ export function ProjectDialog({
           });
         }
 
+        if (nextClientId && nextClientId !== previousClientId) {
+          void trackUserEvent("project_client_assigned", {
+            project_id: project.id,
+            client_id: nextClientId,
+          });
+        }
+
         toast.success(t("toastUpdated"));
       } else {
         const { data: created, error } = await supabase
@@ -414,6 +423,13 @@ export function ProjectDialog({
         void trackUserEvent("project_created", {
           project_id: created.id,
         });
+
+        if (nextClientId) {
+          void trackUserEvent("project_client_assigned", {
+            project_id: created.id,
+            client_id: nextClientId,
+          });
+        }
 
         toast.success(t("toastCreated"));
         form.reset();
@@ -541,17 +557,19 @@ export function ProjectDialog({
                 )}
               />
 
-              {/* Segunda línea: Cliente */}
+              {/* Segunda línea: Cliente (optional — activation step #4) */}
               <FormField
                 control={form.control}
                 name="client_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel required>{t("clientLabel")}</FormLabel>
+                    <FormLabel>{t("clientLabel")}</FormLabel>
                     <div className="flex gap-2">
                       <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
+                        onValueChange={(value) =>
+                          field.onChange(value || undefined)
+                        }
+                        value={field.value || undefined}
                       >
                         <FormControl>
                           <SelectTrigger className="flex-1">
@@ -730,7 +748,7 @@ export function ProjectDialog({
                 />
               </div>
 
-              {/* Moneda e Impuesto (deshabilitados en plan BASE: solo perfil) */}
+              {/* Moneda e Impuesto — editable on all plans (#213) */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
@@ -740,12 +758,7 @@ export function ProjectDialog({
                       <FormLabel>{t("currencyLabel")}</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        value={
-                          currencyDisabled
-                            ? defaultCurrency
-                            : (field.value ?? "EUR")
-                        }
-                        disabled={currencyDisabled}
+                        value={field.value ?? "EUR"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -781,27 +794,13 @@ export function ProjectDialog({
                           step="0.01"
                           placeholder={t("taxPlaceholder")}
                           {...field}
-                          value={
-                            taxRateDisabled
-                              ? defaultTaxRateStr
-                              : field.value || ""
-                          }
-                          disabled={taxRateDisabled}
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                {(currencyDisabled || taxRateDisabled) && (
-                  <p className="text-muted-foreground col-span-2 text-xs">
-                    {t("basePlanHint")}{" "}
-                    <Link href="/pricing" className="underline">
-                      {t("upgradePlan")}
-                    </Link>{" "}
-                    {t("basePlanHintSuffix")}
-                  </p>
-                )}
                 <FormField
                   control={form.control}
                   name="multitax"
@@ -839,6 +838,13 @@ export function ProjectDialog({
               </div>
 
               <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                >
+                  {t("cancel")}
+                </Button>
                 <Button type="submit">
                   {project ? t("saveChanges") : t("createProject")}
                 </Button>

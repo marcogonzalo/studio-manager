@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -50,6 +50,7 @@ function ProjectDetailShellContent({
   const projectStatusLabel = useProjectStatusLabel();
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = projectId;
   const [project, setProject] = useState<Project | null>(null);
   const [activeProjects, setActiveProjects] = useState<
@@ -227,6 +228,20 @@ function ProjectDetailShellContent({
     sessionStorage.setItem(key, "1");
     void trackUserEvent("sample_viewed", { project_id: project.id });
   }, [project?.id, project?.is_sample]);
+
+  useEffect(() => {
+    if (!project || loading) return;
+    const step = searchParams.get("onboarding");
+    if (step === "add-client") {
+      setIsEditDialogOpen(true);
+    } else if (step === "publish-client-view") {
+      setIsShareDialogOpen(true);
+    } else {
+      return;
+    }
+    // Drop query so refetch (loading flip) does not reopen the dialog.
+    router.replace(pathname, { scroll: false });
+  }, [project, loading, searchParams, router, pathname]);
 
   async function fetchActiveProjects() {
     const { data, error } = await supabase

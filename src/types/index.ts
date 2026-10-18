@@ -54,6 +54,10 @@ export interface AccountSettings {
   lang?: AccountSettingsLang;
   /** Formato de visualización de fechas. */
   date_format?: AccountDateFormat;
+  /** Activation checklist (#213): when user hid the card. */
+  onboarding_dismissed_at?: string | null;
+  /** When the 4 primary activation steps first completed. */
+  onboarding_completed_at?: string | null;
   updated_at?: string;
 }
 
@@ -91,7 +95,7 @@ export interface Project {
   start_date: string;
   end_date: string | null;
   completed_date: string | null;
-  client_id: string;
+  client_id?: string | null;
   address?: string;
   phase?: ProjectPhase;
   tax_rate?: number;

@@ -107,8 +107,13 @@ export default function DashboardPage() {
   const phaseLabel = usePhaseLabel();
   const { formatDate } = useAppFormatting();
   const { user } = useAuth();
-  const { steps: onboardingSteps, allComplete: onboardingComplete } =
-    useOnboardingStatus();
+  const {
+    primarySteps,
+    secondarySteps,
+    sampleProjectId,
+    showChecklist,
+    dismissChecklist,
+  } = useOnboardingStatus();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     activeProjects: 0,
@@ -320,7 +325,14 @@ export default function DashboardPage() {
         </div>
       </AnimatedSection>
 
-      {!onboardingComplete && <OnboardingChecklist steps={onboardingSteps} />}
+      {showChecklist && (
+        <OnboardingChecklist
+          primarySteps={primarySteps}
+          secondarySteps={secondarySteps}
+          sampleProjectId={sampleProjectId}
+          onDismiss={dismissChecklist}
+        />
+      )}
 
       {loading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

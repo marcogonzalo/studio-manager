@@ -44,6 +44,7 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { trackUserEvent } from "@/app/actions/track-event";
 import {
   getErrorMessage,
   reportError,
@@ -221,6 +222,7 @@ export default function CustomizationPage() {
         })
         .eq("user_id", user.id);
       if (error) throw error;
+      void trackUserEvent("public_profile_configured");
       toast.success(t("toastBudgetSaved"));
       fetchProfile();
     } catch (e) {
@@ -271,6 +273,10 @@ export default function CustomizationPage() {
         })
         .eq("user_id", user.id);
       if (error) throw error;
+      void trackUserEvent("defaults_configured", {
+        currency: values.default_currency ?? "EUR",
+        tax_rate: validTax,
+      });
       toast.success(t("toastDefaultsSaved"));
       fetchProfile();
     } catch (e) {

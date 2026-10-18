@@ -10,6 +10,10 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      # Host .codegraph has a macOS unix socket + live sqlite that Docker Desktop
+      # virtiofs cannot stat. Turbopack poller then logs NotFound every tick and
+      # drops src invalidations until next process restart.
+      - /app/.codegraph
       - app-next-cache:/app/.next
     extra_hosts:
       - "localhost:host-gateway"

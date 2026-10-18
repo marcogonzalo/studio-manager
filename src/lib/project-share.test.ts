@@ -6,12 +6,21 @@ import {
 } from "./project-share-actions";
 
 const mockFrom = vi.fn();
+const mockGetUser = vi.fn().mockResolvedValue({
+  data: { user: { id: "user-123" } },
+  error: null,
+});
 const mockSupabase = {
   from: mockFrom,
+  auth: { getUser: mockGetUser },
 };
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(() => Promise.resolve(mockSupabase)),
+}));
+
+vi.mock("@/lib/track-event", () => ({
+  trackEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
 const projectId = "project-123";
