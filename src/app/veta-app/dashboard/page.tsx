@@ -10,7 +10,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AnimatedSection,
@@ -29,6 +29,7 @@ import {
   ShoppingBag,
   LayoutDashboard,
   Truck,
+  Plus,
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
@@ -556,24 +557,19 @@ export default function DashboardPage() {
                   })}
                 </StaggerContainer>
               ) : (
-                <div className="bg-secondary/10 border-border flex flex-col items-center justify-center space-y-4 rounded-xl border border-dashed py-10 text-center">
-                  <div className="bg-background rounded-full p-4 shadow-sm">
-                    <FolderKanban className="text-muted-foreground h-8 w-8" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-foreground font-medium">
-                      {t("startFirstProjectTitle")}
-                    </h3>
-                    <p className="text-muted-foreground mx-auto max-w-xs text-sm">
-                      {t("startFirstProjectDescription")}
-                    </p>
-                  </div>
-                  <Button variant="outline" asChild className="mt-4">
-                    <Link href={appPath("/projects")}>
-                      {t("createProject")}
-                    </Link>
-                  </Button>
-                </div>
+                <EmptyState
+                  variant="inline"
+                  icon={FolderKanban}
+                  title={t("startFirstProjectTitle")}
+                  description={t("startFirstProjectDescription")}
+                  value={t("startFirstProjectValue")}
+                  action={{
+                    label: t("createProject"),
+                    href: appPath("/projects"),
+                    icon: Plus,
+                  }}
+                  className="bg-secondary/10 border-border rounded-xl border border-dashed"
+                />
               )}
             </CardContent>
           </Card>

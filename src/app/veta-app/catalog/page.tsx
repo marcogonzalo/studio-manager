@@ -7,6 +7,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { getDemoAccountMessage, reportError } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Plus,
@@ -197,28 +198,21 @@ export default function CatalogPage() {
             </Card>
           ))
         ) : products.length === 0 ? (
-          <Card className="border-dashed sm:col-span-2 lg:col-span-3">
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="bg-muted rounded-full p-4">
-                <ShoppingBag className="text-muted-foreground h-8 w-8" />
-              </div>
-              <h3 className="text-foreground mt-4 font-medium">
-                {t("emptyTitle")}
-              </h3>
-              <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-                {t("emptyDescription")}
-              </p>
-              <Button
-                onClick={() => {
-                  setEditingProduct(null);
-                  setIsDialogOpen(true);
-                }}
-                className="mt-4"
-              >
-                <Plus className="mr-2 h-4 w-4" /> {t("newProduct")}
-              </Button>
-            </CardContent>
-          </Card>
+          <EmptyState
+            className="sm:col-span-2 lg:col-span-3"
+            icon={ShoppingBag}
+            title={t("emptyTitle")}
+            description={t("emptyDescription")}
+            value={t("emptyValue")}
+            action={{
+              label: t("newProduct"),
+              onClick: () => {
+                setEditingProduct(null);
+                setIsDialogOpen(true);
+              },
+              icon: Plus,
+            }}
+          />
         ) : (
           products.map((p) => (
             <Card

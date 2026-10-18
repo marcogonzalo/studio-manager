@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Plus,
@@ -166,25 +167,19 @@ export default function ClientsPage() {
             </Card>
           ))
         ) : clients.length === 0 ? (
-          <Card
-            className="border-dashed sm:col-span-2 lg:col-span-3"
+          <EmptyState
+            className="sm:col-span-2 lg:col-span-3"
+            icon={Users}
+            title={t("emptyTitle")}
+            description={t("emptyDescription")}
+            value={t("emptyValue")}
+            action={{
+              label: t("newClient"),
+              onClick: handleCreate,
+              icon: Plus,
+            }}
             data-onboarding-target="client"
-          >
-            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="bg-muted rounded-full p-4">
-                <Users className="text-muted-foreground h-8 w-8" />
-              </div>
-              <h3 className="text-foreground mt-4 font-medium">
-                {t("emptyTitle")}
-              </h3>
-              <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-                {t("emptyDescription")}
-              </p>
-              <Button onClick={handleCreate} className="mt-4">
-                <Plus className="mr-2 h-4 w-4" /> {t("newClient")}
-              </Button>
-            </CardContent>
-          </Card>
+          />
         ) : (
           clients.map((client) => (
             <Card
