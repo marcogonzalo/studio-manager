@@ -5,6 +5,7 @@ import * as z from "zod";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -35,7 +36,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Package, Plus, Search } from "lucide-react";
 import { CatalogProductSelectCard } from "@/components/catalog-product-select-card";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ProductImageUpload } from "@/components/product-image-upload";
@@ -778,13 +779,39 @@ export function AddItemDialog({
                                 ))}
                               </div>
                             ) : (
-                              <div className="bg-background rounded-md border border-dashed py-8 text-center">
-                                <p className="text-muted-foreground text-sm">
-                                  {searchQuery
+                              <EmptyState
+                                variant="inline"
+                                icon={Package}
+                                title={
+                                  searchQuery
                                     ? t("emptySearch")
-                                    : t("emptyCatalog")}
-                                </p>
-                              </div>
+                                    : t("emptyCatalog")
+                                }
+                                description={
+                                  searchQuery
+                                    ? t("emptySearchDescription")
+                                    : t("emptyCatalogDescription")
+                                }
+                                value={
+                                  searchQuery
+                                    ? t("emptySearchValue")
+                                    : t("emptyCatalogValue")
+                                }
+                                action={
+                                  searchQuery
+                                    ? {
+                                        label: t("clearSearch"),
+                                        onClick: () => setSearchQuery(""),
+                                      }
+                                    : {
+                                        label: t("createProduct"),
+                                        onClick: () => setActiveTab("new"),
+                                        icon: Plus,
+                                      }
+                                }
+                                className="bg-background rounded-md border border-dashed"
+                                contentClassName="py-8"
+                              />
                             )}
                           </div>
                         </FormItem>

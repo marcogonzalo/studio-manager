@@ -10,6 +10,7 @@ import { getDemoAccountMessage } from "@/lib/utils";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Card,
   CardContent,
@@ -358,42 +359,40 @@ export default function ProjectsPage() {
             );
           })}
           {filteredAndSortedProjects.length === 0 && (
-            <Card
-              className="border-dashed md:col-span-2 lg:col-span-3"
+            <EmptyState
+              className="md:col-span-2 lg:col-span-3"
+              icon={FolderKanban}
+              title={
+                projects.length === 0
+                  ? t("emptyNoProjects")
+                  : t("emptyNoResults")
+              }
+              description={
+                projects.length === 0
+                  ? t("emptyNoProjectsDescription")
+                  : t("emptyNoResultsDescription")
+              }
+              value={
+                projects.length === 0
+                  ? t("emptyNoProjectsValue")
+                  : t("emptyNoResultsValue")
+              }
+              action={
+                projects.length === 0
+                  ? {
+                      label: t("newProject"),
+                      onClick: handleNewProjectClick,
+                      icon: Plus,
+                    }
+                  : {
+                      label: t("clearSearch"),
+                      onClick: () => setSearch(""),
+                    }
+              }
               {...(projects.length === 0 && {
                 "data-onboarding-target": "create-project",
               })}
-            >
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="bg-muted rounded-full p-4">
-                  <FolderKanban className="text-muted-foreground h-8 w-8" />
-                </div>
-                <h3 className="text-foreground mt-4 font-medium">
-                  {projects.length === 0
-                    ? t("emptyNoProjects")
-                    : t("emptyNoResults")}
-                </h3>
-                <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-                  {projects.length === 0
-                    ? t("emptyNoProjectsDescription")
-                    : t("emptyNoResultsDescription")}
-                </p>
-                {projects.length === 0 && (
-                  <Button onClick={handleNewProjectClick} className="mt-4">
-                    <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
-                  </Button>
-                )}
-                {projects.length > 0 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setSearch("")}
-                    className="mt-4"
-                  >
-                    {t("clearSearch")}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            />
           )}
         </div>
       )}

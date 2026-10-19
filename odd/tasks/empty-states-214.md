@@ -15,11 +15,13 @@ Delivery: `auto-chain` / stacked to main. Runner: Vitest in Docker (`docker comp
 
 ## Tasks
 
-- T1 S1-S3 — inline — in progress — PR1 shared component
-- T2 S4 — pending — PR2 app pages
+- T1 S1-S3 — inline — done — `5fd5ed3` PR1 shared component
+- T2 S4 — inline — in progress — PR2 app pages
 - T3 S5 — pending — PR3 modules
 - T4 S6 — pending — PR4 sample/public/docs
 
 ## Log
 
 - L1: Implement plan Empty states (#214) and GTM alignment (#181) as specified.
+- L2: A1 EmptyState + tests + DESIGN.md committed on `feat/empty-state-component`.
+- L3: A2 app pages + add-item dialog migrated to EmptyState with ES/EN value copy.
