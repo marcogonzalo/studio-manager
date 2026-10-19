@@ -58,6 +58,7 @@ function ProjectDetailShellContent({
   >([]);
   const [loading, setLoading] = useState(true);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isPlanLimitOpen, setIsPlanLimitOpen] = useState(false);
@@ -335,10 +336,17 @@ function ProjectDetailShellContent({
       <div className="space-y-6">
         {project.is_sample && (
           <div
-            className="bg-muted text-muted-foreground border-border rounded-lg border px-4 py-3 text-sm"
+            className="bg-muted text-muted-foreground border-border flex flex-col gap-3 rounded-lg border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
             role="status"
           >
-            {t("sampleBanner")}
+            <p>{t("sampleBanner")}</p>
+            <Button
+              size="sm"
+              className="w-full shrink-0 sm:w-auto"
+              onClick={() => setIsCreateDialogOpen(true)}
+            >
+              {t("sampleBannerCta")}
+            </Button>
           </div>
         )}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -506,6 +514,19 @@ function ProjectDetailShellContent({
             setIsEditDialogOpen(false);
             fetchProject();
             fetchActiveProjects();
+          }}
+        />
+        <ProjectDialog
+          open={isCreateDialogOpen}
+          onOpenChange={setIsCreateDialogOpen}
+          onPlanLimitExceeded={() => {
+            setIsCreateDialogOpen(false);
+            setIsPlanLimitOpen(true);
+          }}
+          onSuccess={() => {
+            setIsCreateDialogOpen(false);
+            fetchActiveProjects();
+            router.push(appPath("/projects"));
           }}
         />
         <PlanLimitModal
