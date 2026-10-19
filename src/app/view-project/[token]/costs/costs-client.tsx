@@ -2,9 +2,10 @@
 
 import { useState, Fragment } from "react";
 import Image from "next/image";
-import { ChevronDown, Image as ImageIcon } from "lucide-react";
+import { ChevronDown, ClipboardList, Image as ImageIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Collapsible,
   CollapsibleContent,
@@ -160,11 +161,11 @@ export function ViewProjectCostsClient({
 
   if (!hasContent) {
     return (
-      <Card>
-        <CardContent className="text-muted-foreground py-12 text-center">
-          {t("costsNoLines")}
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={ClipboardList}
+        title={t("costsNoLines")}
+        description={t("costsNoLinesDescription")}
+      />
     );
   }
 

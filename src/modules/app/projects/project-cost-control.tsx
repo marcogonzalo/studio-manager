@@ -43,7 +43,9 @@ import {
   Minus,
   Eye,
   EyeOff,
+  ClipboardList,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { BudgetLineDialog } from "@/components/dialogs/budget-line-dialog";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
@@ -759,18 +761,21 @@ export function ProjectCostControl({
 
           {/* Empty State */}
           {budgetLines.length === 0 && (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground mb-4">
-                  {t("emptyBudgetLines")}
-                </p>
-                {!readOnly && (
-                  <Button onClick={handleAddBudgetLine} disabled={!canEdit}>
-                    <Plus className="mr-2 h-4 w-4" /> {t("addFirstBudgetLine")}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={ClipboardList}
+              title={t("emptyBudgetLines")}
+              description={t("emptyBudgetLinesDescription")}
+              value={t("emptyBudgetLinesValue")}
+              action={
+                canEdit
+                  ? {
+                      label: t("addFirstBudgetLine"),
+                      onClick: handleAddBudgetLine,
+                      icon: Plus,
+                    }
+                  : undefined
+              }
+            />
           )}
         </div>
       </ProjectTabContent>

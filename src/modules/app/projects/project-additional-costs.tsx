@@ -32,6 +32,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, Trash2, Pencil, DollarSign } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { AdditionalCostDialog } from "@/components/dialogs/additional-cost-dialog";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -176,15 +177,17 @@ export function ProjectAdditionalCosts({ projectId }: { projectId: string }) {
           ))}
         </div>
       ) : costs.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <DollarSign className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-            <p className="text-muted-foreground">{t("empty")}</p>
-            <Button onClick={handleAddNew} className="mt-4">
-              <Plus className="mr-2 h-4 w-4" /> {t("addFirstCost")}
-            </Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={DollarSign}
+          title={t("empty")}
+          description={t("emptyDescription")}
+          value={t("emptyValue")}
+          action={{
+            label: t("addFirstCost"),
+            onClick: handleAddNew,
+            icon: Plus,
+          }}
+        />
       ) : (
         <div className="space-y-6">
           {Object.entries(costsByType).map(([type, typeCosts]) => {

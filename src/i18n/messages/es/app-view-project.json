@@ -21,7 +21,7 @@
     "costsMetaDescription": "Presupuesto del proyecto compartido",
     "paymentsMetaTitle": "Pagos del proyecto",
     "paymentsMetaDescription": "Historial de pagos del proyecto compartido",
-    "noPayments": "No hay pagos registrados.",
+    "noPayments": "Aún no hay pagos",
     "total": "Total:",
     "tableDate": "Fecha",
     "tableType": "Tipo",
@@ -37,8 +37,7 @@
       "additional_cost": "Coste Adicional",
       "other": "Otro"
     },
-    "noProductsVisible": "No hay productos visibles en este proyecto.",
-    "spacesTabEmpty": "No hay espacios con productos ni renders visibles.",
+    "spacesTabEmpty": "Aún no hay espacios que mostrar",
     "rendersSectionTitle": "Renders",
     "productsSectionTitle": "Productos",
     "toggleSpaceAria": "Mostrar u ocultar espacio {name}",
@@ -56,11 +55,11 @@
     "collapseDescription": "Ocultar descripción completa",
     "documentsMetaTitle": "Documentos del proyecto",
     "documentsMetaDescription": "Documentos del proyecto compartido",
-    "noDocuments": "No hay documentos visibles en este proyecto.",
+    "noDocuments": "Aún no hay documentos",
     "viewDocumentAria": "Ver documento {name}",
     "costsNoPhase": "Sin fase",
     "costsTitle": "Presupuesto",
-    "costsNoLines": "No hay partidas de presupuesto visibles.",
+    "costsNoLines": "Aún no hay partidas de presupuesto",
     "costsColDescription": "Descripción",
     "costsColLine": "Partida",
     "costsColAmount": "Importe",
@@ -127,6 +126,10 @@
         "assembly": "Ensamblaje",
         "other": "Otros"
       }
-    }
+    },
+    "noPaymentsDescription": "Aquí aparecerán los pagos que registre tu diseñador.",
+    "spacesTabEmptyDescription": "Aquí aparecerán los espacios con productos o renders que comparta tu diseñador.",
+    "noDocumentsDescription": "Aquí aparecerán los documentos que comparta tu diseñador.",
+    "costsNoLinesDescription": "Aquí aparecerán las partidas que comparta tu diseñador."
   }
 }

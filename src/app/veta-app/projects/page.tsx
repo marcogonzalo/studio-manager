@@ -52,6 +52,7 @@ import { appPath } from "@/lib/app-paths";
 import { useProjectStatusLabel } from "@/lib/use-project-labels";
 import { useAuth } from "@/components/auth-provider";
 import { isAtActiveProjectLimit } from "@/lib/plan-limit-ux";
+import { countNonSampleProjects } from "@/lib/sample-project";
 
 import type { Project } from "@/types";
 
@@ -177,6 +178,9 @@ export default function ProjectsPage() {
     return sorted;
   }, [projects, search, statusFilter, sortBy]);
 
+  const sampleOnly =
+    projects.length > 0 && countNonSampleProjects(projects) === 0;
+
   const fetchProjects = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -281,119 +285,138 @@ export default function ProjectsPage() {
           ))}
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredAndSortedProjects.map((project) => {
-            const isMuted =
-              project.status === "completed" || project.status === "cancelled";
-            return (
-              <Card
-                key={project.id}
-                className={
-                  isMuted
-                    ? "border-muted bg-muted/20 transition-shadow hover:shadow-md"
-                    : "transition-shadow hover:shadow-md"
-                }
-              >
-                <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    <CardTitle
-                      className={isMuted ? "text-muted-foreground" : undefined}
-                    >
-                      {project.name}
-                    </CardTitle>
-                    <CardDescription className="text-muted-foreground/65 dark:text-muted-foreground/55 line-clamp-2 text-xs leading-relaxed">
-                      {project.description}
-                    </CardDescription>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0"
-                        aria-label={t("actionsAria")}
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteClick(project)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        {t("delete")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-muted-foreground space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      {project.client?.full_name || t("noClient")}
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {project.start_date
-                        ? formatDate(project.start_date)
-                        : t("noDate")}
-                    </div>
-                    <SoftPill
-                      className={
-                        isMuted ? "bg-muted/60 capitalize" : "capitalize"
-                      }
-                    >
-                      {projectStatusLabel(project.status)}
-                    </SoftPill>
-                  </div>
-                </CardContent>
-                <CardFooter className="justify-end">
-                  <Button asChild className="w-auto" variant="outline">
-                    <Link href={appPath(`/projects/${project.id}`)}>
-                      {t("viewDetails")}
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
-          {filteredAndSortedProjects.length === 0 && (
+        <div className="space-y-6">
+          {sampleOnly && (
             <EmptyState
-              className="md:col-span-2 lg:col-span-3"
               icon={FolderKanban}
-              title={
-                projects.length === 0
-                  ? t("emptyNoProjects")
-                  : t("emptyNoResults")
-              }
-              description={
-                projects.length === 0
-                  ? t("emptyNoProjectsDescription")
-                  : t("emptyNoResultsDescription")
-              }
-              value={
-                projects.length === 0
-                  ? t("emptyNoProjectsValue")
-                  : t("emptyNoResultsValue")
-              }
-              action={
-                projects.length === 0
-                  ? {
-                      label: t("newProject"),
-                      onClick: handleNewProjectClick,
-                      icon: Plus,
-                    }
-                  : {
-                      label: t("clearSearch"),
-                      onClick: () => setSearch(""),
-                    }
-              }
-              {...(projects.length === 0 && {
-                "data-onboarding-target": "create-project",
-              })}
+              title={t("sampleOnlyTitle")}
+              description={t("sampleOnlyDescription")}
+              value={t("sampleOnlyValue")}
+              action={{
+                label: t("newProject"),
+                onClick: handleNewProjectClick,
+                icon: Plus,
+              }}
+              data-onboarding-target="create-project"
             />
           )}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredAndSortedProjects.map((project) => {
+              const isMuted =
+                project.status === "completed" ||
+                project.status === "cancelled";
+              return (
+                <Card
+                  key={project.id}
+                  className={
+                    isMuted
+                      ? "border-muted bg-muted/20 transition-shadow hover:shadow-md"
+                      : "transition-shadow hover:shadow-md"
+                  }
+                >
+                  <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      <CardTitle
+                        className={
+                          isMuted ? "text-muted-foreground" : undefined
+                        }
+                      >
+                        {project.name}
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground/65 dark:text-muted-foreground/55 line-clamp-2 text-xs leading-relaxed">
+                        {project.description}
+                      </CardDescription>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0"
+                          aria-label={t("actionsAria")}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteClick(project)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {t("delete")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-muted-foreground space-y-2 text-sm">
+                      <div className="flex items-center">
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        {project.client?.full_name || t("noClient")}
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {project.start_date
+                          ? formatDate(project.start_date)
+                          : t("noDate")}
+                      </div>
+                      <SoftPill
+                        className={
+                          isMuted ? "bg-muted/60 capitalize" : "capitalize"
+                        }
+                      >
+                        {projectStatusLabel(project.status)}
+                      </SoftPill>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="justify-end">
+                    <Button asChild className="w-auto" variant="outline">
+                      <Link href={appPath(`/projects/${project.id}`)}>
+                        {t("viewDetails")}
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+            {filteredAndSortedProjects.length === 0 && (
+              <EmptyState
+                className="md:col-span-2 lg:col-span-3"
+                icon={FolderKanban}
+                title={
+                  projects.length === 0
+                    ? t("emptyNoProjects")
+                    : t("emptyNoResults")
+                }
+                description={
+                  projects.length === 0
+                    ? t("emptyNoProjectsDescription")
+                    : t("emptyNoResultsDescription")
+                }
+                value={
+                  projects.length === 0
+                    ? t("emptyNoProjectsValue")
+                    : t("emptyNoResultsValue")
+                }
+                action={
+                  projects.length === 0
+                    ? {
+                        label: t("newProject"),
+                        onClick: handleNewProjectClick,
+                        icon: Plus,
+                      }
+                    : {
+                        label: t("clearSearch"),
+                        onClick: () => setSearch(""),
+                      }
+                }
+                {...(projects.length === 0 && {
+                  "data-onboarding-target": "create-project",
+                })}
+              />
+            )}
+          </div>
         </div>
       )}
 

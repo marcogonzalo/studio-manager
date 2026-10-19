@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Image as ImageIcon } from "lucide-react";
+import { ChevronDown, Image as ImageIcon, LayoutGrid } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import {
@@ -118,11 +119,11 @@ export function ViewProjectSpacesClient({
     <>
       <div className="space-y-4">
         {allSpaceNames.length === 0 ? (
-          <Card>
-            <CardContent className="text-muted-foreground py-12 text-center">
-              {t("spacesTabEmpty")}
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={LayoutGrid}
+            title={t("spacesTabEmpty")}
+            description={t("spacesTabEmptyDescription")}
+          />
         ) : (
           allSpaceNames.map((spaceName) => {
             const spaceProducts = productsBySpace[spaceName] ?? [];

@@ -32,7 +32,9 @@ import {
   MoreVertical,
   Pencil,
   Trash2,
+  LayoutGrid,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { appPath } from "@/lib/app-paths";
 import { SpaceDialog } from "@/components/dialogs/space-dialog";
 import { SpaceImagesDialog } from "@/components/dialogs/space-images-dialog";
@@ -271,9 +273,22 @@ export function ProjectSpaces({
               );
             })}
             {spaces.length === 0 && (
-              <div className="text-muted-foreground col-span-full rounded-md border border-dashed py-8 text-center">
-                {t("empty")}
-              </div>
+              <EmptyState
+                className="col-span-full"
+                icon={LayoutGrid}
+                title={t("empty")}
+                description={t("emptyDescription")}
+                value={t("emptyValue")}
+                action={
+                  !readOnly
+                    ? {
+                        label: t("addFirstSpace"),
+                        onClick: openNew,
+                        icon: Plus,
+                      }
+                    : undefined
+                }
+              />
             )}
           </div>
 

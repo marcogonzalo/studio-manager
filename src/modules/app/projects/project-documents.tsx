@@ -6,6 +6,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileText, Trash2, Download, MoreVertical, Plus } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,17 +85,21 @@ export function ProjectDocuments({
         </TabSectionHeader>
 
         {documents.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <FileText className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-              <p className="text-muted-foreground mb-4">{t("empty")}</p>
-              {!readOnly && (
-                <Button onClick={() => setIsDialogOpen(true)} variant="outline">
-                  <Plus className="mr-2 h-4 w-4" /> {t("addFirst")}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={FileText}
+            title={t("empty")}
+            description={t("emptyDescription")}
+            value={t("emptyValue")}
+            action={
+              !readOnly
+                ? {
+                    label: t("addFirst"),
+                    onClick: () => setIsDialogOpen(true),
+                    icon: Plus,
+                  }
+                : undefined
+            }
+          />
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {documents.map((doc) => (

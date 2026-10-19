@@ -15,7 +15,12 @@ import {
   ArrowDown,
   FileText,
   Receipt,
+  ClipboardList,
+  ShoppingBag,
+  Plus,
 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { appPath } from "@/lib/app-paths";
 import { isCostCategory, reportError, reportWarn } from "@/lib/utils";
 import {
   budgetLineActualAmount,
@@ -340,9 +345,22 @@ export function ProjectDashboard({
             </CardHeader>
             <CardContent>
               {Object.keys(budgetLinesByCategory).length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  {t("noBudgetLines")}
-                </p>
+                <EmptyState
+                  variant="inline"
+                  icon={ClipboardList}
+                  title={t("noBudgetLines")}
+                  description={t("noBudgetLinesDescription")}
+                  value={t("noBudgetLinesValue")}
+                  action={
+                    !readOnly
+                      ? {
+                          label: t("goToQuotation"),
+                          href: appPath(`/projects/${projectId}/quotation`),
+                          icon: Plus,
+                        }
+                      : undefined
+                  }
+                />
               ) : (
                 <div className="space-y-3">
                   {(
@@ -440,9 +458,22 @@ export function ProjectDashboard({
             </CardHeader>
             <CardContent>
               {poCoverage.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  {t("noPurchaseOrders")}
-                </p>
+                <EmptyState
+                  variant="inline"
+                  icon={ShoppingBag}
+                  title={t("noPurchaseOrders")}
+                  description={t("noPurchaseOrdersDescription")}
+                  value={t("noPurchaseOrdersValue")}
+                  action={
+                    !readOnly
+                      ? {
+                          label: t("goToPurchases"),
+                          href: appPath(`/projects/${projectId}/purchases`),
+                          icon: Plus,
+                        }
+                      : undefined
+                  }
+                />
               ) : (
                 <div className="space-y-3">
                   {poCoverage.map((po) => (

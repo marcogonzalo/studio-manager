@@ -37,6 +37,7 @@ import { useOnboardingStatus } from "@/lib/use-onboarding-status";
 import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
+import { countNonSampleProjects } from "@/lib/sample-project";
 import { reportError } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 import { toast } from "sonner";
@@ -49,6 +50,7 @@ interface DashboardStats {
   newClientsThisMonth: number;
   totalExpensesThisMonth: number;
   totalIncomeThisMonth: number;
+  sampleOnly: boolean;
   recentProjects: Project[];
 }
 
@@ -123,6 +125,7 @@ export default function DashboardPage() {
     newClientsThisMonth: 0,
     totalExpensesThisMonth: 0,
     totalIncomeThisMonth: 0,
+    sampleOnly: false,
     recentProjects: [],
   });
   const [loading, setLoading] = useState(true);
@@ -201,6 +204,10 @@ export default function DashboardPage() {
           0
         ) || 0;
 
+      const { data: projectFlags, error: projectFlagsError } = await supabase
+        .from("projects")
+        .select("is_sample");
+
       const { data: activeRecent, error: activeRecentError } = await supabase
         .from("projects")
         .select("*, client:clients(full_name)")
@@ -219,7 +226,11 @@ export default function DashboardPage() {
           .order("created_at", { ascending: false })
           .limit(5);
 
-      const recentError = activeRecentError || inactiveRecentError;
+      const recentError =
+        activeRecentError || inactiveRecentError || projectFlagsError;
+      const sampleOnly =
+        (projectFlags?.length ?? 0) > 0 &&
+        countNonSampleProjects(projectFlags) === 0;
       const recentProjects = [
         ...(activeRecent ?? []),
         ...(inactiveFromLastMonth ?? []),
@@ -266,6 +277,7 @@ export default function DashboardPage() {
         newClientsThisMonth: newClients?.length || 0,
         totalExpensesThisMonth: additionalCostsTotal + ordersTotal,
         totalIncomeThisMonth: 0,
+        sampleOnly,
         recentProjects: recentProjects || [],
       });
     } catch (error) {
@@ -476,7 +488,22 @@ export default function DashboardPage() {
                 </CardDescription>
               )}
             </CardHeader>
-            <CardContent className="min-w-0">
+            <CardContent className="min-w-0 space-y-4">
+              {!loading && stats.sampleOnly && (
+                <EmptyState
+                  variant="inline"
+                  icon={FolderKanban}
+                  title={t("sampleOnlyTitle")}
+                  description={t("sampleOnlyDescription")}
+                  value={t("sampleOnlyValue")}
+                  action={{
+                    label: t("createProject"),
+                    href: appPath("/projects"),
+                    icon: Plus,
+                  }}
+                  className="border-border rounded-xl border border-dashed"
+                />
+              )}
               {loading ? (
                 <div className="space-y-4">
                   <ProjectRowSkeleton />
