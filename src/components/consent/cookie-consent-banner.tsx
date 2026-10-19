@@ -32,7 +32,8 @@ function saveConsent(state: ConsentState): void {
 
 export function CookieConsentBanner() {
   const t = useTranslations("CookieConsent");
-  const [visible, setVisible] = React.useState(false);
+  // First paint shows the banner. Effect hides it only after a saved choice is read.
+  const [visible, setVisible] = React.useState(true);
   const [customOpen, setCustomOpen] = React.useState(false);
   const [customState, setCustomState] =
     React.useState<ConsentState>(DEFAULT_STATE);
@@ -42,11 +43,10 @@ export function CookieConsentBanner() {
     if (stored) {
       pushConsentUpdate(consentStateToGtmPayload(stored));
       setVisible(false);
-    } else {
-      pushConsentDefault(getDefaultGtmConsent(true));
-      setVisible(true);
-      setCustomState(DEFAULT_STATE);
+      return;
     }
+    pushConsentDefault(getDefaultGtmConsent(true));
+    setCustomState(DEFAULT_STATE);
   }, []);
 
   const applyAndClose = React.useCallback((state: ConsentState) => {
