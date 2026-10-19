@@ -29,7 +29,7 @@ Set in Vercel **Production** (and Preview if you want Preview debugging). Withou
 
 - **Snippet:** `src/components/gtm/gtm-script.tsx`
 - **Consent gate:** `src/components/gtm/gtm-script-gate.tsx` — GTM loads only after analytics consent
-- **Cookie banner:** `CookieConsentBanner` in `[locale]/layout` and `veta-app/layout`
+- **Cookie banner:** `CookieConsentBanner` on public routes: `[locale]/layout` (marketing, auth, `/en`) and `src/app/page.tsx` (`/` skips the locale layout). Not mounted in `veta-app` (session required). First paint is visible; the banner hides after it reads `veta_cookie_consent`.
 - **SPA page views:** `GtmPageView` → `pushPageView` (`page_view`)
 - **Helpers:** `src/lib/gtm.ts` (`GTM_EVENTS`, `pushSelectPlan`, `pushViewPricing`, `pushCtaClick`, `pushDemoAccess`, …)
 - **Consent update event:** `src/lib/consent.ts` pushes `consent_update` (param `consent_update: "cookie_consent"`)
