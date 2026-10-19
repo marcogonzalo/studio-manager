@@ -1,185 +1,143 @@
-# Google Tag Manager (GTM) y Google Analytics 4 en vistas públicas
+# Google Tag Manager (GTM) and Google Analytics 4
 
-Implementación de GTM en las rutas de marketing (`/`, `/pricing`, `/about`, `/contact`, `/legal`, páginas de planes) con dataLayer preparado para GA4 y seguimiento del funnel de conversión.
+Marketing routes (`/`, `/pricing` ↔ `/precios`, `/about`, `/contact`, `/legal`, plan landings) push a typed dataLayer. GTM container **GTM-5F6QXRQS** maps those events to GA4 **G-XSD1TYKK35** (Google Tag **GT-55BN544P**).
 
-## 0. Índice
+Issue tracker: [#181](https://github.com/marcogonzalo/studio-manager/issues/181).
 
-1. [Variable de entorno](#1-variable-de-entorno)
-2. [Dónde está implementado](#2-dónde-está-implementado)
-3. [Eventos del dataLayer (funnel y engagement)](#3-eventos-del-datalayer-funnel-y-engagement)
-4. [Configuración recomendada en GTM](#4-configuración-recomendada-en-gtm)
-5. [Rutas de auth](#5-rutas-de-auth-sign-in-sign-up)
-6. [Funnel demo](#6-funnel-demo-demo)
-7. [Conversiones en GA4](#7-conversiones-en-ga4)
-8. [Search Console](#8-search-console)
-9. [GDPR y Consent Mode v2](#9-gdpr-y-consent-mode-v2)
-10. [Referencias](#10-referencias)
+## 0. Index
 
-## 1. Variable de entorno
+1. [Environment variable](#1-environment-variable)
+2. [Where it is implemented](#2-where-it-is-implemented)
+3. [dataLayer events](#3-datalayer-events)
+4. [GTM trigger → tag matrix (canonical)](#4-gtm-trigger--tag-matrix-canonical)
+5. [Manual fix checklist (#181)](#5-manual-fix-checklist-181)
+6. [Auth and confirmation](#6-auth-and-confirmation)
+7. [Demo funnel](#7-demo-funnel)
+8. [GA4 conversions](#8-ga4-conversions)
+9. [GDPR / Consent Mode v2](#9-gdpr--consent-mode-v2)
+10. [References](#10-references)
 
-En tu entorno (`.env.local`, Vercel, etc.) define:
+## 1. Environment variable
 
 ```bash
-NEXT_PUBLIC_GTM_ID=GTM-XXXXXXX
+NEXT_PUBLIC_GTM_ID=GTM-5F6QXRQS
 ```
 
-Sustituye `GTM-XXXXXXX` por el ID de tu contenedor de Google Tag Manager (Admin → Contenedor → ID del contenedor). Documentado también en `.env.example`. Si no se define, el snippet de GTM no se inyecta y las llamadas a `pushToDataLayer` no tienen efecto.
+Set in Vercel **Production** (and Preview if you want Preview debugging). Without it, GTM is not injected and `pushToDataLayer` is a no-op. See `.env.example`.
 
-Producción actual: `GTM-5F6QXRQS` (GA4 `G-XSD1TYKK35`).
+## 2. Where it is implemented
 
-## 2. Dónde está implementado
+- **Snippet:** `src/components/gtm/gtm-script.tsx`
+- **Consent gate:** `src/components/gtm/gtm-script-gate.tsx` — GTM loads only after analytics consent
+- **Cookie banner:** `CookieConsentBanner` on public routes: `[locale]/layout` (marketing, auth, `/en`) and `src/app/page.tsx` (`/` skips the locale layout). Not mounted in `veta-app` (session required). First paint is visible; the banner hides after it reads `veta_cookie_consent`.
+- **SPA page views:** `GtmPageView` → `pushPageView` (`page_view`)
+- **Helpers:** `src/lib/gtm.ts` (`GTM_EVENTS`, `pushSelectPlan`, `pushViewPricing`, `pushCtaClick`, `pushDemoAccess`, …)
+- **Consent update event:** `src/lib/consent.ts` pushes `consent_update` (param `consent_update: "cookie_consent"`)
 
-- **Snippet GTM:** `src/components/gtm/gtm-script.tsx` — inyecta el script y el iframe noscript. Solo se renderiza si existe `NEXT_PUBLIC_GTM_ID`.
-- **Consent gate:** `src/components/gtm/gtm-script-gate.tsx` en el root layout — **solo carga GTM** tras consentimiento de analítica (`localStorage` + evento `veta:consent-update`). Rechazar = sin `gtm.js`.
-- **Cookie banner:** `CookieConsentBanner` montado una vez en:
-  - `src/app/[locale]/layout.tsx` — marketing + auth (`/sign-up`, `/sign-in`, …)
-  - `src/app/veta-app/layout.tsx` — app autenticada (p. ej. confirmación magic link)
-- **Page view:** `GtmPageView` en layouts de marketing y auth.
-- **Helpers y tipos:** `src/lib/gtm.ts` — `pushToDataLayer`, `pushPageView`, `pushSelectPlan`, `pushCtaClick`, `pushViewPricing`, `pushContact`, `pushSignUpConfirmed`, `pushLoginConfirmed`, etc.
-- **Fuente server (consent-independent):** `trackEvent("signup"|"login")` en `callback/route.ts` → tabla `user_events` (fire-and-forget; no bloquea el redirect).
+## 3. dataLayer events
 
-## 3. Eventos del dataLayer (funnel y engagement)
+| Event                       | App helper                    | When                                                                         |
+| --------------------------- | ----------------------------- | ---------------------------------------------------------------------------- |
+| `page_view`                 | `pushPageView`                | Client route change (marketing/auth)                                         |
+| `view_pricing`              | `pushViewPricing`             | Pricing page mount (`/precios` and `/en/pricing`)                            |
+| `select_plan`               | `pushSelectPlan`              | Plan CTA click                                                               |
+| `begin_checkout`            | `pushSelectPlan` (same click) | GA4 ecommerce start — **not** signup                                         |
+| `cta_click`                 | `pushCtaClick`                | Header / hero / pricing CTAs (`cta_location`, `cta_text`, `destination_url`) |
+| `contact` + `generate_lead` | `pushContact`                 | Contact form success                                                         |
+| `generate_lead`             | `pushDemoRequest`             | Demo form success (`lead_source=demo_request`)                               |
+| `demo_access`               | `pushDemoAccess`              | `/auth/complete?demo=1`                                                      |
+| `sign_up`                   | `pushSignUp`                  | Funnel helper (prefer `sign_up_confirmed` for conversion)                    |
+| `sign_up_confirmed`         | `pushSignUpConfirmed`         | Magic-link signup confirmation                                               |
+| `login`                     | `pushLogin`                   | Funnel helper (prefer `login_confirmed`)                                     |
+| `login_confirmed`           | `pushLoginConfirmed`          | Magic-link login confirmation                                                |
+| `consent_update`            | consent module                | Cookie preference change                                                     |
 
-| Evento              | Cuándo se envía                                                                                                                                                                             | Uso en GA4 / GTM                                                                                                      |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `page_view`         | Cada vista de página (cambio de ruta en marketing).                                                                                                                                         | Configurar etiqueta GA4 “Configuración” y evento de tipo “Vista de página” o usar el evento en GTM para disparar GA4. |
-| `view_pricing`      | Al cargar la página de precios (`/pricing`).                                                                                                                                                | Interés en precios; funnel.                                                                                           |
-| `select_plan`       | Al hacer clic en el CTA de un plan (Base/Pro/Studio) en `/pricing`. Incluye `plan_code`, `billing_period`, `plan_name`, `cta_text`.                                                         | Inicio de checkout; conversión por plan.                                                                              |
-| `begin_checkout`    | Se envía junto con `select_plan` (mismo clic). Incluye `plan_code`, `billing_period`, `currency`.                                                                                           | Evento estándar GA4 para inicio de checkout.                                                                          |
-| `cta_click`         | Clic en CTAs principales: header (Iniciar sesión, Comenzar gratis), hero, beneficios, bloques CTA finales. Incluye `cta_location`, `cta_text`, `destination_url`.                           | User journey; ver qué CTAs generan más tráfico hacia auth/pricing.                                                    |
-| `contact`           | Envío correcto del formulario de contacto (`/contact`).                                                                                                                                     | Lead; conversión.                                                                                                     |
-| `sign_up_confirmed` | Usuario **abre el enlace** de confirmación de registro (cuenta efectiva). Parámetros: `method`, `plan_code`, `billing_period`. Helper: `pushSignUpConfirmed` (no empuja también `sign_up`). | **Conversión clave** de registro en GA4. También se escribe `user_events.event = signup` en servidor.                 |
-| `login_confirmed`   | Usuario **abre el magic link** de inicio de sesión. Parámetro: `method`. Helper: `pushLoginConfirmed`.                                                                                      | Engagement; sesión iniciada. También `user_events.event = login` en servidor.                                         |
-| `demo_access`       | Usuario completa el acceso a la demo (entra tras hacer clic en el magic link de demo). Se envía en `/auth/complete` cuando la URL incluye `?demo=1`.                                        | Conversión; usuario que realmente entró a la demo.                                                                    |
+App keeps `begin_checkout` on plan click (GA4 recommended). Do **not** map `begin_checkout` to signup in GTM.
 
-Nombres de evento y parámetros están pensados para usarse tanto en GA4 (eventos estándar y personalizados) como en disparadores y variables de GTM.
+## 4. GTM trigger → tag matrix (canonical)
 
-## 4. Configuración recomendada en GTM
+Container: **GTM-5F6QXRQS**. Prefer **Custom Event** triggers on dataLayer names (locale-safe). Require **`analytics_storage`** on every GA4 tag.
 
-1. **Etiqueta GA4: Configuración**
-   - Tipo: Google Analytics: GA4 Configuration.
-   - ID de medición: tu ID de GA4 (p. ej. `G-XXXXXXXXXX`).
-   - Disparador: “All Pages” o un disparador que se active en las rutas de marketing (por URL o por evento `page_view`).
+| Tag (GA4 Event / Google Tag)    | Trigger                                            | Notes                                                                  |
+| ------------------------------- | -------------------------------------------------- | ---------------------------------------------------------------------- |
+| Google Tag `GT-55BN544P`        | Consent Initialization / All Pages (after consent) | Default page views; avoid double-count with a second All Pages GA4 tag |
+| ~~GA - All pages~~              | —                                                  | **Delete** or fix event name to `page_view` (never `{{Page URL}}`)     |
+| GA4 - view_pricing              | CE `view_pricing`                                  | Replace URL filter `/pricing` (misses `/precios`)                      |
+| GA4 - select_item / select_plan | CE `select_plan`                                   | Keep plan DLVs                                                         |
+| GA4 - begin_checkout            | CE `begin_checkout`                                | Ecommerce from Data Layer; **not** begin_signup                        |
+| GA4 - begin_signup              | Page Path matches RegEx `^/(en/)?sign-up`          | No `begin_checkout` trigger                                            |
+| GA4 - cta_click                 | CE `cta_click`                                     | Params: `cta_location`, `cta_text`                                     |
+| GA4 - sign_up                   | CE `sign_up`                                       | Optional funnel; conversion = `sign_up_confirmed`                      |
+| GA4 - sign_up_confirmed         | CE `sign_up_confirmed`                             | Primary signup conversion                                              |
+| GA4 - login                     | CE `login` only                                    | Remove `/sign-in` pageview to avoid double count                       |
+| GA4 - login_confirmed           | CE `login_confirmed`                               |                                                                        |
+| GA4 - contact                   | CE `contact`                                       |                                                                        |
+| GA4 - generate_lead             | CE `generate_lead`                                 | Filter `lead_source` when needed                                       |
+| GA4 - demo_access               | CE `demo_access`                                   | Wire orphan trigger                                                    |
+| GA4 - page_view (SPA)           | CE `page_view`                                     | Only if Google Tag auto page views are off                             |
+| (optional) consent              | CE `consent_update`                                | App does **not** send `cookie_consent` as event name                   |
 
-2. **Etiquetas GA4: Eventos**
-   - Crear una etiqueta GA4 de tipo “Evento” por cada evento que quieras enviar a GA4:
-     - Evento: `page_view` (o el nombre que use tu configuración para vistas de página).
-     - Eventos personalizados: `view_pricing`, `select_plan`, `begin_checkout`, `cta_click`, `contact`.
-   - Disparador: “Evento personalizado” con nombre de evento igual al del dataLayer (p. ej. `select_plan`, `cta_click`).
+**Data Layer Variables:** `plan_code`, `billing_period`, `method`, `lead_source`, `lead_status`, `plan_name`, `cta_location`, `cta_text`, `page_path`, `page_location`.
 
-3. **Variables en GTM**
-   - Crear variables de capa de datos (Data Layer Variable) para los parámetros que quieras usar en informes o disparadores: `plan_code`, `billing_period`, `cta_location`, `cta_text`, `page_path`, `page_title`, etc.
+**DOM variable fix:** `DOM - Error text` selector → `.text-destructive` (not `-text-destructive`).
 
-4. **Conversiones en GA4**
-   - En GA4: Administración → Eventos → marcar como conversión: `sign_up`, `begin_checkout`, `contact` (y otros que definas).
+## 5. Manual fix checklist (#181)
 
-## 5. Rutas de auth (`/sign-in`, `/sign-up`) y confirmación en app
+Do this in [tagmanager.google.com](https://tagmanager.google.com) → container **GTM-5F6QXRQS**. Create workspace `fix-181` first.
 
-- El banner de cookies está disponible en auth (vía `[locale]/layout`) y en `/veta-app` (vía `veta-app/layout`). Sin banner en app, un enlace de confirmación abierto en un navegador limpio nunca cargaba GTM.
-- `(auth)` incluye `GtmPageView` → **page_view** en `/sign-in` y `/sign-up`.
-- Tras el callback, redirect con `?auth_confirmed=signup|login`. `AuthConfirmedTracker` (en `app-layout`) empuja **`sign_up_confirmed`** o **`login_confirmed`**. Si el usuario aún no había consentido, el dataLayer encola el evento; al aceptar, `GtmScriptGate` carga GTM y procesa la cola.
-- No hay `sign_up` / `login` al enviar el formulario (solo “email enviado” en UI).
-- En GTM (manual): disparador custom event `sign_up_confirmed` → etiqueta GA4 `sign_up_confirmed` (no mapear a `sign_up` si quieres evitar confusión). Ver checklist en issue #181 / #220.
+1. **Variables** — Confirm DLVs listed above; add missing ones.
+2. **GA - All pages** — Delete (preferred) or set Event Name to `page_view`. Do not leave Event Name = `{{Page URL}}`.
+3. **view_pricing** — Custom Event trigger `view_pricing`; remove URL-only `/pricing` trigger.
+4. **Begin Signup** — Remove `begin_checkout` trigger. Keep Page Path RegEx `^/(en/)?sign-up`. Add separate GA4 tag for `begin_checkout`.
+5. **Orphans** — Attach GA4 tag to `demo_access`. Demo page path RegEx `^/(en/)?demo`. Cookie trigger: event `consent_update` or delete.
+6. **Missing tags** — Add CE + GA4 for `cta_click`, and `sign_up` if you still track request step. Add SPA `page_view` tag only if auto page views are disabled.
+7. **Consent** — Every GA4 tag → Advanced → Consent → require `analytics_storage`. Enable consent overview in container settings.
+8. **DOM Error text** — Selector `.text-destructive`.
+9. **Login** — Keep CE `login` only; drop `/sign-in` pageview fire.
+10. **Preview** on `https://veta.pro`:
+    - Accept cookies → GTM connects
+    - `/precios` → `view_pricing` once
+    - Plan click → `begin_checkout` + `select_plan` / `select_item`; **not** Begin Signup
+    - `/sign-up` → Begin Signup; form path as configured
+    - Header CTA → `cta_click`
+    - Demo complete → `generate_lead` then `demo_access`
+    - Incognito reject cookies → GTM must not load
+11. **GA4 DebugView** — Event names must not look like URLs.
+12. **Publish** — Version name `fix #181 dataLayer + i18n alignment`.
+13. **Vercel** — Confirm `NEXT_PUBLIC_GTM_ID=GTM-5F6QXRQS` on Production; redeploy if changed.
+14. Comment on [#181](https://github.com/marcogonzalo/studio-manager/issues/181) with published version id.
 
-Copy de registro: el correo de confirmación es también el acceso; se desaconseja pedir otro enlace en «Inicia sesión» antes de usar el primero.
+## 6. Auth and confirmation
 
-## 6. Funnel demo (`/demo`)
+- Cookie banner available on auth and `/veta-app` so confirmation links can load GTM after consent.
+- `?auth_confirmed=signup|login` → `AuthConfirmedTracker` pushes `sign_up_confirmed` / `login_confirmed`.
+- Prefer those confirmed events as GA4 conversions over request-time `sign_up` / `login`.
 
-La **vista de la página demo** ya queda cubierta por el `page_view` estándar (el layout de marketing envía `page_view` en cada ruta). En GTM/GA4 puedes identificar visitas a la demo con un disparador de tipo “Vista de página” donde `page_path` (o la URL) contenga `/demo`.
+## 7. Demo funnel
 
-Eventos específicos del funnel demo:
+1. `page_view` on `/demo` or `/en/demo`
+2. `generate_lead` with `lead_source=demo_request`
+3. `demo_access` on `/auth/complete?demo=1`
 
-1. **generate_lead** — cuando el usuario envía el correo en el formulario de demo y la API responde OK (solicitud de enlace). Se envía con `lead_source: "demo_request"` para identificar el origen en GA4.
-2. **demo_access** — cuando el usuario llega a `/auth/complete?demo=1` y la sesión se establece correctamente (acceso efectivo a la demo tras el magic link).
+## 8. GA4 conversions
 
-**Qué registrar en GTM:**
+Mark as conversions (Admin → Events):
 
-- **Vista a /demo:** usar el `page_view` existente; en GA4 o en un disparador, filtrar por `page_path` = `/demo` (o variable de página que contenga “/demo”).
-- **Disparadores** de tipo “Evento personalizado” con estos nombres de evento:
-  - `generate_lead` (para solicitud de demo: condición en variable de capa de datos `lead_source` = `demo_request` si quieres una etiqueta solo para demo).
-  - `demo_access`
-- **Etiquetas GA4 de evento** que se activen con esos disparadores.
-- **Variables de capa de datos** si necesitas: `page_path`, `page_location`, `lead_source`.
-- En **GA4**, marcar como conversión (opcional): `generate_lead` (filtrar por `lead_source` = `demo_request`) y/o `demo_access` para el funnel demo (vista /demo por page_view → solicitud → acceso).
+- `sign_up_confirmed`
+- `demo_access`
+- `begin_checkout` (plan intent — not signup)
+- `contact`
+- `generate_lead` (optional; filter by `lead_source`)
 
-## 7. Conversiones en GA4
+## 9. GDPR / Consent Mode v2
 
-En GA4: **Administración → Eventos → Marcar como conversión**:
+- Banner stores preferences in `localStorage` (`veta_cookie_consent`) and updates `gtag('consent', …)`.
+- GTM is **not** injected until analytics is granted (`GtmScriptGate`).
+- Categories: `ad_*`, `analytics_storage`, `functionality_storage`, `personalization_storage`, `security_storage`.
+- Attribution cookie `veta_attribution` only when analytics accepted. See `src/lib/attribution.ts`.
 
-- `sign_up_confirmed` — Registro confirmado (usuario abrió el enlace de confirmación; preferir sobre `sign_up`)
-- `demo_access` — Usuario accedió a la demo
-- `begin_checkout` — Inicio de proceso de compra de plan
-- `contact` — Formulario de contacto enviado
-- `generate_lead` — Lead capturado (demo_request, contact_form)
+## 10. References
 
-Usa estos eventos para medir el funnel de conversión desde la vista de la landing hasta la activación.
-
-## 8. Search Console
-
-Conecta Google Search Console a GA4 para ver las queries de búsqueda orgánica que traen tráfico:
-
-1. En GA4: **Administración → Vínculos de productos → Search Console → Vincular**.
-2. Selecciona la propiedad de Search Console correspondiente (ej. `https://veta.pro`).
-3. Después de vincular, en GA4 puedes ver las consultas de búsqueda en **Informes → Adquisición → Google Organic Search**.
-
-**Verificación en Search Console:**
-
-- Añade la propiedad del dominio en Search Console (`https://veta.pro`).
-- Verifica la propiedad usando el método de **etiqueta HTML** (GA4 verifica automáticamente si ya tienes GTM/GA4 instalado).
-- Envía el sitemap en Search Console: `https://veta.pro/sitemap.xml` (si tienes sitemap generado por Next.js o manualmente).
-
-## 9. GDPR y Consent Mode v2
-
-Veta implementa GDPR Consent Mode v2 para cumplir con la normativa europea de privacidad:
-
-### 9.1. Cookie Consent Banner
-
-- El banner (`src/components/consent/cookie-consent-banner.tsx`) se monta en `[locale]/layout` (marketing + auth) y en `veta-app/layout` (app). Un solo componente; no duplicar por sub-layout.
-- El usuario puede aceptar todo, rechazar todo o personalizar. Preferencias en `localStorage` (`veta_cookie_consent`) + `gtag('consent', 'update', ...)` + evento `veta:consent-update` (escuchado por `GtmScriptGate`).
-- **Carga consent-gated:** GTM no se inyecta hasta `analytics: true`. Rechazar = sin petición a `gtm.js`. (Alternativa Consent Mode always-on descartada por decisión de producto.)
-
-### 9.2. Consent Mode v2
-
-- **Default consent:** Se envía `gtag('consent', 'default', ...)` en el script de GTM antes de cargar el contenedor (deny para EU/EEA, granted para el resto).
-- **Update consent:** Cuando el usuario acepta/rechaza en el banner, se envía `gtag('consent', 'update', ...)` con las categorías seleccionadas.
-- **Categorías:**
-  - `ad_storage`, `ad_user_data`, `ad_personalization` — Marketing
-  - `analytics_storage` — Analítica
-  - `functionality_storage`, `personalization_storage` — Funcionalidad/Personalización
-  - `security_storage` — Siempre granted (sesión, seguridad)
-
-### 9.3. Attribution Tracking
-
-- **Primera visita:** Se capturan los parámetros UTM (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`), el referrer y el landing path.
-- **Cookie de atribución:** Se guarda en una cookie first-party (`veta_attribution`) solo si el usuario ha aceptado analítica (consent). La cookie expira a los 90 días.
-- **Persistencia:** Los datos de atribución se envían en el formulario de demo request y de sign-up para guardarlos en la tabla `leads` y en el perfil del usuario.
-
-**Código:** `src/lib/attribution.ts`, `src/components/attribution-capture.tsx`.
-
-### 9.4. Marketing Consent
-
-- Los formularios de **demo request** (`/demo`) y **sign-up** (`/sign-up`) incluyen un checkbox opcional de marketing consent.
-- Si el usuario marca la casilla, se guarda `marketing_consent: true` en la tabla `leads` (demo) y en el user metadata (sign-up).
-- **Uso futuro:** Este flag se usará para segmentar campañas de email marketing y remarketing (solo usuarios que aceptaron).
-
-**Campos en la DB:**
-
-- `leads.marketing_consent` (boolean) — Si el usuario aceptó recibir comunicaciones comerciales al solicitar demo.
-- `leads.consent_at` (timestamp) — Cuándo aceptó.
-- `profiles.raw_user_meta_data.marketing_consent` (boolean) — Si el usuario aceptó al registrarse.
-
-### 9.5. Unsubscribe / Opt-out
-
-Para futuros envíos de email marketing:
-
-- **Incluir link de unsubscribe** en todos los emails de marketing (no transaccionales).
-- **Gestión de preferencias:** Idealmente, un panel en `/veta-app/settings` donde el usuario pueda actualizar su `marketing_consent` (futuro).
-- **Base legal GDPR:** Consentimiento explícito (opt-in) en el momento de captura. El usuario puede retirar el consentimiento en cualquier momento (link de unsubscribe en emails).
-
-**Documentación:** Para más detalle sobre GDPR y cookies, ver `/legal` (Política de privacidad y Cookies).
-
-## 10. Referencias
-
-- [Guía para desarrolladores - API de Google Tag Manager (Tag Platform)](https://developers.google.com/tag-platform/tag-manager/api/v2/devguide?hl=es-419)
-- [Eventos recomendados de GA4](https://support.google.com/analytics/answer/9267738)
-- [GTM: uso de la capa de datos](https://developers.google.com/tag-platform/tag-manager/web/datalayer)
+- [GTM dataLayer](https://developers.google.com/tag-platform/tag-manager/web/datalayer)
+- [GA4 recommended events](https://support.google.com/analytics/answer/9267738)
+- App source of truth for event **names**: `GTM_EVENTS` in `src/lib/gtm.ts` (covered by `src/lib/gtm.test.ts`)

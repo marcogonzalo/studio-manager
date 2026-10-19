@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { renderToString } from "react-dom/server";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
@@ -29,6 +30,27 @@ function renderBanner() {
 describe("CookieConsentBanner", () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  it("starts visible before storage is read", () => {
+    localStorage.setItem(
+      CONSENT_STORAGE_KEY,
+      JSON.stringify({
+        necessary: true,
+        analytics: true,
+        marketing: false,
+        personalization: false,
+      })
+    );
+    const html = renderToString(
+      <NextIntlClientProvider
+        locale="es"
+        messages={{ CookieConsent: esMarketing.CookieConsent }}
+      >
+        <CookieConsentBanner />
+      </NextIntlClientProvider>
+    );
+    expect(html).toContain(esMarketing.CookieConsent.ariaLabel);
   });
 
   it("renders when no consent is stored", async () => {
