@@ -7,6 +7,7 @@ import { getSupabaseClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingBag, Plus, Pencil, Trash2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { PurchaseOrderDialog } from "@/components/dialogs/purchase-order-dialog";
@@ -383,17 +384,21 @@ export function ProjectPurchases({
         </TabSectionHeader>
 
         {orders.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <ShoppingBag className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-              <p className="text-muted-foreground mb-4">{t("empty")}</p>
-              {!readOnly && (
-                <Button onClick={handleCreateNew} variant="outline">
-                  <Plus className="mr-2 h-4 w-4" /> {t("createFirstOrder")}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={ShoppingBag}
+            title={t("empty")}
+            description={t("emptyDescription")}
+            value={t("emptyValue")}
+            action={
+              !readOnly
+                ? {
+                    label: t("createFirstOrder"),
+                    onClick: handleCreateNew,
+                    icon: Plus,
+                  }
+                : undefined
+            }
+          />
         ) : (
           <div className="space-y-4">
             {orders.map((po) => {
@@ -492,9 +497,22 @@ export function ProjectPurchases({
                         taxProject={taxProject}
                       />
                     ) : (
-                      <div className="text-muted-foreground py-4 text-center text-sm">
-                        {t("noItemsInOrder")}
-                      </div>
+                      <EmptyState
+                        variant="inline"
+                        icon={ShoppingBag}
+                        title={t("noItemsInOrder")}
+                        description={t("noItemsInOrderDescription")}
+                        value={t("noItemsInOrderValue")}
+                        action={
+                          !readOnly
+                            ? {
+                                label: t("editOrder"),
+                                onClick: () => handleEdit(po),
+                                icon: Pencil,
+                              }
+                            : undefined
+                        }
+                      />
                     )}
                   </CardContent>
                 </Card>

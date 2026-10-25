@@ -480,6 +480,14 @@ export function PaymentDialog({
             />
 
             <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={loading}
+              >
+                {t("cancel")}
+              </Button>
               <Button type="submit" disabled={loading}>
                 {payment ? t("saveChanges") : t("registerPayment")}
               </Button>

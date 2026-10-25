@@ -24,7 +24,7 @@ import {
 import { toast } from "sonner";
 import { trackUserEvent } from "@/app/actions/track-event";
 import type { Supplier } from "@/types";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { getDemoAccountMessage } from "@/lib/utils";
 import {
@@ -43,11 +43,25 @@ function buildFormSchema(t: ReturnType<typeof useTranslations>, lang: Locale) {
   });
 }
 
+type FormValues = z.infer<ReturnType<typeof buildFormSchema>>;
+
+const emptyDefaults = (): FormValues => ({
+  name: "",
+  contact_name: "",
+  email: "",
+  phone: "",
+  website: "",
+});
+
+export interface SupplierDialogSuccessMeta {
+  addAnother?: boolean;
+}
+
 interface SupplierDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   supplier: Supplier | null;
-  onSuccess: (supplierId?: string) => void;
+  onSuccess: (supplierId?: string, meta?: SupplierDialogSuccessMeta) => void;
 }
 
 export function SupplierDialog({
@@ -61,30 +75,23 @@ export function SupplierDialog({
   const { user } = useAuth();
   const supabase = getSupabaseClient();
   const formSchema = buildFormSchema(t, locale);
-  const form = useForm<z.infer<typeof formSchema>>({
+  const addAnotherIntentRef = useRef(false);
+  const isEditing = !!supplier;
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      contact_name: "",
-      email: "",
-      phone: "",
-      website: "",
-    },
+    defaultValues: emptyDefaults(),
   });
 
   useEffect(() => {
     if (supplier) form.reset(supplier);
-    else
-      form.reset({
-        name: "",
-        contact_name: "",
-        email: "",
-        phone: "",
-        website: "",
-      });
+    else form.reset(emptyDefaults());
   }, [supplier, open, form]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(
+    values: FormValues,
+    options?: { addAnother?: boolean }
+  ) {
+    const addAnother = options?.addAnother === true && !isEditing;
     try {
       const data = { ...values, user_id: user?.id };
       if (supplier) {
@@ -106,7 +113,15 @@ export function SupplierDialog({
         });
 
         toast.success(t("toastCreated"));
-        onSuccess(newSupplier.id);
+        if (addAnother) {
+          form.reset(emptyDefaults());
+          onSuccess(newSupplier.id, { addAnother: true });
+          requestAnimationFrame(() => {
+            form.setFocus("name");
+          });
+        } else {
+          onSuccess(newSupplier.id);
+        }
       }
     } catch (error: unknown) {
       const demoMsg = getDemoAccountMessage(error, locale);
@@ -117,8 +132,17 @@ export function SupplierDialog({
         return;
       }
       toast.error(t("toastSaveError"));
+    } finally {
+      addAnotherIntentRef.current = false;
     }
   }
+
+  const submitWithIntent = (addAnother: boolean) => {
+    addAnotherIntentRef.current = addAnother;
+    void form.handleSubmit((vals) =>
+      onSubmit(vals, { addAnother: addAnotherIntentRef.current })
+    )();
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -129,7 +153,9 @@ export function SupplierDialog({
         <Form {...form}>
           <form
             onSubmit={(e) => {
-              void form.handleSubmit(onSubmit)(e);
+              e.preventDefault();
+              // Enter defaults to "create another" when creating (same as budget lines).
+              submitWithIntent(!isEditing);
             }}
             className="space-y-4"
           >
@@ -204,8 +230,28 @@ export function SupplierDialog({
                 </FormItem>
               )}
             />
-            <DialogFooter>
-              <Button type="submit">{t("save")}</Button>
+            <DialogFooter className="max-sm:flex-wrap">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                {t("cancel")}
+              </Button>
+              {isEditing ? (
+                <Button type="submit">{t("save")}</Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => submitWithIntent(false)}
+                  >
+                    {t("save")}
+                  </Button>
+                  <Button type="submit">{t("saveAndCreateAnother")}</Button>
+                </>
+              )}
             </DialogFooter>
           </form>
         </Form>

@@ -23,7 +23,41 @@ Buyer Personas para Veta, diferenciando entre quien toma la decisión (profesion
 
 ### Preguntas que hace (AEO) y vocabulario
 
-**TODO (Veta Content Writer):** Añadir lista de preguntas literales que Lucía haría a ChatGPT, Perplexity, Google AI + vocabulario coloquial vs profesional que usa (ej. "presupuesto" vs "proyecto", "coste de obra" vs "certificación"). Commit a esta misma rama (`docs/buyer-personas-2026-4545`).
+> **Hipótesis, no datos.** Preguntas redactadas a partir del perfil, no extraídas de búsquedas reales. Validar con Google Search Console, AnswerThePublic y entrevistas antes de tratarlas como demanda confirmada.
+
+**Preguntas literales (ES)**
+
+1. ¿Cómo hago un presupuesto profesional de interiorismo para un cliente?
+2. ¿Qué app uso para gestionar varios proyectos de diseño de interiores a la vez si trabajo sola?
+3. ¿Hay alguna plantilla de presupuesto de reforma que no sea un Excel?
+4. ¿Cómo llevo el control de los pagos de clientes y proveedores en una reforma?
+5. ¿Cómo enseño al cliente cómo va su proyecto sin mandarle mil WhatsApps?
+6. ¿Cómo sé si un proyecto de interiorismo me está saliendo rentable?
+7. ¿Qué software de gestión para interioristas freelance es gratis o barato?
+8. ¿Cómo organizo un proyecto de interiorismo de principio a fin trabajando por mi cuenta?
+
+**Literal questions (EN)**
+
+1. How do I create a professional interior design quote for a client?
+2. What's the best project management app for a freelance interior designer?
+3. Is there an interior design budget template that isn't a spreadsheet?
+4. How do I track client payments and supplier costs on a renovation project?
+5. How can I share project progress with my client without endless messages?
+6. How do I know if an interior design project is actually profitable?
+7. What affordable or free software is there for solo interior designers?
+8. How do I organize an interior design project from start to finish on my own?
+
+**Vocabulario coloquial vs profesional**
+
+| Coloquial (ES) | Profesional (ES) | Coloquial (EN) | Profesional (EN) |
+| --- | --- | --- | --- |
+| "el presu" | presupuesto / propuesta económica | "the quote" | estimate / proposal |
+| "lo que me debe el cliente" | cobros pendientes | "what the client owes me" | outstanding payments / receivables |
+| "la tienda", "el de los muebles" | proveedor | "my vendor", "the shop" | supplier / trade vendor |
+| "los extras" | partidas adicionales / variaciones | "extras" | change orders / variations |
+| "mandarle el PDF" | presentar la propuesta al cliente | "send the PDF" | client presentation / proposal |
+| "organizarme" | gestión de proyectos | "getting organized" | project management |
+| "lo que gano" | margen / rentabilidad por proyecto | "what I make on it" | project margin / profitability |
 
 ---
 
@@ -44,7 +78,40 @@ Buyer Personas para Veta, diferenciando entre quien toma la decisión (profesion
 
 ### Preguntas que hace (AEO) y vocabulario
 
-**TODO (Veta Content Writer):** Añadir lista de preguntas literales y vocabulario. Commit a esta misma rama (`docs/buyer-personas-2026-4545`).
+> **Hipótesis, no datos.** Preguntas redactadas a partir del perfil, no extraídas de búsquedas reales. Validar con Google Search Console, AnswerThePublic y entrevistas antes de tratarlas como demanda confirmada.
+
+**Preguntas literales (ES)**
+
+1. ¿Cuál es el mejor software de gestión de proyectos para un estudio de interiorismo?
+2. ¿Cómo controlo la rentabilidad de cada proyecto de mi estudio?
+3. ¿Cómo evito que los extras de obra se queden sin cobrar?
+4. ¿Monday o Notion sirven para un estudio de arquitectura, o necesito una herramienta específica?
+5. ¿Cómo doy al cliente visibilidad del avance y del presupuesto sin enseñarle mis márgenes?
+6. ¿Cómo consigo que todo el equipo trabaje con la última versión del presupuesto?
+7. ¿Cómo implanto una herramienta nueva en mi estudio sin que el equipo la rechace?
+8. ¿Qué alternativas hay a Houzz Pro o Studio Designer para un estudio pequeño?
+
+**Literal questions (EN)**
+
+1. What's the best project management software for an interior design studio?
+2. How do I track profitability on each project in my design firm?
+3. How do I make sure change orders actually get billed?
+4. Can Monday or Notion work for an architecture studio, or do I need a dedicated tool?
+5. How can clients see project progress and budget without seeing my margins?
+6. How do I keep my whole team working from the latest version of the budget?
+7. How do I roll out a new tool in my studio without the team pushing back?
+8. What are good alternatives to Houzz Pro or Studio Designer for a small studio?
+
+**Vocabulario coloquial vs profesional**
+
+| Coloquial (ES) | Profesional (ES) | Coloquial (EN) | Profesional (EN) |
+| --- | --- | --- | --- |
+| "el caos" | gestión operativa del estudio | "the chaos" | studio operations |
+| "los extras" | variaciones / órdenes de cambio | "extras" | change orders |
+| "lo que ganamos en cada obra" | margen / rentabilidad por proyecto | "what we make per job" | project margin / job profitability |
+| "la última versión" | control de versiones del presupuesto | "the latest version" | budget version control |
+| "que el cliente lo vea" | portal o vista de cliente | "let the client see it" | client portal / client view |
+| "meter a todos en la herramienta" | adopción por el equipo | "getting everyone on it" | team adoption / onboarding |
 
 ---
 
@@ -65,7 +132,38 @@ Buyer Personas para Veta, diferenciando entre quien toma la decisión (profesion
 
 ### Preguntas que hace (AEO) y vocabulario
 
-**TODO (Veta Content Writer):** Añadir lista de preguntas y vocabulario. Commit a esta misma rama (`docs/buyer-personas-2026-4545`).
+> **Hipótesis, no datos.** Preguntas redactadas a partir del perfil, no extraídas de búsquedas reales. Validar con Google Search Console, AnswerThePublic y entrevistas antes de tratarlas como demanda confirmada.
+
+**Preguntas literales (ES)**
+
+1. ¿Qué app sirve para registrar gastos de obra desde el móvil?
+2. ¿Cómo llevo el control de los pedidos de material a proveedores en una reforma?
+3. ¿Cómo dejo de perder tickets y facturas en la obra?
+4. ¿Hay alguna app de seguimiento de obra que funcione sin conexión?
+5. ¿Cómo saco rápido la lista de lo que falta por pedir en un proyecto?
+6. ¿Cómo paso el estado de la obra a la oficina sin mandarlo todo por WhatsApp?
+7. ¿Cómo controlo los plazos de entrega de los proveedores?
+
+**Literal questions (EN)**
+
+1. What's a good app to log job site expenses from my phone?
+2. How do I keep track of material orders with suppliers on a renovation?
+3. How do I stop losing receipts and invoices on site?
+4. Is there a site management app that works offline?
+5. How do I quickly see what still needs to be ordered on a project?
+6. How do I update the office on site progress without sending everything over WhatsApp?
+7. How do I track supplier lead times and delivery dates?
+
+**Vocabulario coloquial vs profesional**
+
+| Coloquial (ES) | Profesional (ES) | Coloquial (EN) | Profesional (EN) |
+| --- | --- | --- | --- |
+| "los tickets" | justificantes de gasto | "receipts" | expense records |
+| "lo que falta por pedir" | pedidos pendientes / órdenes de compra | "what's left to order" | open purchase orders |
+| "el grupo de WhatsApp" | comunicación de obra | "the WhatsApp group" | site communication |
+| "el proveedor se retrasa" | plazos de entrega | "the supplier's late" | lead times / delivery schedule |
+| "el parte" | informe de avance de obra | "the update" | site report / daily log |
+| "apuntarlo en el móvil" | registro de gastos en obra | "jot it on my phone" | on-site expense logging |
 
 ---
 
@@ -84,7 +182,38 @@ Buyer Personas para Veta, diferenciando entre quien toma la decisión (profesion
 
 ### Preguntas que hace (AEO) y vocabulario
 
-**TODO (Veta Content Writer):** Añadir lista de preguntas y vocabulario. Commit a esta misma rama (`docs/buyer-personas-2026-4545`).
+> **Hipótesis, no datos.** Preguntas redactadas a partir del perfil, no extraídas de búsquedas reales. Validar con Google Search Console, AnswerThePublic y entrevistas antes de tratarlas como demanda confirmada.
+
+**Preguntas literales (ES)**
+
+1. ¿Cómo cuadro el presupuesto de cada proyecto con lo que se ha pagado realmente?
+2. ¿Qué software de gestión de proyectos se integra con Holded, Xero o QuickBooks?
+3. ¿Cómo saco un informe de rentabilidad por proyecto en un estudio de arquitectura?
+4. ¿Cómo exporto los datos de los proyectos a mi programa de contabilidad?
+5. ¿Qué diferencia hay entre un ERP y un software de gestión de proyectos para un estudio?
+6. ¿Cómo controlo las desviaciones de presupuesto en varias obras a la vez?
+7. ¿Qué pasa con mis datos si dentro de dos años cambiamos de herramienta?
+
+**Literal questions (EN)**
+
+1. How do I reconcile each project's budget with what was actually paid?
+2. Which project management software integrates with Xero, QuickBooks or Holded?
+3. How do I run a profitability report per project in an architecture firm?
+4. How do I export project data to my accounting software?
+5. What's the difference between an ERP and project management software for a design studio?
+6. How do I track budget variance across several projects at once?
+7. Can I export all my data if we switch tools later?
+
+**Vocabulario coloquial vs profesional**
+
+| Coloquial (ES) | Profesional (ES) | Coloquial (EN) | Profesional (EN) |
+| --- | --- | --- | --- |
+| "que cuadre" | conciliación presupuesto–pagos | "make it add up" | budget-to-payment reconciliation |
+| "lo que se ha ido de más" | desviación presupuestaria | "what we went over" | budget variance / cost overrun |
+| "pasarlo a contabilidad" | exportación / integración contable | "send it to accounting" | accounting export / integration |
+| "el Excel de la obra" | control de costes por proyecto | "the project spreadsheet" | job costing |
+| "cerrar el mes" | cierre contable mensual | "closing the month" | month-end close |
+| "llevarme mis datos" | portabilidad de datos | "take my data with me" | data portability / export |
 
 ---
 

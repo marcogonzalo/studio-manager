@@ -10,7 +10,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AnimatedSection,
@@ -29,6 +29,7 @@ import {
   ShoppingBag,
   LayoutDashboard,
   Truck,
+  Plus,
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
@@ -36,6 +37,7 @@ import { useOnboardingStatus } from "@/lib/use-onboarding-status";
 import { OnboardingChecklist } from "@/components/onboarding/onboarding-checklist";
 import { getSupabaseClient } from "@/lib/supabase";
 import { appPath } from "@/lib/app-paths";
+import { countNonSampleProjects } from "@/lib/sample-project";
 import { reportError } from "@/lib/utils";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 import { toast } from "sonner";
@@ -48,6 +50,7 @@ interface DashboardStats {
   newClientsThisMonth: number;
   totalExpensesThisMonth: number;
   totalIncomeThisMonth: number;
+  sampleOnly: boolean;
   recentProjects: Project[];
 }
 
@@ -107,8 +110,13 @@ export default function DashboardPage() {
   const phaseLabel = usePhaseLabel();
   const { formatDate } = useAppFormatting();
   const { user } = useAuth();
-  const { steps: onboardingSteps, allComplete: onboardingComplete } =
-    useOnboardingStatus();
+  const {
+    primarySteps,
+    secondarySteps,
+    sampleProjectId,
+    showChecklist,
+    dismissChecklist,
+  } = useOnboardingStatus();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
     activeProjects: 0,
@@ -117,6 +125,7 @@ export default function DashboardPage() {
     newClientsThisMonth: 0,
     totalExpensesThisMonth: 0,
     totalIncomeThisMonth: 0,
+    sampleOnly: false,
     recentProjects: [],
   });
   const [loading, setLoading] = useState(true);
@@ -195,6 +204,10 @@ export default function DashboardPage() {
           0
         ) || 0;
 
+      const { data: projectFlags, error: projectFlagsError } = await supabase
+        .from("projects")
+        .select("is_sample");
+
       const { data: activeRecent, error: activeRecentError } = await supabase
         .from("projects")
         .select("*, client:clients(full_name)")
@@ -213,7 +226,11 @@ export default function DashboardPage() {
           .order("created_at", { ascending: false })
           .limit(5);
 
-      const recentError = activeRecentError || inactiveRecentError;
+      const recentError =
+        activeRecentError || inactiveRecentError || projectFlagsError;
+      const sampleOnly =
+        (projectFlags?.length ?? 0) > 0 &&
+        countNonSampleProjects(projectFlags) === 0;
       const recentProjects = [
         ...(activeRecent ?? []),
         ...(inactiveFromLastMonth ?? []),
@@ -260,6 +277,7 @@ export default function DashboardPage() {
         newClientsThisMonth: newClients?.length || 0,
         totalExpensesThisMonth: additionalCostsTotal + ordersTotal,
         totalIncomeThisMonth: 0,
+        sampleOnly,
         recentProjects: recentProjects || [],
       });
     } catch (error) {
@@ -320,7 +338,14 @@ export default function DashboardPage() {
         </div>
       </AnimatedSection>
 
-      {!onboardingComplete && <OnboardingChecklist steps={onboardingSteps} />}
+      {showChecklist && (
+        <OnboardingChecklist
+          primarySteps={primarySteps}
+          secondarySteps={secondarySteps}
+          sampleProjectId={sampleProjectId}
+          onDismiss={dismissChecklist}
+        />
+      )}
 
       {loading ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -463,7 +488,22 @@ export default function DashboardPage() {
                 </CardDescription>
               )}
             </CardHeader>
-            <CardContent className="min-w-0">
+            <CardContent className="min-w-0 space-y-4">
+              {!loading && stats.sampleOnly && (
+                <EmptyState
+                  variant="inline"
+                  icon={FolderKanban}
+                  title={t("sampleOnlyTitle")}
+                  description={t("sampleOnlyDescription")}
+                  value={t("sampleOnlyValue")}
+                  action={{
+                    label: t("createProject"),
+                    href: appPath("/projects"),
+                    icon: Plus,
+                  }}
+                  className="border-border rounded-xl border border-dashed"
+                />
+              )}
               {loading ? (
                 <div className="space-y-4">
                   <ProjectRowSkeleton />
@@ -544,24 +584,19 @@ export default function DashboardPage() {
                   })}
                 </StaggerContainer>
               ) : (
-                <div className="bg-secondary/10 border-border flex flex-col items-center justify-center space-y-4 rounded-xl border border-dashed py-10 text-center">
-                  <div className="bg-background rounded-full p-4 shadow-sm">
-                    <FolderKanban className="text-muted-foreground h-8 w-8" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-foreground font-medium">
-                      {t("startFirstProjectTitle")}
-                    </h3>
-                    <p className="text-muted-foreground mx-auto max-w-xs text-sm">
-                      {t("startFirstProjectDescription")}
-                    </p>
-                  </div>
-                  <Button variant="outline" asChild className="mt-4">
-                    <Link href={appPath("/projects")}>
-                      {t("createProject")}
-                    </Link>
-                  </Button>
-                </div>
+                <EmptyState
+                  variant="inline"
+                  icon={FolderKanban}
+                  title={t("startFirstProjectTitle")}
+                  description={t("startFirstProjectDescription")}
+                  value={t("startFirstProjectValue")}
+                  action={{
+                    label: t("createProject"),
+                    href: appPath("/projects"),
+                    icon: Plus,
+                  }}
+                  className="bg-secondary/10 border-border rounded-xl border border-dashed"
+                />
               )}
             </CardContent>
           </Card>

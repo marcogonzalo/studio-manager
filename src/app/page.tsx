@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import { CookieConsentBanner } from "@/components/consent";
 import { routing } from "@/i18n/routing";
 import { buildHomeMetadata } from "@/lib/marketing-home-metadata";
 import HomeMarketingPage from "./[locale]/(marketing)/page";
@@ -20,6 +21,7 @@ export default async function RootPage() {
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
+      <CookieConsentBanner />
       <MarketingLayout params={Promise.resolve({ locale })}>
         <HomeMarketingPage params={Promise.resolve({ locale })} />
       </MarketingLayout>

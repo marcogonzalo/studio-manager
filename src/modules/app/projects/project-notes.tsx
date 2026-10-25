@@ -11,6 +11,7 @@ import { KeyboardHint } from "@/components/ui/keyboard-hint";
 import { toast } from "sonner";
 import { useAuth } from "@/components/auth-provider";
 import { Trash2, MoreVertical, StickyNote } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -205,17 +206,18 @@ export function ProjectNotes({
                 readOnly ? "md:col-span-2" : "flex h-full min-h-0 flex-col"
               }
             >
-              <Card className="flex h-full flex-col">
-                <CardContent className="flex flex-1 flex-col justify-center py-12 text-center">
-                  <StickyNote className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-                  <p className="text-muted-foreground mb-4">{t("empty")}</p>
-                  {!readOnly && (
-                    <p className="text-muted-foreground text-sm">
-                      {t("emptyHint")}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+              <EmptyState
+                className="flex h-full flex-col"
+                contentClassName="flex-1"
+                icon={StickyNote}
+                title={t("empty")}
+                description={t("emptyDescription")}
+                value={
+                  !readOnly
+                    ? `${t("emptyValue")} ${t("emptyHint")}`
+                    : t("emptyValue")
+                }
+              />
             </div>
           ) : (
             <div className="space-y-4">

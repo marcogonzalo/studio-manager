@@ -3,12 +3,14 @@
 import type { Locale } from "@/i18n/config";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getDemoAccountMessage } from "@/lib/utils";
 import { useAppFormatting } from "@/components/providers/app-formatting-provider";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Card,
   CardContent,
@@ -50,6 +52,7 @@ import { appPath } from "@/lib/app-paths";
 import { useProjectStatusLabel } from "@/lib/use-project-labels";
 import { useAuth } from "@/components/auth-provider";
 import { isAtActiveProjectLimit } from "@/lib/plan-limit-ux";
+import { countNonSampleProjects } from "@/lib/sample-project";
 
 import type { Project } from "@/types";
 
@@ -81,7 +84,10 @@ export default function ProjectsPage() {
   const { formatDate } = useAppFormatting();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  useOnboardingHighlight("project", !loading);
+  useOnboardingHighlight("create-project", !loading);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortBy, setSortBy] = useState<SortOption>("status");
@@ -104,6 +110,14 @@ export default function ProjectsPage() {
     }
     setIsDialogOpen(true);
   }
+
+  useEffect(() => {
+    if (searchParams.get("onboarding") !== "create-project" || loading) return;
+    handleNewProjectClick();
+    // Drop query so refetch (loading flip) does not reopen the dialog.
+    router.replace(pathname, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- open once when query present
+  }, [searchParams, loading, activeProjectCount, router, pathname]);
 
   const handleDeleteClick = (project: Project) => {
     setDeleteTarget(project);
@@ -164,6 +178,9 @@ export default function ProjectsPage() {
     return sorted;
   }, [projects, search, statusFilter, sortBy]);
 
+  const sampleOnly =
+    projects.length > 0 && countNonSampleProjects(projects) === 0;
+
   const fetchProjects = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -195,7 +212,7 @@ export default function ProjectsPage() {
             onClick={handleNewProjectClick}
             className="w-full sm:w-auto"
             {...(projects.length > 0 && {
-              "data-onboarding-target": "project",
+              "data-onboarding-target": "create-project",
             })}
           >
             <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
@@ -268,121 +285,138 @@ export default function ProjectsPage() {
           ))}
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredAndSortedProjects.map((project) => {
-            const isMuted =
-              project.status === "completed" || project.status === "cancelled";
-            return (
-              <Card
-                key={project.id}
-                className={
-                  isMuted
-                    ? "border-muted bg-muted/20 transition-shadow hover:shadow-md"
-                    : "transition-shadow hover:shadow-md"
-                }
-              >
-                <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
-                  <div className="min-w-0 flex-1 space-y-1.5">
-                    <CardTitle
-                      className={isMuted ? "text-muted-foreground" : undefined}
-                    >
-                      {project.name}
-                    </CardTitle>
-                    <CardDescription className="text-muted-foreground/65 dark:text-muted-foreground/55 line-clamp-2 text-xs leading-relaxed">
-                      {project.description}
-                    </CardDescription>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0"
-                        aria-label={t("actionsAria")}
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteClick(project)}
-                        className="text-destructive"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        {t("delete")}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-muted-foreground space-y-2 text-sm">
-                    <div className="flex items-center">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      {project.client?.full_name || t("noClient")}
-                    </div>
-                    <div className="flex items-center">
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {project.start_date
-                        ? formatDate(project.start_date)
-                        : t("noDate")}
-                    </div>
-                    <SoftPill
-                      className={
-                        isMuted ? "bg-muted/60 capitalize" : "capitalize"
-                      }
-                    >
-                      {projectStatusLabel(project.status)}
-                    </SoftPill>
-                  </div>
-                </CardContent>
-                <CardFooter className="justify-end">
-                  <Button asChild className="w-auto" variant="outline">
-                    <Link href={appPath(`/projects/${project.id}`)}>
-                      {t("viewDetails")}
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            );
-          })}
-          {filteredAndSortedProjects.length === 0 && (
-            <Card
-              className="border-dashed md:col-span-2 lg:col-span-3"
-              {...(projects.length === 0 && {
-                "data-onboarding-target": "project",
-              })}
-            >
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="bg-muted rounded-full p-4">
-                  <FolderKanban className="text-muted-foreground h-8 w-8" />
-                </div>
-                <h3 className="text-foreground mt-4 font-medium">
-                  {projects.length === 0
-                    ? t("emptyNoProjects")
-                    : t("emptyNoResults")}
-                </h3>
-                <p className="text-muted-foreground mt-1 max-w-sm text-sm">
-                  {projects.length === 0
-                    ? t("emptyNoProjectsDescription")
-                    : t("emptyNoResultsDescription")}
-                </p>
-                {projects.length === 0 && (
-                  <Button onClick={handleNewProjectClick} className="mt-4">
-                    <Plus className="mr-2 h-4 w-4" /> {t("newProject")}
-                  </Button>
-                )}
-                {projects.length > 0 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setSearch("")}
-                    className="mt-4"
-                  >
-                    {t("clearSearch")}
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
+        <div className="space-y-6">
+          {sampleOnly && (
+            <EmptyState
+              icon={FolderKanban}
+              title={t("sampleOnlyTitle")}
+              description={t("sampleOnlyDescription")}
+              value={t("sampleOnlyValue")}
+              action={{
+                label: t("newProject"),
+                onClick: handleNewProjectClick,
+                icon: Plus,
+              }}
+              data-onboarding-target="create-project"
+            />
           )}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredAndSortedProjects.map((project) => {
+              const isMuted =
+                project.status === "completed" ||
+                project.status === "cancelled";
+              return (
+                <Card
+                  key={project.id}
+                  className={
+                    isMuted
+                      ? "border-muted bg-muted/20 transition-shadow hover:shadow-md"
+                      : "transition-shadow hover:shadow-md"
+                  }
+                >
+                  <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      <CardTitle
+                        className={
+                          isMuted ? "text-muted-foreground" : undefined
+                        }
+                      >
+                        {project.name}
+                      </CardTitle>
+                      <CardDescription className="text-muted-foreground/65 dark:text-muted-foreground/55 line-clamp-2 text-xs leading-relaxed">
+                        {project.description}
+                      </CardDescription>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0"
+                          aria-label={t("actionsAria")}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteClick(project)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {t("delete")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-muted-foreground space-y-2 text-sm">
+                      <div className="flex items-center">
+                        <UserIcon className="mr-2 h-4 w-4" />
+                        {project.client?.full_name || t("noClient")}
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        {project.start_date
+                          ? formatDate(project.start_date)
+                          : t("noDate")}
+                      </div>
+                      <SoftPill
+                        className={
+                          isMuted ? "bg-muted/60 capitalize" : "capitalize"
+                        }
+                      >
+                        {projectStatusLabel(project.status)}
+                      </SoftPill>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="justify-end">
+                    <Button asChild className="w-auto" variant="outline">
+                      <Link href={appPath(`/projects/${project.id}`)}>
+                        {t("viewDetails")}
+                      </Link>
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
+            {filteredAndSortedProjects.length === 0 && (
+              <EmptyState
+                className="md:col-span-2 lg:col-span-3"
+                icon={FolderKanban}
+                title={
+                  projects.length === 0
+                    ? t("emptyNoProjects")
+                    : t("emptyNoResults")
+                }
+                description={
+                  projects.length === 0
+                    ? t("emptyNoProjectsDescription")
+                    : t("emptyNoResultsDescription")
+                }
+                value={
+                  projects.length === 0
+                    ? t("emptyNoProjectsValue")
+                    : t("emptyNoResultsValue")
+                }
+                action={
+                  projects.length === 0
+                    ? {
+                        label: t("newProject"),
+                        onClick: handleNewProjectClick,
+                        icon: Plus,
+                      }
+                    : {
+                        label: t("clearSearch"),
+                        onClick: () => setSearch(""),
+                      }
+                }
+                {...(projects.length === 0 && {
+                  "data-onboarding-target": "create-project",
+                })}
+              />
+            )}
+          </div>
         </div>
       )}
 

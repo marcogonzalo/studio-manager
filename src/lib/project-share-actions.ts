@@ -2,6 +2,7 @@
 
 import { randomBytes } from "crypto";
 import { createClient } from "@/lib/supabase/server";
+import { trackEvent } from "@/lib/track-event";
 import type { ProjectShareLink } from "@/lib/project-share-types";
 
 function generateToken(): string {
@@ -87,6 +88,18 @@ export async function setProjectShareEnabled(
     .single();
 
   if (error) return { data: null, error: error.message };
+  if (isEnabled) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      void trackEvent(
+        "client_view_published",
+        { project_id: projectId },
+        { userId: user.id }
+      );
+    }
+  }
   return {
     data: {
       token: data.token ?? "",

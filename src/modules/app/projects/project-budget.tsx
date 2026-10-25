@@ -3,8 +3,11 @@
 import type { Locale } from "@/i18n/config";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { getSupabaseClient } from "@/lib/supabase";
+import { trackUserEvent } from "@/app/actions/track-event";
+import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Collapsible,
@@ -49,6 +53,7 @@ import {
   ChevronDown,
   Clock,
   Truck,
+  Package,
   PackageCheck,
   Wrench,
   Check,
@@ -135,6 +140,9 @@ export function ProjectBudget({
   const locale = useLocale() as Locale;
   const ts = useTranslations("ProjectModuleShared");
   const phaseLabel = usePhaseLabel();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const { formatCurrency: formatCurrencyWithSettings, lang } =
     useAppFormatting();
   const { user, effectivePlan } = useAuth();
@@ -199,6 +207,8 @@ export function ProjectBudget({
     { kind: "item"; id: string } | { kind: "budgetLine"; id: string } | null
   >(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  useOnboardingHighlight("add-budget-items", !loading && !readOnly);
 
   const fetchData = async () => {
     try {
@@ -334,6 +344,21 @@ export function ProjectBudget({
     setItemDialogOrigin("form");
     setIsItemDialogOpen(true);
   };
+
+  useEffect(() => {
+    if (
+      searchParams.get("onboarding") !== "add-budget-items" ||
+      loading ||
+      readOnly ||
+      disabled
+    ) {
+      return;
+    }
+    handleAddItem();
+    // Drop query so refetch (loading flip) does not reopen the dialog.
+    router.replace(pathname, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- open once when query present
+  }, [searchParams, loading, readOnly, disabled, router, pathname]);
 
   const handleAddItemToSpace = (spaceId: string | null) => {
     resetItemDialogCreateState();
@@ -496,6 +521,7 @@ export function ProjectBudget({
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
+      void trackUserEvent("pdf_exported", { project_id: project.id });
       toast.success(t("toastPdfGenerated"));
     } catch (error) {
       reportError(error, "Error generating PDF:");
@@ -756,6 +782,7 @@ export function ProjectBudget({
                     <Button
                       className="shrink-0 print:hidden"
                       aria-label={t("addAria")}
+                      data-onboarding-target="add-budget-items"
                     >
                       {t("add")}
                       <ChevronDown className="ml-2 h-4 w-4" />
@@ -872,9 +899,22 @@ export function ProjectBudget({
               <CollapsibleContent>
                 <CardContent className="space-y-3 pt-0">
                   {items.length === 0 ? (
-                    <p className="text-muted-foreground py-8 text-center">
-                      {t("noProducts")}
-                    </p>
+                    <EmptyState
+                      variant="inline"
+                      icon={Package}
+                      title={t("noProducts")}
+                      description={t("noProductsDescription")}
+                      value={t("noProductsValue")}
+                      action={
+                        !readOnly
+                          ? {
+                              label: t("addFirstProduct"),
+                              onClick: handleAddItem,
+                              icon: Plus,
+                            }
+                          : undefined
+                      }
+                    />
                   ) : (
                     itemsBySpace.map(
                       ({ spaceKey, spaceName, items: spaceItems }) => {

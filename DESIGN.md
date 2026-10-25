@@ -175,6 +175,14 @@ components:
     textColor: "{colors.brand-golden-foreground}"
     rounded: "{rounded.full}"
     padding: 4px
+  empty-state:
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.card-foreground}"
+    mutedBackground: "{colors.muted}"
+    mutedText: "{colors.muted-foreground}"
+    rounded: "{rounded.lg}"
+    padding: 24px
+    borderStyle: dashed
 ---
 
 ## Overview
@@ -267,6 +275,8 @@ No hay esquinas rectas (0px) en ningún componente de la interfaz. La consistenc
 **Badges:** Tres variantes principales — default (beige, para estado neutro), primary (sage, para estado activo/aprobado), golden (dorado, para plan premium o destacado).
 
 **Sidebar:** Fondo `sidebar` (un escalón más oscuro que `background`), ítems con `accent` en hover, ítem activo con fondo `sidebar-accent` y texto `primary`. Sin border lateral visible — la diferencia tonal es suficiente.
+
+**EmptyState:** Contenedor centrado (variante `card` con borde dashed, o `inline` para diálogos) con icono en círculo `muted`, título, descripción (qué va aquí), línea de valor opcional (por qué importa) y exactamente una CTA primaria (`button-primary`). CTA secundaria opcional como `link`/`ghost`. Solo tokens semánticos; admite `data-onboarding-target`.
 
 ## Do's and Don'ts
 

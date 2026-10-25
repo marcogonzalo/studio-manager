@@ -7,18 +7,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { appPath } from "@/lib/app-paths";
 import type { OnboardingStepId } from "@/lib/onboarding";
-
-function buildOnboardingUrl(href: string, stepId: OnboardingStepId): string {
-  const base = href.startsWith("/") ? href : appPath(href);
-  const separator = base.includes("?") ? "&" : "?";
-  return `${base}${separator}onboarding=${stepId}`;
-}
 
 export interface OnboardingStepModalProps {
   stepId: OnboardingStepId;
@@ -26,134 +19,71 @@ export interface OnboardingStepModalProps {
   onOpenChange: (open: boolean) => void;
   onOmitir: () => void;
   onWelcomeComplete: () => Promise<void>;
+  /** Seeded sample project for "See an example first" (#233). */
+  sampleProjectId?: string | null;
 }
 
+/**
+ * Welcome-only modal (#213). Activation steps live on the dashboard checklist.
+ */
 export function OnboardingStepModal({
   stepId,
   open,
   onOpenChange,
   onOmitir,
   onWelcomeComplete,
+  sampleProjectId = null,
 }: OnboardingStepModalProps) {
   const t = useTranslations("Onboarding");
+
+  if (stepId !== "welcome") return null;
+
   const handleOmitir = () => {
     onOmitir();
     onOpenChange(false);
   };
 
-  if (stepId === "welcome") {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-          className="max-w-md"
-          aria-describedby="onboarding-welcome-desc"
-          onCloseAutoFocus={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle className="text-2xl">{t("welcome.title")}</DialogTitle>
-            <div
-              id="onboarding-welcome-desc"
-              className="text-muted-foreground mt-2 space-y-2 text-sm"
-            >
-              {[t("welcome.line1"), t("welcome.line2"), t("welcome.line3")].map(
-                (line, i) => (
-                  <p key={i}>{line}</p>
-                )
-              )}
-            </div>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={handleOmitir}>
-              {t("later")}
-            </Button>
-            <Button
-              onClick={async () => {
-                await onWelcomeComplete();
-                // No cerrar: el siguiente paso (config) se mostrará al actualizar firstPendingStepId
-              }}
-            >
-              {t("welcome.continue")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  const stepConfig: Record<
-    Exclude<OnboardingStepId, "welcome">,
-    {
-      title: string;
-      description: string;
-      primaryHref: string;
-      primaryLabel: string;
-      secondaryHref?: string;
-      secondaryLabel?: string;
-    }
-  > = {
-    config: {
-      title: t("step.config.title"),
-      description: t("step.config.description"),
-      primaryHref: appPath("/settings/account"),
-      primaryLabel: t("step.config.primaryLabel"),
-      secondaryHref: appPath("/settings/customization"),
-      secondaryLabel: t("step.config.secondaryLabel"),
-    },
-    client: {
-      title: t("step.client.title"),
-      description: t("step.client.description"),
-      primaryHref: appPath("/clients"),
-      primaryLabel: t("step.client.primaryLabel"),
-    },
-    project: {
-      title: t("step.project.title"),
-      description: t("step.project.description"),
-      primaryHref: appPath("/projects"),
-      primaryLabel: t("step.project.primaryLabel"),
-    },
-    "public-profile": {
-      title: t("step.publicProfile.title"),
-      description: t("step.publicProfile.description"),
-      primaryHref: appPath("/settings/customization"),
-      primaryLabel: t("step.publicProfile.primaryLabel"),
-    },
+  const markWelcomeSeen = () => {
+    void onWelcomeComplete();
+    onOpenChange(false);
   };
 
-  const config = stepConfig[stepId];
-  if (!config) return null;
-
-  const primaryUrl = buildOnboardingUrl(config.primaryHref, stepId);
+  const createProjectUrl = `${appPath("/projects")}?onboarding=create-project`;
+  const exampleUrl = sampleProjectId
+    ? appPath(`/projects/${sampleProjectId}`)
+    : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="max-w-md"
-        aria-describedby={`onboarding-step-desc-${stepId}`}
+        aria-describedby="onboarding-welcome-desc"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{config.title}</DialogTitle>
-          <DialogDescription id={`onboarding-step-desc-${stepId}`}>
-            {config.description}
-          </DialogDescription>
+          <DialogTitle className="text-2xl">{t("welcome.title")}</DialogTitle>
+          <div
+            id="onboarding-welcome-desc"
+            className="text-muted-foreground mt-2 space-y-2 text-sm"
+          >
+            <p>{t("welcome.line1")}</p>
+            <p>{t("welcome.line2")}</p>
+          </div>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-end">
           <Button variant="ghost" onClick={handleOmitir}>
             {t("later")}
           </Button>
-          {config.secondaryHref && config.secondaryLabel && (
+          {exampleUrl && (
             <Button asChild variant="outline">
-              <Link
-                href={buildOnboardingUrl(config.secondaryHref, stepId)}
-                onClick={() => onOpenChange(false)}
-              >
-                {config.secondaryLabel}
+              <Link href={exampleUrl} onClick={markWelcomeSeen}>
+                {t("seeExample")}
               </Link>
             </Button>
           )}
           <Button asChild>
-            <Link href={primaryUrl} onClick={() => onOpenChange(false)}>
-              {config.primaryLabel}
+            <Link href={createProjectUrl} onClick={markWelcomeSeen}>
+              {t("welcome.continue")}
             </Link>
           </Button>
         </DialogFooter>

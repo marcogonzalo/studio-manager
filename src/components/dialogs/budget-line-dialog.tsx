@@ -349,6 +349,16 @@ export function BudgetLineDialog({
         }
 
         void trackUserEvent("project_updated", { project_id: projectId });
+        if (
+          data.category !== "own_fees" &&
+          typeof data.actual_amount === "number" &&
+          data.actual_amount > 0
+        ) {
+          void trackUserEvent("real_cost_recorded", {
+            project_id: projectId,
+            source: "budget_line",
+          });
+        }
 
         toast.success(t("toastUpdated"));
         onSuccess();
@@ -380,6 +390,16 @@ export function BudgetLineDialog({
           source: "manual",
           origin: submitOrigin,
         });
+        if (
+          data.category !== "own_fees" &&
+          typeof data.actual_amount === "number" &&
+          data.actual_amount > 0
+        ) {
+          void trackUserEvent("real_cost_recorded", {
+            project_id: projectId,
+            source: "budget_line",
+          });
+        }
 
         if (addAnother) {
           toast.success(t("toastLineAdded"));
@@ -863,8 +883,14 @@ export function BudgetLineDialog({
         open={isSupplierDialogOpen}
         onOpenChange={setIsSupplierDialogOpen}
         supplier={null}
-        onSuccess={async (supplierId) => {
-          if (supplierId) await handleSupplierCreated(supplierId);
+        onSuccess={async (supplierId, meta) => {
+          if (!supplierId) return;
+          if (meta?.addAnother) {
+            await refetchSuppliers();
+            setPendingSupplierId(supplierId);
+            return;
+          }
+          await handleSupplierCreated(supplierId);
         }}
       />
     </Dialog>

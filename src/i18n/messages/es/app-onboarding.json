@@ -1,33 +1,54 @@
 {
   "Onboarding": {
-    "checklistTitle": "Completa tu configuración ({completed}/{total})",
-    "checklistDescription": "Sigue estos pasos para sacar el máximo partido a Veta.",
+    "checklistTitle": "Primeros pasos ({completed}/{total})",
+    "checklistDescription": "Ten proyectos, presupuestos y proveedores en un solo lugar.",
+    "hideChecklist": "Ocultar checklist",
+    "seeExample": "Ver un ejemplo primero",
+    "secondaryTitle": "Explora más y perfecciona tu estudio",
+    "restoreChecklist": "Mostrar primeros pasos",
+    "restoreChecklistDone": "Primeros pasos restaurados",
     "steps": {
       "welcome": "Bienvenida",
-      "config": "Configurar cuenta y personalización",
-      "client": "Añadir un cliente",
-      "project": "Crear un proyecto",
-      "public-profile": "Nombre público y correo público"
+      "create-project": "Crea tu primer proyecto",
+      "add-supplier": "Añade tu primer proveedor",
+      "add-budget-items": "Añade 3 partidas de presupuesto",
+      "add-client": "Añade un cliente al proyecto",
+      "publish-client-view": "Publica la vista de cliente",
+      "export-pdf": "Exporta tu presupuesto en PDF",
+      "record-real-cost": "Registra tu primer coste real",
+      "public-profile": "Nombre y correo públicos en PDFs",
+      "config": "Define moneda e impuesto por defecto",
+      "account": "Completa perfil y empresa"
+    },
+    "why": {
+      "create-project": "Todo en Veta empieza con un proyecto.",
+      "add-supplier": "Vincula productos y costes a quien te suministra.",
+      "add-budget-items": "Ve al instante cuánto presupuesto te queda.",
+      "add-client": "Conecta el proyecto con quien trabaja contigo.",
+      "publish-client-view": "Comparte un enlace vivo del presupuesto con tu cliente.",
+      "export-pdf": "Envía una propuesta cuidada en un clic.",
+      "record-real-cost": "Compara estimado frente a gasto real.",
+      "public-profile": "Marca tus PDFs con el nombre de tu estudio.",
+      "config": "Los valores por defecto aceleran cada proyecto nuevo.",
+      "account": "Tu nombre y empresa en facturas y PDFs."
     },
     "welcome": {
-      "title": "¡Bienvenid@!",
-      "line1": "¡Qué alegría que hayas llegado hasta aquí!",
-      "line2": "Veta ha sido desarrollada con mucho cariño y dedicación y espero que sea de tu agrado.",
-      "line3": "Ahora, vamos a realizar unos primeros pasos de configuración...",
-      "continue": "Continuar"
+      "title": "Te damos la bienvenida a Veta",
+      "line1": "Ten tus proyectos, presupuestos y proveedores en un solo lugar.",
+      "line2": "Empieza creando tu primer proyecto; la moneda y el impuesto se ajustan dentro de cada uno.",
+      "continue": "Crear proyecto"
     },
     "later": "Más tarde",
     "step": {
       "config": {
-        "title": "Configurar cuenta y personalización",
-        "description": "Completa tu perfil, moneda e impuesto por defecto para usar Veta con comodidad.",
-        "primaryLabel": "Ir a Cuenta",
-        "secondaryLabel": "Ir a Personalización"
+        "title": "Moneda e impuesto por defecto",
+        "description": "Opcional: valores de estudio para nuevos proyectos.",
+        "primaryLabel": "Ir a Personalización"
       },
       "client": {
         "title": "Añadir un cliente",
-        "description": "Crea tu primer cliente para asociarlo a proyectos.",
-        "primaryLabel": "Ir a Clientes"
+        "description": "Vincula un cliente a tu proyecto cuando quieras.",
+        "primaryLabel": "Ir al proyecto"
       },
       "project": {
         "title": "Crear un proyecto",

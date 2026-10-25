@@ -42,6 +42,8 @@ import {
 } from "@/components/ui/form";
 import { AlertTriangle, Building2, Mail, User } from "lucide-react";
 import { toast } from "sonner";
+import { trackUserEvent } from "@/app/actions/track-event";
+import { useOnboardingStatus } from "@/lib/use-onboarding-status";
 import {
   getDemoAccountMessage,
   getErrorMessage,
@@ -75,8 +77,10 @@ export default function SettingsAccountPage() {
   const locale = useLocale() as Locale;
   const router = useRouter();
   const { user, signOut } = useAuth();
-  useOnboardingHighlight("config");
+  useOnboardingHighlight("account");
+  const { dismissed, restoreChecklist } = useOnboardingStatus();
   const supabase = getSupabaseClient();
+  const tOnboarding = useTranslations("Onboarding");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [changeEmailDialogOpen, setChangeEmailDialogOpen] = useState(false);
   const [dangerZoneOpen, setDangerZoneOpen] = useState(false);
@@ -174,6 +178,9 @@ export default function SettingsAccountPage() {
         .eq("id", user.id);
 
       if (error) throw error;
+      if (values.full_name?.trim() && values.company?.trim()) {
+        void trackUserEvent("account_profile_completed");
+      }
       toast.success(t("toastProfileSaved"));
       fetchProfile();
     } catch (err) {
@@ -238,7 +245,29 @@ export default function SettingsAccountPage() {
         <p className="text-muted-foreground mt-1">{t("description")}</p>
       </div>
 
-      <div data-onboarding-target="config">
+      {dismissed && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {tOnboarding("restoreChecklist")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={async () => {
+                await restoreChecklist();
+                toast.success(tOnboarding("restoreChecklistDone"));
+              }}
+            >
+              {tOnboarding("restoreChecklist")}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      <div data-onboarding-target="account">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">

@@ -21,7 +21,7 @@
     "costsMetaDescription": "Budget for the shared project",
     "paymentsMetaTitle": "Project payments",
     "paymentsMetaDescription": "Payment history for the shared project",
-    "noPayments": "No payments recorded.",
+    "noPayments": "No payments yet",
     "total": "Total:",
     "tableDate": "Date",
     "tableType": "Type",
@@ -37,8 +37,7 @@
       "additional_cost": "Additional Cost",
       "other": "Other"
     },
-    "noProductsVisible": "No visible products in this project.",
-    "spacesTabEmpty": "No spaces with visible products or renders.",
+    "spacesTabEmpty": "No spaces to show yet",
     "rendersSectionTitle": "Renders",
     "productsSectionTitle": "Products",
     "toggleSpaceAria": "Show or hide space {name}",
@@ -56,11 +55,11 @@
     "collapseDescription": "Hide full description",
     "documentsMetaTitle": "Project documents",
     "documentsMetaDescription": "Documents in the shared project",
-    "noDocuments": "No visible documents in this project.",
+    "noDocuments": "No documents yet",
     "viewDocumentAria": "View document {name}",
     "costsNoPhase": "No phase",
     "costsTitle": "Budget",
-    "costsNoLines": "No visible budget lines.",
+    "costsNoLines": "No budget lines yet",
     "costsColDescription": "Description",
     "costsColLine": "Line item",
     "costsColAmount": "Amount",
@@ -127,6 +126,10 @@
         "assembly": "Assembly",
         "other": "Other"
       }
-    }
+    },
+    "noPaymentsDescription": "Payments recorded by your designer will appear here.",
+    "spacesTabEmptyDescription": "Spaces with products or renders shared by your designer will appear here.",
+    "noDocumentsDescription": "Documents shared by your designer will appear here.",
+    "costsNoLinesDescription": "Budget lines shared by your designer will appear here."
   }
 }
