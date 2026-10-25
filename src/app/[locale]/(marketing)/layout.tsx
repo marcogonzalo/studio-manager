@@ -5,7 +5,6 @@ import { Link } from "@/i18n/routing";
 import { VetaLogo } from "@/components/veta-logo";
 import { MarketingHeader } from "@/components/layouts/marketing-header";
 import { RedirectAuthenticatedToDashboard } from "@/components/redirect-authenticated-to-dashboard";
-import { AnchorToHash } from "@/components/smooth-scroll-link";
 import { AttributionCapture } from "@/components/attribution-capture";
 import { GtmPageView } from "@/components/gtm";
 
@@ -48,8 +47,20 @@ export const metadata: Metadata = {
   },
 };
 
-async function Footer() {
+async function Footer({ locale }: { locale: string }) {
   const t = await getTranslations("Footer");
+  const clientViewHref =
+    locale === "en"
+      ? ({
+          pathname: "/blog/[slug]" as const,
+          params: { slug: "client-public-view-interior-design" },
+        } as const)
+      : ({
+          pathname: "/blog/[slug]" as const,
+          params: { slug: "vista-publica-cliente-interiorismo" },
+        } as const);
+
+  const linkClass = "hover:text-foreground transition-colors";
 
   return (
     <footer className="border-border bg-muted/30 relative border-t">
@@ -58,8 +69,8 @@ async function Footer() {
         aria-hidden
       />
       <div className="footer-pattern-container relative container mx-auto max-w-7xl px-4 py-12">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          <div className="col-span-2 md:col-span-1">
+        <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-6">
+          <div className="col-span-2 md:col-span-3 lg:col-span-1">
             <Link
               href="/"
               className="mb-4 flex items-center gap-2"
@@ -89,51 +100,117 @@ async function Footer() {
             <h3 className="mb-3 font-semibold">{t("product")}</h3>
             <ul className="text-muted-foreground space-y-2 text-sm">
               <li>
-                <AnchorToHash
-                  href="/#features"
-                  className="hover:text-foreground transition-colors"
-                >
-                  {t("features")}
-                </AnchorToHash>
+                <Link href="/feature/presupuestos" className={linkClass}>
+                  {t("budgets")}
+                </Link>
               </li>
               <li>
+                <Link href="/feature/plantilla-pdf" className={linkClass}>
+                  {t("budgetPdfTemplate")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/feature/control-costes" className={linkClass}>
+                  {t("costControl")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/feature/pedidos" className={linkClass}>
+                  {t("purchaseOrders")}
+                </Link>
+              </li>
+              <li>
+                <Link href={clientViewHref} className={linkClass}>
+                  {t("clientView")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/feature/funcionalidades" className={linkClass}>
+                  {t("allFeatures")}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="mb-3 font-semibold">{t("audience")}</h3>
+            <ul className="text-muted-foreground space-y-2 text-sm">
+              <li>
                 <Link
-                  href="/pricing"
-                  className="hover:text-foreground transition-colors"
+                  href="/feature/empiezas-por-tu-cuenta"
+                  className={linkClass}
                 >
+                  {t("startingOut")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/feature/app-freelance" className={linkClass}>
+                  {t("freelanceIndependents")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/feature/estudios-con-equipo" className={linkClass}>
+                  {t("studiosWithTeam")}
+                </Link>
+              </li>
+            </ul>
+            <h3 className="mt-6 mb-3 font-semibold">{t("specialty")}</h3>
+            <ul className="text-muted-foreground space-y-2 text-sm">
+              <li>
+                <Link href="/software-interior-design" className={linkClass}>
+                  {t("interiorDesign")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/software-architecture" className={linkClass}>
+                  {t("architecture")}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="mb-3 font-semibold">{t("plans")}</h3>
+            <ul className="text-muted-foreground space-y-2 text-sm">
+              <li>
+                <Link href="/pricing" className={linkClass}>
                   {t("pricing")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/plan-base"
-                  className="hover:text-foreground transition-colors"
-                >
+                <Link href="/plan-base" className={linkClass}>
                   {t("basePlan")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/plan-pro"
-                  className="hover:text-foreground transition-colors"
-                >
+                <Link href="/plan-pro" className={linkClass}>
                   {t("proPlan")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/plan-studio"
-                  className="hover:text-foreground transition-colors"
-                >
+                <Link href="/plan-studio" className={linkClass}>
                   {t("studioPlan")}
                 </Link>
               </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="mb-3 font-semibold">{t("resources")}</h3>
+            <ul className="text-muted-foreground space-y-2 text-sm">
               <li>
-                <Link
-                  href="/demo"
-                  className="hover:text-foreground transition-colors"
-                >
+                <Link href="/demo" className={linkClass}>
                   {t("tryDemo")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className={linkClass}>
+                  {t("blog")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/feature/alternativas-excel" className={linkClass}>
+                  {t("excelAlternatives")}
                 </Link>
               </li>
             </ul>
@@ -143,40 +220,17 @@ async function Footer() {
             <h3 className="mb-3 font-semibold">{t("company")}</h3>
             <ul className="text-muted-foreground space-y-2 text-sm">
               <li>
-                <Link
-                  href="/about"
-                  className="hover:text-foreground transition-colors"
-                >
+                <Link href="/about" className={linkClass}>
                   {t("about")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/blog"
-                  className="hover:text-foreground transition-colors"
-                >
-                  {t("blog")}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="hover:text-foreground transition-colors"
-                >
+                <Link href="/contact" className={linkClass}>
                   {t("contact")}
                 </Link>
               </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="mb-3 font-semibold">{t("legal")}</h3>
-            <ul className="text-muted-foreground space-y-2 text-sm">
               <li>
-                <Link
-                  href="/legal"
-                  className="hover:text-foreground transition-colors"
-                >
+                <Link href="/legal" className={linkClass}>
                   {t("termsAndPrivacy")}
                 </Link>
               </li>
@@ -218,7 +272,7 @@ export default async function MarketingLayout({
       <main id="main-content" className="flex-1">
         {children}
       </main>
-      <Footer />
+      <Footer locale={locale} />
     </div>
   );
 }
