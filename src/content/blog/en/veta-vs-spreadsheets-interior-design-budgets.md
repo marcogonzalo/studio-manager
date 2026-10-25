@@ -109,4 +109,6 @@ Yes. The [Base Plan](/en/base-plan-first-interior-design-project) is for people 
 
 ---
 
+More alternatives and comparisons: [Excel alternatives for interior design budgets](/en/excel-alternatives-interior-design-budgets). Product detail: [budgets and PDF](/en/interior-design-budgets-pdf) and [cost control](/en/cost-control-profitability-interior-design).
+
 If you want budget, orders, payments, PDF, and a client-facing project site in one workflow, [Veta offers a 30-day free trial](/en). No credit card required.

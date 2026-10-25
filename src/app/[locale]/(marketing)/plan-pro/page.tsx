@@ -243,18 +243,36 @@ export default async function PlanProPage({
 
       <section className="py-16">
         <div className="container mx-auto max-w-7xl px-4">
-          <AnimatedSection className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {t("relatedHubTitle")}
-            </h2>
-            <p className="text-muted-foreground mt-4">{t("relatedHubDesc")}</p>
-            <Button className="mt-6" variant="link" asChild>
-              <Link href="/software-interior-design">
-                {t("relatedHubCta")}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </AnimatedSection>
+          <div className="mx-auto grid max-w-4xl gap-12 md:grid-cols-2">
+            <AnimatedSection className="text-center md:text-left">
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                {t("freelanceAudienceTitle")}
+              </h2>
+              <p className="text-muted-foreground mt-4">
+                {t("freelanceAudienceDesc")}
+              </p>
+              <Button className="mt-6" variant="link" asChild>
+                <Link href="/feature/app-freelance">
+                  {t("freelanceAudienceCta")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </AnimatedSection>
+            <AnimatedSection className="text-center md:text-left">
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                {t("relatedHubTitle")}
+              </h2>
+              <p className="text-muted-foreground mt-4">
+                {t("relatedHubDesc")}
+              </p>
+              <Button className="mt-6" variant="link" asChild>
+                <Link href="/software-interior-design">
+                  {t("relatedHubCta")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </AnimatedSection>
+          </div>
         </div>
       </section>
 

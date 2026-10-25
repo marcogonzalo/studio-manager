@@ -15,7 +15,17 @@ const frontmatterSchema = z.object({
   coverImage: z.coerce.string().optional(),
   entryId: z.coerce.string().min(1).optional(),
   author: z.coerce.string().min(1).optional(),
+  faq: z
+    .array(
+      z.object({
+        question: z.coerce.string().min(1),
+        answer: z.coerce.string().min(1),
+      })
+    )
+    .optional(),
 });
+
+export type BlogFaqEntry = { question: string; answer: string };
 
 function normalizeFrontmatterDate(value: string | Date): string {
   if (value instanceof Date) {
@@ -36,6 +46,7 @@ export type BlogPostSummary = {
 
 export type BlogPostSource = BlogPostSummary & {
   bodyMarkdown: string;
+  faq?: BlogFaqEntry[];
   translations: Partial<Record<BlogLocale, string>>;
 };
 
@@ -123,6 +134,7 @@ type ParsedPost = {
   coverImage?: string;
   entryId?: string;
   author?: string;
+  faq?: BlogFaqEntry[];
   bodyMarkdown: string;
 };
 
@@ -153,6 +165,7 @@ async function parsePostFile(
     coverImage: parsed.data.coverImage,
     entryId: parsed.data.entryId,
     author: parsed.data.author,
+    faq: parsed.data.faq,
     bodyMarkdown: content.trim(),
   };
 }
@@ -243,6 +256,7 @@ export async function getBlogPostSourceBySlug(
     coverImage: match.coverImage,
     entryId: match.entryId,
     author: match.author,
+    faq: match.faq,
     bodyMarkdown: match.bodyMarkdown,
     translations: translationsForPost,
   };

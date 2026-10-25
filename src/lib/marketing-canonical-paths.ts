@@ -41,3 +41,43 @@ export function marketingArchitectureSoftwarePath(locale: string): string {
     ? "/software-gestion-proyectos-arquitectura"
     : "/en/architecture-project-management-software";
 }
+
+export function marketingFeaturesHubPath(locale: string): string {
+  return locale === "es" ? "/funcionalidades" : "/en/features";
+}
+
+export function marketingFreelanceAudiencePath(locale: string): string {
+  return locale === "es"
+    ? "/app-freelance-varios-proyectos-interiorismo"
+    : "/en/app-freelancer-multiple-projects-interior-design";
+}
+
+export function marketingExcelAlternativesPath(locale: string): string {
+  return locale === "es"
+    ? "/alternativas-excel-presupuestos-interiorismo"
+    : "/en/excel-alternatives-interior-design-budgets";
+}
+
+export function marketingCostControlPath(locale: string): string {
+  return locale === "es"
+    ? "/control-costes-rentabilidad-interiorismo"
+    : "/en/cost-control-profitability-interior-design";
+}
+
+export function marketingBudgetsPdfPath(locale: string): string {
+  return locale === "es"
+    ? "/presupuestos-pdf-interiorismo"
+    : "/en/interior-design-budgets-pdf";
+}
+
+export function marketingPurchaseOrdersPath(locale: string): string {
+  return locale === "es"
+    ? "/pedidos-proveedores-interiorismo"
+    : "/en/purchase-orders-suppliers-interior-design";
+}
+
+export function marketingBudgetPdfTemplatePath(locale: string): string {
+  return locale === "es"
+    ? "/plantilla-presupuesto-pdf-interiorismo"
+    : "/en/interior-design-budget-pdf-template";
+}
