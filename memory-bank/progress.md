@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama feat/blog-freelance-multiple-projects (issues #248–#257):** Marketing feature/audience IA under `/funcionalidades` (hub, merged costs, presupuestos/PDF/pedidos, freelance, Excel hub + comparison stubs, stage pages Empiezas/Freelance/Estudios). Nav+footer by product and business stage; discipline pages stay for SEO. Blog→feature one-way links. Verify: skipped per request (battery); CI runs full suite.
+
 - **Rama feat/activation-checklist-213 (issue #213):** Value-oriented activation checklist (4 primary + secondary polish). Welcome modal benefit-first copy + dual CTAs; checklist on dashboard only. Optional `client_id`; currency/tax unlocked on all plans; per-user session keys; supplier step uses `supplier_created` events (not seed rows). Deep links auto-open dialogs and clear `?onboarding=` after open (incl. AddItemDialog on quotation). Dialog footers: Cancel + Save/Add (+ create another). Migration `account_settings` onboarding dismiss/complete flags. Full verify: Docker lint + tests + build.
 
 - **Rama feat/sample-project-completed-funnel-233 (issue #233):** Sample seeds as Completed + `is_sample`; backfill untouched samples; `funnel_users` event-based primary (excludes `demo@veta.pro`); checklist ignores sample; sample banner + edit always available for reopen; `sample_viewed`/`sample_reopened`/`note_*`; `budget_created` with `source` catalog/manual. Full verify: Docker lint + tests + build.
