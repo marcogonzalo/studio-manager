@@ -44,6 +44,9 @@ title: Iluminación para vivienda
 date: 2025-12-12
 excerpt: Cómo iluminar por capas.
 slug: iluminacion
+faq:
+  - question: ¿Qué es la iluminación por capas?
+    answer: Combinar luz general, de trabajo y de acento.
 ---
 Texto de iluminación.
 `,
@@ -98,6 +101,20 @@ describe("blog content module", () => {
     );
     expect(post?.translations.en).toBe("interior-trends-2026");
     expect(post?.author.name).toBe("Marco Gonzalo Gómez Pérez");
+    expect(post?.faq).toBeUndefined();
+  });
+
+  it("exposes FAQ entries declared in frontmatter", async () => {
+    const blogRoot = await createTempBlogContent();
+
+    const post = await getBlogPostBySlug("es", "iluminacion", { blogRoot });
+
+    expect(post?.faq).toEqual([
+      {
+        question: "¿Qué es la iluminación por capas?",
+        answer: "Combinar luz general, de trabajo y de acento.",
+      },
+    ]);
   });
 
   it("generates static params across locales and slugs", async () => {

@@ -46,6 +46,55 @@ export const routing = defineRouting({
       es: "/software-gestion-proyectos-arquitectura",
       en: "/architecture-project-management-software",
     },
+    // Feature / audience / comparison marketing pages
+    "/feature/funcionalidades": {
+      es: "/funcionalidades",
+      en: "/features",
+    },
+    "/feature/presupuestos": {
+      es: "/presupuestos-pdf-interiorismo",
+      en: "/interior-design-budgets-pdf",
+    },
+    "/feature/plantilla-pdf": {
+      es: "/plantilla-presupuesto-pdf-interiorismo",
+      en: "/interior-design-budget-pdf-template",
+    },
+    "/feature/control-costes": {
+      es: "/control-costes-rentabilidad-interiorismo",
+      en: "/cost-control-profitability-interior-design",
+    },
+    "/feature/pedidos": {
+      es: "/pedidos-proveedores-interiorismo",
+      en: "/purchase-orders-suppliers-interior-design",
+    },
+    "/feature/empiezas-por-tu-cuenta": {
+      es: "/empiezas-por-tu-cuenta-primer-proyecto-interiorismo",
+      en: "/starting-out-first-interior-design-project",
+    },
+    "/feature/app-freelance": {
+      es: "/app-freelance-varios-proyectos-interiorismo",
+      en: "/app-freelancer-multiple-projects-interior-design",
+    },
+    "/feature/estudios-con-equipo": {
+      es: "/estudios-con-equipo-gestion-proyectos-interiorismo",
+      en: "/studios-with-team-interior-design-project-management",
+    },
+    "/feature/alternativas-excel": {
+      es: "/alternativas-excel-presupuestos-interiorismo",
+      en: "/excel-alternatives-interior-design-budgets",
+    },
+    "/feature/veta-vs-programa": {
+      es: "/veta-vs-programa-gestion-interiorismo",
+      en: "/veta-vs-programa-interior-design-management",
+    },
+    "/feature/veta-vs-monday-notion": {
+      es: "/veta-vs-monday-notion-herramientas-genericas",
+      en: "/veta-vs-monday-notion-generic-tools",
+    },
+    "/feature/veta-vs-houzz-pro": {
+      es: "/veta-vs-houzz-pro-gestion-proyectos",
+      en: "/veta-vs-houzz-pro-project-management",
+    },
   },
 });
 

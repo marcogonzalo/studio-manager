@@ -48,6 +48,7 @@ export async function getBlogPostBySlug(
     entryId: source.entryId,
     translations: source.translations,
     author: resolveBlogAuthor(source.author),
+    faq: source.faq,
     contentHtml,
   };
 }
