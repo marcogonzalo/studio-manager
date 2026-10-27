@@ -1,12 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 export type PageLoadingVariant =
-  | "default"
-  | "dashboard"
-  | "table"
-  | "cards"
-  | "form"
-  | "detail";
+  "default" | "dashboard" | "table" | "cards" | "form" | "detail";
 
 interface PageLoadingProps {
   /** Layout variant to match the target page. */

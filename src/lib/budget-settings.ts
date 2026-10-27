@@ -10,10 +10,7 @@ export type BudgetSpaceOption = {
 };
 
 export type BudgetSortField =
-  | "created_at"
-  | "internal_code"
-  | "alphabetical"
-  | "supplier";
+  "created_at" | "internal_code" | "alphabetical" | "supplier";
 
 export type BudgetSortDirection = "asc" | "desc";
 

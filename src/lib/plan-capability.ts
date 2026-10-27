@@ -26,8 +26,7 @@ export type ModalityFeatureKey =
   | "support_level";
 
 export type PlanFeatureKey =
-  | (typeof CONSUMABLE_KEYS)[number]
-  | ModalityFeatureKey;
+  (typeof CONSUMABLE_KEYS)[number] | ModalityFeatureKey;
 
 const CONSUMABLE_SET = new Set<string>(CONSUMABLE_KEYS);
 

@@ -174,8 +174,7 @@ describe("AuthProvider", () => {
 
   it("should update state when auth changes", async () => {
     let authStateChangeCallback:
-      | ((event: string, session: Session | null) => void)
-      | null = null;
+      ((event: string, session: Session | null) => void) | null = null;
 
     mockOnAuthStateChange.mockImplementation((callback) => {
       authStateChangeCallback = callback;
@@ -277,8 +276,7 @@ describe("AuthProvider", () => {
     window.location.hash = "#access_token=test";
 
     let authStateChangeCallback:
-      | ((event: string, session: Session | null) => void)
-      | null = null;
+      ((event: string, session: Session | null) => void) | null = null;
 
     mockOnAuthStateChange.mockImplementation((callback) => {
       authStateChangeCallback = callback;

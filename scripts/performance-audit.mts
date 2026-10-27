@@ -52,8 +52,7 @@ async function collectVitals(page: Page): Promise<WebVitals> {
   await page.waitForTimeout(THROTTLE ? 8000 : 5000);
   return page.evaluate(() => {
     const nav = performance.getEntriesByType("navigation")[0] as
-      | PerformanceNavigationTiming
-      | undefined;
+      PerformanceNavigationTiming | undefined;
 
     const paint = performance.getEntriesByType("paint");
     const fcpEntry = paint.find((e) => e.name === "first-contentful-paint");

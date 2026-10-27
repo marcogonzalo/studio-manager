@@ -32,10 +32,7 @@ export function clearLegacyOnboardingSessionKeys(): void {
 }
 
 export type PrimaryStepId =
-  | "create-project"
-  | "add-supplier"
-  | "add-budget-items"
-  | "add-client";
+  "create-project" | "add-supplier" | "add-budget-items" | "add-client";
 
 export type SecondaryStepId =
   | "publish-client-view"

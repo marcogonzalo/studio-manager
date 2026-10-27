@@ -82,8 +82,7 @@ export async function GET(request: NextRequest) {
 
       if (authConfirmed === "signup") {
         const metadata = result.data.user?.user_metadata as
-          | { signup_plan?: string; signup_billing?: string }
-          | undefined;
+          { signup_plan?: string; signup_billing?: string } | undefined;
         const plan =
           metadata?.signup_plan &&
           VALID_PLAN_CODES.includes(
