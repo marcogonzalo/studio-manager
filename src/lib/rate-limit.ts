@@ -12,12 +12,7 @@ export const RATE_LIMIT_MESSAGE = getRateLimitMessage("es");
 const WINDOW_MS = 60_000;
 
 type RouteGroup =
-  | "auth"
-  | "upload"
-  | "account-delete"
-  | "contact"
-  | "plan"
-  | "view-project";
+  "auth" | "upload" | "account-delete" | "contact" | "plan" | "view-project";
 
 const LIMITS: Record<RouteGroup, number> = {
   auth: 10,

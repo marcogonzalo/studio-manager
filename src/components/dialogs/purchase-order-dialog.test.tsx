@@ -8,8 +8,16 @@ const projectId = "project-1";
 const supplierId = "supplier-1";
 const itemId = "item-1";
 
+type PurchaseOrderRpcResult = {
+  data: { id: string } | null;
+  error: Error | null;
+};
+
 const mockRpc = vi.hoisted(() =>
-  vi.fn(async () => ({ data: { id: "po-new" }, error: null }))
+  vi.fn(async (): Promise<PurchaseOrderRpcResult> => ({
+    data: { id: "po-new" },
+    error: null,
+  }))
 );
 
 function createQueryBuilder(result: { data: unknown; error: unknown }) {
