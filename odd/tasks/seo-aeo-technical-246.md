@@ -17,15 +17,16 @@ Test runner: Vitest via `docker compose exec app` (or test profile if OOM)
 
 ## Tasks
 
-- T1 [S1] inline · pending · commit —
-- T2 [S2] inline · pending · commit —
-- T3 [S3] inline · pending · commit —
-- T4 [S4] inline · pending · commit —
-- T5 [S5] inline · pending · commit —
-- T6 [S6] inline · pending · commit —
-- T7 [S7] inline · pending · commit —
+- T1 [S1] inline · done · commit d5a9a91
+- T2 [S2] inline · done · commit 6759384
+- T3 [S3] inline · done · commit 6007d57
+- T4 [S4] inline · done · commit eb62357
+- T5 [S5] inline · done · commit 5f6d3f0
+- T6 [S6] inline · done · commit 9a1fb75
+- T7 [S7] inline · done · commit 86aa9be
 
 ## Log
 
 - L1: "ok. Proceed in a new branch. A commit per case." + issue https://github.com/marcogonzalo/studio-manager/issues/246
 - L2: Hero lead copy validated by user (ES/EN proposal from prior turn).
+- L3: Implemented all 7 cases on `fix/seo-aeo-technical-246`. Focused Vitest green via `docker compose --profile test run --rm test`. Not pushed. Acceptance curls against production pending deploy.
