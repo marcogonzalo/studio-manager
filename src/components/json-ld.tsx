@@ -1,95 +1,122 @@
-import Script from "next/script";
-import type { ComponentProps } from "react";
 import { getSiteUrl } from "@/lib/site-url";
 
+export type MarketingLocale = "es" | "en";
+
+/** Escape `<` so JSON-LD cannot break out of the surrounding script tag. */
+export function serializeJsonLd(data: object): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 /**
- * JSON-LD for SEO/GEO (Schema.org). Uses next/script so React never tries to
- * reconcile a raw <script> during client render.
+ * JSON-LD for SEO/GEO (Schema.org). Native `<script type="application/ld+json">`
+ * so the tag is present in the server HTML for non-JS crawlers.
+ * Must only be rendered from Server Components.
  */
 export function JsonLd<T extends object>({
   data,
   id,
-  strategy = "afterInteractive",
 }: {
   data: T;
-  id: string;
-  strategy?: ComponentProps<typeof Script>["strategy"];
+  id?: string;
 }) {
   return (
-    <Script
+    <script
       id={id}
       type="application/ld+json"
-      strategy={strategy}
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: serializeJsonLd(data) }}
     />
   );
 }
 
 const BASE_URL = getSiteUrl();
 
-export const organizationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "Veta",
-  url: BASE_URL,
-  logo: `${BASE_URL}/img/veta-light.webp`,
-  description:
-    "Plataforma integral para gestionar proyectos de diseño interior. Administra clientes, proveedores, catálogos y presupuestos.",
-  contactPoint: {
-    "@type": "ContactPoint",
-    email: "hey@veta.pro",
-    contactType: "customer service",
-    availableLanguage: "Spanish",
-    areaServed: "ES",
-  },
-};
+function localeCopy(locale: MarketingLocale) {
+  const isEn = locale === "en";
+  return {
+    orgDescription: isEn
+      ? "All-in-one platform to manage interior design projects. Clients, suppliers, catalogs, and budgets in one place."
+      : "Plataforma integral para gestionar proyectos de diseño interior. Administra clientes, proveedores, catálogos y presupuestos.",
+    appDescription: isEn
+      ? "Platform for interior design project management. Manage clients, suppliers, product catalog, and budgets in one place."
+      : "Plataforma para gestión de proyectos de diseño interior. Gestiona clientes, proveedores, catálogo de productos y presupuestos en un solo lugar.",
+    siteDescription: isEn
+      ? "All-in-one platform to manage interior design projects: clients, suppliers, budgets, and catalogs."
+      : "Plataforma todo-en-uno para gestionar proyectos de diseño interior: clientes, proveedores, presupuestos y catálogos.",
+  };
+}
 
-export const softwareApplicationJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "Veta",
-  applicationCategory: "BusinessApplication",
-  operatingSystem: "Web",
-  description:
-    "Plataforma para gestión de proyectos de diseño interior. Gestiona clientes, proveedores, catálogo de productos y presupuestos en un solo lugar.",
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "EUR",
-  },
-  url: BASE_URL,
-};
-
-export const websiteJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: "Veta",
-  url: BASE_URL,
-  description:
-    "Plataforma todo-en-uno para gestionar proyectos de diseño interior: clientes, proveedores, presupuestos y catálogos.",
-  inLanguage: ["es", "en"],
-  publisher: {
+export function organizationJsonLd(locale: MarketingLocale = "es") {
+  const copy = localeCopy(locale);
+  return {
+    "@context": "https://schema.org",
     "@type": "Organization",
     name: "Veta",
     url: BASE_URL,
-  },
-};
+    logo: `${BASE_URL}/img/veta-light.webp`,
+    description: copy.orgDescription,
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: "hey@veta.pro",
+      contactType: "customer service",
+      availableLanguage: ["es", "en"],
+      areaServed: "Worldwide",
+    },
+  };
+}
 
-/**
- * SoftwareApplication con AggregateOffer para la página de precios.
- * Incluye: Base (gratis), Pro y Studio en suscripción mensual y anual.
- * Suscripción anual = precio de 11 meses (1 mes gratis).
- * @see https://aubreyyung.com/software-application-schema/
- */
-export function softwareApplicationPricingJsonLd(pageUrl: string) {
+export function softwareApplicationJsonLd(locale: MarketingLocale = "es") {
+  const copy = localeCopy(locale);
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "Veta",
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
-    description:
-      "Plataforma para gestión de proyectos de diseño interior. Gestiona clientes, proveedores, catálogo de productos y presupuestos en un solo lugar.",
+    description: copy.appDescription,
+    inLanguage: ["es", "en"],
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "EUR",
+    },
+    url: BASE_URL,
+  };
+}
+
+export function websiteJsonLd(locale: MarketingLocale = "es") {
+  const copy = localeCopy(locale);
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Veta",
+    url: BASE_URL,
+    description: copy.siteDescription,
+    inLanguage: ["es", "en"],
+    publisher: {
+      "@type": "Organization",
+      name: "Veta",
+      url: BASE_URL,
+    },
+  };
+}
+
+/**
+ * SoftwareApplication with AggregateOffer for the pricing page.
+ * Base (free), Pro and Studio monthly + annual.
+ * Annual Pro = 10 months (2 months free); annual Studio = 10 months (2 months free).
+ */
+export function softwareApplicationPricingJsonLd(
+  pageUrl: string,
+  locale: MarketingLocale = "es"
+) {
+  const isEn = locale === "en";
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "Veta",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    description: localeCopy(locale).appDescription,
     url: pageUrl,
     isAccessibleForFree: true,
     offers: {
@@ -104,15 +131,18 @@ export function softwareApplicationPricingJsonLd(pageUrl: string) {
           price: "0",
           priceCurrency: "EUR",
           name: "Base",
-          description:
-            "Plan limitado y con funcionalidades básicas. Gratis para siempre.",
+          description: isEn
+            ? "Limited plan with basic features. Free forever."
+            : "Plan limitado y con funcionalidades básicas. Gratis para siempre.",
         },
         {
           "@type": "UnitPriceSpecification",
           price: "25",
           priceCurrency: "EUR",
-          name: "Pro (mensual)",
-          description: "Plan profesional. Suscripción mensual.",
+          name: isEn ? "Pro (monthly)" : "Pro (mensual)",
+          description: isEn
+            ? "Professional plan. Monthly subscription."
+            : "Plan profesional. Suscripción mensual.",
           billingDuration: "P1M",
           referenceQuantity: {
             "@type": "QuantitativeValue",
@@ -122,10 +152,12 @@ export function softwareApplicationPricingJsonLd(pageUrl: string) {
         },
         {
           "@type": "UnitPriceSpecification",
-          price: "275",
+          price: "250",
           priceCurrency: "EUR",
-          name: "Pro (anual)",
-          description: "Plan profesional. Suscripción anual (1 mes gratis).",
+          name: isEn ? "Pro (annual)" : "Pro (anual)",
+          description: isEn
+            ? "Professional plan. Annual subscription (2 months free)."
+            : "Plan profesional. Suscripción anual (2 meses gratis).",
           billingDuration: "P1Y",
           referenceQuantity: {
             "@type": "QuantitativeValue",
@@ -137,8 +169,10 @@ export function softwareApplicationPricingJsonLd(pageUrl: string) {
           "@type": "UnitPriceSpecification",
           price: "75",
           priceCurrency: "EUR",
-          name: "Studio (mensual)",
-          description: "Plan ilimitado para estudios. Suscripción mensual.",
+          name: isEn ? "Studio (monthly)" : "Studio (mensual)",
+          description: isEn
+            ? "Unlimited plan for studios. Monthly subscription."
+            : "Plan ilimitado para estudios. Suscripción mensual.",
           billingDuration: "P1M",
           referenceQuantity: {
             "@type": "QuantitativeValue",
@@ -150,9 +184,10 @@ export function softwareApplicationPricingJsonLd(pageUrl: string) {
           "@type": "UnitPriceSpecification",
           price: "750",
           priceCurrency: "EUR",
-          name: "Studio (anual)",
-          description:
-            "Plan ilimitado para estudios. Suscripción anual (2 meses gratis).",
+          name: isEn ? "Studio (annual)" : "Studio (anual)",
+          description: isEn
+            ? "Unlimited plan for studios. Annual subscription (2 months free)."
+            : "Plan ilimitado para estudios. Suscripción anual (2 meses gratis).",
           billingDuration: "P1Y",
           referenceQuantity: {
             "@type": "QuantitativeValue",
@@ -161,6 +196,97 @@ export function softwareApplicationPricingJsonLd(pageUrl: string) {
           },
         },
       ],
+    },
+  };
+}
+
+export type PlanOfferCode = "BASE" | "PRO" | "STUDIO";
+
+const PLAN_OFFERS: Record<
+  PlanOfferCode,
+  {
+    price: string;
+    isAccessibleForFree: boolean;
+    nameEs: string;
+    nameEn: string;
+    descriptionEs: string;
+    descriptionEn: string;
+  }
+> = {
+  BASE: {
+    price: "0",
+    isAccessibleForFree: true,
+    nameEs: "Plan Base",
+    nameEn: "Base Plan",
+    descriptionEs:
+      "Plan gratuito de Veta para 1 proyecto de diseño interior. Funcionalidades básicas, gratis para siempre.",
+    descriptionEn:
+      "Veta free plan for 1 interior design project. Basic features, free forever.",
+  },
+  PRO: {
+    price: "25",
+    isAccessibleForFree: false,
+    nameEs: "Plan Pro",
+    nameEn: "Pro Plan",
+    descriptionEs:
+      "Plan Pro de Veta para independientes: varios proyectos, presupuestos y control de costes. Desde 25 EUR/mes.",
+    descriptionEn:
+      "Veta Pro plan for independents: multiple projects, budgets, and cost control. From 25 EUR/month.",
+  },
+  STUDIO: {
+    price: "75",
+    isAccessibleForFree: false,
+    nameEs: "Plan Studio",
+    nameEn: "Studio Plan",
+    descriptionEs:
+      "Plan Studio de Veta para estudios de arquitectura e interiorismo. Desde 75 EUR/mes.",
+    descriptionEn:
+      "Veta Studio plan for architecture and interior design firms. From 75 EUR/month.",
+  },
+};
+
+export function planOfferJsonLd(options: {
+  plan: PlanOfferCode;
+  pageUrl: string;
+  locale: MarketingLocale;
+}) {
+  const meta = PLAN_OFFERS[options.plan];
+  const isEn = options.locale === "en";
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: isEn ? meta.nameEn : meta.nameEs,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
+    description: isEn ? meta.descriptionEn : meta.descriptionEs,
+    url: options.pageUrl,
+    isAccessibleForFree: meta.isAccessibleForFree,
+    offers: {
+      "@type": "Offer",
+      price: meta.price,
+      priceCurrency: "EUR",
+      url: options.pageUrl,
+      availability: "https://schema.org/InStock",
+    },
+  };
+}
+
+export function aboutPageJsonLd(options: {
+  pageUrl: string;
+  name: string;
+  description: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: options.name,
+    description: options.description,
+    url: options.pageUrl,
+    mainEntity: {
+      "@type": "Organization",
+      name: "Veta",
+      url: BASE_URL,
+      logo: `${BASE_URL}/img/veta-light.webp`,
     },
   };
 }

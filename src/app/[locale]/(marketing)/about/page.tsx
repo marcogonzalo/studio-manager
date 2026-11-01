@@ -12,6 +12,13 @@ import {
   buildMarketingOpenGraph,
   buildMarketingTwitter,
 } from "@/lib/marketing-open-graph";
+import { JsonLd, aboutPageJsonLd } from "@/components/json-ld";
+import { MarketingBreadcrumbJsonLd } from "@/components/marketing/marketing-breadcrumb-json-ld";
+import {
+  marketingAboutPath,
+  marketingHomePath,
+} from "@/lib/marketing-canonical-paths";
+import { getSiteUrl } from "@/lib/site-url";
 
 export async function generateMetadata({
   params,
@@ -52,6 +59,9 @@ export default async function AboutPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("About");
+  const tBreadcrumbs = await getTranslations("Breadcrumbs");
+  const aboutPath = marketingAboutPath(locale);
+  const aboutUrl = `${getSiteUrl()}${aboutPath}`;
 
   const values = [
     {
@@ -78,6 +88,21 @@ export default async function AboutPage({
 
   return (
     <>
+      <MarketingBreadcrumbJsonLd
+        id="json-ld-breadcrumb-about"
+        items={[
+          { name: tBreadcrumbs("home"), path: marketingHomePath(locale) },
+          { name: tBreadcrumbs("about"), path: aboutPath },
+        ]}
+      />
+      <JsonLd
+        id="json-ld-about-page"
+        data={aboutPageJsonLd({
+          pageUrl: aboutUrl,
+          name: `${t("heroTitle")} ${t("heroTitleHighlight")}`.trim(),
+          description: t("metaDescription"),
+        })}
+      />
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-32">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
         <div className="bg-primary/5 absolute top-1/2 left-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl" />

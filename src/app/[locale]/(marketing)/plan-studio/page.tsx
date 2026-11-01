@@ -31,11 +31,13 @@ import {
   buildMarketingTwitter,
 } from "@/lib/marketing-open-graph";
 import { MarketingBreadcrumbJsonLd } from "@/components/marketing/marketing-breadcrumb-json-ld";
+import { JsonLd, planOfferJsonLd } from "@/components/json-ld";
 import {
   marketingHomePath,
   marketingPlanStudioPath,
   marketingPricingPath,
 } from "@/lib/marketing-canonical-paths";
+import { getSiteUrl } from "@/lib/site-url";
 
 export async function generateMetadata({
   params,
@@ -109,6 +111,9 @@ export default async function PlanStudioPage({
     { title: t("highlight6Title"), text: t("highlight6Text") },
   ].map((item, i) => ({ ...item, icon: highlightIcons[i] }));
 
+  const planPath = marketingPlanStudioPath(locale);
+  const marketingLocale = locale === "en" ? "en" : "es";
+
   return (
     <>
       <MarketingBreadcrumbJsonLd
@@ -118,9 +123,17 @@ export default async function PlanStudioPage({
           { name: tBreadcrumbs("pricing"), path: marketingPricingPath(locale) },
           {
             name: tBreadcrumbs("planStudio"),
-            path: marketingPlanStudioPath(locale),
+            path: planPath,
           },
         ]}
+      />
+      <JsonLd
+        id="json-ld-offer-plan-studio"
+        data={planOfferJsonLd({
+          plan: "STUDIO",
+          pageUrl: `${getSiteUrl()}${planPath}`,
+          locale: marketingLocale,
+        })}
       />
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-32">
         <div className="from-primary/5 absolute inset-0 bg-gradient-to-br via-transparent to-transparent" />
