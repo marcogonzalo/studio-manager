@@ -29,13 +29,13 @@ Esta página es el **hub**: enlaza la guía detallada frente a Excel y las compa
 
 ## Qué ofrece Veta como alternativa
 
-| Necesidad                 | En Excel                         | En Veta                                      |
-| ------------------------- | -------------------------------- | -------------------------------------------- |
-| Presupuesto por espacios  | Hojas duplicadas                 | Estructura nativa                            |
-| Costes y margen           | Fórmulas manuales                | [Control de costes](/control-costes-rentabilidad-interiorismo) |
-| PDF profesional           | Exportar a mano                  | [PDF generado](/plantilla-presupuesto-pdf-interiorismo) |
-| Vista cliente             | Duplicar archivo                 | Enlace público (próxima página de producto)  |
-| Pedidos                   | Notas en celdas                  | [Pedidos y proveedores](/pedidos-proveedores-interiorismo) |
+| Necesidad                | En Excel          | En Veta                                                        |
+| ------------------------ | ----------------- | -------------------------------------------------------------- |
+| Presupuesto por espacios | Hojas duplicadas  | Estructura nativa                                              |
+| Costes y margen          | Fórmulas manuales | [Control de costes](/control-costes-rentabilidad-interiorismo) |
+| PDF profesional          | Exportar a mano   | [PDF generado](/plantilla-presupuesto-pdf-interiorismo)        |
+| Vista cliente            | Duplicar archivo  | Enlace público (próxima página de producto)                    |
+| Pedidos                  | Notas en celdas   | [Pedidos y proveedores](/pedidos-proveedores-interiorismo)     |
 
 ## Comparativas
 

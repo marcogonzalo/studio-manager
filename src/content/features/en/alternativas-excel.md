@@ -29,13 +29,13 @@ This page is the **hub**: it links the detailed Excel guide and the specific com
 
 ## What Veta offers as an alternative
 
-| Need                     | In Excel              | In Veta                                                                 |
-| ------------------------ | --------------------- | ----------------------------------------------------------------------- |
-| Budget by space          | Duplicated sheets     | Native structure                                                        |
-| Costs and margin         | Manual formulas       | [Cost control](/en/cost-control-profitability-interior-design)          |
-| Professional PDF         | Manual export         | [Generated PDF](/en/interior-design-budget-pdf-template)                |
-| Client view              | Duplicate the file    | Public link (product page coming soon)                                  |
-| Purchase orders          | Notes in cells        | [Orders and suppliers](/en/purchase-orders-suppliers-interior-design)   |
+| Need             | In Excel           | In Veta                                                               |
+| ---------------- | ------------------ | --------------------------------------------------------------------- |
+| Budget by space  | Duplicated sheets  | Native structure                                                      |
+| Costs and margin | Manual formulas    | [Cost control](/en/cost-control-profitability-interior-design)        |
+| Professional PDF | Manual export      | [Generated PDF](/en/interior-design-budget-pdf-template)              |
+| Client view      | Duplicate the file | Public link (product page coming soon)                                |
+| Purchase orders  | Notes in cells     | [Orders and suppliers](/en/purchase-orders-suppliers-interior-design) |
 
 ## Comparisons
 

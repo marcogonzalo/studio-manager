@@ -65,12 +65,12 @@ Conciliar significa cruzar el plan financiero con lo ocurrido **durante** el pro
 
 **desviación = (coste real − coste estimado) / coste estimado × 100**
 
-| Desviación       | Lectura                |
-| ---------------- | ---------------------- |
-| Más del +5 %     | Sobrecoste a revisar   |
-| Entre −5 % y +5 % | En línea               |
-| Menos del −5 %   | Ahorro                 |
-| Sin importe real | Pendiente de ejecutar  |
+| Desviación        | Lectura               |
+| ----------------- | --------------------- |
+| Más del +5 %      | Sobrecoste a revisar  |
+| Entre −5 % y +5 % | En línea              |
+| Menos del −5 %    | Ahorro                |
+| Sin importe real  | Pendiente de ejecutar |
 
 Ejemplo ilustrativo: carpintería estimada 3.000 €, factura 3.600 € → **+20%**. Antes del cierre sabes dónde mirar.
 

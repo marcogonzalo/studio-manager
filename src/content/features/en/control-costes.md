@@ -27,11 +27,11 @@ In Veta both readings come from the same cost-control module: estimated and actu
 
 Profitability is what remains after costs attributable to the job. Track three figures:
 
-| Metric       | Formula                                | What it answers                 |
-| ------------ | -------------------------------------- | ------------------------------- |
-| Revenue      | Fees + sales + approved extras         | What will you earn?             |
-| Gross profit | Revenue − direct costs                 | What remains before overhead?   |
-| Gross margin | Gross profit / revenue × 100           | How much of each euro remains?  |
+| Metric       | Formula                        | What it answers                |
+| ------------ | ------------------------------ | ------------------------------ |
+| Revenue      | Fees + sales + approved extras | What will you earn?            |
+| Gross profit | Revenue − direct costs         | What remains before overhead?  |
+| Gross margin | Gross profit / revenue × 100   | How much of each euro remains? |
 
 **margin = (revenue − costs) / revenue × 100**
 
@@ -65,12 +65,12 @@ Reconciliation means comparing the financial plan with reality **while** the pro
 
 **variance = (actual − estimated) / estimated × 100**
 
-| Variance          | Reading              |
-| ----------------- | -------------------- |
-| Above +5%         | Overrun to review    |
-| Between −5% and +5% | On plan            |
-| Below −5%         | Saving               |
-| No actual yet     | Pending              |
+| Variance            | Reading           |
+| ------------------- | ----------------- |
+| Above +5%           | Overrun to review |
+| Between −5% and +5% | On plan           |
+| Below −5%           | Saving            |
+| No actual yet       | Pending           |
 
 Illustrative example: carpentry estimated €3,000, invoice €3,600 → **+20%**. You know where to look before close.
 
