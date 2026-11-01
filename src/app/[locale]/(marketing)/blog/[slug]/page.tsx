@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { AnimatedSection } from "@/components/ui/animated-section";
 import { BlogAuthorByline } from "@/components/blog/blog-author-byline";
 import { BlogRelatedPosts } from "@/components/blog/blog-related-posts";
-import { JsonLd, blogPostingJsonLd } from "@/components/json-ld";
+import { JsonLd, blogPostingJsonLd, faqPageJsonLd } from "@/components/json-ld";
+import { getSiteUrl } from "@/lib/site-url";
 import { MarketingBreadcrumbJsonLd } from "@/components/marketing/marketing-breadcrumb-json-ld";
 import type { Locale } from "@/i18n/config";
 import { formatDateIntl } from "@/lib/formatting";
@@ -134,6 +135,12 @@ export default async function BlogPostPage({
           author: post.author,
         })}
       />
+      {post.faq && post.faq.length > 0 ? (
+        <JsonLd
+          id="json-ld-faq-blog-post"
+          data={faqPageJsonLd(post.faq, `${getSiteUrl()}${canonical}`)}
+        />
+      ) : null}
 
       <article className="container mx-auto max-w-3xl px-4 py-12 md:py-16">
         <AnimatedSection delay={0} duration={0.45} triggerOnMount>

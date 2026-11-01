@@ -63,3 +63,4 @@ coverage/
 # Others
 squirrel.toml
 skills-lock.json
+.codegraph/

@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama feat/blog-freelance-multiple-projects (issues #248–#257):** Marketing feature/audience IA under `/funcionalidades` (hub, merged costs, presupuestos/PDF/pedidos, freelance, Excel hub + comparison stubs, stage pages Empiezas/Freelance/Estudios). Nav+footer by product and business stage; discipline pages stay for SEO. Blog→feature one-way links. Verify: skipped per request (battery); CI runs full suite.
+
 - **Rama fix/prod-build-typecheck:** Runtime Node `>=24.22.1` (`node:24.22.1-alpine` en Docker, CI en `24.22.1`, `engines.node`). Dependencias actualizadas para ese runtime. `next build` vuelve a pasar: tipos de Open Graph/Twitter con `satisfies`, `isPaymentsEnabled` acepta `ProcessEnv` o el flag suelto, mock RPC del diálogo de pedido permite `data: null`. Tests de upload en entorno Vitest `node` porque Node 24 rechaza un `File` de jsdom en `Request.formData()`. Full verify: Docker lint + tests 732 + build en Node 24.22.1.
 
 - **Rama feat/activation-checklist-213 (issue #213):** Value-oriented activation checklist (4 primary + secondary polish). Welcome modal benefit-first copy + dual CTAs; checklist on dashboard only. Optional `client_id`; currency/tax unlocked on all plans; per-user session keys; supplier step uses `supplier_created` events (not seed rows). Deep links auto-open dialogs and clear `?onboarding=` after open (incl. AddItemDialog on quotation). Dialog footers: Cancel + Save/Add (+ create another). Migration `account_settings` onboarding dismiss/complete flags. Full verify: Docker lint + tests + build.

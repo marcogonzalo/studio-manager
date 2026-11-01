@@ -65,7 +65,37 @@ function isPublicPath(pathname: string): boolean {
     pathnameWithoutLocale === "/architecture-project-management-software" ||
     pathnameWithoutLocale.startsWith("/blog/") ||
     pathname.startsWith("/blog/") ||
-    pathname.startsWith("/view-project/")
+    pathname.startsWith("/view-project/") ||
+    pathnameWithoutLocale.startsWith("/feature/") ||
+    pathname.startsWith("/feature/") ||
+    pathnameWithoutLocale === "/funcionalidades" ||
+    pathnameWithoutLocale === "/features" ||
+    pathnameWithoutLocale === "/presupuestos-pdf-interiorismo" ||
+    pathnameWithoutLocale === "/interior-design-budgets-pdf" ||
+    pathnameWithoutLocale === "/plantilla-presupuesto-pdf-interiorismo" ||
+    pathnameWithoutLocale === "/interior-design-budget-pdf-template" ||
+    pathnameWithoutLocale === "/control-costes-rentabilidad-interiorismo" ||
+    pathnameWithoutLocale === "/cost-control-profitability-interior-design" ||
+    pathnameWithoutLocale === "/pedidos-proveedores-interiorismo" ||
+    pathnameWithoutLocale === "/purchase-orders-suppliers-interior-design" ||
+    pathnameWithoutLocale ===
+      "/empiezas-por-tu-cuenta-primer-proyecto-interiorismo" ||
+    pathnameWithoutLocale === "/starting-out-first-interior-design-project" ||
+    pathnameWithoutLocale === "/app-freelance-varios-proyectos-interiorismo" ||
+    pathnameWithoutLocale ===
+      "/app-freelancer-multiple-projects-interior-design" ||
+    pathnameWithoutLocale ===
+      "/estudios-con-equipo-gestion-proyectos-interiorismo" ||
+    pathnameWithoutLocale ===
+      "/studios-with-team-interior-design-project-management" ||
+    pathnameWithoutLocale === "/alternativas-excel-presupuestos-interiorismo" ||
+    pathnameWithoutLocale === "/excel-alternatives-interior-design-budgets" ||
+    pathnameWithoutLocale === "/veta-vs-programa-gestion-interiorismo" ||
+    pathnameWithoutLocale === "/veta-vs-programa-interior-design-management" ||
+    pathnameWithoutLocale === "/veta-vs-monday-notion-herramientas-genericas" ||
+    pathnameWithoutLocale === "/veta-vs-monday-notion-generic-tools" ||
+    pathnameWithoutLocale === "/veta-vs-houzz-pro-gestion-proyectos" ||
+    pathnameWithoutLocale === "/veta-vs-houzz-pro-project-management"
   );
 }
 

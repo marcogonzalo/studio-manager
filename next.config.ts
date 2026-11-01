@@ -157,6 +157,54 @@ const nextConfig: NextConfig = {
         source: "/software-gestion-proyectos-arquitectura",
         destination: "/es/software-architecture",
       },
+      {
+        source: "/funcionalidades",
+        destination: "/es/feature/funcionalidades",
+      },
+      {
+        source: "/presupuestos-pdf-interiorismo",
+        destination: "/es/feature/presupuestos",
+      },
+      {
+        source: "/plantilla-presupuesto-pdf-interiorismo",
+        destination: "/es/feature/plantilla-pdf",
+      },
+      {
+        source: "/control-costes-rentabilidad-interiorismo",
+        destination: "/es/feature/control-costes",
+      },
+      {
+        source: "/pedidos-proveedores-interiorismo",
+        destination: "/es/feature/pedidos",
+      },
+      {
+        source: "/empiezas-por-tu-cuenta-primer-proyecto-interiorismo",
+        destination: "/es/feature/empiezas-por-tu-cuenta",
+      },
+      {
+        source: "/app-freelance-varios-proyectos-interiorismo",
+        destination: "/es/feature/app-freelance",
+      },
+      {
+        source: "/estudios-con-equipo-gestion-proyectos-interiorismo",
+        destination: "/es/feature/estudios-con-equipo",
+      },
+      {
+        source: "/alternativas-excel-presupuestos-interiorismo",
+        destination: "/es/feature/alternativas-excel",
+      },
+      {
+        source: "/veta-vs-programa-gestion-interiorismo",
+        destination: "/es/feature/veta-vs-programa",
+      },
+      {
+        source: "/veta-vs-monday-notion-herramientas-genericas",
+        destination: "/es/feature/veta-vs-monday-notion",
+      },
+      {
+        source: "/veta-vs-houzz-pro-gestion-proyectos",
+        destination: "/es/feature/veta-vs-houzz-pro",
+      },
       // EN: about-veta localized URL -> internal `/en/about` directory
       { source: "/en/about-veta", destination: "/en/about" },
       // EN: map plan landing slugs to internal plan directory names.
@@ -179,6 +227,51 @@ const nextConfig: NextConfig = {
       {
         source: "/en/architecture-project-management-software",
         destination: "/en/software-architecture",
+      },
+      { source: "/en/features", destination: "/en/feature/funcionalidades" },
+      {
+        source: "/en/interior-design-budgets-pdf",
+        destination: "/en/feature/presupuestos",
+      },
+      {
+        source: "/en/interior-design-budget-pdf-template",
+        destination: "/en/feature/plantilla-pdf",
+      },
+      {
+        source: "/en/cost-control-profitability-interior-design",
+        destination: "/en/feature/control-costes",
+      },
+      {
+        source: "/en/purchase-orders-suppliers-interior-design",
+        destination: "/en/feature/pedidos",
+      },
+      {
+        source: "/en/starting-out-first-interior-design-project",
+        destination: "/en/feature/empiezas-por-tu-cuenta",
+      },
+      {
+        source: "/en/app-freelancer-multiple-projects-interior-design",
+        destination: "/en/feature/app-freelance",
+      },
+      {
+        source: "/en/studios-with-team-interior-design-project-management",
+        destination: "/en/feature/estudios-con-equipo",
+      },
+      {
+        source: "/en/excel-alternatives-interior-design-budgets",
+        destination: "/en/feature/alternativas-excel",
+      },
+      {
+        source: "/en/veta-vs-programa-interior-design-management",
+        destination: "/en/feature/veta-vs-programa",
+      },
+      {
+        source: "/en/veta-vs-monday-notion-generic-tools",
+        destination: "/en/feature/veta-vs-monday-notion",
+      },
+      {
+        source: "/en/veta-vs-houzz-pro-project-management",
+        destination: "/en/feature/veta-vs-houzz-pro",
       },
     ];
   },
@@ -231,6 +324,66 @@ const nextConfig: NextConfig = {
       {
         source: "/es/software-gestion-proyectos-arquitectura",
         destination: "/software-gestion-proyectos-arquitectura",
+        permanent: true,
+      },
+      {
+        source: "/es/funcionalidades",
+        destination: "/funcionalidades",
+        permanent: true,
+      },
+      {
+        source: "/es/presupuestos-pdf-interiorismo",
+        destination: "/presupuestos-pdf-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/plantilla-presupuesto-pdf-interiorismo",
+        destination: "/plantilla-presupuesto-pdf-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/control-costes-rentabilidad-interiorismo",
+        destination: "/control-costes-rentabilidad-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/pedidos-proveedores-interiorismo",
+        destination: "/pedidos-proveedores-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/empiezas-por-tu-cuenta-primer-proyecto-interiorismo",
+        destination: "/empiezas-por-tu-cuenta-primer-proyecto-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/app-freelance-varios-proyectos-interiorismo",
+        destination: "/app-freelance-varios-proyectos-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/estudios-con-equipo-gestion-proyectos-interiorismo",
+        destination: "/estudios-con-equipo-gestion-proyectos-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/alternativas-excel-presupuestos-interiorismo",
+        destination: "/alternativas-excel-presupuestos-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/veta-vs-programa-gestion-interiorismo",
+        destination: "/veta-vs-programa-gestion-interiorismo",
+        permanent: true,
+      },
+      {
+        source: "/es/veta-vs-monday-notion-herramientas-genericas",
+        destination: "/veta-vs-monday-notion-herramientas-genericas",
+        permanent: true,
+      },
+      {
+        source: "/es/veta-vs-houzz-pro-gestion-proyectos",
+        destination: "/veta-vs-houzz-pro-gestion-proyectos",
         permanent: true,
       },
 

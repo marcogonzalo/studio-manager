@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getBlogSitemapPaths } from "@/lib/blog-data";
+import { getFeatureSitemapPaths } from "@/lib/feature-registry";
 import { getSiteUrl } from "@/lib/site-url";
 
 /**
@@ -79,6 +80,11 @@ const publicRoutes = [
     priority: 0.85,
     changeFrequency: "monthly" as const,
   },
+  ...getFeatureSitemapPaths().map(({ path, priority }) => ({
+    path,
+    priority,
+    changeFrequency: "monthly" as const,
+  })),
 ];
 
 function blogSitemapPriority(path: string): number {
