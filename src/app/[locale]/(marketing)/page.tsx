@@ -148,7 +148,11 @@ export default async function HomePage({
                 <strong className="text-primary">{t("titleHighlight")}</strong>
               </h1>
 
-              <p className="text-muted-foreground mt-6 text-lg md:text-xl">
+              <p className="text-foreground mt-6 text-base font-medium md:text-lg">
+                {t("lead")}
+              </p>
+
+              <p className="text-muted-foreground mt-4 text-lg md:text-xl">
                 {t("subtitle")}
               </p>
 
