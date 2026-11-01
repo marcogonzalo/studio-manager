@@ -6,7 +6,15 @@ import {
   useEffect,
   type ComponentPropsWithoutRef,
 } from "react";
-import { ChevronDown, Menu } from "lucide-react";
+import {
+  ChevronDown,
+  FileText,
+  Menu,
+  Package,
+  Tag,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { pushCtaClick } from "@/lib/gtm";
@@ -44,6 +52,13 @@ import {
   type MarketingNavItem,
   type MarketingNavLeaf,
 } from "@/lib/marketing-nav";
+
+const NAV_ICONS: Record<string, LucideIcon> = {
+  product: Package,
+  audience: UserRound,
+  pricing: Tag,
+  resources: FileText,
+};
 
 function isBranch(
   item: MarketingNavLeaf | MarketingNavBranch
@@ -133,6 +148,12 @@ function DesktopMenuItem({
   );
 }
 
+function NavItemIcon({ id }: { id: string }) {
+  const Icon = NAV_ICONS[id];
+  if (!Icon) return null;
+  return <Icon className="size-4 shrink-0 opacity-80" aria-hidden />;
+}
+
 function DesktopNavItem({
   item,
   locale,
@@ -146,8 +167,9 @@ function DesktopNavItem({
     return (
       <NavLink
         href={item.href}
-        className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm font-medium transition-colors"
       >
+        <NavItemIcon id={item.id} />
         {t(item.labelKey)}
       </NavLink>
     );
@@ -157,13 +179,14 @@ function DesktopNavItem({
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger
         type="button"
-        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm font-medium transition-colors outline-none"
+        className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm font-medium transition-colors outline-none"
       >
+        <NavItemIcon id={item.id} />
         {t(item.labelKey)}
         <ChevronDown className="size-3.5 opacity-70" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        align="start"
+        align="center"
         className="min-w-[16rem]"
         onCloseAutoFocus={(event) => event.preventDefault()}
       >
@@ -190,8 +213,9 @@ function MobileAccordion({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="text-foreground flex w-full items-center justify-between py-2 text-left text-lg font-medium">
-        {t(item.labelKey)}
+      <CollapsibleTrigger className="text-foreground flex w-full items-center gap-2 py-2 text-left text-lg font-medium">
+        <NavItemIcon id={item.id} />
+        <span className="flex-1">{t(item.labelKey)}</span>
         <ChevronDown
           className={cn("size-4 transition-transform", open && "rotate-180")}
           aria-hidden
@@ -289,18 +313,18 @@ export function MarketingHeader() {
           : "border-b border-transparent bg-transparent"
       )}
     >
-      <div className="container mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
+      <div className="container mx-auto grid h-16 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-4 px-4">
         <Link href="/" className="flex shrink-0 items-center" aria-label="Veta">
           <VetaLogo height={28} />
         </Link>
 
-        <nav className="hidden flex-1 items-center gap-5 lg:flex">
+        <nav className="hidden items-center justify-center gap-6 lg:flex">
           {MARKETING_PRIMARY_NAV.map((item) => (
             <DesktopNavItem key={item.id} item={item} locale={locale} t={t} />
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center justify-end gap-2 sm:gap-3">
           <div className="hidden items-center gap-2 lg:flex">
             <LanguageToggle />
             <ThemeToggle />
@@ -385,8 +409,9 @@ export function MarketingHeader() {
                         key={item.id}
                         href={item.href}
                         onClick={closeSheet}
-                        className="text-foreground py-2 text-lg font-medium"
+                        className="text-foreground inline-flex items-center gap-2 py-2 text-lg font-medium"
                       >
+                        <NavItemIcon id={item.id} />
                         {t(item.labelKey)}
                       </NavLink>
                     );
