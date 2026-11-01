@@ -143,6 +143,9 @@ export default async function PlanBasePage({
             <p className="text-muted-foreground mt-6 text-lg md:text-xl">
               {t("heroSubtitle")}
             </p>
+            <p className="text-foreground mt-4 text-2xl font-semibold tracking-tight">
+              {t("heroPrice")}
+            </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Button size="lg" className="animate-glow" asChild>
                 <Link href="/sign-up">

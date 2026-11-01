@@ -336,7 +336,7 @@
     "successToast": "Mensaje enviado correctamente. Te responderemos pronto."
   },
   "Demo": {
-    "metaTitle": "Probar demo | Veta",
+    "metaTitle": "Probar demo",
     "metaDescription": "Solicita un enlace para probar la demo de Veta. Accede a una cuenta de demostración con datos de ejemplo.",
     "ogTitle": "Probar demo - Veta",
     "ogDescription": "Solicita un enlace para probar la demo de Veta con datos de ejemplo.",
@@ -521,6 +521,7 @@
     "heroTitle": "Prueba sin pagar.",
     "heroTitleHighlight": "Decide cuando quieras crecer",
     "heroSubtitle": "Pensado para quien prefiere probar antes de invertir y crecer cuando tenga más proyectos.",
+    "heroPrice": "0 € — Gratis para siempre",
     "createAccount": "Crear cuenta gratis",
     "viewAllPlans": "Ver todos los planes",
     "painsTitle": "Si te suena esto, el plan Base encaja",
@@ -557,6 +558,7 @@
     "heroTitle": "Varios proyectos, un solo control.",
     "heroTitleHighlight": "Sin perder el norte del dinero",
     "heroSubtitle": "Para arquitectos independientes y profesionales de diseño interior que ya facturan y necesitan un programa para organizar proyectos, presupuestos y el flujo de dinero.",
+    "heroPrice": "25 €/mes · 250 €/año",
     "tryProCta": "Prueba Pro 30 días gratis",
     "viewPricing": "Ver precios y comparativa",
     "painsTitle": "Si te identificas con esto, Pro es tu plan",
@@ -604,6 +606,7 @@
     "heroTitle": "Estudio que no para.",
     "heroTitleHighlight": "Una herramienta que acompaña",
     "heroSubtitle": "Para estudios de arquitectura y diseño interior con equipo: programa para hacer proyectos arquitectónicos con gestión de presupuestos, control de costes y seguimiento de obras en un solo sitio.",
+    "heroPrice": "75 €/mes · 750 €/año",
     "tryStudioCta": "Prueba Studio 30 días gratis",
     "viewPricing": "Ver precios y comparativa",
     "painsTitle": "Si tu estudio vive esto, Studio es vuestro plan",
@@ -639,7 +642,7 @@
     "relatedHubCta": "Ver software de gestión de arquitectura"
   },
   "SoftwareInteriorismo": {
-    "metaTitle": "Software de gestión de proyectos de interiorismo | Veta",
+    "metaTitle": "Software de gestión de proyectos de interiorismo",
     "metaDescription": "Software de gestión de proyectos de interiorismo: organizar proyectos, CRM para diseñadores de interiores, presupuestos y control de costes. App para diseñadores de interiores profesionales.",
     "ogTitle": "Software gestión proyectos interiorismo | CRM diseñadores | Veta",
     "ogDescription": "Organiza proyectos de interiorismo, clientes y presupuestos en una plataforma. Software de interiorismo para freelance y estudios.",
@@ -694,7 +697,7 @@
     "ctaDemoLink": "O prueba nuestra demo"
   },
   "SoftwareArquitectura": {
-    "metaTitle": "Software de gestión de proyectos de arquitectura | Veta",
+    "metaTitle": "Software de gestión de proyectos de arquitectura",
     "metaDescription": "Programa para proyectos de arquitectura: presupuestos, control de costes de reformas, seguimiento de obras y gestión de estudios. Herramienta de gestión para arquitectos y diseñadores.",
     "ogTitle": "Software gestión proyectos arquitectura | Presupuestos y obras | Veta",
     "ogDescription": "Programa para hacer proyectos de arquitectura con presupuestos, costes y seguimiento de obra en una plataforma.",
