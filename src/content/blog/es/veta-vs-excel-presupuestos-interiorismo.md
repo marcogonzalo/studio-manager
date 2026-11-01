@@ -109,6 +109,6 @@ Sí. El [Plan Base](/plan-base-primer-proyecto-interiorismo) está pensado para 
 
 ---
 
-Más alternativas y comparativas: [alternativas a Excel para presupuestos de interiorismo](/alternativas-excel-presupuestos-interiorismo). Detalle de producto: [presupuestos y PDF](/presupuestos-pdf-interiorismo) y [control de costes](/control-costes-rentabilidad-interiorismo).
+Más alternativas y comparativas: [alternativas a Excel para presupuestos de interiorismo](/alternativas-excel-presupuestos-interiorismo). Detalle de producto: [presupuestos y PDF](/presupuestos-pdf-interiorismo) y [control de costes](/control-costes-rentabilidad-interiorismo). Landings de producto: [software de gestión de proyectos de interiorismo](/software-gestion-proyectos-interiorismo) y [software de gestión de proyectos de arquitectura](/software-gestion-proyectos-arquitectura). Planes y precios: [precios](/precios) y [Plan Pro](/plan-pro-independientes-diseno-interior).
 
 Si quieres presupuesto, pedidos, pagos, PDF y vista cliente en un solo flujo, [Veta ofrece 30 días de prueba gratuita](/). Sin tarjeta de crédito.
