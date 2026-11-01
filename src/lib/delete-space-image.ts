@@ -7,8 +7,7 @@ type SpaceImagesClient = {
 };
 
 export type DeleteSpaceImageResult =
-  | { ok: true }
-  | { ok: false; error: unknown };
+  { ok: true } | { ok: false; error: unknown };
 
 export async function deleteSpaceImage({
   id,

@@ -8,8 +8,7 @@ import type { PlanConfig, PlanFeatureModality } from "@/types";
 
 /** Ítem que debe traducirse con el namespace PlanCopy: clave sola o clave + params para interpolación */
 export type PlanCopyItem =
-  | string
-  | { key: string; params?: Record<string, string | number> };
+  string | { key: string; params?: Record<string, string | number> };
 
 /**
  * Traduce un PlanCopyItem usando la función t del namespace PlanCopy.
@@ -174,8 +173,7 @@ const CONSUMABLE_KEYS = [
  * Usar en getCommercialFeatures(config, { include: [...] }) para vistas compactas.
  */
 export type PlanFeatureKey =
-  | (typeof CONSUMABLE_KEYS)[number]
-  | keyof typeof MODALITY_COPY_KEYS;
+  (typeof CONSUMABLE_KEYS)[number] | keyof typeof MODALITY_COPY_KEYS;
 
 /** Subconjunto típico para vista compacta: proyectos, almacenamiento, presupuesto, soporte */
 export const COMPACT_FEATURE_KEYS: PlanFeatureKey[] = [

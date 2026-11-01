@@ -33,7 +33,7 @@ export function buildMarketingOpenGraph({
   type = "website",
   publishedTime,
   images,
-}: BuildMarketingOpenGraphParams): NonNullable<Metadata["openGraph"]> {
+}: BuildMarketingOpenGraphParams) {
   return {
     title,
     description,
@@ -41,7 +41,7 @@ export function buildMarketingOpenGraph({
     type,
     ...(publishedTime ? { publishedTime } : {}),
     images: images?.length ? images : MARKETING_OG_IMAGES,
-  };
+  } satisfies NonNullable<Metadata["openGraph"]>;
 }
 
 export function buildMarketingTwitter({
@@ -52,11 +52,11 @@ export function buildMarketingTwitter({
   title: string;
   description: string;
   images?: string[];
-}): NonNullable<Metadata["twitter"]> {
+}) {
   return {
     card: "summary_large_image",
     title,
     description,
     images: images?.length ? images : [MARKETING_OG_IMAGE.url],
-  };
+  } satisfies NonNullable<Metadata["twitter"]>;
 }

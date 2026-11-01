@@ -4,9 +4,7 @@ export type AntiSpamCaptchaProvider = "turnstile" | "none";
 export type CaptchaGuardProvider = AntiSpamCaptchaProvider;
 
 export type AntiSpamActionOnSpam =
-  | "silent_block"
-  | "hard_block"
-  | "flag_for_review";
+  "silent_block" | "hard_block" | "flag_for_review";
 
 /** Host-injected config. Do not store secrets in plain fields; use getters. */
 export interface AntiSpamMagicLinkConfig {
