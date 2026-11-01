@@ -39,6 +39,7 @@ const PUBLIC_ROUTES = [
   "/sign-up",
   "/sitemap.xml",
   "/robots.txt",
+  "/llms.txt",
 ];
 
 function isPublicPath(pathname: string): boolean {

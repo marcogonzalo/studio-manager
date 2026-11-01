@@ -79,6 +79,6 @@ export const config = {
      * - _vercel (Vercel Analytics/Speed Insights scripts; avoid auth redirect + enable cache)
      * - favicon.ico, public image assets
      */
-    "/((?!_next/static|_next/image|_vercel|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|_vercel|favicon.ico|llms\\.txt|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|txt)$).*)",
   ],
 };
