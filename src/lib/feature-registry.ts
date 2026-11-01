@@ -20,11 +20,7 @@ export type FeaturePageId =
   | "veta-vs-houzz-pro";
 
 export type FeaturePageKind =
-  | "hub"
-  | "feature"
-  | "audience"
-  | "comparison-hub"
-  | "comparison";
+  "hub" | "feature" | "audience" | "comparison-hub" | "comparison";
 
 export type PlanCta = "base" | "pro" | "studio";
 
