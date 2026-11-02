@@ -19,7 +19,7 @@ description: >-
 
 1. **Siempre dos idiomas**: español (`es`, default) e inglés (`en`). No dejar strings solo en un idioma en JSON de marketing.
 2. **Fuente de verdad de URLs**: `src/i18n/routing.ts` → `pathnames` + `localePrefix: "as-needed"` (ES sin `/es`, EN con `/en`).
-3. **Mensajes**: `src/i18n/messages/es/marketing.json` y `src/i18n/messages/en/marketing.json` con **la misma estructura de claves** (namespaces y keys idénticas).
+3. **Mensajes**: `src/i18n/messages/{es,en}/marketing/*.json` (partes: `shell`, `home`, `pricing`, `landings`, `forms`, `legal`) fusionadas por `marketing/index.ts`, con **la misma estructura de claves** ES/EN (namespaces y keys idénticas).
 4. **Navegación**: `Link`, `redirect`, `useRouter` desde `@/i18n/routing` con **route keys** internas (ej. `"/pricing"`), no slugs hardcodeados por locale (`/precios`, `/en/pricing`) salvo metadata/sitemap.
 5. **Proxy único**: en Next.js 16 solo `proxy.ts` (no duplicar `middleware.ts` en la raíz). Detalle en skill `veta-multilanguage-views`.
 6. **SEO por página**: cada vista indexable con `generateMetadata` (canonical, `alternates.languages`, `openGraph.url` alineados con la URL pública real).
@@ -30,9 +30,10 @@ description: >-
 
 ### 1) Contenido (ES + EN)
 
-- Añade o actualiza un **namespace** por página o feature (ej. `Pricing`, `About`, `PlanPro`) en **ambos** archivos:
-  - `src/i18n/messages/es/marketing.json`
-  - `src/i18n/messages/en/marketing.json`
+- Añade o actualiza un **namespace** por página o feature (ej. `Pricing`, `About`, `PlanPro`) en **ambos** locales, en la parte de marketing que corresponda (`pricing.json`, `landings.json`, `forms.json`, etc.):
+  - `src/i18n/messages/es/marketing/<part>.json`
+  - `src/i18n/messages/en/marketing/<part>.json`
+  - Si añades una parte nueva, impórtala también en `marketing/index.ts` de cada locale.
 - Incluye claves para **metadata** cuando la página sea indexable, por convención del repo:
   - `metaTitle`, `metaDescription`
   - `ogTitle`, `ogDescription`
@@ -85,7 +86,7 @@ description: >-
 ## Referencias rápidas
 
 - `src/i18n/routing.ts` — pathnames y route keys
-- `src/i18n/request.ts` — carga de `marketing.json` por locale
+- `src/i18n/request.ts` — carga de `messages/{locale}/marketing` (partes fusionadas) por locale
 - `src/app/[locale]/(marketing)/layout.tsx` — shell marketing
 - `src/app/sitemap.ts` — URLs indexables ES/EN
 - `next.config.ts` — `rewrites` / `redirects`

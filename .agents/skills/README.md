@@ -48,11 +48,11 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 ## 4.1. veta-marketing-i18n-content (implementada)
 
-**Objetivo:** Al crear o cambiar vistas **públicas/comerciales**, generar siempre **contenido y configuración en ES y EN**: namespaces en `marketing.json`, `pathnames`, `generateMetadata`, sitemap, rewrites/redirects y enlaces con `@/i18n/routing`.
+**Objetivo:** Al crear o cambiar vistas **públicas/comerciales**, generar siempre **contenido y configuración en ES y EN**: namespaces en `messages/{locale}/marketing/*.json`, `pathnames`, `generateMetadata`, sitemap, rewrites/redirects y enlaces con `@/i18n/routing`.
 
 **Cuándo usar:** Nueva landing marketing, copy comercial bilingüe, renombrar slugs por idioma, o cualquier tarea “traduce / añade la página en inglés y español” bajo `(marketing)`.
 
-**Contenido:** Checklist ES+EN en `src/i18n/messages/{es,en}/marketing.json`, `src/i18n/routing.ts`, página en `src/app/[locale]/(marketing)/...`, SEO, `src/app/sitemap.ts`, `next.config.ts`; remite a `veta-multilanguage-views` para proxy/SEO avanzado.
+**Contenido:** Checklist ES+EN en `src/i18n/messages/{es,en}/marketing/*.json`, `src/i18n/routing.ts`, página en `src/app/[locale]/(marketing)/...`, SEO, `src/app/sitemap.ts`, `next.config.ts`; remite a `veta-multilanguage-views` para proxy/SEO avanzado.
 
 ---
 

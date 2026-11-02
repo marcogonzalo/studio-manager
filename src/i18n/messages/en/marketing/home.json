@@ -1,0 +1,95 @@
+{
+  "HomePage": {
+    "lead": "Veta is interior design project management software for studios and independent designers: it centralizes clients, budgets by space, suppliers, and cost control in one place.",
+    "badge": "Project management · Architecture · Interior design",
+    "title": "Manage your interior design projects",
+    "titleHighlight": "without complications",
+    "subtitle": "Less scattered Excel, more control over money, and more time to design. Architects and interior designers use Veta to run projects, budgets, and site work with the same clarity.",
+    "startFree": "Start Free",
+    "viewFeatures": "View Features",
+    "trialInfo": "30-day free trial. No credit card, no commitment. Cancel anytime.",
+    "metaTitle": "Veta - Interior Design Project Management",
+    "metaDescription": "Interior design project management software: budgets by space, on-site cost control, clients and suppliers. 30-day free trial.",
+    "ogTitle": "Veta - Interior Design Project Management",
+    "ogDescription": "Budgets by space, on-site cost control, and client and supplier management for interior design studios. 30-day free trial.",
+    "twitterTitle": "Veta - Interior Design Project Management",
+    "twitterDescription": "Budgets by space, cost control, and interior design project management. 30-day free trial."
+  },
+  "HomeSolutions": {
+    "sectionTitle": "Project management software",
+    "sectionTitleHighlight": "by specialty",
+    "sectionSubtitle": "Veta adapts to your profile: interior design or architecture. See how to organize projects, budgets, and costs for your studio.",
+    "interiorTitle": "Interior design project management",
+    "interiorDesc": "CRM, budgets, product catalog, and cost control for interior designers and interior design studios.",
+    "interiorCta": "View interior design software",
+    "architectureTitle": "Architecture project management",
+    "architectureDesc": "Budgets, renovation cost control, supplier orders, and site tracking for architecture studios.",
+    "architectureCta": "View architecture software"
+  },
+  "Benefits": {
+    "sectionTitle": "Why",
+    "sectionTitleHighlight": "choose Veta?",
+    "sectionSubtitle": "We simplify the management of your architecture and interior design studio so you can focus on what you do best: designing incredible spaces.",
+    "benefit1": "Interface designed for <architects>architects</architects> and <interiorDesigners>interior designers</interiorDesigners>",
+    "benefit2": "Access anytime from any device",
+    "benefit3": "Responsible and secure data management (GDPR compliant)",
+    "benefit4": "Constant improvements and updates",
+    "benefit5": "Active listening to respond to your requirements",
+    "benefit6": "Fixed-price plans adaptable to your needs",
+    "tryFree": "Try Free"
+  },
+  "Features": {
+    "sectionTitle": "Built for",
+    "sectionTitleHighlight": "every studio role",
+    "sectionSubtitle": "One platform, different pains solved: leadership, site work, and operations.",
+    "elenaBadge": "Owner / studio director",
+    "elenaTitle": "Regain control of the studio",
+    "elenaDesc": "Project profitability visibility, a more professional client image, and fewer hours lost to admin work.",
+    "javiBadge": "PM / site manager",
+    "javiTitle": "From site, instantly",
+    "javiDesc": "Log expenses and progress from your phone without losing invoices or waiting for the office spreadsheet.",
+    "beatrizBadge": "Operations / finance",
+    "beatrizTitle": "Match budget to invoice",
+    "beatrizDesc": "Traceability from the initial budget through certifications and supplier payments, with clear reports to decide."
+  },
+  "Stats": {
+    "projectsLabel": "Manageable projects in one place",
+    "timeSavedPrefix": "Up to",
+    "timeSavedLabel": "less time on admin work",
+    "allInOneLabel": "Of project operations in one place",
+    "footnote": "Estimate based on the experience of Veta users."
+  },
+  "Testimonials": {
+    "sectionTitle": "What",
+    "sectionTitleHighlight": "our users say",
+    "quote1": "Having clients, suppliers and catalog in one place has simplified our work on interior design projects a lot. Recommended for independents or studios who want to optimize their project management.",
+    "author1": "FH Interiorismo",
+    "role1": "Interior architecture studio",
+    "quote2": "With Veta we've stopped wasting hours on spreadsheets. Budgets by space and cost control let us get organized and focus on design.",
+    "author2": "EM Estilo Creativo",
+    "role2": "Interior design and styling"
+  },
+  "Faq": {
+    "sectionTitle": "Frequently",
+    "sectionTitleHighlight": "asked questions",
+    "question1": "What is Veta?",
+    "answer1": "Veta is interior design project management software designed to centralize all your operations in one place. With our platform, you can manage relationships with clients and suppliers, as well as create a reusable digital product catalog to streamline your designs. Veta allows you to keep interior design budgets updated in real-time with any changes, facilitating control of purchase orders, costs and payments, and financial tracking of each project. By optimizing administrative tasks, Veta gives you time for what really matters: bringing creative value to your interior architecture projects.",
+    "question2": "Who is Veta for?",
+    "answer2": "Veta is a digital tool designed specifically for professionals in the Contract and Residential sectors: interior designers, studios, and freelance designers looking to professionalize their management and stop using scattered spreadsheets; interior design studios that need to centralize communication, delegate tasks, and control the profitability of multiple simultaneous projects; interior architects who require rigorous technical and financial control over supplier purchases and project budgets; and design project managers, execution specialists who demand an agile tool to manage purchase orders and payments.",
+    "question3": "How do I get started?",
+    "answer3": "Starting to optimize your interior design projects is very simple and requires no initial commitment: sign up for free and create your base account in seconds without needing to enter your credit card; explore the tools by setting up your first clients and creating your product catalog; and choose your pace by staying on the free plan as long as you need or scaling to Pro or Studio plans when your project volume and team require it.",
+    "question4": "Is my data secure?",
+    "answer4": "The security of your information is our priority. At Veta we implement bank-level data protection protocols so your interior design studio can operate with complete peace of mind: we strictly comply with the General Data Protection Regulation (GDPR), guaranteeing the privacy of your database at all times; only you and authorized members of your team have access to the platform through protected credentials; and as the owner you can exercise your rights of access, rectification, or deletion of data in a simple and direct way."
+  },
+  "CtaBeforeFaq": {
+    "title": "Ready to transform your studio?",
+    "subtitle": "Join the interior design professionals who already trust Veta.",
+    "startFree": "Start Free",
+    "contactSales": "Talk to Sales"
+  },
+  "DemoCta": {
+    "title": "Still not sure?",
+    "subtitle": "Try our demo and explore projects, budgets and catalog with sample data — no sign-up or plan choice required.",
+    "cta": "Try our demo"
+  }
+}

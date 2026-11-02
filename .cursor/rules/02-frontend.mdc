@@ -10,6 +10,7 @@ globs: src/**/*.tsx, src/**/*.ts
 - **Function Components:** Use `export function ComponentName() {}` or `const ComponentName = () => {}`.
 - **Hooks:** Always follow Rules of Hooks. Custom hooks should start with `use`.
 - **Props:** Define strict interfaces for props. Avoid `any`.
+- **File size:** Keep modules near **≤300 lines** (soft). When a view grows, extract `use…` hooks, presentational pieces, schemas, and helpers rather than packing more into the same file.
 - **Performance:** Use `useMemo` and `useCallback` mainly for referential equality in dependencies, not premature optimization.
 
 ## Tailwind CSS

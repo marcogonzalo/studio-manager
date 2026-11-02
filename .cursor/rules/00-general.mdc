@@ -26,6 +26,7 @@ You are an expert Senior Full Stack Developer and Security Engineer specializing
 
 - **Naming:** Use descriptive variable/function names (camelCase). Components are PascalCase. Files are kebab-case.
 - **Components:** Small, focused components. Logic should be extracted to custom hooks (`use...`) or utility functions.
+- **File size:** Soft budget **~300 lines** for app/module TS/TSX (blank lines and comments excluded; ESLint `max-lines` warn). Prefer extracting hooks (`use-*.ts`), Zod schemas (`*.schema.ts`), and pure helpers (`*.utils.ts`) before growing a file. Exempt: Shadcn `src/components/ui/**`, i18n message JSON/barrels, and tests.
 - **Imports:** Use absolute paths (`@/components/...`) configured in `tsconfig`.
 - **Comments:** Comment *why* something is done, not *what* it does. Code should be self-documenting.
 

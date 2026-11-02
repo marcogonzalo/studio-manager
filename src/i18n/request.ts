@@ -21,7 +21,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     appProjectModules,
   ] = await Promise.all([
     import(`./messages/${locale}/common.json`),
-    import(`./messages/${locale}/marketing.json`),
+    import(`./messages/${locale}/marketing`),
     import(`./messages/${locale}/auth.json`),
     import(`./messages/${locale}/app-common.json`),
     import(`./messages/${locale}/app-settings.json`),

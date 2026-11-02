@@ -3,7 +3,7 @@ import { renderToString } from "react-dom/server";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import esMarketing from "@/i18n/messages/es/marketing.json";
+import esMarketingShell from "@/i18n/messages/es/marketing/shell.json";
 import { CONSENT_STORAGE_KEY } from "@/lib/consent";
 import { CookieConsentBanner } from "./cookie-consent-banner";
 
@@ -20,7 +20,7 @@ function renderBanner() {
   return render(
     <NextIntlClientProvider
       locale="es"
-      messages={{ CookieConsent: esMarketing.CookieConsent }}
+      messages={{ CookieConsent: esMarketingShell.CookieConsent }}
     >
       <CookieConsentBanner />
     </NextIntlClientProvider>
@@ -45,23 +45,25 @@ describe("CookieConsentBanner", () => {
     const html = renderToString(
       <NextIntlClientProvider
         locale="es"
-        messages={{ CookieConsent: esMarketing.CookieConsent }}
+        messages={{ CookieConsent: esMarketingShell.CookieConsent }}
       >
         <CookieConsentBanner />
       </NextIntlClientProvider>
     );
-    expect(html).toContain(esMarketing.CookieConsent.ariaLabel);
+    expect(html).toContain(esMarketingShell.CookieConsent.ariaLabel);
   });
 
   it("renders when no consent is stored", async () => {
     renderBanner();
     expect(
       await screen.findByRole("dialog", {
-        name: esMarketing.CookieConsent.ariaLabel,
+        name: esMarketingShell.CookieConsent.ariaLabel,
       })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: esMarketing.CookieConsent.acceptAll })
+      screen.getByRole("button", {
+        name: esMarketingShell.CookieConsent.acceptAll,
+      })
     ).toBeInTheDocument();
   });
 
@@ -79,7 +81,7 @@ describe("CookieConsentBanner", () => {
     await waitFor(() => {
       expect(
         screen.queryByRole("dialog", {
-          name: esMarketing.CookieConsent.ariaLabel,
+          name: esMarketingShell.CookieConsent.ariaLabel,
         })
       ).not.toBeInTheDocument();
     });
@@ -92,17 +94,19 @@ describe("CookieConsentBanner", () => {
 
     renderBanner();
     await screen.findByRole("dialog", {
-      name: esMarketing.CookieConsent.ariaLabel,
+      name: esMarketingShell.CookieConsent.ariaLabel,
     });
 
     await user.click(
-      screen.getByRole("button", { name: esMarketing.CookieConsent.acceptAll })
+      screen.getByRole("button", {
+        name: esMarketingShell.CookieConsent.acceptAll,
+      })
     );
 
     expect(listener).toHaveBeenCalled();
     expect(
       screen.queryByRole("dialog", {
-        name: esMarketing.CookieConsent.ariaLabel,
+        name: esMarketingShell.CookieConsent.ariaLabel,
       })
     ).not.toBeInTheDocument();
 

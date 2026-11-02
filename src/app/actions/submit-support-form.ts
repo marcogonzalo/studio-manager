@@ -24,8 +24,8 @@ import {
   buildSupportEmailText,
 } from "@/lib/support/build-support-email";
 import { isDemoAccountEmail } from "@/lib/utils";
-import enMarketing from "@/i18n/messages/en/marketing.json";
-import esMarketing from "@/i18n/messages/es/marketing.json";
+import enMarketingForms from "@/i18n/messages/en/marketing/forms.json";
+import esMarketingForms from "@/i18n/messages/es/marketing/forms.json";
 
 /** Minimum seconds the form must be open before submit (anti-bot). */
 const MIN_SUBMIT_SECONDS = 10;
@@ -33,8 +33,8 @@ const MIN_SUBMIT_SECONDS = 10;
 const MAX_FORM_AGE_MS = 60 * 60 * 1000;
 
 const SUPPORT_COPY = {
-  en: enMarketing.SupportForm,
-  es: esMarketing.SupportForm,
+  en: enMarketingForms.SupportForm,
+  es: esMarketingForms.SupportForm,
 } as const;
 
 function supportSchemaFor(lang: Locale) {
