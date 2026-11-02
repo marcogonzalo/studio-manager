@@ -1,6 +1,6 @@
 FROM node:24.22.1-alpine
 
-RUN corepack enable
+RUN apk add --no-cache git && corepack enable
 
 WORKDIR /app
 
