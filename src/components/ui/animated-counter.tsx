@@ -2,8 +2,9 @@
 
 import { useRef, useEffect, useState } from "react";
 import { useInView, motion, useMotionValue, animate } from "framer-motion";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/use-reduced-motion";
+import { formatAnimatedCounterValue } from "@/lib/animated-counter-format";
 
 interface AnimatedCounterProps {
   /** Target number to count to */
@@ -54,27 +55,34 @@ export function AnimatedCounter({
   const deferMountAnimation = triggerOnMount && !mounted;
   const showVisible = deferMountAnimation || isInView;
   const motionValue = useMotionValue(0);
-  const [displayValue, setDisplayValue] = useState("0");
+  // SSR + first client paint: final value so crawlers / no-JS see the real figure.
+  const [displayValue, setDisplayValue] = useState(() =>
+    formatAnimatedCounterValue(target, { decimals, currencyCode })
+  );
   const effectiveDuration = reducedMotion ? 0 : duration;
 
   useEffect(() => {
     if (target === Infinity || !isInView) return;
+
+    const formatLatest = (latest: number) =>
+      formatAnimatedCounterValue(latest, { decimals, currencyCode });
+
+    if (reducedMotion) {
+      motionValue.set(target);
+      setDisplayValue(formatLatest(target));
+      return;
+    }
+
+    // After mount, animate from 0 → target for sighted users with motion allowed.
+    motionValue.set(0);
+    setDisplayValue(formatLatest(0));
     const controls = animate(motionValue, target, {
       duration: effectiveDuration,
       ease: [0.25, 0.4, 0.25, 1],
     });
 
     const unsubscribe = motionValue.on("change", (latest) => {
-      setDisplayValue(
-        currencyCode
-          ? formatCurrency(latest, currencyCode, {
-              maxFractionDigits: decimals,
-            })
-          : latest.toLocaleString("es-ES", {
-              minimumFractionDigits: decimals,
-              maximumFractionDigits: decimals,
-            })
-      );
+      setDisplayValue(formatLatest(latest));
     });
 
     return () => {
@@ -88,6 +96,7 @@ export function AnimatedCounter({
     decimals,
     currencyCode,
     motionValue,
+    reducedMotion,
   ]);
 
   const transitionDuration = reducedMotion ? 0 : 0.4;

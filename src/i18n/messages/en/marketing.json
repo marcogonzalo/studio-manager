@@ -110,6 +110,7 @@
   },
   "Breadcrumbs": {
     "home": "Home",
+    "about": "About Veta",
     "pricing": "Pricing",
     "blog": "Blog",
     "planBase": "Base Plan",
@@ -335,7 +336,7 @@
     "successToast": "Message sent successfully. We'll get back to you soon."
   },
   "Demo": {
-    "metaTitle": "Try demo | Veta",
+    "metaTitle": "Try demo",
     "metaDescription": "Request a link to try the Veta demo. Access a demo account with sample data.",
     "ogTitle": "Try demo - Veta",
     "ogDescription": "Request a link to try the Veta demo with sample data.",
@@ -520,6 +521,7 @@
     "heroTitle": "Try without paying.",
     "heroTitleHighlight": "Decide when you want to grow",
     "heroSubtitle": "For those who prefer to try before investing and grow when they have more projects.",
+    "heroPrice": "€0 — Free forever",
     "createAccount": "Create free account",
     "viewAllPlans": "View all plans",
     "painsTitle": "If this sounds like you, the Base plan fits",
@@ -556,6 +558,7 @@
     "heroTitle": "Multiple projects, one control.",
     "heroTitleHighlight": "Without losing track of the money",
     "heroSubtitle": "For independent architects and interior design professionals who already bill and need software to organize projects, budgets and cash flow.",
+    "heroPrice": "€25/month · €250/year",
     "tryProCta": "Try Pro free for 30 days",
     "viewPricing": "View pricing and comparison",
     "painsTitle": "If this sounds like you, Pro is your plan",
@@ -603,6 +606,7 @@
     "heroTitle": "A studio that never stops.",
     "heroTitleHighlight": "A tool that keeps up",
     "heroSubtitle": "For architecture and interior design studios with a team: manage architectural projects with budgets, cost control and site tracking in one place.",
+    "heroPrice": "€75/month · €750/year",
     "tryStudioCta": "Try Studio free for 30 days",
     "viewPricing": "View pricing and comparison",
     "painsTitle": "If your studio lives this, Studio is your plan",
@@ -638,7 +642,7 @@
     "relatedHubCta": "View architecture management software"
   },
   "SoftwareInteriorismo": {
-    "metaTitle": "Interior design project management software | Veta",
+    "metaTitle": "Interior design project management software",
     "metaDescription": "Interior design project management software: organize projects, CRM for interior designers, budgets and cost control. App for professional interior designers.",
     "ogTitle": "Interior design project management | CRM for designers | Veta",
     "ogDescription": "Organize interior design projects, clients and budgets in one platform. Practice software for freelancers and studios.",
@@ -693,7 +697,7 @@
     "ctaDemoLink": "Or try our demo"
   },
   "SoftwareArquitectura": {
-    "metaTitle": "Architecture project management software | Veta",
+    "metaTitle": "Architecture project management software",
     "metaDescription": "Software for architecture projects: budgets, renovation cost control, site tracking and studio management. Practice management for architects and designers.",
     "ogTitle": "Architecture project management | Budgets and site tracking | Veta",
     "ogDescription": "Software to run architecture projects with budgets, costs and site tracking in one platform.",

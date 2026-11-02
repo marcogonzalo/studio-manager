@@ -7,6 +7,13 @@ import { MarketingHeader } from "@/components/layouts/marketing-header";
 import { RedirectAuthenticatedToDashboard } from "@/components/redirect-authenticated-to-dashboard";
 import { AttributionCapture } from "@/components/attribution-capture";
 import { GtmPageView } from "@/components/gtm";
+import {
+  JsonLd,
+  organizationJsonLd,
+  softwareApplicationJsonLd,
+  websiteJsonLd,
+  type MarketingLocale,
+} from "@/components/json-ld";
 
 const FOOTER_SOCIAL_LINKS = [
   {
@@ -257,11 +264,21 @@ export default async function MarketingLayout({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const marketingLocale = (locale === "en" ? "en" : "es") as MarketingLocale;
 
   const tCommon = await getTranslations("Common");
 
   return (
     <div className="flex min-h-screen flex-col">
+      <JsonLd
+        id="json-ld-organization"
+        data={organizationJsonLd(marketingLocale)}
+      />
+      <JsonLd
+        id="json-ld-software-application"
+        data={softwareApplicationJsonLd(marketingLocale)}
+      />
+      <JsonLd id="json-ld-website" data={websiteJsonLd(marketingLocale)} />
       <AttributionCapture />
       <GtmPageView />
       <a href="#main-content" className="skip-link">

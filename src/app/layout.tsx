@@ -6,12 +6,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "@/components/ui/sonner";
 import { GtmScriptGate } from "@/components/gtm/gtm-script-gate";
 import { CONSENT_STORAGE_KEY, getDefaultGtmConsent } from "@/lib/consent";
-import {
-  JsonLd,
-  organizationJsonLd,
-  softwareApplicationJsonLd,
-  websiteJsonLd,
-} from "@/components/json-ld";
 import { getSiteUrl } from "@/lib/site-url";
 import "@/styles/globals.css";
 
@@ -133,21 +127,6 @@ gtag('set', 'ads_data_redaction', true);
 gtag('set', 'url_passthrough', false);
           `.trim(),
           }}
-        />
-        <JsonLd
-          id="json-ld-organization"
-          data={organizationJsonLd}
-          strategy="beforeInteractive"
-        />
-        <JsonLd
-          id="json-ld-software-application"
-          data={softwareApplicationJsonLd}
-          strategy="beforeInteractive"
-        />
-        <JsonLd
-          id="json-ld-website"
-          data={websiteJsonLd}
-          strategy="beforeInteractive"
         />
       </head>
       <body className="bg-background min-h-screen font-sans antialiased">

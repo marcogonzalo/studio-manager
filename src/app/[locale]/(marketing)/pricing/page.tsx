@@ -149,7 +149,10 @@ export default async function PricingPage({
       <JsonLd id="json-ld-faq-pricing" data={faqPageJsonLd(faqs, pricingUrl)} />
       <JsonLd
         id="json-ld-pricing-software"
-        data={softwareApplicationPricingJsonLd(pricingUrl)}
+        data={softwareApplicationPricingJsonLd(
+          pricingUrl,
+          locale === "en" ? "en" : "es"
+        )}
       />
 
       <section className="hero-pattern-overlay relative overflow-hidden py-20 md:py-32">

@@ -4,6 +4,10 @@ export function marketingHomePath(locale: string): string {
   return locale === "es" ? "/" : "/en";
 }
 
+export function marketingAboutPath(locale: string): string {
+  return locale === "es" ? "/sobre-veta" : "/en/about-veta";
+}
+
 export function marketingPricingPath(locale: string): string {
   return locale === "es" ? "/precios" : "/en/pricing";
 }
