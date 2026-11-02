@@ -1,12 +1,13 @@
 FROM node:24.22.1-alpine
 
-RUN corepack enable
+RUN apk add --no-cache git && corepack enable
 
 WORKDIR /app
 
 # Install dependencies first for better caching
 COPY package.json pnpm-lock.yaml ./
-RUN corepack prepare pnpm@9.15.4 --activate && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install --frozen-lockfile
+RUN corepack prepare pnpm@9.15.4 --activate \
+  && HUSKY=0 PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .

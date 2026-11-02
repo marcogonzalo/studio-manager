@@ -7,8 +7,17 @@ dist
 node_modules
 out
 *.buildinfo
+*.tsbuildinfo
 *.env
 *.log
 *.xcf
 package-lock.json
 pnpm-lock.yaml
+
+# High-token / low-signal paths for agent indexing
+.worktrees/
+.codegraph/
+.perf-audit/
+supabase/.temp/
+supabase/tmp/
+.vercel/

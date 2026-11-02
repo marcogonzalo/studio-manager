@@ -1,0 +1,40 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["scripts/**/*.{mjs,mts,ts,js}", "src/**/*.test.{ts,tsx}"],
+  "project": ["src/**/*.{ts,tsx,js,jsx}", "scripts/**/*.{mjs,mts,ts,js}"],
+  "ignore": [
+    "src/components/ui/popover.tsx",
+    "src/components/dialogs/additional-cost-dialog.tsx",
+    "src/modules/app/projects/project-additional-costs.tsx",
+    "src/test/utils.tsx"
+  ],
+  "ignoreBinaries": ["supabase", "lighthouse"],
+  "ignoreDependencies": [
+    "@eslint/eslintrc",
+    "@eslint/js",
+    "@next/third-parties",
+    "@radix-ui/react-popover",
+    "@tailwindcss/typography",
+    "autoprefixer",
+    "eslint-plugin-react-hooks",
+    "globals",
+    "postcss-load-config",
+    "react-day-picker",
+    "tailwindcss-animate",
+    "typescript-eslint"
+  ],
+  "rules": {
+    "files": "error",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "unlisted": "error",
+    "binaries": "error",
+    "unresolved": "error",
+    "exports": "off",
+    "nsExports": "off",
+    "types": "off",
+    "nsTypes": "off",
+    "enumMembers": "off",
+    "duplicates": "off"
+  }
+}

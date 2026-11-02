@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
+    "typecheck": "tsc --noEmit",
     "db:push": "supabase db push --local",
     "db:reset": "supabase db reset --local",
     "seed:demo": "node scripts/run-seed-demo-local.mjs",
@@ -22,12 +23,16 @@
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
+    "test:changed": "vitest run --changed --passWithNoTests",
+    "test:related": "vitest related --run --passWithNoTests",
+    "knip": "knip",
     "lighthouse": "lighthouse http://localhost:3000 --view",
     "perf:install-browsers": "node node_modules/playwright-core/cli.js install chromium",
     "perf:audit": "tsx scripts/performance-audit.mts",
     "perf:audit:desktop": "PERF_VIEWPORT=desktop tsx scripts/performance-audit.mts",
     "perf:audit:throttle": "PERF_THROTTLE=1 tsx scripts/performance-audit.mts",
     "analyze": "ANALYZE=true pnpm run build",
+    "prepare": "husky",
     "docker:dev": "docker compose up",
     "docker:dev:build": "docker compose up --build",
     "docker:test": "docker compose --profile test run --rm test",
@@ -40,6 +45,15 @@
     "supabase:mail": "node scripts/supabase-local.mjs mail",
     "supabase:status": "supabase status",
     "supabase:stop": "supabase stop"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,yml,yaml,html}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.2",
@@ -87,6 +101,8 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^9.39.5",
     "@next/bundle-analyzer": "^16.4.3",
@@ -105,7 +121,10 @@
     "eslint-config-next": "^16.4.3",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^16.5.0",
+    "husky": "^9.1.7",
     "jsdom": "^28.1.0",
+    "knip": "^6.44.1",
+    "lint-staged": "^17.6.0",
     "playwright-core": "^1.64.1",
     "postcss": "^8.5.32",
     "prettier": "^3.9.10",

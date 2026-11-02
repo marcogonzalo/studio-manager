@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama chore/dx-hooks-cursorignore:** DX gates — husky + lint-staged + commitlint, `typecheck`, knip (files/deps), `test:changed`/`test:related`, CI concurrency/paths-ignore + typecheck/commitlint/knip, expanded `.cursorignore`, PR workflow rules synced. Full verify: Docker lint + typecheck + knip + tests 108 files + build.
+
 - **Rama fix/seo-aeo-technical-246 (issue #246):** SEO/AEO técnico para crawlers sin JS. JSON-LD nativo en HTML (no `next/script`), schemas localizados + Offers en planes + AboutPage, `AnimatedCounter` SSR con cifra final, ProductMockup `aria-hidden`, enlaces internos en Veta vs Excel, `/llms.txt` + allow explícito GPTBot/peers en `robots.ts`, títulos sin `| Veta` duplicado, precios visibles en landings Base/Pro/Studio. Hero lead (#246 §4) revertido: demasiado texto. Full verify: Docker test profile lint + tests + build.
 
 - **Rama feat/blog-freelance-multiple-projects (issues #248–#257):** Marketing feature/audience IA under `/funcionalidades` (hub, merged costs, presupuestos/PDF/pedidos, freelance, Excel hub + comparison stubs, stage pages Empiezas/Freelance/Estudios). Nav+footer by product and business stage; discipline pages stay for SEO. Blog→feature one-way links. Verify: skipped per request (battery); CI runs full suite.
