@@ -3,8 +3,22 @@ name: CI
 on:
   push:
     branches: [main, develop]
+    paths-ignore:
+      - "**/*.md"
+      - "memory-bank/**"
+      - ".cursor/**"
+      - ".agents/**"
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - "**/*.md"
+      - "memory-bank/**"
+      - ".cursor/**"
+      - ".agents/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -65,6 +79,9 @@ jobs:
 
       - name: Check formatting
         run: pnpm run format:check
+
+      - name: Find unused code (knip)
+        run: pnpm run knip
 
       - name: Run tests
         run: pnpm test -- --run
