@@ -5,7 +5,12 @@ alwaysApply: true
 
 # Workflow: Generate the PR / Push Changes / Recheck
 
-CI (`.github/workflows/ci.yml`) already runs **lint + Prettier + full tests + production build** on every PR to `main`/`develop`. Do **not** duplicate that locally unless the intensity below says so.
+CI (`.github/workflows/ci.yml`) already runs **lint + typecheck + Prettier + full tests + production build** on every PR to `main`/`develop`, plus **commitlint** on the PR commit range. Do **not** duplicate that locally unless the intensity below says so.
+
+Local gates (do not bypass with `--no-verify`):
+
+- **Husky pre-commit** → `lint-staged` (ESLint `--fix` + Prettier on staged files)
+- **Husky commit-msg** → `commitlint` (Conventional Commits)
 
 ## Scenarios
 
@@ -21,13 +26,12 @@ Use for: **recheck**, **push**, and **generate PR** when a PR for this branch al
 
 1. Branch: if on `main`, create `feat/` / `fix/` / `chore/` first. Never commit to `main`.
 2. Clean **touched files**: `console.log`, `debugger`, unused imports, leftover temp files (e.g. stray SVGs).
-3. Prettier **on the diff** (not `prettier --write .`).
-4. ESLint **on changed files**.
-5. Vitest **only tests that match changed modules**. Coverage only if **new helper** landed (aim ≥80% on that file).
-6. New routes: if adding an unknown top-level route, ask public vs private; add to `PUBLIC_ROUTES` only if public.
-7. Commit (Conventional Commits) → push.
+3. Format/lint: rely on **husky + lint-staged** at commit. If hooks are inactive or commit is made without them, run Prettier **on the diff** and ESLint **on changed files** (not full-repo).
+4. Vitest **only tests that match changed modules**. Coverage only if **new helper** landed (aim ≥80% on that file).
+5. New routes: if adding an unknown top-level route, ask public vs private; add to `PUBLIC_ROUTES` only if public.
+6. Commit (Conventional Commits; commitlint must pass) → push.
 
-Skip: full-repo Prettier, full test suite, `next build`, coverage of the whole tree, `memory-bank/progress.md`, extra `docker compose run --rm` per step, PR-body rewrite.
+Skip: full-repo Prettier, full `typecheck`, full test suite, `next build`, coverage of the whole tree, `memory-bank/progress.md`, extra `docker compose run --rm` per step, PR-body rewrite.
 
 Run commands in the **already running** `app` container (`docker compose exec app …`). If that OOMs, **one** `docker compose --profile test run --rm test` with chained commands. Never spawn a new test container per step.
 
@@ -41,6 +45,7 @@ Use only when:
 Then, **in one container**, after the short path:
 
 - `pnpm run lint`
+- `pnpm run typecheck`
 - `pnpm test -- --run`
 - `pnpm run build`
 
@@ -48,12 +53,12 @@ Prefer `docker compose --profile test run --rm test` for this (dev `app` often O
 
 Also update `memory-bank/progress.md` on first Generate PR. Skip it on recheck.
 
-Do not proceed to push if lint, targeted/full tests, or (when full) build fail.
+Do not proceed to push if lint, typecheck, targeted/full tests, or (when full) build fail.
 
 ## Create the PR (Generate PR only)
 
 - Skip if user only asked to push, or if a PR for this branch already exists (print the URL).
-- Title + body: summary, test plan, what was verified locally (short vs full).
+- Title + body: summary, test plan, what was verified locally (short vs full). Prefer a Conventional Commits-style PR title (`feat:`, `fix:`, `chore:`, …) — CI commitlint checks commits, not the title, but keep them aligned.
 - Use GitHub MCP `create_pull_request` (`owner`, `repo`, `title`, `head`, `base`, `body`). If MCP unavailable, give compare URL for manual creation.
 
 ## Opt-out
@@ -62,7 +67,7 @@ User can still say **"PR mínima"**, **"solo crear el PR sin workflow"**, **"pus
 
 **Summary:**
 
-- **Recheck / existing PR:** short → commit → push (update same PR)
-- **Push:** short → commit → push
-- **First Generate PR:** short + full Docker lint/test/build + progress.md → commit → push → create PR
+- **Recheck / existing PR:** short → commit (hooks) → push (update same PR)
+- **Push:** short → commit (hooks) → push
+- **First Generate PR:** short + full Docker lint/typecheck/test/build + progress.md → commit → push → create PR
 - **Full verify** (explicit): same as first Generate PR without creating a new PR
