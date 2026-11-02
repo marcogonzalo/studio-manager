@@ -74,6 +74,6 @@ Un mismo **artículo** puede tener secciones orientadas a perfiles distintos; un
 
 - **`veta-blog-research`** — investigación de temas, briefs y validación de keywords para artículos del blog.
 - **`veta-blog-article`** — escritura operativa de artículos del blog con SEO/GEO 2026.
-- **`veta-marketing-i18n-content`** — implementación ES+EN, `marketing.json`, `routing.ts`, sitemap, rewrites.
+- **`veta-marketing-i18n-content`** — implementación ES+EN, `messages/{locale}/marketing/*.json`, `routing.ts`, sitemap, rewrites.
 - **`veta-multilanguage-views`** — SEO avanzado, canónicos, hreflang, depuración de URLs.
 - **`veta-app-routing`** — si el contenido implica nuevas rutas públicas vs privadas (`PUBLIC_ROUTES`).

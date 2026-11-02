@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import esMarketingMessages from "@/i18n/messages/es/marketing.json";
+import esMarketingPricing from "@/i18n/messages/es/marketing/pricing.json";
 import {
   COMPACT_FEATURE_KEYS,
   createPlanCopyT,
@@ -10,7 +10,7 @@ import {
 } from "./plan-copy";
 
 const tPlanCopy = createPlanCopyT(
-  esMarketingMessages.PlanCopy as Record<string, string>
+  esMarketingPricing.PlanCopy as Record<string, string>
 );
 
 function translatedFeatures(

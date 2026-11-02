@@ -26,7 +26,7 @@ import {
   getPlanConfigForDisplay,
   translatePlanCopyItem,
 } from "@/lib/plan-copy";
-import esMarketingMessages from "@/i18n/messages/es/marketing.json";
+import esMarketingPricing from "@/i18n/messages/es/marketing/pricing.json";
 import { getSupabaseClient } from "@/lib/supabase";
 import { formatCurrency } from "@/lib/utils";
 import { getErrorMessage, reportError } from "@/lib/utils";
@@ -53,7 +53,7 @@ interface PlanOption {
 }
 
 const tPlanCopy = createPlanCopyT(
-  esMarketingMessages.PlanCopy as Record<string, string>
+  esMarketingPricing.PlanCopy as Record<string, string>
 );
 
 export default function ChangePlanPage() {
