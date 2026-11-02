@@ -20,6 +20,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Full history so commitlint can walk the PR commit range
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -42,11 +45,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         env:
+          HUSKY: "0"
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
         # Do not set NODE_ENV=production here or devDependencies (eslint, prettier, vitest) won't be installed
 
+      - name: Lint commit messages
+        if: github.event_name == 'pull_request'
+        run: >
+          pnpm exec commitlint
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}
+          --verbose
+
       - name: Run linter
         run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
 
       - name: Check formatting
         run: pnpm run format:check
@@ -82,6 +97,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         env:
+          HUSKY: "0"
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
       - name: Run security audit
