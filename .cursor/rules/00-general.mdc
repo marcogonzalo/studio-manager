@@ -1,76 +1,31 @@
 ---
-description: General Project Rules, Code Quality, and Security Guidelines
-globs: **/*
+description: Core project conventions for Veta (stack, code style, git, context pointers)
+alwaysApply: true
 ---
 
-# Project Rules & Guidelines
+# Veta – Core Conventions
 
-You are an expert Senior Full Stack Developer and Security Engineer specializing in React, TypeScript, and Supabase. Your goal is to ensure the **Veta** application (interior design project manager) is built to the highest standards of quality, security, and maintainability.
+Veta is an interior design project manager (Next.js 16 App Router + React 19 + TypeScript strict + Supabase + Tailwind v4/Shadcn).
 
-## 1. Development Philosophy
+## Code
 
-- **Agile & Iterative:** Build in small, verifiable steps. Always validate assumptions.
-- **Clean Code:** Follow SOLID, DRY (Don't Repeat Yourself), and KISS (Keep It Simple, Stupid) principles.
-- **Functional Paradigm:** Prefer functional programming patterns (pure functions, immutability) over class-based OOP in React.
-- **Type Safety:** Use TypeScript strict mode. Avoid `any` type. Use strict interfaces and Zod schemas for data validation.
+- **Types:** strict TypeScript, no `any` (ESLint error). Validate external input with Zod.
+- **Naming:** camelCase vars/functions, PascalCase components, kebab-case files. Absolute imports `@/…`.
+- **Style:** functional, pure helpers, immutability. Comment *why*, never *what*.
+- **File size:** soft budget ~300 lines (ESLint `max-lines` warn). Extract hooks (`use-*.ts`), schemas (`*.schema.ts`), helpers (`*.utils.ts`) before growing a file. Exempt: `src/components/ui/**`, i18n messages, tests.
+- **Forms:** `react-hook-form` + `zod`.
+- **Supabase:** RLS on every table; regenerate types after schema changes.
+- **Routing:** App Router; private area under `/veta-app` guarded by root `proxy.ts` + layout (see `src/lib/app-paths.ts`).
+- **Storage:** Supabase Storage + Backblaze B2 for file bytes; validate type and size before upload.
 
-## 2. Tech Stack & Standards
+## Git
 
-- **Frontend:** Next.js 16 (App Router) + React + TypeScript.
-- **Styling:** Tailwind CSS v4 + Shadcn/UI (Radix). Use CSS variables and `oklch` colors.
-- **State:** React Context for global auth/theme, local state for components. Avoid over-engineering with Redux/Zustand unless strictly necessary.
-- **Backend:** Supabase (PostgreSQL).
-- **Data Access:** Use the Supabase JS client with strict typing.
+- Never commit to `main`. Branch `feat/` / `fix/` / `chore/` / `refactor/` from `main`.
+- Conventional Commits (enforced by commitlint). Do not bypass husky with `--no-verify`.
+- Before declaring done: no `console.log`, `debugger`, unused imports, or stray temp files in touched files.
+- PR / push / recheck flow: rule `05-generate-pr-workflow.mdc`.
 
-## 3. Code Quality & Style
+## Where to look
 
-- **Naming:** Use descriptive variable/function names (camelCase). Components are PascalCase. Files are kebab-case.
-- **Components:** Small, focused components. Logic should be extracted to custom hooks (`use...`) or utility functions.
-- **File size:** Soft budget **~300 lines** for app/module TS/TSX (blank lines and comments excluded; ESLint `max-lines` warn). Prefer extracting hooks (`use-*.ts`), Zod schemas (`*.schema.ts`), and pure helpers (`*.utils.ts`) before growing a file. Exempt: Shadcn `src/components/ui/**`, i18n message JSON/barrels, and tests.
-- **Imports:** Use absolute paths (`@/components/...`) configured in `tsconfig`.
-- **Comments:** Comment *why* something is done, not *what* it does. Code should be self-documenting.
-
-## 4. Testing Strategy
-
-- **TDD (Test Driven Development):** Write tests for utility functions and complex logic before implementation when possible.
-- **Unit Tests:** Focus on isolating business logic (e.g., pricing calculations, data transformers).
-- **Integration Tests:** Verify flows like "Add Item to Budget" or "Create Project".
-- **Tools:** Vitest + React Testing Library.
-
-## 5. Security (OWASP Top 10 & Best Practices)
-
-- **Authentication:** Use Supabase Auth. Never roll your own auth logic.
-- **Authorization:** **CRITICAL:** Always use Postgres Row Level Security (RLS) policies. Never rely solely on client-side checks.
-- **Input Validation:** Validate ALL user inputs using Zod schemas, both on client forms and before processing.
-- **Injection Prevention:** React handles XSS by default. Avoid `dangerouslySetInnerHTML`. Sanitize if necessary.
-- **Secrets:** Never commit `.env` files. Never expose Service Role keys on the client.
-- **Data Privacy:** Ensure GDPR/CCPA compliance by designing schemas that segregate user data strictly (via `user_id` or `project_id`).
-
-## 6. Git & Workflow
-
-- **Commits:** Use Conventional Commits (e.g., `feat: add login`, `fix: repair budget calc`, `chore: update deps`).
-- **Reviews:** Before declaring a task done, self-review code for unused variables, console logs, and potential edge cases.
-- **Branch Strategy:**
-  - Never commit nor work directly on `main` (it has write restrictions).
-  - If starting a new task: create and checkout a new branch (e.g. `feat/...`, `fix/...`, `refactor/...`) from `main` before making changes.
-  - If continuing on an existing branch: ensure you are on that feature branch, not `main`.
-  - Use descriptive branch names (e.g. `feat/contact-form`, `fix/budget-calc`, `refactor/auth-hooks`.)
-
-### Approval & Release Process
-
-This process **only** runs when the user explicitly approves (e.g. "approve the development", "it's ready", "generate the PR"). During iterative development, make normal commits without creating a PR.
-
-**Detailed steps:** See the rule *Workflow: Generate the PR* (05-generate-pr-workflow.mdc). Default is the **short** path (touched files + `test:changed` / `test:related`; husky/lint-staged + commitlint on commit). Full Docker lint/typecheck/knip/test/build only on first Generate PR or when the user asks for **full verify**. CI already runs lint, typecheck, format, knip, tests, build, and (on PRs) commitlint.
-
-## 7. Specific Implementation Directives
-
-- **Supabase:** Always generate/update types when schema changes.
-- **Forms:** Use `react-hook-form` + `zod`.
-- **Images/Storage:** Supabase Storage; project also uses Backblaze B2 for file bytes (see `memory-bank/constraints.md`). Validate file types and sizes before upload.
-- **Routing:** Next.js App Router; protected routes via middleware and layout under `/veta-app` (see `src/lib/app-paths.ts`).
-
-## 8. Context
-
-- **Project state and product/SEO:** See `memory-bank/` — `activeContext.md` (phase, WIP), `productContext.md` (product, copy, plan landings), `constraints.md` (env, RLS, limits).
-
-By following these rules, we ensure a robust, secure, and scalable application.
+- Product state, constraints, WIP: `memory-bank/` (`activeContext.md`, `productContext.md`, `constraints.md`).
+- Domain how-tos: `.agents/skills/` (index in `.agents/skills/README.md`) — security, RLS, migrations, forms, testing, i18n, routing.

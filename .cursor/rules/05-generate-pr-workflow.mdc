@@ -65,10 +65,3 @@ Do not proceed to push if lint, typecheck, knip (full), targeted/full tests, or 
 ## Opt-out
 
 User can still say **"PR mínima"**, **"solo crear el PR sin workflow"**, **"push sin regla 05"** to skip verify entirely.
-
-**Summary:**
-
-- **Recheck / existing PR:** short → commit (hooks) → push (update same PR)
-- **Push:** short → commit (hooks) → push
-- **First Generate PR:** short + full Docker lint/typecheck/knip/test/build + progress.md → commit → push → create PR
-- **Full verify** (explicit): same as first Generate PR without creating a new PR

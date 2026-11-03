@@ -82,7 +82,7 @@ Las skills viven en **`.agents/skills/<nombre>/SKILL.md`**. Las **reglas** (`.cu
 
 **Cuándo usar:** Al crear o modificar componentes, estilos, animaciones o integración con Shadcn.
 
-**Contenido:** `src/styles/globals.css` y tokens semánticos; `ThemeProvider` en `src/app/layout.tsx`; `AnimatedSection` / `StaggerContainer` / `StaggerItem`; alineación con `.cursor/rules/02-frontend.mdc`; Select sin `value=""` (detalle en `veta-forms-validation`). Ver `SKILL.md` en `.agents/skills/veta-frontend-components/`.
+**Contenido:** `src/styles/globals.css` y tokens semánticos; `ThemeProvider` en `src/app/layout.tsx`; `AnimatedSection` / `StaggerContainer` / `StaggerItem`; tiempos de animación y recetas visuales (antes en `.cursor/rules/02-frontend.mdc`); Select sin `value=""` (detalle en `veta-forms-validation`). Ver `SKILL.md` en `.agents/skills/veta-frontend-components/`.
 
 ---
 
