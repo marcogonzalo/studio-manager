@@ -10,7 +10,7 @@ description: Veta UI conventions — Tailwind v4, Shadcn/Radix, next-themes, Fra
 - **Next.js 16** App Router, **React 19**, **TypeScript**.
 - **Tailwind CSS v4** with `@import "tailwindcss"` and `@theme inline` in `src/styles/globals.css`.
 - **Shadcn/Radix** primitives under `src/components/ui/`.
-- **Themes:** `next-themes` `ThemeProvider` in `src/app/layout.tsx` (`attribute="class"`). Respect the current `defaultTheme` and `enableSystem` values defined there.
+- **Themes:** `next-themes` `ThemeProvider` in `src/app/layout.tsx` (`attribute="class"`, `defaultTheme="system"`, `enableSystem`). Do not hardcode dark or light as the product default; follow OS preference unless the user overrides in the UI.
 - **Motion:** `framer-motion` via `AnimatedSection`, `StaggerContainer`, `StaggerItem` in `@/components/ui/animated-section`; `AnimatedCounter` in `@/components/ui/animated-counter` where needed.
 
 ## Tokens and layout
@@ -58,7 +58,7 @@ description: Veta UI conventions — Tailwind v4, Shadcn/Radix, next-themes, Fra
 
 ## Light and dark
 
-- Both modes must remain usable. Use theme tokens (not hard-coded hex for surfaces/text) unless for one-off brand gradients documented in marketing sections.
+- Default theme is **system** (see `ThemeProvider`). Both modes must remain usable. Use theme tokens (not hard-coded hex for surfaces/text) unless for one-off brand gradients documented in marketing sections.
 
 ## Related
 

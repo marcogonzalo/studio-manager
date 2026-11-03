@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama chore/cursor-rules-cleanup:** Trim `.cursor/rules` (~21KB→~10KB): drop persona/duplication, fix stale middleware/`useEffect`/`db:push` claims, narrow security/frontend globs, add frontmatter to deps/db rules. Theme default documented as `system` (matches `ThemeProvider`). Visual recipes moved into `veta-frontend-components`. Docs/rules only.
+
 - **Rama chore/dx-i18n-split-eslint-filesize:** Split marketing i18n into `messages/{en,es}/marketing/{shell,home,pricing,landings,forms,legal}.json` + `index.ts` barrels; promote `no-explicit-any` / `no-unused-vars` to error; soft `max-lines` 300 warn + file-size convention in cursor rules; ignore `**/*.json` in ESLint. Full verify: Docker lint + typecheck + knip + tests + build.
 
 - **Rama chore/dx-hooks-cursorignore:** DX gates — husky + lint-staged + commitlint, `typecheck`, knip (files/deps), `test:changed`/`test:related`, CI concurrency/paths-ignore + typecheck/commitlint/knip, expanded `.cursorignore`, PR workflow rules synced. Full verify: Docker lint + typecheck + knip + tests 108 files + build.
