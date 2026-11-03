@@ -1,100 +1,30 @@
 ---
-description: Frontend Coding Standards (React, Tailwind, Shadcn)
-globs: src/**/*.tsx, src/**/*.ts
+description: Frontend standards for React components, Tailwind, and Shadcn in Veta
+globs: src/**/*.tsx
 ---
 
 # Frontend Standards
 
-## React Components
+## Components
 
-- **Function Components:** Use `export function ComponentName() {}` or `const ComponentName = () => {}`.
-- **Hooks:** Always follow Rules of Hooks. Custom hooks should start with `use`.
-- **Props:** Define strict interfaces for props. Avoid `any`.
-- **File size:** Keep modules near **≤300 lines** (soft). When a view grows, extract `use…` hooks, presentational pieces, schemas, and helpers rather than packing more into the same file.
-- **Performance:** Use `useMemo` and `useCallback` mainly for referential equality in dependencies, not premature optimization.
+- Function components (`export function Name()`); custom hooks start with `use`; strict prop interfaces.
+- Keep modules near ≤300 lines; extract hooks, presentational pieces, schemas, and helpers instead of growing one file.
+- `useMemo` / `useCallback` for referential stability in dependencies, not premature optimization.
+- **Data fetching:** prefer Server Components / Server Actions (`createClient` from `@/lib/supabase/server`). In Client Components use `getSupabaseClient()` from `@/lib/supabase` and always handle the returned `error`.
 
-## Tailwind CSS
+## Styling
 
-- **Utility First:** Use standard Tailwind classes.
-- **Theme:** Use CSS variables defined in `globals.css` (e.g., `bg-background`, `text-primary`).
-- **Responsive:** Mobile-first approach. `w-full md:w-1/2`.
-- **Classes:** Use `clsx` or `cn` helper for conditional classes.
+- Tailwind utilities + theme tokens from `src/styles/globals.css` (`bg-background`, `text-primary`, …); `cn()` for conditional classes; mobile-first.
+- Light **and** dark mode must both work (`ThemeProvider` uses `defaultTheme="system"`). Use tokens, not hard-coded surface/text colors.
+- Reuse `src/components/ui/*` (Shadcn/Radix) and animation helpers (`AnimatedSection`, `StaggerContainer`, `AnimatedCounter`, `Skeleton`) instead of re-implementing them.
+- Avoid wrapper `<div>`s or Fragments that only carry one class or one child — move the class to parent, child, or `TableCell`. One `TooltipProvider` per section, not per row.
 
-## Animations & Interactions
+## Shadcn Select
 
-- **Scroll Animations:** Use `AnimatedSection`, `StaggerContainer`, and `StaggerItem` from `@/components/ui/animated-section` for scroll-triggered reveal animations in marketing pages and app views.
-- **Animated Counters:** Use `AnimatedCounter` from `@/components/ui/animated-counter` for number animations (stats, metrics).
-- **Animation Timing:** Use consistent easing `cubic-bezier(0.25, 0.4, 0.25, 1)` and durations:
-  - Fast: 200ms (overlays, quick transitions)
-  - Standard: 300ms (cards, dialogs, general interactions)
-  - Slow: 500-600ms (page transitions, complex animations)
-- **Stagger Delays:** Use 0.1-0.15s delays between items in staggered animations.
-- **Dialog/Modal Animations:** Dialogs and Sheets use smooth fade + zoom + slide animations (300ms duration). Already configured in `dialog.tsx` and `sheet.tsx`.
-- **Hover Effects:** Use `hover:-translate-y-1`, `hover:shadow-lg`, `group-hover:scale-110` for interactive elements.
-- **Glow Effects:** Use `animate-glow` class for primary CTAs and important buttons.
-- **Skeleton Loading:** Use `Skeleton` component from `@/components/ui/skeleton` for loading states instead of text placeholders.
+- Never `<SelectItem value="">`. Optional fields use `undefined` in defaults and `value={field.value || undefined}`. Details: skill `veta-forms-validation`.
 
-## DOM & Nesting (efficiency)
+## Structure
 
-- **Fragment con un solo hijo:** Usar `<>...</>` solo cuando el padre exija múltiples hijos (ej. key en listas). Si el hijo único es un div, no hace falta Fragment.
-- **Div solo para una clase:** Valorar si esa clase puede ir en el padre o en el hijo (p. ej. `flex`, `gap`, `space-y`) y evitar el wrapper.
-- **TooltipProvider:** Un solo provider a nivel de sección o página cuando sea posible; no uno por fila o por ítem.
-- **TableCell + alineación:** Preferir `className` en `TableCell` (p. ej. `flex items-center justify-end`) en lugar de un div intermedio solo para alinear.
+- `src/app` routes/views · `src/components/ui` primitives · `src/components` domain components · `src/lib` utilities · `src/types` shared types.
 
-## Visual Enhancements
-
-- **Gradients:** Use radial/mesh gradients (`bg-gradient-to-br`, `from-primary/10 via-primary/5`) for CTAs and hero sections.
-- **Blur Effects:** Use `blur-2xl` or `blur-3xl` for decorative background orbs.
-- **Card Heights:** Use `h-full` with `flex flex-col` and `flex-1` on content areas to ensure equal heights in grids.
-- **Fixed Widths:** Use fixed widths (e.g., `w-[125px]`) when specific sizing is required instead of responsive classes.
-
-## Supabase Client
-
-- **Client-side:** Use `getSupabaseClient()` from `@/lib/supabase` (re-exports from `client.ts`). For Server Components or server code, use `createClient` from `@/lib/supabase/server`.
-- **Types:** Import database types from `@/types` or generated Supabase types.
-- **Error Handling:** Always check `error` returned by Supabase calls.
-
-  ```ts
-  const { data, error } = await supabase.from('table').select();
-  if (error) toast.error(error.message);
-  ```
-
-## State Management
-
-- **Server State:** Prefer fetching data inside components with `useEffect` or using a library like TanStack Query (if added later).
-- **UI State:** `useState` for local, `useContext` for global (Auth, Theme).
-
-## Shadcn/UI Components (Radix UI)
-
-- **Select Component:** **CRITICAL:** Never use `value=""` (empty string) in `<SelectItem>`. Radix UI Select does not allow empty string values because it uses empty strings internally to clear selections and show placeholders.
-  - **Wrong:** `<SelectItem value="">No option</SelectItem>`
-  - **Correct:** Remove the SelectItem and use `undefined` for optional values. Handle empty state with placeholder:
-
-    ```tsx
-    <Select 
-      onValueChange={(value) => field.onChange(value || undefined)} 
-      value={field.value || undefined}
-    >
-      <SelectTrigger>
-        <SelectValue placeholder="Select option" />
-      </SelectTrigger>
-      <SelectContent>
-        {/* Only include SelectItems with non-empty values */}
-        {options.map((option) => (
-          <SelectItem key={option.id} value={option.id}>
-            {option.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-    ```
-
-  - **Form Defaults:** Use `undefined` instead of empty strings for optional Select fields in form defaultValues.
-
-## Directory Structure
-
-- `src/app`: Routes/Views (Next.js App Router).
-- `src/components/ui`: Shadcn primitives and animation components.
-- `src/components`: Domain components.
-- `src/lib`: Utilities and configs.
-- `src/types`: Shared TypeScript definitions.
+Visual recipes (animation timing, hover, gradients, button widths): skill `veta-frontend-components`.

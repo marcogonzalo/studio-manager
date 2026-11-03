@@ -32,8 +32,18 @@ description: Veta UI conventions — Tailwind v4, Shadcn/Radix, next-themes, Fra
 ## Animations (marketing and app)
 
 - Reveal on scroll: **`AnimatedSection`** with props `direction`, `delay`, `duration`, `once`, `triggerOnMount`; honor **`useReducedMotion`** (already wired in the component).
-- Lists/grids: **`StaggerContainer`** + **`StaggerItem`** for staggered children.
-- Timing aligned with `.cursor/rules/02-frontend.mdc`: easing `cubic-bezier(0.25, 0.4, 0.25, 1)`; ~200ms / 300ms / 500–600ms by context; stagger steps ~0.1–0.15s.
+- Lists/grids: **`StaggerContainer`** + **`StaggerItem`** for staggered children; stagger steps ~0.1–0.15s.
+- Numbers (stats, metrics): **`AnimatedCounter`** (SSR renders the final value).
+- Easing `cubic-bezier(0.25, 0.4, 0.25, 1)`. Durations: fast 200ms (overlays), standard 300ms (cards, dialogs), slow 500–600ms (page transitions).
+- Dialogs/Sheets already animate (fade + zoom + slide, 300ms) in `dialog.tsx` / `sheet.tsx` — do not re-add.
+- Loading states: **`Skeleton`** from `@/components/ui/skeleton`, not text placeholders.
+
+## Visual recipes
+
+- Hover on interactive cards: `hover:-translate-y-1`, `hover:shadow-lg`, `group-hover:scale-110`.
+- Primary CTAs: `animate-glow`.
+- Hero/CTA backgrounds: radial/mesh gradients (`bg-gradient-to-br from-primary/10 via-primary/5`); decorative orbs with `blur-2xl` / `blur-3xl`.
+- Equal-height cards in grids: `h-full flex flex-col` with `flex-1` on the content area.
 
 ## Shadcn / forms
 
@@ -52,6 +62,6 @@ description: Veta UI conventions — Tailwind v4, Shadcn/Radix, next-themes, Fra
 
 ## Related
 
-- **`.cursor/rules/02-frontend.mdc`** — extended checklist (dialogs, hover, skeletons, DOM nesting).
+- **`.cursor/rules/02-frontend.mdc`** — always-on component/styling essentials (data fetching, tokens, DOM nesting, Select).
 - **`veta-forms-validation`** — forms and Select rules.
 - **`frontend-design`** / **`web-design-guidelines`** (external skills) — when the user asks for higher-level UI polish or accessibility audits.

@@ -1,41 +1,14 @@
-# Database & Migrations Guidelines
+---
+description: Supabase migration safety (local-only push/reset, no production link)
+globs: supabase/**
+---
 
-## Migration Management
+# Database & Migrations
 
-**CRITICAL**: In development, only apply migrations with `supabase db push --local` (or `pnpm run db:push`). Never use `supabase db push` without `--local` unless you are intentionally deploying to production.
+- **Local only:** apply migrations with `pnpm run db:push` (= `supabase db push --local`). Never run `supabase db push` without `--local`.
+- **No built-in prod guard:** `db:push` is a plain CLI alias — it does not inspect `.env.local`. Safety comes from never linking production (`supabase link`) on a dev machine.
+- **Reset is destructive:** `pnpm run db:reset` wipes local data. Run only with explicit user authorization.
+- **Workflow:** `supabase migration new <name>` → write SQL in `supabase/migrations/` (RLS policies included) → `pnpm run db:push` → `supabase migration list --local` → regenerate types.
+- **Production:** migrations reach production only through a controlled deploy, never from an agent session.
 
-### Commands
-
-- **`supabase db push --local`** (or **`pnpm run db:push`**): Applies pending migrations without data loss. Preserves existing data. Use for normal development.
-- **`supabase db reset`**: Full database reset; deletes data in `public`. Use only when explicitly authorized by the user (e.g. major problem or explicit request).
-
-### Workflow
-
-1. Create migration: `supabase migration new migration_name`
-2. Write SQL in the migration file
-3. Apply: `pnpm run db:push` or `supabase db push --local`
-4. Check status: `supabase migration list` or `supabase migration list --local`
-
-### Rollback
-
-- `supabase migration repair` to fix migration state; manual SQL if you need to roll back a single migration. Preserve data when possible.
-
-### Best Practices
-
-- Never use `db reset` without explicit user authorization.
-- Check migration status before applying; test on local before any remote deploy.
-- Document breaking changes in migration files.
-
-## Protection Against Accidental Production Changes
-
-**Goal:** No migration or destructive command must run against the production database by mistake.
-
-1. **Do not link production.** Do not run `supabase link` with your production project on your dev machine. Use a staging project or a separate profile for types/diff if needed; never use it for `db push`/`db reset`.
-
-2. **Use the safeguard script.** Prefer `pnpm run db:push` to apply migrations: it only runs `supabase db push --local` and refuses to run if `.env.local` points to production (supabase.co).
-
-3. **Production migrations only via controlled process.** Apply migrations to production only via:
-   - **CI/CD:** e.g. GitHub Action on main/production branch with approval and secrets (`SUPABASE_ACCESS_TOKEN`, project ref); no production link on dev machines.
-   - **Manual deploy:** Only when intentionally deploying, with checklist and explicit confirmation or env (e.g. `DEPLOY_MIGRATIONS_TO=production`).
-
-4. **Reset is local only.** `supabase db reset` affects only the local instance. The risk is losing local data; always require explicit user authorization (see Best Practices).
+Full workflow and rollback: skill `veta-db-migrations`.
