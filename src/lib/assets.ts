@@ -5,7 +5,8 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-export type AssetKind = "product_image" | "space_image" | "document";
+export type AssetKind =
+  "product_image" | "space_image" | "document" | "account_logo";
 
 export interface CreateAssetParams {
   userId: string;
@@ -15,7 +16,8 @@ export interface CreateAssetParams {
   bytes?: number | null;
   mimeType?: string | null;
   kind: AssetKind;
-  ownerTable: "products" | "space_images" | "project_documents";
+  ownerTable:
+    "products" | "space_images" | "project_documents" | "account_settings";
   ownerId: string;
 }
 
