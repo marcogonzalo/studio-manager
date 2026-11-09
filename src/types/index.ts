@@ -291,7 +291,8 @@ export interface ProjectItem {
   product?: {
     name?: string;
     currency?: string;
-    supplier?: { name: string };
+    supplier_id?: string | null;
+    supplier?: { id?: string; name: string };
     description?: string;
     reference_code?: string;
     reference_url?: string;
