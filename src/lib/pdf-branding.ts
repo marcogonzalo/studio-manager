@@ -1,7 +1,7 @@
 /**
- * Resolve budget PDF header/footer branding from plan modality + account logo.
- * Base (basic): Veta header + footer.
- * Pro/Studio (plus|full): account logo + public name; no Veta branding.
+ * Client-facing account branding (PDF header + public view).
+ * Logo and public_name apply only when pdf_export_mode is plus or full.
+ * Downgrade to Base must not expose stored logo / public_name.
  */
 
 import type { PlanConfig } from "@/types";
@@ -19,6 +19,48 @@ export type PdfBranding = {
   brandName?: string;
 };
 
+/** True when plan may expose account logo + public_name on client surfaces. */
+export function isClientAccountBrandingAllowed(
+  planConfig: PlanConfig | null | undefined
+): boolean {
+  return isAccountLogoBrandingAvailable(planConfig);
+}
+
+/**
+ * Gate stored account fields for client-facing use (PDF architect block, etc.).
+ * When plan is basic, public_name / public_logo / public_email are omitted even if stored.
+ */
+export function resolveClientFacingPublicProfile(params: {
+  planConfig: PlanConfig | null | undefined;
+  publicName?: string | null;
+  publicEmail?: string | null;
+  publicLogoUrl?: string | null;
+  /** Login / profile email fallback when account branding is not allowed. */
+  fallbackEmail?: string | null;
+}): {
+  brandingAllowed: boolean;
+  publicName?: string;
+  publicEmail?: string;
+  publicLogoUrl?: string;
+} {
+  const brandingAllowed = isClientAccountBrandingAllowed(params.planConfig);
+  if (!brandingAllowed) {
+    const fallback = params.fallbackEmail?.trim() || undefined;
+    return {
+      brandingAllowed: false,
+      publicEmail: fallback,
+    };
+  }
+
+  return {
+    brandingAllowed: true,
+    publicName: params.publicName?.trim() || undefined,
+    publicEmail:
+      params.publicEmail?.trim() || params.fallbackEmail?.trim() || undefined,
+    publicLogoUrl: params.publicLogoUrl?.trim() || undefined,
+  };
+}
+
 export function resolvePdfBranding(params: {
   planConfig: PlanConfig | null | undefined;
   /** Already embedded data URL preferred for react-pdf. */
@@ -27,15 +69,18 @@ export function resolvePdfBranding(params: {
   /** Embedded Veta logo data URL when mode is veta. */
   vetaLogoDataUrl?: string | null;
 }): PdfBranding {
-  const useAccount = isAccountLogoBrandingAvailable(params.planConfig);
-  if (useAccount) {
-    const brandName = params.publicName?.trim() || undefined;
-    const logoUrl = params.accountLogoDataUrl?.trim() || undefined;
+  const profile = resolveClientFacingPublicProfile({
+    planConfig: params.planConfig,
+    publicName: params.publicName,
+    publicLogoUrl: params.accountLogoDataUrl,
+  });
+
+  if (profile.brandingAllowed) {
     return {
       mode: "account",
       showVetaBranding: false,
-      logoUrl,
-      brandName,
+      logoUrl: profile.publicLogoUrl,
+      brandName: profile.publicName,
     };
   }
 

@@ -83,7 +83,10 @@ import { BudgetCustomizeDialog } from "@/components/dialogs/budget-customize-dia
 import type { BudgetCustomizeSavePayload } from "@/components/dialogs/budget-customize-dialog";
 import type { BudgetSettings } from "@/lib/budget-settings";
 import { resolveBudgetSettingsForPresentation } from "@/lib/budget-settings";
-import { resolvePdfBranding } from "@/lib/pdf-branding";
+import {
+  resolveClientFacingPublicProfile,
+  resolvePdfBranding,
+} from "@/lib/pdf-branding";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
@@ -461,10 +464,17 @@ export function ProjectBudget({
           .select("email")
           .eq("id", user.id)
           .single();
-        architectName = settings?.public_name?.trim() || undefined;
-        architectEmail =
-          settings?.public_email?.trim() || profile?.email?.trim() || undefined;
-        publicLogoUrl = settings?.public_logo_url?.trim() || undefined;
+        // Plan gate: stored logo/public_name must not apply after downgrade to Base.
+        const publicProfile = resolveClientFacingPublicProfile({
+          planConfig: effectivePlan?.config,
+          publicName: settings?.public_name,
+          publicEmail: settings?.public_email,
+          publicLogoUrl: settings?.public_logo_url,
+          fallbackEmail: profile?.email,
+        });
+        architectName = publicProfile.publicName;
+        architectEmail = publicProfile.publicEmail;
+        publicLogoUrl = publicProfile.publicLogoUrl;
       }
       const taxRate =
         project.tax_rate !== null && project.tax_rate !== undefined
