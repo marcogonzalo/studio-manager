@@ -276,7 +276,10 @@ export function AccountLogoUpload({
         <p className="text-destructive text-sm">{storageLimitError.error}</p>
       ) : null}
       <UploadErrorList items={failures} />
-      <p className="text-muted-foreground text-xs">{t("logoHelp")}</p>
+      <p className="text-muted-foreground text-xs">
+        <span className="block">{t("logoHelpLead")}</span>
+        <span className="block">{t("logoHelpDetail")}</span>
+      </p>
     </div>
   );
 }
