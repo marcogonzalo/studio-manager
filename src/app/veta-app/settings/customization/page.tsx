@@ -8,9 +8,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getSupabaseClient } from "@/lib/supabase";
 import { useAuth } from "@/components/auth-provider";
+import { AccountLogoUpload } from "@/components/account-logo-upload";
 import { PageLoading } from "@/components/loaders/page-loading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { usePlanCapability } from "@/lib/use-plan-capability";
 import {
   Card,
   CardContent,
@@ -69,8 +71,12 @@ export default function CustomizationPage() {
   const locale = useLocale() as Locale;
   const { user, effectivePlan } = useAuth();
   const isBasePlan = effectivePlan?.plan_code === "BASE";
+  const logoBrandingEnabled = usePlanCapability("pdf_export_mode", {
+    minModality: "plus",
+  });
   const supabase = getSupabaseClient();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [publicLogoUrl, setPublicLogoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const defaultsCardRef = useRef<HTMLDivElement | null>(null);
   const [defaultsHighlight, setDefaultsHighlight] = useState(false);
@@ -110,7 +116,7 @@ export default function CustomizationPage() {
       const { data: settingsData, error: settingsError } = await supabase
         .from("account_settings")
         .select(
-          "default_tax_rate, default_currency, public_name, public_email, lang, date_format"
+          "default_tax_rate, default_currency, public_name, public_email, public_logo_url, lang, date_format"
         )
         .eq("user_id", user.id)
         .single();
@@ -140,6 +146,7 @@ export default function CustomizationPage() {
         public_name: settingsData?.public_name ?? "",
         email: (settingsData?.public_email ?? profileData?.email)?.trim() ?? "",
       });
+      setPublicLogoUrl(settingsData?.public_logo_url?.trim() || null);
       formDefaults.reset({
         default_tax_rate:
           settingsData?.default_tax_rate != null
@@ -453,6 +460,29 @@ export default function CustomizationPage() {
                     </FormItem>
                   )}
                 />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">{t("logoLabel")}</p>
+                  <AccountLogoUpload
+                    currentLogoUrl={publicLogoUrl}
+                    disabled={!logoBrandingEnabled}
+                    onUploadSuccess={(url) => {
+                      setPublicLogoUrl(url);
+                      toast.success(t("toastLogoSaved"));
+                    }}
+                    onRemoveSuccess={() => {
+                      setPublicLogoUrl(null);
+                      toast.success(t("toastLogoRemoved"));
+                    }}
+                  />
+                  {!logoBrandingEnabled && (
+                    <p className="text-muted-foreground text-xs">
+                      {t("logoUpgradeHint")}{" "}
+                      <Link href="/pricing" className="font-medium underline">
+                        {t("upgradeCta")}
+                      </Link>
+                    </p>
+                  )}
+                </div>
                 <Button
                   type="submit"
                   disabled={

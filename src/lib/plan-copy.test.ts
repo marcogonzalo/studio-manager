@@ -43,7 +43,9 @@ describe("plan-copy", () => {
       expect(features).toContain("5 proyectos activos");
       expect(features).toContain("Clientes ilimitados");
       expect(features).toContain("10 GB de almacenamiento");
-      expect(features).toContain("Presupuesto personalizado");
+      expect(features).toContain(
+        "Presupuesto con marca propia (logo y nombre)"
+      );
       expect(features).toContain("Pedidos de compra");
       expect(features).toContain("Soporte por email");
     });
@@ -54,7 +56,7 @@ describe("plan-copy", () => {
       expect(features).toContain("50 proyectos activos");
       expect(features).toContain("100 GB de almacenamiento");
       expect(features).toContain(
-        "Presupuesto personalizable con marca propia (white label)"
+        "Presupuesto con marca propia (logo y nombre)"
       );
       expect(features).toContain("Moneda e impuesto por proyecto");
       expect(features).toContain("Soporte prioritario");
@@ -93,7 +95,7 @@ describe("plan-copy", () => {
       expect(compact.length).toBeLessThan(full.length);
       expect(compact).toContain("5 proyectos activos");
       expect(compact).toContain("10 GB de almacenamiento");
-      expect(compact).toContain("Presupuesto personalizado");
+      expect(compact).toContain("Presupuesto con marca propia (logo y nombre)");
       expect(compact).toContain("Soporte por email");
       expect(compact).not.toContain("Clientes ilimitados");
       expect(compact).not.toContain("Proveedores ilimitados");

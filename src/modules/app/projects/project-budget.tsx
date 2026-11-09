@@ -84,6 +84,10 @@ import { BudgetCustomizeDialog } from "@/components/dialogs/budget-customize-dia
 import type { BudgetCustomizeSavePayload } from "@/components/dialogs/budget-customize-dialog";
 import type { BudgetSettings } from "@/lib/budget-settings";
 import { resolveBudgetSettingsForPresentation } from "@/lib/budget-settings";
+import {
+  resolveClientFacingPublicProfile,
+  resolvePdfBranding,
+} from "@/lib/pdf-branding";
 import { ProductDetailModal } from "@/components/product-detail-modal";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { toast } from "sonner";
@@ -155,9 +159,6 @@ export function ProjectBudget({
   const budgetCustomizationEnabled = usePlanCapability("pdf_export_mode", {
     minModality: "plus",
   });
-  const showVetaBranding =
-    effectivePlan?.config?.pdf_export_mode === "basic" ||
-    effectivePlan?.config?.pdf_export_mode === "plus";
   const supabase = getSupabaseClient();
   const { budgetLines, refetch: refetchBudgetLines } = useProjectBudgetLines(
     projectId,
@@ -467,10 +468,11 @@ export function ProjectBudget({
       const { generateProjectPDF } = await import("@/lib/pdf-generator");
       let architectName: string | undefined;
       let architectEmail: string | undefined;
+      let publicLogoUrl: string | undefined;
       if (user?.id) {
         const { data: settings } = await supabase
           .from("account_settings")
-          .select("public_name, public_email")
+          .select("public_name, public_email, public_logo_url")
           .eq("user_id", user.id)
           .single();
         const { data: profile } = await supabase
@@ -478,9 +480,17 @@ export function ProjectBudget({
           .select("email")
           .eq("id", user.id)
           .single();
-        architectName = settings?.public_name?.trim() || undefined;
-        architectEmail =
-          settings?.public_email?.trim() || profile?.email?.trim() || undefined;
+        // Plan gate: stored logo/public_name must not apply after downgrade to Base.
+        const publicProfile = resolveClientFacingPublicProfile({
+          planConfig: effectivePlan?.config,
+          publicName: settings?.public_name,
+          publicEmail: settings?.public_email,
+          publicLogoUrl: settings?.public_logo_url,
+          fallbackEmail: profile?.email,
+        });
+        architectName = publicProfile.publicName;
+        architectEmail = publicProfile.publicEmail;
+        publicLogoUrl = publicProfile.publicLogoUrl;
       }
       const taxRate =
         project.tax_rate !== null && project.tax_rate !== undefined
@@ -499,9 +509,14 @@ export function ProjectBudget({
       );
       const linesToPdf = option === "products" ? [] : budgetLines;
 
-      // Logo as data URL so react-pdf embeds it without a CORS fetch
+      // Logos as data URLs so react-pdf embeds without a CORS fetch
       let vetaLogoDataUrl: string | undefined;
-      if (origin && showVetaBranding) {
+      let accountLogoDataUrl: string | undefined;
+      const accountBrandingPreview = resolvePdfBranding({
+        planConfig: effectivePlan?.config,
+        publicName: architectName,
+      });
+      if (accountBrandingPreview.mode === "veta" && origin) {
         vetaLogoDataUrl =
           (await fetchImageAsDataUrl(
             `${origin}/img/veta-logo.png`,
@@ -509,6 +524,17 @@ export function ProjectBudget({
             origin
           )) ?? undefined;
       }
+      if (accountBrandingPreview.mode === "account" && publicLogoUrl) {
+        accountLogoDataUrl =
+          (await fetchImageAsDataUrl(publicLogoUrl, fetch, origin)) ??
+          undefined;
+      }
+      const branding = resolvePdfBranding({
+        planConfig: effectivePlan?.config,
+        accountLogoDataUrl,
+        publicName: architectName,
+        vetaLogoDataUrl,
+      });
       const projectForPdf = {
         ...project,
         budget_settings: resolveBudgetSettingsForPresentation(
@@ -523,9 +549,10 @@ export function ProjectBudget({
         taxRate,
         architectName,
         architectEmail,
-        showVetaBranding,
-        vetaLogoDataUrl,
-        lang
+        branding.showVetaBranding,
+        branding.logoUrl,
+        lang,
+        branding.brandName
       );
       const blob = await asPdf.toBlob();
       const url = URL.createObjectURL(blob);

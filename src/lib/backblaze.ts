@@ -191,6 +191,60 @@ export async function uploadProductImage(params: {
 }
 
 /**
+ * Account branding logo: assets/{userId}/branding/logo.png
+ * PNG so @react-pdf/renderer can embed without WebP issues.
+ */
+export async function uploadAccountLogo(params: {
+  buffer: ArrayBuffer;
+  userId: string;
+}): Promise<B2UploadResult> {
+  const { buffer, userId } = params;
+  const mimeType = "image/png";
+  const fileName = `${BUCKET_ASSETS_PREFIX}/${userId}/branding/logo.png`;
+  const encodedFileName = encodeURIComponent(fileName);
+
+  const auth = await b2Authorize();
+  const { uploadUrl, authorizationToken } = await getUploadUrl(auth);
+
+  const sha1 = await crypto.subtle.digest("SHA-1", buffer).then((h) =>
+    Array.from(new Uint8Array(h))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("")
+  );
+
+  const res = await fetch(uploadUrl, {
+    method: "POST",
+    headers: {
+      Authorization: authorizationToken,
+      "X-Bz-File-Name": encodedFileName,
+      "Content-Type": mimeType,
+      "Content-Length": String(buffer.byteLength),
+      "X-Bz-Content-Sha1": sha1,
+    },
+    body: buffer,
+  });
+
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { message?: string };
+    throwB2HttpError(res, err, "B2 upload failed");
+  }
+
+  const data = (await res.json()) as B2UploadFileResponse;
+
+  const bucketName = process.env.B2_BUCKET_NAME;
+  const { downloadUrl } = getApiUrls(auth);
+
+  if (!bucketName || !downloadUrl) {
+    throw new Error("B2_BUCKET_NAME o downloadUrl no configurados");
+  }
+
+  return {
+    url: `${downloadUrl}/file/${bucketName}/${data.fileName}`,
+    storagePath: fileName,
+  };
+}
+
+/**
  * Estructura: assets/{userId}/projects/{projectId}/img/{imageId}.ext
  */
 export async function uploadSpaceImage(params: {
