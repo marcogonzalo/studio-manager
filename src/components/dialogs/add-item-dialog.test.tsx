@@ -352,13 +352,16 @@ describe("AddItemDialog", () => {
     const nameInput = await screen.findByRole("textbox", {
       name: /productNameLabel/i,
     });
-    await user.type(nameInput, "Prefilled supplier lamp");
+    await user.clear(nameInput);
+    await user.click(nameInput);
+    await user.paste("Prefilled supplier lamp");
 
     const unitCostInput = screen.getByRole("spinbutton", {
       name: /unitCostLabel/i,
     });
     await user.clear(unitCostInput);
-    await user.type(unitCostInput, "120");
+    await user.click(unitCostInput);
+    await user.paste("120");
 
     await user.click(screen.getByRole("button", { name: "addToBudget" }));
 

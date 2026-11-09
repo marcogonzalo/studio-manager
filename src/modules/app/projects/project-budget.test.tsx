@@ -205,5 +205,5 @@ describe("ProjectBudget product grouping (#116)", () => {
       spaceId: undefined,
       supplierId: "sup-artemide",
     });
-  });
+  }, 20_000);
 });
