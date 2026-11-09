@@ -81,6 +81,7 @@ interface AddItemDialogProps {
   onCreated?: () => void;
   item?: ProjectItem | null;
   spaceId?: string;
+  supplierId?: string;
   /** Tracking origin when dialog opened (form | space_add | duplicate). */
   origin?: BudgetCreatedOrigin;
   /** Duplicate / external prefill for create mode. */
@@ -95,6 +96,7 @@ export function AddItemDialog({
   onCreated,
   item,
   spaceId,
+  supplierId,
   origin = "form",
   initialValues = null,
 }: AddItemDialogProps) {
@@ -293,11 +295,13 @@ export function AddItemDialog({
         const prefill: FormValues = {
           ...base,
           space_id: spaceId || "none",
+          supplier_id: supplierId || "none",
           ...(initialValues
             ? {
                 product_id: initialValues.product_id ?? base.product_id,
                 space_id: initialValues.space_id ?? spaceId ?? base.space_id,
-                supplier_id: initialValues.supplier_id ?? base.supplier_id,
+                supplier_id:
+                  initialValues.supplier_id ?? supplierId ?? base.supplier_id,
                 name: initialValues.name ?? "",
                 description: initialValues.description ?? "",
                 reference_code: initialValues.reference_code ?? "",
@@ -342,7 +346,17 @@ export function AddItemDialog({
     }
     if (open) loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- emptyFormDefaults is stable shape
-  }, [open, projectId, item, spaceId, origin, initialValues, form, supabase]);
+  }, [
+    open,
+    projectId,
+    item,
+    spaceId,
+    supplierId,
+    origin,
+    initialValues,
+    form,
+    supabase,
+  ]);
 
   const handleProductSelect = (productId: string) => {
     const prod = products.find((p) => p.id === productId);
@@ -373,7 +387,10 @@ export function AddItemDialog({
       form.setValue("reference_url", "");
       form.setValue("category", "");
       form.setValue("image_url", "");
-      form.setValue("supplier_id", "none");
+      form.setValue(
+        "supplier_id",
+        initialValues?.supplier_id || supplierId || "none"
+      );
     } else {
       form.setValue("product_id", "");
       setSelectedProduct(null);
@@ -383,7 +400,10 @@ export function AddItemDialog({
       form.setValue("reference_url", "");
       form.setValue("category", "");
       form.setValue("image_url", "");
-      form.setValue("supplier_id", "none");
+      form.setValue(
+        "supplier_id",
+        initialValues?.supplier_id || supplierId || "none"
+      );
     }
   };
 

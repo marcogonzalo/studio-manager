@@ -3,16 +3,19 @@ import {
   BUDGET_CATEGORY_DISPLAY_ORDER,
   BUDGET_PHASE_DISPLAY_ORDER,
   UNASSIGNED_SPACE_KEY,
+  UNASSIGNED_SUPPLIER_KEY,
   applyBudgetPresentation,
   compareBudgetLines,
   filterBudgetLinesByPhase,
   groupBudgetLinesByPhaseThenCategory,
   groupBudgetLinesByPhaseThenCategoryWithSettings,
   groupItemsBySpaceThenCreatedAt,
+  groupItemsBySupplierThenCreatedAt,
   orderedBudgetCategoryKeys,
   orderedBudgetPhaseKeys,
   sortBudgetLines,
   sortProjectItemsBySpaceThenCreatedAt,
+  sortProjectItemsBySupplierThenCreatedAt,
   sortSpacesByCreatedAt,
   uniqueSpaceKeysByCreatedAt,
 } from "./project-list-order";
@@ -246,6 +249,75 @@ describe("project-list-order", () => {
       "General",
     ]);
     expect(groups[0]?.items.map((item) => item.id)).toEqual(["tap", "mirror"]);
+  });
+
+  it("sorts and groups items by supplier alphabetically then created_at, unassigned last", () => {
+    const rawItems = [
+      {
+        id: "no-sup",
+        created_at: "2026-01-01T00:00:00Z",
+        product: { supplier: null },
+      },
+      {
+        id: "z-2",
+        created_at: "2026-01-03T00:00:00Z",
+        product: {
+          supplier_id: "sup-z",
+          supplier: { id: "sup-z", name: "Zara Home" },
+        },
+      },
+      {
+        id: "a-1",
+        created_at: "2026-01-02T00:00:00Z",
+        supplier_id: "sup-a",
+        supplier_name: "Artemide",
+      },
+      {
+        id: "z-1",
+        created_at: "2026-01-01T00:00:00Z",
+        product: {
+          supplier_id: "sup-z",
+          supplier: { id: "sup-z", name: "Zara Home" },
+        },
+      },
+    ];
+
+    const sorted = sortProjectItemsBySupplierThenCreatedAt(rawItems);
+    expect(sorted.map((item) => item.id)).toEqual([
+      "a-1",
+      "z-1",
+      "z-2",
+      "no-sup",
+    ]);
+
+    const groups = groupItemsBySupplierThenCreatedAt(rawItems, "No supplier");
+    expect(
+      groups.map((group) => ({
+        supplierKey: group.supplierKey,
+        supplierId: group.supplierId,
+        supplierName: group.supplierName,
+        ids: group.items.map((item) => item.id),
+      }))
+    ).toEqual([
+      {
+        supplierKey: "id:sup-a",
+        supplierId: "sup-a",
+        supplierName: "Artemide",
+        ids: ["a-1"],
+      },
+      {
+        supplierKey: "id:sup-z",
+        supplierId: "sup-z",
+        supplierName: "Zara Home",
+        ids: ["z-1", "z-2"],
+      },
+      {
+        supplierKey: UNASSIGNED_SUPPLIER_KEY,
+        supplierId: null,
+        supplierName: "No supplier",
+        ids: ["no-sup"],
+      },
+    ]);
   });
 
   it("merges space keys from products and renders by space created_at", () => {
