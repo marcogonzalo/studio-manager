@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import nextConfig from "../../next.config";
 
 /** Finds the security headers config (route "/:path*"), not static cache config. */
@@ -176,5 +176,38 @@ describe("Security Headers Configuration", () => {
     expect(workerSrc).toMatch(/\bblob:/);
     expect(scriptSrc).not.toMatch(/\bdata:/);
     expect(scriptSrc).not.toMatch(/\bblob:/);
+  });
+
+  it("keeps the live-mode origin out of CSP outside development", async () => {
+    const headerConfig = await getSecurityHeaderConfig();
+    const headerArray = headerConfig?.headers as Array<{
+      key: string;
+      value: string;
+    }>;
+    const csp = headerArray?.find((h) => h.key === "Content-Security-Policy");
+
+    expect(csp?.value).not.toContain("http://localhost:8400");
+  });
+
+  it("allows the live-mode origin on script-src and connect-src in development", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.resetModules();
+
+    try {
+      const { default: devConfig } = await import("../../next.config");
+      const headers = await devConfig.headers?.();
+      const csp = headers
+        ?.find((h) => h.source === "/:path*")
+        ?.headers.find((h) => h.key === "Content-Security-Policy");
+      const directives = csp?.value.split(";").map((d) => d.trim()) ?? [];
+      const scriptSrc = directives.find((d) => d.startsWith("script-src"));
+      const connectSrc = directives.find((d) => d.startsWith("connect-src"));
+
+      expect(scriptSrc).toContain("http://localhost:8400");
+      expect(connectSrc).toContain("http://localhost:8400");
+    } finally {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    }
   });
 });
