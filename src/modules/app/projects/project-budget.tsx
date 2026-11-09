@@ -10,6 +10,7 @@ import { trackUserEvent } from "@/app/actions/track-event";
 import { useOnboardingHighlight } from "@/lib/use-onboarding-highlight";
 import { useProjectBudgetLines } from "@/lib/use-project-budget-lines";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ExpandableRowActionsMenu,
   ExpandableRowActionsPanel,
@@ -99,7 +100,9 @@ import {
   BUDGET_PHASE_DISPLAY_ORDER,
   groupBudgetLinesByPhaseThenCategory,
   groupItemsBySpaceThenCreatedAt,
+  groupItemsBySupplierThenCreatedAt,
   orderedBudgetCategoryKeys,
+  type ProductBudgetGrouping,
 } from "@/lib/project-list-order";
 import { usePhaseLabel } from "@/lib/use-project-labels";
 import {
@@ -182,6 +185,11 @@ export function ProjectBudget({
   const [itemDialogSpaceId, setItemDialogSpaceId] = useState<
     string | undefined
   >(undefined);
+  const [itemDialogSupplierId, setItemDialogSupplierId] = useState<
+    string | undefined
+  >(undefined);
+  const [productGrouping, setProductGrouping] =
+    useState<ProductBudgetGrouping>("space");
   const [itemDialogOrigin, setItemDialogOrigin] =
     useState<BudgetCreatedOrigin>("form");
   const [itemInitialValues, setItemInitialValues] =
@@ -233,7 +241,7 @@ export function ProjectBudget({
       const { data: itemsData, error: itemsError } = await supabase
         .from("project_items")
         .select(
-          "*, space:spaces(name, created_at), product:products(name, supplier:suppliers(name), description, reference_code, category, image_url), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
+          "*, space:spaces(name, created_at), product:products(name, supplier_id, supplier:suppliers(id, name), description, reference_code, category, image_url), purchase_order:purchase_orders(order_number, status, delivery_deadline, delivery_date)"
         )
         .eq("project_id", projectId)
         .order("created_at");
@@ -318,6 +326,7 @@ export function ProjectBudget({
     setEditingItem(null);
     setItemInitialValues(null);
     setItemDialogSpaceId(undefined);
+    setItemDialogSupplierId(undefined);
     setItemDialogOrigin("form");
   };
 
@@ -364,6 +373,13 @@ export function ProjectBudget({
     resetItemDialogCreateState();
     setItemDialogSpaceId(spaceId ?? undefined);
     setItemDialogOrigin("space_add");
+    setIsItemDialogOpen(true);
+  };
+
+  const handleAddItemToSupplier = (supplierId: string | null) => {
+    resetItemDialogCreateState();
+    setItemDialogSupplierId(supplierId ?? undefined);
+    setItemDialogOrigin("form");
     setIsItemDialogOpen(true);
   };
 
@@ -545,10 +561,27 @@ export function ProjectBudget({
 
   // Exclude products marked as excluded from display and totals
   const includedItems = items.filter((item) => !item.is_excluded);
-  const itemsBySpace = groupItemsBySpaceThenCreatedAt(
-    includedItems,
-    t("spaceGeneral")
-  );
+  const productGroups =
+    productGrouping === "supplier"
+      ? groupItemsBySupplierThenCreatedAt(
+          includedItems,
+          t("supplierUnassigned")
+        ).map(
+          ({ supplierKey, supplierId, supplierName, items: groupItems }) => ({
+            groupKey: supplierKey,
+            groupId: supplierId,
+            groupName: supplierName,
+            items: groupItems,
+          })
+        )
+      : groupItemsBySpaceThenCreatedAt(includedItems, t("spaceGeneral")).map(
+          ({ spaceKey, spaceId, spaceName, items: groupItems }) => ({
+            groupKey: spaceKey,
+            groupId: spaceId,
+            groupName: spaceName,
+            items: groupItems,
+          })
+        );
   const tbdLabel = t("priceTbd");
   const hasPriceTbd =
     hasPricedItemsWithTbd(includedItems) || hasBudgetLinesWithTbd(budgetLines);
@@ -916,333 +949,386 @@ export function ProjectBudget({
                       }
                     />
                   ) : (
-                    itemsBySpace.map(
-                      ({ spaceKey, spaceName, items: spaceItems }) => {
-                        const spaceSectionKey = `products_${spaceKey}`;
-                        const spaceTotal = sumItemSaleAmounts(spaceItems);
-                        const spaceHasTbd = hasPricedItemsWithTbd(spaceItems);
-                        return (
-                          <Collapsible
-                            key={spaceKey}
-                            open={openSections[spaceSectionKey] !== false}
-                            onOpenChange={() => toggleSection(spaceSectionKey)}
+                    <>
+                      <div className="flex items-center justify-end gap-2 print:hidden">
+                        <span className="text-muted-foreground text-xs font-medium">
+                          {t("groupProductsByLabel")}:
+                        </span>
+                        <Tabs
+                          value={productGrouping}
+                          onValueChange={(value) =>
+                            setProductGrouping(value as ProductBudgetGrouping)
+                          }
+                        >
+                          <TabsList
+                            className="h-8"
+                            aria-label={t("groupProductsByAria")}
                           >
-                            <Card>
-                              <CardHeader className="py-3">
-                                <div className="flex items-center justify-between gap-2">
-                                  <CollapsibleTrigger asChild>
-                                    <button
-                                      type="button"
-                                      className="hover:bg-accent/30 flex min-w-0 flex-1 items-center justify-between rounded-md py-1 text-left"
-                                    >
-                                      <CardTitle className="flex items-center gap-2 text-sm">
-                                        <ChevronDown
-                                          className={`h-3 w-3 shrink-0 transition-transform ${openSections[spaceSectionKey] !== false ? "" : "-rotate-90"}`}
-                                        />
-                                        {spaceName}
-                                      </CardTitle>
-                                      <span className="text-foreground text-sm font-semibold">
-                                        {formatCurrency(spaceTotal)}
-                                        {spaceHasTbd ? "*" : ""}
-                                      </span>
-                                    </button>
-                                  </CollapsibleTrigger>
-                                  {!readOnly && (
-                                    <Button
-                                      type="button"
-                                      size="sm"
-                                      variant="outline"
-                                      className="shrink-0 print:hidden"
-                                      aria-label={t("addToSpaceAria")}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAddItemToSpace(
-                                          spaceKey === "none" ? null : spaceKey
-                                        );
-                                      }}
-                                    >
-                                      <Plus className="mr-1 h-3.5 w-3.5" />
-                                      {t("addToSpace")}
-                                    </Button>
-                                  )}
-                                </div>
-                              </CardHeader>
-                              <CollapsibleContent>
-                                <CardContent className="pt-0">
-                                  <Table>
-                                    <TableHeader>
-                                      <TableRow>
-                                        <TableHead>{ts("colItem")}</TableHead>
-                                        <TableHeadMd>
-                                          {ts("colStatus")}
-                                        </TableHeadMd>
-                                        <TableHeadMd className="text-right">
-                                          {ts("colQuantity")}
-                                        </TableHeadMd>
-                                        <TableHeadMd className="text-right">
-                                          {ts("colUnitCost")}
-                                        </TableHeadMd>
-                                        <TableHeadMd className="text-right">
-                                          {ts("colSalePrice")}
-                                        </TableHeadMd>
-                                        <TableHeadMd className="text-right">
-                                          {ts("colTax")}
-                                        </TableHeadMd>
-                                        <TableHead className="text-right">
-                                          {ts("colAmount")}
-                                        </TableHead>
-                                        <TableHeadMd className="w-[80px]" />
-                                        <TableHeadExpandPlaceholder
-                                          srLabel={ts("expandRow")}
-                                        />
-                                      </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                      {spaceItems.map((item) => {
-                                        const expanded = isExpanded(item.id);
-                                        const rowActions: ExpandableTableRowAction[] =
-                                          readOnly
-                                            ? []
-                                            : [
-                                                {
-                                                  id: "edit",
-                                                  label: ts("edit"),
-                                                  icon: Pencil,
-                                                  onClick: () =>
-                                                    handleEditItem(item),
-                                                },
-                                                {
-                                                  id: "duplicate",
-                                                  label: ts("duplicate"),
-                                                  icon: Copy,
-                                                  onClick: () =>
-                                                    handleDuplicateItem(item),
-                                                },
-                                                {
-                                                  id: "delete",
-                                                  label: ts("delete"),
-                                                  icon: Trash2,
-                                                  onClick: () =>
-                                                    setDeleteTarget({
-                                                      kind: "item",
-                                                      id: item.id,
-                                                    }),
-                                                  destructive: true,
-                                                },
-                                              ];
-                                        const imageSrc =
-                                          item.image_url ||
-                                          item.product?.image_url;
-                                        const statusDisplay = getStatusDisplay(
-                                          item.status
-                                        );
-                                        const StatusIcon = statusDisplay.icon;
-                                        const po = item.purchase_order;
-                                        const isOrderedNotReceived =
-                                          item.status === "ordered" && po;
-                                        const deliveryInfo =
-                                          isOrderedNotReceived &&
-                                          (po.delivery_date ||
-                                            po.delivery_deadline)
-                                            ? po.delivery_date
-                                              ? `${t("deliveryPrefix")} ${new Date(po.delivery_date).toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" })}`
-                                              : `${t("deliveryPrefix")} ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
-                                            : null;
-                                        const statusLabel =
-                                          deliveryInfo ?? statusDisplay.label;
-                                        const statusIndicator = (
-                                          <Tooltip>
-                                            <TooltipTrigger asChild>
-                                              <span className="flex items-center justify-center">
-                                                <StatusIcon
-                                                  className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
-                                                />
-                                              </span>
-                                            </TooltipTrigger>
-                                            <TooltipContent variant="tertiary">
-                                              <p>{statusLabel}</p>
-                                            </TooltipContent>
-                                          </Tooltip>
-                                        );
+                            <TabsTrigger
+                              value="space"
+                              className="h-7 px-2.5 text-xs"
+                            >
+                              {t("groupBySpace")}
+                            </TabsTrigger>
+                            <TabsTrigger
+                              value="supplier"
+                              className="h-7 px-2.5 text-xs"
+                            >
+                              {t("groupBySupplier")}
+                            </TabsTrigger>
+                          </TabsList>
+                        </Tabs>
+                      </div>
+                      {productGroups.map(
+                        ({
+                          groupKey,
+                          groupId,
+                          groupName,
+                          items: groupItems,
+                        }) => {
+                          const groupSectionKey = `products_${productGrouping}_${groupKey}`;
+                          const groupTotal = sumItemSaleAmounts(groupItems);
+                          const groupHasTbd = hasPricedItemsWithTbd(groupItems);
+                          return (
+                            <Collapsible
+                              key={groupSectionKey}
+                              open={openSections[groupSectionKey] !== false}
+                              onOpenChange={() =>
+                                toggleSection(groupSectionKey)
+                              }
+                            >
+                              <Card>
+                                <CardHeader className="py-3">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <CollapsibleTrigger asChild>
+                                      <button
+                                        type="button"
+                                        className="hover:bg-accent/30 flex min-w-0 flex-1 items-center justify-between rounded-md py-1 text-left"
+                                      >
+                                        <CardTitle className="flex items-center gap-2 text-sm">
+                                          <ChevronDown
+                                            className={`h-3 w-3 shrink-0 transition-transform ${openSections[groupSectionKey] !== false ? "" : "-rotate-90"}`}
+                                          />
+                                          {groupName}
+                                        </CardTitle>
+                                        <span className="text-foreground text-sm font-semibold">
+                                          {formatCurrency(groupTotal)}
+                                          {groupHasTbd ? "*" : ""}
+                                        </span>
+                                      </button>
+                                    </CollapsibleTrigger>
+                                    {!readOnly && (
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        className="shrink-0 print:hidden"
+                                        aria-label={
+                                          productGrouping === "supplier"
+                                            ? t("addToSupplierAria")
+                                            : t("addToSpaceAria")
+                                        }
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (productGrouping === "supplier") {
+                                            handleAddItemToSupplier(groupId);
+                                          } else {
+                                            handleAddItemToSpace(groupId);
+                                          }
+                                        }}
+                                      >
+                                        <Plus className="mr-1 h-3.5 w-3.5" />
+                                        {productGrouping === "supplier"
+                                          ? t("addToSupplier")
+                                          : t("addToSpace")}
+                                      </Button>
+                                    )}
+                                  </div>
+                                </CardHeader>
+                                <CollapsibleContent>
+                                  <CardContent className="pt-0">
+                                    <Table>
+                                      <TableHeader>
+                                        <TableRow>
+                                          <TableHead>{ts("colItem")}</TableHead>
+                                          <TableHeadMd>
+                                            {ts("colStatus")}
+                                          </TableHeadMd>
+                                          <TableHeadMd className="text-right">
+                                            {ts("colQuantity")}
+                                          </TableHeadMd>
+                                          <TableHeadMd className="text-right">
+                                            {ts("colUnitCost")}
+                                          </TableHeadMd>
+                                          <TableHeadMd className="text-right">
+                                            {ts("colSalePrice")}
+                                          </TableHeadMd>
+                                          <TableHeadMd className="text-right">
+                                            {ts("colTax")}
+                                          </TableHeadMd>
+                                          <TableHead className="text-right">
+                                            {ts("colAmount")}
+                                          </TableHead>
+                                          <TableHeadMd className="w-[80px]" />
+                                          <TableHeadExpandPlaceholder
+                                            srLabel={ts("expandRow")}
+                                          />
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {groupItems.map((item) => {
+                                          const expanded = isExpanded(item.id);
+                                          const rowActions: ExpandableTableRowAction[] =
+                                            readOnly
+                                              ? []
+                                              : [
+                                                  {
+                                                    id: "edit",
+                                                    label: ts("edit"),
+                                                    icon: Pencil,
+                                                    onClick: () =>
+                                                      handleEditItem(item),
+                                                  },
+                                                  {
+                                                    id: "duplicate",
+                                                    label: ts("duplicate"),
+                                                    icon: Copy,
+                                                    onClick: () =>
+                                                      handleDuplicateItem(item),
+                                                  },
+                                                  {
+                                                    id: "delete",
+                                                    label: ts("delete"),
+                                                    icon: Trash2,
+                                                    onClick: () =>
+                                                      setDeleteTarget({
+                                                        kind: "item",
+                                                        id: item.id,
+                                                      }),
+                                                    destructive: true,
+                                                  },
+                                                ];
+                                          const imageSrc =
+                                            item.image_url ||
+                                            item.product?.image_url;
+                                          const statusDisplay =
+                                            getStatusDisplay(item.status);
+                                          const StatusIcon = statusDisplay.icon;
+                                          const po = item.purchase_order;
+                                          const isOrderedNotReceived =
+                                            item.status === "ordered" && po;
+                                          const deliveryInfo =
+                                            isOrderedNotReceived &&
+                                            (po.delivery_date ||
+                                              po.delivery_deadline)
+                                              ? po.delivery_date
+                                                ? `${t("deliveryPrefix")} ${new Date(po.delivery_date).toLocaleDateString(undefined, { day: "2-digit", month: "2-digit", year: "numeric" })}`
+                                                : `${t("deliveryPrefix")} ${deliveryDeadlineLabel[po.delivery_deadline ?? ""] || po.delivery_deadline}`
+                                              : null;
+                                          const statusLabel =
+                                            deliveryInfo ?? statusDisplay.label;
+                                          const statusIndicator = (
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <span className="flex items-center justify-center">
+                                                  <StatusIcon
+                                                    className={`h-4 w-4 ${statusDisplay.className} cursor-help`}
+                                                  />
+                                                </span>
+                                              </TooltipTrigger>
+                                              <TooltipContent variant="tertiary">
+                                                <p>{statusLabel}</p>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          );
 
-                                        return (
-                                          <Fragment key={item.id}>
-                                            <TableRow>
-                                              <TableCell>
-                                                <div className="flex items-center gap-2.5">
-                                                  {imageSrc ? (
-                                                    <button
-                                                      type="button"
-                                                      className="relative h-10 w-10 shrink-0 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80 md:h-8 md:w-8"
-                                                      onClick={() => {
-                                                        setSelectedItem(item);
-                                                        setIsProductModalOpen(
-                                                          true
-                                                        );
-                                                      }}
-                                                    >
-                                                      <Image
-                                                        src={imageSrc}
-                                                        alt={
-                                                          item.product?.name ||
-                                                          item.name
-                                                        }
-                                                        fill
-                                                        className="object-cover"
-                                                        sizes="40px"
-                                                      />
-                                                    </button>
-                                                  ) : null}
-                                                  <div className="min-w-0 flex-1">
-                                                    <div className="max-w-[10rem] font-medium sm:max-w-none">
-                                                      {item.product?.name ||
-                                                        item.name}
-                                                    </div>
-                                                    {item.internal_reference && (
-                                                      <div className="text-muted-foreground mt-1 font-mono text-xs">
-                                                        {t("codePrefix")}{" "}
-                                                        {
-                                                          item.internal_reference
-                                                        }
+                                          return (
+                                            <Fragment key={item.id}>
+                                              <TableRow>
+                                                <TableCell>
+                                                  <div className="flex items-center gap-2.5">
+                                                    {imageSrc ? (
+                                                      <button
+                                                        type="button"
+                                                        className="relative h-10 w-10 shrink-0 cursor-pointer overflow-hidden rounded transition-opacity hover:opacity-80 md:h-8 md:w-8"
+                                                        onClick={() => {
+                                                          setSelectedItem(item);
+                                                          setIsProductModalOpen(
+                                                            true
+                                                          );
+                                                        }}
+                                                      >
+                                                        <Image
+                                                          src={imageSrc}
+                                                          alt={
+                                                            item.product
+                                                              ?.name ||
+                                                            item.name
+                                                          }
+                                                          fill
+                                                          className="object-cover"
+                                                          sizes="40px"
+                                                        />
+                                                      </button>
+                                                    ) : null}
+                                                    <div className="min-w-0 flex-1">
+                                                      <div className="max-w-[10rem] font-medium sm:max-w-none">
+                                                        {item.product?.name ||
+                                                          item.name}
                                                       </div>
-                                                    )}
-                                                    <div className="text-muted-foreground text-xs">
-                                                      {item.product?.supplier
-                                                        ?.name || "-"}
+                                                      {item.internal_reference && (
+                                                        <div className="text-muted-foreground mt-1 font-mono text-xs">
+                                                          {t("codePrefix")}{" "}
+                                                          {
+                                                            item.internal_reference
+                                                          }
+                                                        </div>
+                                                      )}
+                                                      <div className="text-muted-foreground text-xs">
+                                                        {productGrouping ===
+                                                        "supplier"
+                                                          ? item.space?.name ||
+                                                            t("spaceGeneral")
+                                                          : item.product
+                                                              ?.supplier
+                                                              ?.name || "-"}
+                                                      </div>
                                                     </div>
+                                                    <span className="shrink-0 md:hidden">
+                                                      {statusIndicator}
+                                                    </span>
                                                   </div>
-                                                  <span className="shrink-0 md:hidden">
-                                                    {statusIndicator}
-                                                  </span>
-                                                </div>
-                                              </TableCell>
-                                              <TableCellMd>
-                                                {statusIndicator}
-                                              </TableCellMd>
-                                              <TableCellMd className="text-right tabular-nums">
-                                                {item.quantity}
-                                              </TableCellMd>
-                                              <TableCellMd className="text-muted-foreground text-right tabular-nums">
-                                                <ItemPriceOrTbd
-                                                  item={item}
-                                                  tbdLabel={tbdLabel}
-                                                >
-                                                  {formatCurrency(
-                                                    item.unit_cost
-                                                  )}
-                                                </ItemPriceOrTbd>
-                                              </TableCellMd>
-                                              <TableCellMd className="text-right font-medium tabular-nums">
-                                                <ItemPriceOrTbd
-                                                  item={item}
-                                                  tbdLabel={tbdLabel}
-                                                >
-                                                  {formatCurrency(
-                                                    item.unit_price
-                                                  )}
-                                                </ItemPriceOrTbd>
-                                              </TableCellMd>
-                                              <TableCellMd className="text-muted-foreground text-right tabular-nums">
-                                                {formatTaxRatePercent(
-                                                  effectiveLineTaxRate(
-                                                    item,
-                                                    taxProjectCtx
-                                                  )
-                                                )}
-                                              </TableCellMd>
-                                              <TableCell className="text-right font-bold tabular-nums">
-                                                <ItemPriceOrTbd
-                                                  item={item}
-                                                  tbdLabel={tbdLabel}
-                                                >
-                                                  {formatCurrency(
-                                                    item.unit_price *
-                                                      item.quantity
-                                                  )}
-                                                </ItemPriceOrTbd>
-                                              </TableCell>
-                                              <TableCellMd className="text-right">
-                                                <ExpandableRowActionsMenu
-                                                  actions={rowActions}
-                                                  menuAriaLabel={t(
-                                                    "productActionsAria"
-                                                  )}
-                                                />
-                                              </TableCellMd>
-                                              <TableRowExpandTrigger
-                                                expanded={expanded}
-                                                onToggle={() =>
-                                                  toggleRow(item.id)
-                                                }
-                                                expandLabel={t(
-                                                  "expandProductDetails"
-                                                )}
-                                                collapseLabel={t(
-                                                  "collapseProductDetails"
-                                                )}
-                                              />
-                                            </TableRow>
-                                            <TableRowMobileDetail
-                                              open={expanded}
-                                              colSpan={mobileVisibleColumnCount}
-                                            >
-                                              <div className="space-y-2">
-                                                <MobileDetailField
-                                                  label={ts("colQuantity")}
-                                                  value={item.quantity}
-                                                />
-                                                <MobileDetailField
-                                                  label={ts("colUnitCost")}
-                                                  value={
-                                                    <ItemPriceOrTbd
-                                                      item={item}
-                                                      tbdLabel={tbdLabel}
-                                                    >
-                                                      {formatCurrency(
-                                                        item.unit_cost
-                                                      )}
-                                                    </ItemPriceOrTbd>
-                                                  }
-                                                />
-                                                <MobileDetailField
-                                                  label={ts("colSalePrice")}
-                                                  value={
-                                                    <ItemPriceOrTbd
-                                                      item={item}
-                                                      tbdLabel={tbdLabel}
-                                                    >
-                                                      {formatCurrency(
-                                                        item.unit_price
-                                                      )}
-                                                    </ItemPriceOrTbd>
-                                                  }
-                                                />
-                                                <MobileDetailField
-                                                  label={ts("colTax")}
-                                                  value={formatTaxRatePercent(
+                                                </TableCell>
+                                                <TableCellMd>
+                                                  {statusIndicator}
+                                                </TableCellMd>
+                                                <TableCellMd className="text-right tabular-nums">
+                                                  {item.quantity}
+                                                </TableCellMd>
+                                                <TableCellMd className="text-muted-foreground text-right tabular-nums">
+                                                  <ItemPriceOrTbd
+                                                    item={item}
+                                                    tbdLabel={tbdLabel}
+                                                  >
+                                                    {formatCurrency(
+                                                      item.unit_cost
+                                                    )}
+                                                  </ItemPriceOrTbd>
+                                                </TableCellMd>
+                                                <TableCellMd className="text-right font-medium tabular-nums">
+                                                  <ItemPriceOrTbd
+                                                    item={item}
+                                                    tbdLabel={tbdLabel}
+                                                  >
+                                                    {formatCurrency(
+                                                      item.unit_price
+                                                    )}
+                                                  </ItemPriceOrTbd>
+                                                </TableCellMd>
+                                                <TableCellMd className="text-muted-foreground text-right tabular-nums">
+                                                  {formatTaxRatePercent(
                                                     effectiveLineTaxRate(
                                                       item,
                                                       taxProjectCtx
                                                     )
                                                   )}
+                                                </TableCellMd>
+                                                <TableCell className="text-right font-bold tabular-nums">
+                                                  <ItemPriceOrTbd
+                                                    item={item}
+                                                    tbdLabel={tbdLabel}
+                                                  >
+                                                    {formatCurrency(
+                                                      item.unit_price *
+                                                        item.quantity
+                                                    )}
+                                                  </ItemPriceOrTbd>
+                                                </TableCell>
+                                                <TableCellMd className="text-right">
+                                                  <ExpandableRowActionsMenu
+                                                    actions={rowActions}
+                                                    menuAriaLabel={t(
+                                                      "productActionsAria"
+                                                    )}
+                                                  />
+                                                </TableCellMd>
+                                                <TableRowExpandTrigger
+                                                  expanded={expanded}
+                                                  onToggle={() =>
+                                                    toggleRow(item.id)
+                                                  }
+                                                  expandLabel={t(
+                                                    "expandProductDetails"
+                                                  )}
+                                                  collapseLabel={t(
+                                                    "collapseProductDetails"
+                                                  )}
                                                 />
-                                                <ExpandableRowActionsPanel
-                                                  actions={rowActions}
-                                                />
-                                              </div>
-                                            </TableRowMobileDetail>
-                                          </Fragment>
-                                        );
-                                      })}
-                                    </TableBody>
-                                  </Table>
-                                </CardContent>
-                              </CollapsibleContent>
-                            </Card>
-                          </Collapsible>
-                        );
-                      }
-                    )
+                                              </TableRow>
+                                              <TableRowMobileDetail
+                                                open={expanded}
+                                                colSpan={
+                                                  mobileVisibleColumnCount
+                                                }
+                                              >
+                                                <div className="space-y-2">
+                                                  <MobileDetailField
+                                                    label={ts("colQuantity")}
+                                                    value={item.quantity}
+                                                  />
+                                                  <MobileDetailField
+                                                    label={ts("colUnitCost")}
+                                                    value={
+                                                      <ItemPriceOrTbd
+                                                        item={item}
+                                                        tbdLabel={tbdLabel}
+                                                      >
+                                                        {formatCurrency(
+                                                          item.unit_cost
+                                                        )}
+                                                      </ItemPriceOrTbd>
+                                                    }
+                                                  />
+                                                  <MobileDetailField
+                                                    label={ts("colSalePrice")}
+                                                    value={
+                                                      <ItemPriceOrTbd
+                                                        item={item}
+                                                        tbdLabel={tbdLabel}
+                                                      >
+                                                        {formatCurrency(
+                                                          item.unit_price
+                                                        )}
+                                                      </ItemPriceOrTbd>
+                                                    }
+                                                  />
+                                                  <MobileDetailField
+                                                    label={ts("colTax")}
+                                                    value={formatTaxRatePercent(
+                                                      effectiveLineTaxRate(
+                                                        item,
+                                                        taxProjectCtx
+                                                      )
+                                                    )}
+                                                  />
+                                                  <ExpandableRowActionsPanel
+                                                    actions={rowActions}
+                                                  />
+                                                </div>
+                                              </TableRowMobileDetail>
+                                            </Fragment>
+                                          );
+                                        })}
+                                      </TableBody>
+                                    </Table>
+                                  </CardContent>
+                                </CollapsibleContent>
+                              </Card>
+                            </Collapsible>
+                          );
+                        }
+                      )}
+                    </>
                   )}
                 </CardContent>
               </CollapsibleContent>
@@ -1505,6 +1591,7 @@ export function ProjectBudget({
             projectId={projectId}
             item={editingItem}
             spaceId={itemDialogSpaceId}
+            supplierId={itemDialogSupplierId}
             origin={itemDialogOrigin}
             initialValues={itemInitialValues}
             onCreated={() => {

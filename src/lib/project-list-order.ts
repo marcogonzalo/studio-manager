@@ -31,6 +31,10 @@ export const BUDGET_CATEGORY_DISPLAY_ORDER: BudgetCategory[] = [
 
 export const UNASSIGNED_SPACE_KEY = "__unassigned_space__";
 
+export const UNASSIGNED_SUPPLIER_KEY = "__unassigned_supplier__";
+
+export type ProductBudgetGrouping = "space" | "supplier";
+
 export type OrderableBudgetLine = {
   id?: string;
   phase?: string | null;
@@ -64,6 +68,18 @@ export type SortableProduct = OrderableSpaceItem & {
 export type OrderableSpace = {
   id?: string;
   created_at?: string | null;
+};
+
+export type OrderableSupplierItem = {
+  id?: string;
+  created_at?: string | null;
+  supplier_id?: string | null;
+  supplier?: { id?: string | null; name?: string | null } | null;
+  supplier_name?: string | null;
+  product?: {
+    supplier_id?: string | null;
+    supplier?: { id?: string | null; name?: string | null } | null;
+  } | null;
 };
 
 function indexOrLast(order: readonly string[], value: string | null): number {
@@ -422,8 +438,16 @@ export function sortProjectItemsBySpaceThenCreatedAt<
 export function groupItemsBySpaceThenCreatedAt<T extends OrderableSpaceItem>(
   items: T[],
   unassignedLabel: string
-): { spaceKey: string; spaceName: string; items: T[] }[] {
-  const groups = new Map<string, { spaceName: string; items: T[] }>();
+): {
+  spaceKey: string;
+  spaceId: string | null;
+  spaceName: string;
+  items: T[];
+}[] {
+  const groups = new Map<
+    string,
+    { spaceId: string | null; spaceName: string; items: T[] }
+  >();
   for (const item of sortProjectItemsBySpaceThenCreatedAt(items)) {
     const key = spaceGroupKey(item);
     const existing = groups.get(key);
@@ -431,6 +455,7 @@ export function groupItemsBySpaceThenCreatedAt<T extends OrderableSpaceItem>(
       existing.items.push(item);
     } else {
       groups.set(key, {
+        spaceId: item.space_id ?? null,
         spaceName: spaceDisplayName(item, unassignedLabel),
         items: [item],
       });
@@ -438,7 +463,116 @@ export function groupItemsBySpaceThenCreatedAt<T extends OrderableSpaceItem>(
   }
   return Array.from(groups.entries()).map(([spaceKey, group]) => ({
     spaceKey,
+    spaceId: group.spaceId,
     spaceName: group.spaceName,
+    items: group.items,
+  }));
+}
+
+function resolvedSupplierId(item: OrderableSupplierItem): string | null {
+  const id = (
+    item.supplier_id ??
+    item.product?.supplier_id ??
+    item.supplier?.id ??
+    item.product?.supplier?.id ??
+    ""
+  ).trim();
+  return id || null;
+}
+
+function resolvedSupplierName(item: OrderableSupplierItem): string {
+  return (
+    item.supplier?.name ??
+    item.product?.supplier?.name ??
+    item.supplier_name ??
+    ""
+  ).trim();
+}
+
+function isUnassignedSupplier(item: OrderableSupplierItem): boolean {
+  return !resolvedSupplierId(item) && !resolvedSupplierName(item);
+}
+
+function supplierGroupKey(item: OrderableSupplierItem): string {
+  const id = resolvedSupplierId(item);
+  if (id) return `id:${id}`;
+  const name = resolvedSupplierName(item);
+  if (!name) return UNASSIGNED_SUPPLIER_KEY;
+  return `name:${name}`;
+}
+
+function supplierDisplayName(
+  item: OrderableSupplierItem,
+  unassignedLabel: string
+): string {
+  return resolvedSupplierName(item) || unassignedLabel;
+}
+
+export function compareProjectItemsBySupplierThenCreatedAt(
+  a: OrderableSupplierItem,
+  b: OrderableSupplierItem
+): number {
+  const aUnassigned = isUnassignedSupplier(a);
+  const bUnassigned = isUnassignedSupplier(b);
+  if (aUnassigned !== bUnassigned) return aUnassigned ? 1 : -1;
+
+  const nameCmp = compareNullableText(
+    resolvedSupplierName(a),
+    resolvedSupplierName(b)
+  );
+  if (nameCmp !== 0) return nameCmp;
+
+  const supplierKeyCmp = compareNullableText(
+    supplierGroupKey(a),
+    supplierGroupKey(b)
+  );
+  if (supplierKeyCmp !== 0) return supplierKeyCmp;
+
+  const itemCreatedCmp =
+    timestampOrLast(a.created_at) - timestampOrLast(b.created_at);
+  if (itemCreatedCmp !== 0) return itemCreatedCmp;
+
+  return compareNullableText(a.id, b.id);
+}
+
+export function sortProjectItemsBySupplierThenCreatedAt<
+  T extends OrderableSupplierItem,
+>(items: T[]): T[] {
+  return [...items].sort(compareProjectItemsBySupplierThenCreatedAt);
+}
+
+export function groupItemsBySupplierThenCreatedAt<
+  T extends OrderableSupplierItem,
+>(
+  items: T[],
+  unassignedLabel: string
+): {
+  supplierKey: string;
+  supplierId: string | null;
+  supplierName: string;
+  items: T[];
+}[] {
+  const groups = new Map<
+    string,
+    { supplierId: string | null; supplierName: string; items: T[] }
+  >();
+  for (const item of sortProjectItemsBySupplierThenCreatedAt(items)) {
+    const key = supplierGroupKey(item);
+    const existing = groups.get(key);
+    if (existing) {
+      existing.items.push(item);
+    } else {
+      groups.set(key, {
+        supplierId: resolvedSupplierId(item),
+        supplierName: supplierDisplayName(item, unassignedLabel),
+        items: [item],
+      });
+    }
+  }
+  return Array.from(groups.entries()).map(([supplierKey, group]) => ({
+    supplierKey,
+    supplierId: group.supplierId,
+    supplierName: group.supplierName,
     items: group.items,
   }));
 }

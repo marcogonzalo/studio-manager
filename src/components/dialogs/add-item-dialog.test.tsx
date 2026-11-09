@@ -331,4 +331,44 @@ describe("AddItemDialog", () => {
     expect(insertedProjectItems).toHaveLength(0);
     expect(mockTrackUserEvent).not.toHaveBeenCalled();
   });
+
+  it("prefills supplier_id when supplierId prop is provided and user switches to new product tab", async () => {
+    const user = userEvent.setup();
+    const onSuccess = vi.fn();
+
+    render(
+      <AddItemDialog
+        open
+        onOpenChange={vi.fn()}
+        projectId={projectId}
+        supplierId={supplierId}
+        onSuccess={onSuccess}
+      />
+    );
+
+    await screen.findByPlaceholderText("searchPlaceholder");
+    await user.click(screen.getByRole("tab", { name: "tabNewProduct" }));
+
+    const nameInput = await screen.findByRole("textbox", {
+      name: /productNameLabel/i,
+    });
+    await user.type(nameInput, "Prefilled supplier lamp");
+
+    const unitCostInput = screen.getByRole("spinbutton", {
+      name: /unitCostLabel/i,
+    });
+    await user.clear(unitCostInput);
+    await user.type(unitCostInput, "120");
+
+    await user.click(screen.getByRole("button", { name: "addToBudget" }));
+
+    await waitFor(() => {
+      expect(insertedProducts).toHaveLength(1);
+    });
+
+    expect(insertedProducts[0]).toMatchObject({
+      name: "Prefilled supplier lamp",
+      supplier_id: supplierId,
+    });
+  });
 });
