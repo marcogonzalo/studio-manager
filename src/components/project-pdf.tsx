@@ -65,7 +65,7 @@ const colors = {
 const VETA_FOOTER_RESERVE = 72;
 /** Minimum vertical space (pt) to keep the totals block on one page. */
 const SUMMARY_MIN_PRESENCE = 200;
-/** Fallback path for logo (relative; react-pdf often needs absolute URL, so caller should pass vetaLogoUrl). */
+/** Fallback path for logo (relative; react-pdf often needs absolute URL / data URL via headerLogoUrl). */
 const VETA_LOGO_PATH = "/img/veta-logo.png";
 const PAGE_PADDING = 40;
 const BAR_PAD = 5;
@@ -403,10 +403,12 @@ interface ProjectPDFProps {
   taxRate?: number;
   architectName?: string;
   architectEmail?: string;
-  /** When true (pdf_export_mode basic or plus), show Veta logo and name in header and branding footer. */
+  /** When true (pdf_export_mode basic), show Veta logo/name header and branding footer. */
   showVetaBranding?: boolean;
-  /** Absolute URL for the Veta logo (react-pdf does not resolve relative paths). E.g. `${origin}/img/veta-logo.png` */
-  vetaLogoUrl?: string;
+  /** Data URL for header logo (Veta or account). Prefer data URL; relative paths often fail in react-pdf. */
+  headerLogoUrl?: string;
+  /** Wordmark next to header logo (e.g. "Veta" or account public_name). */
+  headerBrandName?: string;
   lang?: Locale;
 }
 
@@ -418,14 +420,18 @@ export function ProjectPDF({
   architectName,
   architectEmail,
   showVetaBranding = false,
-  vetaLogoUrl,
+  headerLogoUrl,
+  headerBrandName,
   lang = defaultLocale,
 }: ProjectPDFProps) {
   const copy = getProjectPdfCopy(lang);
-  const logoSrc = vetaLogoUrl ?? VETA_LOGO_PATH;
+  const logoSrc =
+    headerLogoUrl ?? (showVetaBranding ? VETA_LOGO_PATH : undefined);
   const logoIsEmbedded =
     typeof logoSrc === "string" && logoSrc.startsWith("data:");
-
+  const brandName =
+    headerBrandName?.trim() || (showVetaBranding ? "Veta" : undefined);
+  const showBrandHeader = Boolean(logoIsEmbedded || brandName);
   // Filter out excluded items
   const includedItems = items.filter((item) => !item.is_excluded);
   const presentation = applyBudgetPresentation({
@@ -573,9 +579,9 @@ export function ProjectPDF({
             : styles.page
         }
       >
-        {showVetaBranding && (
+        {showBrandHeader && (
           <View style={styles.vetaHeader}>
-            {logoIsEmbedded && (
+            {logoIsEmbedded && logoSrc && (
               // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image has no alt prop
               <Image
                 src={logoSrc}
@@ -583,7 +589,9 @@ export function ProjectPDF({
                 cache={false}
               />
             )}
-            <Text style={styles.vetaHeaderName}>Veta</Text>
+            {brandName ? (
+              <Text style={styles.vetaHeaderName}>{brandName}</Text>
+            ) : null}
           </View>
         )}
         {/* Header */}

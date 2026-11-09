@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   checkCapability,
   hasModalityAtLeast,
+  isAccountLogoBrandingAvailable,
   isBudgetCustomizationAvailable,
   isCapabilityAvailable,
 } from "./plan-capability";
@@ -77,6 +78,20 @@ describe("plan-capability", () => {
       ).toBe(true);
       expect(
         isBudgetCustomizationAvailable(getPlanConfigForDisplay("STUDIO"))
+      ).toBe(true);
+    });
+  });
+
+  describe("isAccountLogoBrandingAvailable", () => {
+    it("is false for BASE and true for PRO/STUDIO (plus+)", () => {
+      expect(
+        isAccountLogoBrandingAvailable(getPlanConfigForDisplay("BASE"))
+      ).toBe(false);
+      expect(
+        isAccountLogoBrandingAvailable(getPlanConfigForDisplay("PRO"))
+      ).toBe(true);
+      expect(
+        isAccountLogoBrandingAvailable(getPlanConfigForDisplay("STUDIO"))
       ).toBe(true);
     });
   });

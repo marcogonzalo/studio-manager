@@ -117,3 +117,10 @@ export function isBudgetCustomizationAvailable(
 ): boolean {
   return hasModalityAtLeast(config, "pdf_export_mode", "plus");
 }
+
+/** Account logo upload + white-label PDF header (Pro/Studio) requires plus or full pdf export. */
+export function isAccountLogoBrandingAvailable(
+  config: PlanConfig | null | undefined
+): boolean {
+  return hasModalityAtLeast(config, "pdf_export_mode", "plus");
+}
