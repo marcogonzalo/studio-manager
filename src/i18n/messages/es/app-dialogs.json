@@ -442,6 +442,13 @@
     "validationNameRequired": "Nombre requerido",
     "validationClientRequired": "Cliente requerido",
     "validationTaxNonNegative": "El impuesto debe ser mayor o igual a 0",
+    "validationTaxRequired": "El impuesto es obligatorio",
+    "validationCurrencyRequired": "La moneda es obligatoria",
+    "optionalDetails": "Detalles opcionales",
+    "createClient": "Crear cliente",
+    "skip": "Omitir",
+    "next": "Siguiente",
+    "goToProject": "Ir al proyecto",
     "cancel": "Cancelar",
     "confirm": "Confirmar"
   },

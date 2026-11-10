@@ -136,6 +136,14 @@ describe("buildAddItemFormSchema tax_rate", () => {
   });
 });
 
+describe("buildAddItemFormSchema markup locale", () => {
+  it("parses comma decimals for markup without truncating", () => {
+    const result = parse({ markup: "12,5" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.markup).toBe(12.5);
+  });
+});
+
 describe("shouldBlockNumericKey", () => {
   it("blocks scientific notation and signs for both modes", () => {
     expect(shouldBlockNumericKey("e", "positive-integer")).toBe(true);

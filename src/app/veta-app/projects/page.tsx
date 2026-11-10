@@ -42,7 +42,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ProjectDialog } from "@/components/project-dialog";
+import { ProjectCreateWizard } from "@/components/project-create-wizard";
 import { PlanLimitModal } from "@/components/plan/plan-limit-modal";
 import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -420,7 +420,7 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      <ProjectDialog
+      <ProjectCreateWizard
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSuccess={() => {

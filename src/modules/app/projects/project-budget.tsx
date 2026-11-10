@@ -43,11 +43,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { BudgetImportDialog } from "@/modules/app/projects/budget-import/budget-import-dialog";
 import {
   Plus,
   Trash2,
+  Upload,
   Printer,
   Pencil,
   Copy,
@@ -216,6 +219,24 @@ export function ProjectBudget({
     { kind: "item"; id: string } | { kind: "budgetLine"; id: string } | null
   >(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const costsManagementAtLeastPlus = usePlanCapability("costs_management", {
+    minModality: "plus",
+  });
+  const taxAppliesToProject =
+    project?.multitax === true && costsManagementAtLeastPlus;
+
+  const importSuppliers = useMemo(() => {
+    const map = new Map<string, { id: string; name: string }>();
+    for (const item of items) {
+      const supplier = item.product?.supplier;
+      const id = supplier?.id ?? item.product?.supplier_id;
+      if (id && supplier?.name) {
+        map.set(id, { id, name: supplier.name });
+      }
+    }
+    return [...map.values()];
+  }, [items]);
 
   useOnboardingHighlight("add-budget-items", !loading && !readOnly);
 
@@ -856,6 +877,11 @@ export function ProjectBudget({
                     <DropdownMenuItem onClick={handleAddItem}>
                       <Plus className="mr-2 h-4 w-4" />
                       {t("addProduct")}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setIsImportOpen(true)}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      {t("importFromFile")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -1647,6 +1673,19 @@ export function ProjectBudget({
             onSuccess={() => {
               setIsBudgetLineDialogOpen(false);
               resetBudgetLineDialogCreateState();
+              refetchBudgetLines();
+            }}
+          />
+
+          <BudgetImportDialog
+            open={isImportOpen}
+            onOpenChange={setIsImportOpen}
+            projectId={projectId}
+            spaces={spaces}
+            suppliers={importSuppliers}
+            taxAppliesToProject={taxAppliesToProject}
+            onImported={() => {
+              void fetchData();
               refetchBudgetLines();
             }}
           />

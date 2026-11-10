@@ -25,8 +25,22 @@ function parseRequiredNumber(value: string): number {
   if (trimmed === "") return Number.NaN;
   // Reject scientific notation (can still arrive via paste).
   if (/[eE]/.test(trimmed)) return Number.NaN;
-  // Allow comma decimals.
-  return Number(trimmed.replace(",", "."));
+  // Allow comma decimals ("12,5") and plain dots.
+  const normalized = trimmed.includes(",")
+    ? trimmed.replace(/\./g, "").replace(",", ".")
+    : trimmed;
+  return Number(normalized);
+}
+
+function parseMarkupNumber(value: string): number {
+  const trimmed = value.trim();
+  if (trimmed === "") return 0;
+  if (/[eE]/.test(trimmed)) return 0;
+  const normalized = trimmed.includes(",")
+    ? trimmed.replace(/\./g, "").replace(",", ".")
+    : trimmed;
+  const n = Number(normalized);
+  return Number.isFinite(n) ? n : 0;
 }
 
 function positiveInteger(t: AddItemFormTranslate) {
@@ -59,7 +73,7 @@ export function buildAddItemFormSchema(t: AddItemFormTranslate) {
       internal_notes: z.string().optional(),
       quantity: positiveInteger(t),
       unit_cost: z.string().optional(),
-      markup: z.string().transform((v) => parseFloat(v) || 0),
+      markup: z.string().transform((v) => parseMarkupNumber(v)),
       unit_price: z.string().optional(),
       image_url: z.string().optional(),
       is_excluded: z.boolean().optional(),
