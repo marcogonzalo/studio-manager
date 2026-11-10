@@ -2,6 +2,8 @@
 
 **Estado actual y WIP:** ver `activeContext.md`. Este archivo es un resumen de lo completado y pendiente.
 
+- **Rama feat/budget-import (issues #215 + #219):** Field-spec + runtime CSV/XLSX templates + help page; ImportFlow (upload/mapping/preview/confirm) from Budget Add menu; atomic `import_budget_rows` RPC + `importBudgetRows` action + `budget_imported` event; ProjectCreateWizard (name/currency/tax required, Discovery default, optional client + import). Deps: exceljs + papaparse. Full verify: Docker test profile typecheck + knip + tests + build.
+
 - **Rama feat/budget-group-products-by-supplier (issue #116):** Toggle interno Espacio/Proveedor en `ProjectBudget` (no PDF/vista pública). Helpers `groupItemsBySupplierThenCreatedAt` + `spaceId`/`supplierId` explícitos; `AddItemDialog` pre-rellena `supplierId`; selector con `TabsList`/`TabsTrigger` (contraste dark mode). Tests unitarios + UI. Full verify: Docker test profile lint + typecheck + knip + tests + build.
 
 - **Rama feat/account-logo-budget-pdf-96-97 (issues #96 + #97):** Logo de empresa en Personalización (Pro/Studio). Upload B2 PNG + `account_settings.public_logo_url`/`public_logo_asset_id`. PDF + vista pública: cabecera logo + `public_name` solo si plan `plus`/`full` (`resolveClientFacingPublicProfile` + RPC `get_project_share_by_token` con `account_branding`). Downgrade a Base no aplica marca almacenada. Full verify branding unit tests; prior full Docker suite on logo upload slice.

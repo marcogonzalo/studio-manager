@@ -21,6 +21,7 @@ export type UserEvent =
   | "login"
   | "project_created"
   | "budget_created"
+  | "budget_imported"
   | "supplier_created"
   | "invite_sent"
   | "plan_selected"

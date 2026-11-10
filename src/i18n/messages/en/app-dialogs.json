@@ -442,6 +442,13 @@
     "validationNameRequired": "Name is required",
     "validationClientRequired": "Client is required",
     "validationTaxNonNegative": "Tax must be greater than or equal to 0",
+    "validationTaxRequired": "Tax rate is required",
+    "validationCurrencyRequired": "Currency is required",
+    "optionalDetails": "Optional details",
+    "createClient": "Create client",
+    "skip": "Skip",
+    "next": "Next",
+    "goToProject": "Go to project",
     "cancel": "Cancel",
     "confirm": "Confirm"
   },

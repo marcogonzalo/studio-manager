@@ -10,7 +10,13 @@ export type BudgetLineFormTranslate = (key: BudgetLineFormMessageKey) => string;
 function parseAmount(value: string): number {
   const trimmed = value.trim();
   if (trimmed === "") return 0;
-  return parseFloat(trimmed.replace(",", ".")) || 0;
+  if (/[eE]/.test(trimmed)) return 0;
+  const normalized = trimmed.includes(",")
+    ? trimmed.replace(/\./g, "").replace(",", ".")
+    : trimmed;
+  if (!/^[\d.]+$/.test(normalized)) return 0;
+  const n = Number(normalized);
+  return Number.isFinite(n) ? n : 0;
 }
 
 export function buildBudgetLineFormSchema(t: BudgetLineFormTranslate) {
